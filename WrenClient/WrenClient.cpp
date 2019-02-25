@@ -25,6 +25,9 @@ int main()
     inet_pton(AF_INET, "127.0.0.1", &serverInfo.sin_addr);
 
     socketC = socket(AF_INET, SOCK_DGRAM, 0);
+
+    DWORD nonBlocking = 1;
+    ioctlsocket(socketC, FIONBIO, &nonBlocking);
     while (true)
     {
         char buffer[1024];
