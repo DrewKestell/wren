@@ -20,17 +20,20 @@ class Player
 public:
     std::string Name;
     std::string IPAndPort;
+    DWORD LastHeartbeat;
 };
 
-constexpr auto CHECKSUM = "65836216";
+constexpr char CHECKSUM[8] = { '6', '5', '8', '3', '6', '2', '1', '6' };
 
-constexpr auto OPCODE_CONNECT = 0;
-constexpr auto OPCODE_DISCONNECT = 1;
-constexpr auto OPCODE_LOGIN_SUCCESSFUL = 2;
-constexpr auto OPCODE_LOGIN_UNSUCCESSFUL = 3;
-constexpr auto OPCODE_CREATE_ACCOUNT = 4;
-constexpr auto OPCODE_CREATE_ACCOUNT_SUCCESSFUL = 5;
-constexpr auto OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL = 6;
+constexpr char OPCODE_CONNECT[2] =                     { '0', '0' };
+constexpr char OPCODE_DISCONNECT[2] =                  { '0', '1' };
+constexpr char OPCODE_LOGIN_SUCCESSFUL[2] =            { '0', '2' };
+constexpr char OPCODE_LOGIN_UNSUCCESSFUL[2] =          { '0', '3' };
+constexpr char OPCODE_CREATE_ACCOUNT[2] =              { '0', '4' };
+constexpr char OPCODE_CREATE_ACCOUNT_SUCCESSFUL[2] =   { '0', '5' };
+constexpr char OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL[2] = { '0', '6' };
+
+constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
 
 std::vector<Account> ACCOUNTS;
 std::vector<Player> PLAYERS;
@@ -49,11 +52,26 @@ void InitializeAccounts()
     ACCOUNTS.push_back(bloog);
 }
 
-std::string PadOpcode(int opcode)
+bool MessagePartsEqual(const char * first, const char * second, int length)
 {
-    if (opcode < 10)
-        return "0" + std::to_string(opcode);
-    return std::to_string(opcode);
+    for (auto i = 0; i < length; i++)
+    {
+        if (first[i] != second[i])
+            return false;
+    }
+    return true;
+}
+
+void HandleTimeout()
+{
+    std::vector<Player>::const_iterator it = PLAYERS.begin();
+    std::for_each(PLAYERS.begin(), PLAYERS.end(), [&it](Player player) {
+        if (GetTickCount() > player.LastHeartbeat + TIMEOUT_DURATION)
+        {
+            std::cout << player.Name << " timed out." << "\n";
+            PLAYERS.erase(it);
+        }
+    });
 }
 
 int main()
@@ -90,22 +108,15 @@ int main()
             inet_ntop(AF_INET, &(from.sin_addr), str, INET_ADDRSTRLEN);
             printf("Received message from %s:%i -  %s\n", str, from.sin_port, buffer);
 
-            // this isn't null terminated or something...
             const auto checksumArrLen = 8;
             char checksumArr[checksumArrLen];
             memcpy(&checksumArr[0], &buffer[0], checksumArrLen * sizeof(char));
-
-            auto foo = std::string(checksumArr);
-            auto bar = std::string(CHECKSUM);
-            if (foo != bar)
+            if (!MessagePartsEqual(checksumArr, CHECKSUM, checksumArrLen))
                 continue;
 
             const auto opcodeArrLen = 2;
             char opcodeArr[opcodeArrLen];
             memcpy(&opcodeArr[0], &buffer[8], opcodeArrLen * sizeof(char));
-            auto opcode = std::stoi(opcodeArr, nullptr);
-            std::cout << "Opcode: " << opcode;
-            std::cout << "\n";
 
             std::vector<std::string> args;
             auto bufferLength = strlen(buffer);
@@ -129,7 +140,7 @@ int main()
             }
 
             // connect
-            if (opcode == OPCODE_CONNECT)
+            if (MessagePartsEqual(opcodeArr, OPCODE_CONNECT, opcodeArrLen))
             {
                 auto accountName = args[0];
                 auto password = args[1];
@@ -149,10 +160,12 @@ int main()
                         Player player;
                         player.Name = args[2];
                         player.IPAndPort = std::string(str) + ":" + std::to_string(from.sin_port);
+                        player.LastHeartbeat = GetTickCount();
                         PLAYERS.push_back(player);
 
-                        strcpy_s(responseBuffer, (std::string(CHECKSUM) + PadOpcode(OPCODE_LOGIN_SUCCESSFUL)).c_str());
+                        strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_LOGIN_SUCCESSFUL)).c_str());
                         sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
+                        std::cout << player.Name << " connected to the server.\n";
                     }
                         
                 }
@@ -162,12 +175,12 @@ int main()
 
                 if (error != "")
                 {
-                    strcpy_s(responseBuffer, (std::string(CHECKSUM) + PadOpcode(OPCODE_LOGIN_UNSUCCESSFUL) + error).c_str());
+                    strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_LOGIN_UNSUCCESSFUL) + error).c_str());
                     sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
                 }
             }
             // disconnect
-            else if (opcode == OPCODE_DISCONNECT)
+            else if (MessagePartsEqual(opcodeArr, OPCODE_DISCONNECT, opcodeArrLen))
             {
                 auto playerName = args[0];
 
@@ -175,7 +188,7 @@ int main()
                 if (it != PLAYERS.end())
                     PLAYERS.erase(it);
             }
-            else if (opcode == OPCODE_CREATE_ACCOUNT)
+            else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT, opcodeArrLen))
             {
                 auto accountName = args[0];
                 auto password = args[1];
@@ -185,7 +198,7 @@ int main()
                 // account already exists
                 if (it != ACCOUNTS.end())
                 {
-                    strcpy_s(responseBuffer, (std::string(CHECKSUM) + PadOpcode(OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL) + error).c_str());
+                    strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL) + error).c_str());
                     sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
                 }
                 // create the account
@@ -200,14 +213,17 @@ int main()
                         crypto_pwhash_OPSLIMIT_INTERACTIVE,
                         crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0)
                     {
-                        /* out of memory */
+                        std::cout << "Ran out of memory while hashing password.";
+                        break;
                     }
+
                     // save the new account in the db
-                    strcpy_s(responseBuffer, (std::string(CHECKSUM) + PadOpcode(OPCODE_CREATE_ACCOUNT_SUCCESSFUL)).c_str());
+                    strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_CREATE_ACCOUNT_SUCCESSFUL)).c_str());
                     sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
                 }
             }
         }
+        HandleTimeout();
         Sleep(500);
     }
     
