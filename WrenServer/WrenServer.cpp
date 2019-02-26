@@ -1,6 +1,7 @@
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 #include <sodium.h>
+#include <sqlite3.h>
 #include <string>
 #include <iostream>
 #include <vector>
@@ -35,21 +36,15 @@ constexpr char OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL[2] = { '0', '6' };
 
 constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
 
-std::vector<Account> ACCOUNTS;
+constexpr auto GET_ACCOUNT_QUERY = "SELECT id FROM Accounts WHERE account_name = '%s';";
+constexpr auto CREATE_ACCOUNT_QUERY = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
+
 std::vector<Player> PLAYERS;
 
 bool InitializeSockets()
 {
     WSADATA wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData) == NO_ERROR;
-}
-
-void InitializeAccounts()
-{
-    Account bloog;
-    bloog.AccountName = "Bloog";
-    bloog.Password = "$argon2id$v=19$m=65536,t=2,p=1$gonM1QLOO91yL152cRJwPA$M4f57Y/D16IQGUxFOfWYVhDm4ZFFnO1bYXTrJ9GwoSo";
-    ACCOUNTS.push_back(bloog);
 }
 
 bool MessagePartsEqual(const char * first, const char * second, int length)
@@ -74,9 +69,77 @@ void HandleTimeout()
     });
 }
 
+// If account doesn't exist, 0 is returned
+// If account does exist, 1 is returned
+// If an error occurs, errorMessage is set and -1 is returned
+int AccountExists(std::string accountName, std::string& errorMessage)
+{
+    sqlite3* dbConnection;
+    if (sqlite3_open("Wren.db", &dbConnection) != SQLITE_OK)
+    {
+        errorMessage = "Failed to open database.";
+        return -1;
+    }
+
+    char query[100];
+    sprintf_s(query, GET_ACCOUNT_QUERY, accountName.c_str());
+    sqlite3_stmt* statement;
+    if (sqlite3_prepare_v2(dbConnection, query, -1, &statement, NULL) != SQLITE_OK)
+    {
+        errorMessage = "Failed to prepare SQLite statement.";
+        sqlite3_finalize(statement);
+        return -1;
+    }
+
+    auto result = sqlite3_step(statement);
+    if (result == SQLITE_ROW)
+    {
+        sqlite3_finalize(statement);
+        return 1;
+    }
+    else if (result == SQLITE_DONE)
+    {
+        sqlite3_finalize(statement);
+        return 0;
+    }
+    else
+    {
+        errorMessage = "Failed to execute statement.";
+        return -1;
+    }
+}
+
+int CreateAccount(std::string accountName, std::string password, std::string& errorMessage)
+{
+    sqlite3* dbConnection;
+    if (sqlite3_open("Wren.db", &dbConnection) != SQLITE_OK)
+    {
+        errorMessage = "Failed to open database.";
+        return -1;
+    }
+
+    char query[300];
+    sprintf_s(query, CREATE_ACCOUNT_QUERY, accountName.c_str(), password.c_str());
+    sqlite3_stmt* statement;
+    if (sqlite3_prepare_v2(dbConnection, query, -1, &statement, NULL) != SQLITE_OK)
+    {
+        errorMessage = "Failed to prepare SQLite statement.";
+        sqlite3_finalize(statement);
+        return -1;
+    }
+
+    if (sqlite3_step(statement) != SQLITE_DONE)
+    {
+        errorMessage = "Failed to execute statement.";
+        sqlite3_finalize(statement);
+        return -1;
+    }
+    
+    return 0;
+}
+
 int main()
 {
-    InitializeAccounts();
     InitializeSockets();
     sodium_init();
 
@@ -145,33 +208,32 @@ int main()
                 auto accountName = args[0];
                 auto password = args[1];
 
-                auto it = std::find_if(ACCOUNTS.begin(), ACCOUNTS.end(), [&accountName](const Account& account) { return account.AccountName == accountName; });
                 std::string error;
                 // found the account
-                if (it != ACCOUNTS.end())
-                {
-                    auto account = *it;
+                //if (it != ACCOUNTS.end())
+                //{
+                //    auto account = *it;
 
-                    auto passwordArr = password.c_str();
-                    if (crypto_pwhash_str_verify(account.Password.c_str(), passwordArr, strlen(passwordArr)) != 0)
-                        error = "Incorrect Password.";
-                    else
-                    {
-                        Player player;
-                        player.Name = args[2];
-                        player.IPAndPort = std::string(str) + ":" + std::to_string(from.sin_port);
-                        player.LastHeartbeat = GetTickCount();
-                        PLAYERS.push_back(player);
+                //    auto passwordArr = password.c_str();
+                //    if (crypto_pwhash_str_verify(account.Password.c_str(), passwordArr, strlen(passwordArr)) != 0)
+                //        error = "Incorrect Password.";
+                //    else
+                //    {
+                //        Player player;
+                //        player.Name = args[2];
+                //        player.IPAndPort = std::string(str) + ":" + std::to_string(from.sin_port);
+                //        player.LastHeartbeat = GetTickCount();
+                //        PLAYERS.push_back(player);
 
-                        strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_LOGIN_SUCCESSFUL)).c_str());
-                        sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
-                        std::cout << player.Name << " connected to the server.\n";
-                    }
-                        
-                }
-                // account doesn't exist
-                else
-                    error = "Incorrect Username.";
+                //        strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_LOGIN_SUCCESSFUL)).c_str());
+                //        sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
+                //        std::cout << player.Name << " connected to the server.\n";
+                //    }
+                //        
+                //}
+                //// account doesn't exist
+                //else
+                //    error = "Incorrect Username.";
 
                 if (error != "")
                 {
@@ -188,16 +250,17 @@ int main()
                 if (it != PLAYERS.end())
                     PLAYERS.erase(it);
             }
+            // create account
             else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT, opcodeArrLen))
             {
                 auto accountName = args[0];
                 auto password = args[1];
 
-                auto it = std::find_if(ACCOUNTS.begin(), ACCOUNTS.end(), [&accountName](const Account& account) { return account.AccountName == accountName; });
-                std::string error = "Account already exists.";
                 // account already exists
-                if (it != ACCOUNTS.end())
+                std::string accountExistsError;
+                if (AccountExists(accountName, accountExistsError) == 1)
                 {
+                    std::string error = "Account already exists.";
                     strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL) + error).c_str());
                     sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
                 }
@@ -217,8 +280,11 @@ int main()
                         break;
                     }
 
-                    // save the new account in the db
-                    strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_CREATE_ACCOUNT_SUCCESSFUL)).c_str());
+                    std::string createAccountError;
+                    CreateAccount(accountName, hashedPassword, createAccountError);
+
+                    std::string response = "Account successfully created.";
+                    strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_CREATE_ACCOUNT_SUCCESSFUL) + response).c_str());
                     sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
                 }
             }
