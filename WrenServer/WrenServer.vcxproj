@@ -75,8 +75,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)Lib;$(LibraryPath)</LibraryPath>
     <IncludePath>$(ProjectDir)Include;$(IncludePath)</IncludePath>
+    <SourcePath>$(ProjectDir)ThirdParty;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -156,12 +157,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="sqlite3.c" />
+    <ClCompile Include="ThirdParty\sqlite3.c" />
     <ClCompile Include="WrenServer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Headers\sodium.h" />
-    <ClInclude Include="Headers\sqlite3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
