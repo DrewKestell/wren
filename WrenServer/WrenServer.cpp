@@ -12,6 +12,7 @@
 class Account
 {
 public:
+    int Id;
     std::string AccountName;
     std::string Password;
 };
@@ -33,11 +34,13 @@ constexpr char OPCODE_LOGIN_UNSUCCESSFUL[2] =          { '0', '3' };
 constexpr char OPCODE_CREATE_ACCOUNT[2] =              { '0', '4' };
 constexpr char OPCODE_CREATE_ACCOUNT_SUCCESSFUL[2] =   { '0', '5' };
 constexpr char OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL[2] = { '0', '6' };
+constexpr char OPCODE_CREATE_CHARACTER[2] =            { '0', '7' };
 
 constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
 
-constexpr auto GET_ACCOUNT_QUERY = "SELECT id FROM Accounts WHERE account_name = '%s';";
+constexpr auto ACCOUNT_EXISTS_QUERY = "SELECT id FROM Accounts WHERE account_name = '%s' LIMIT 1;";
 constexpr auto CREATE_ACCOUNT_QUERY = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
+constexpr auto GET_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
 
 std::vector<Player> PLAYERS;
 
@@ -72,21 +75,21 @@ void HandleTimeout()
 // If account doesn't exist, 0 is returned
 // If account does exist, 1 is returned
 // If an error occurs, errorMessage is set and -1 is returned
-int AccountExists(std::string accountName, std::string& errorMessage)
+int AccountExists(std::string accountName, std::string *errorMessage)
 {
     sqlite3* dbConnection;
     if (sqlite3_open("Wren.db", &dbConnection) != SQLITE_OK)
     {
-        errorMessage = "Failed to open database.";
+        *errorMessage = "Failed to open database.";
         return -1;
     }
 
     char query[100];
-    sprintf_s(query, GET_ACCOUNT_QUERY, accountName.c_str());
+    sprintf_s(query, ACCOUNT_EXISTS_QUERY, accountName.c_str());
     sqlite3_stmt* statement;
     if (sqlite3_prepare_v2(dbConnection, query, -1, &statement, NULL) != SQLITE_OK)
     {
-        errorMessage = "Failed to prepare SQLite statement.";
+        *errorMessage = "Failed to prepare SQLite statement.";
         sqlite3_finalize(statement);
         return -1;
     }
@@ -104,17 +107,17 @@ int AccountExists(std::string accountName, std::string& errorMessage)
     }
     else
     {
-        errorMessage = "Failed to execute statement.";
+        *errorMessage = "Failed to execute statement.";
         return -1;
     }
 }
 
-int CreateAccount(std::string accountName, std::string password, std::string& errorMessage)
+int CreateAccount(std::string accountName, std::string password, std::string *errorMessage)
 {
     sqlite3* dbConnection;
     if (sqlite3_open("Wren.db", &dbConnection) != SQLITE_OK)
     {
-        errorMessage = "Failed to open database.";
+        *errorMessage = "Failed to open database.";
         return -1;
     }
 
@@ -123,14 +126,14 @@ int CreateAccount(std::string accountName, std::string password, std::string& er
     sqlite3_stmt* statement;
     if (sqlite3_prepare_v2(dbConnection, query, -1, &statement, NULL) != SQLITE_OK)
     {
-        errorMessage = "Failed to prepare SQLite statement.";
+        *errorMessage = "Failed to prepare SQLite statement.";
         sqlite3_finalize(statement);
         return -1;
     }
 
     if (sqlite3_step(statement) != SQLITE_DONE)
     {
-        errorMessage = "Failed to execute statement.";
+        *errorMessage = "Failed to execute statement.";
         sqlite3_finalize(statement);
         return -1;
     }
@@ -139,13 +142,13 @@ int CreateAccount(std::string accountName, std::string password, std::string& er
 }
 
 // TODO: take an Account*, set that in the function, and return an int status code
-Account* GetAccount(std::string accountName, std::string& errorMessage)
+int GetAccount(std::string accountName, Account *&account, std::string *errorMessage)
 {
 	sqlite3* dbConnection;
 	if (sqlite3_open("Wren.db", &dbConnection) != SQLITE_OK)
 	{
-		errorMessage = "Failed to open database.";
-		return NULL;
+        *errorMessage = "Failed to open database.";
+		return -1;
 	}
 
 	char query[100];
@@ -153,27 +156,29 @@ Account* GetAccount(std::string accountName, std::string& errorMessage)
 	sqlite3_stmt* statement;
 	if (sqlite3_prepare_v2(dbConnection, query, -1, &statement, NULL) != SQLITE_OK)
 	{
-		errorMessage = "Failed to prepare SQLite statement.";
+        *errorMessage = "Failed to prepare SQLite statement.";
 		sqlite3_finalize(statement);
-		return NULL;
+		return -1;
 	}
 
 	auto result = sqlite3_step(statement);
 	if (result == SQLITE_ROW)
 	{
+        int id = sqlite3_column_int(statement, 0);
+        const unsigned char *hashedPassword = sqlite3_column_text(statement, 2);
+        account = new Account{ id, accountName, std::string(reinterpret_cast<const char*>(hashedPassword)) };
 		sqlite3_finalize(statement);
-		// TODO: read row and build new Account
-		return NULL;
+		return 1;
 	}
 	else if (result == SQLITE_DONE)
 	{
 		sqlite3_finalize(statement);
-		return NULL;
+		return 0;
 	}
 	else
 	{
-		errorMessage = "Failed to execute statement.";
-		return NULL;
+        *errorMessage = "Failed to execute statement.";
+		return -1;
 	}
 }
 
@@ -248,9 +253,9 @@ int main()
                 auto password = args[1];
 
 				std::string error;
+                Account *account;
 				std::string getAccountError;
-				auto account = GetAccount(accountName, getAccountError);
-                if (account != NULL)
+                if (GetAccount(accountName, account, &getAccountError) == 1)
                 {
                     auto passwordArr = password.c_str();
                     if (crypto_pwhash_str_verify(account->Password.c_str(), passwordArr, strlen(passwordArr)) != 0)
@@ -296,7 +301,7 @@ int main()
 
                 // account already exists
                 std::string accountExistsError;
-                if (AccountExists(accountName, accountExistsError) == 1)
+                if (AccountExists(accountName, &accountExistsError) == 1)
                 {
                     std::string error = "Account already exists.";
                     strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL) + error).c_str());
@@ -319,12 +324,16 @@ int main()
                     }
 
                     std::string createAccountError;
-                    CreateAccount(accountName, hashedPassword, createAccountError);
+                    CreateAccount(accountName, hashedPassword, &createAccountError);
 
                     std::string response = "Account successfully created.";
                     strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_CREATE_ACCOUNT_SUCCESSFUL) + response).c_str());
                     sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
                 }
+            }
+            else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER, opcodeArrLen))
+            {
+
             }
         }
         HandleTimeout();

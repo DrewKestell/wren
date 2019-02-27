@@ -1,6 +1,7 @@
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 #include <stdio.h>
+#include <string>
 
 constexpr auto CHECKSUM = "65836216";
 
@@ -30,18 +31,31 @@ int main()
     ioctlsocket(socketC, FIONBIO, &nonBlocking);
     while (true)
     {
+        if (GetKeyState('X') & 0x8000)
+            break;
+
+        std::string packet = CHECKSUM;
+        if (GetKeyState('Q') & 0x8000)
+            packet += "04Bloog|password|";
+        else if (GetKeyState('W') & 0x8000)
+            packet += "07Bloogson|";
+        else if (GetKeyState('E') & 0x8000)
+            packet += "00Bloog|password|Bloog|";
+        else if (GetKeyState('R') & 0x8000)
+            packet += "01";
+
         char buffer[1024];
         ZeroMemory(buffer, sizeof(buffer));
-        printf("Please input your message: ");
-        scanf_s("%s", buffer, _countof(buffer));
-        if (strcmp(buffer, "exit") == 0)
-            break;
-        if (sendto(socketC, buffer, sizeof(buffer), 0, (sockaddr*)&serverInfo, len) != SOCKET_ERROR)
+        char packetBuffer[1024];
+        ZeroMemory(packetBuffer, sizeof(packetBuffer));
+        auto packetArr = packet.c_str();
+        memcpy(&packetBuffer[0], &packetArr[0], strlen(packetArr) * sizeof(char));
+        sendto(socketC, packetBuffer, sizeof(packetBuffer), 0, (sockaddr*)&serverInfo, len);
+
+        while (recvfrom(socketC, buffer, sizeof(buffer), 0, (sockaddr*)&serverInfo, &len) != SOCKET_ERROR)
         {
-            if (recvfrom(socketC, buffer, sizeof(buffer), 0, (sockaddr*)&serverInfo, &len) != SOCKET_ERROR)
-            {
-                printf("Receive response from server: %s\n", buffer);
-            }
+            printf("Receive response from server: %s\n", buffer);
+            ZeroMemory(buffer, sizeof(buffer));
         }
     }
     closesocket(socketC);
