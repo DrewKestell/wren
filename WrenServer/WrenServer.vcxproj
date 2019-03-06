@@ -161,6 +161,7 @@
     <ClCompile Include="Account.cpp" />
     <ClCompile Include="Repository.cpp" />
     <ClCompile Include="Result.cpp" />
+    <ClCompile Include="SocketManager.cpp" />
     <ClCompile Include="ThirdParty\sqlite3.c" />
     <ClCompile Include="WrenServer.cpp" />
   </ItemGroup>
@@ -168,8 +169,10 @@
     <ClInclude Include="Account.h" />
     <ClInclude Include="Include\sodium.h" />
     <ClInclude Include="Include\sqlite3.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Repository.h" />
     <ClInclude Include="Result.h" />
+    <ClInclude Include="SocketManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

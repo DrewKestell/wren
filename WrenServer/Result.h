@@ -1,8 +1,6 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-using namespace std;
-
 template<typename T>
 class Result
 {

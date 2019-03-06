@@ -3,24 +3,22 @@
 
 #include <string>
 
-using namespace std;
-
 class Account
 {
 public:
-    Account(const int id, const string& accountName, const string& password)
+    Account(const int id, const std::string& accountName, const std::string& password)
     {
         m_id = id;
         m_accountName = accountName;
         m_password = password;
     }
     int GetId() { return m_id; }
-    string& GetAccountName() { return m_accountName; }
-    string& GetPassword() { return m_password; }
+    std::string& GetAccountName() { return m_accountName; }
+    std::string& GetPassword() { return m_password; }
 private:
     int m_id;
-    string m_accountName;
-    string m_password;
+    std::string m_accountName;
+    std::string m_password;
 };
 
 #endif
