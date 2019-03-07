@@ -11,7 +11,7 @@ public:
     bool AccountExists(const std::string& accountName);
 	bool CharacterExists(const std::string& characterName);
     void CreateAccount(const std::string& accountName, const std::string& password);
-	void CreateCharacter(const int accountId, const std::string& characterName);
+	void CreateCharacter(const std::string& characterName, const int accountId);
     Account* GetAccount(const std::string& accountName);
 private:
     sqlite3* GetConnection();

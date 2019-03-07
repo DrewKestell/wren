@@ -158,9 +158,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Account.cpp" />
     <ClCompile Include="Repository.cpp" />
-    <ClCompile Include="Result.cpp" />
     <ClCompile Include="SocketManager.cpp" />
     <ClCompile Include="ThirdParty\sqlite3.c" />
     <ClCompile Include="WrenServer.cpp" />

@@ -12,7 +12,7 @@ constexpr auto FAILED_TO_EXECUTE = "Failed to execute statement.";
 constexpr auto ACCOUNT_EXISTS_QUERY = "SELECT id FROM Accounts WHERE account_name = '%s' LIMIT 1;";
 constexpr auto CHARACTER_EXISTS_QUERY = "SELECT id FROM Characters WHERE character_name = '%s' LIMIT 1;";
 constexpr auto CREATE_ACCOUNT_QUERY = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
-constexpr auto CREATE_CHARACTER_QUERY = "INSERT INTO Characters (account_id, character_name) VALUES('%d', '%s');";
+constexpr auto CREATE_CHARACTER_QUERY = "INSERT INTO Characters (character_name, account_id) VALUES('%s', '%d');";
 constexpr auto GET_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
 
 bool Repository::AccountExists(const std::string& accountName)
@@ -85,12 +85,12 @@ void Repository::CreateAccount(const std::string& accountName, const std::string
     }
 }
 
-void Repository::CreateCharacter(const int accountId, const std::string& characterName)
+void Repository::CreateCharacter(const std::string& characterName, const int accountId)
 {
 	const auto dbConnection = GetConnection();
 
 	char query[300];
-	sprintf_s(query, CREATE_CHARACTER_QUERY, accountId, characterName.c_str());
+	sprintf_s(query, CREATE_CHARACTER_QUERY, characterName.c_str(), accountId);
 
 	const auto statement = PrepareStatement(dbConnection, query);
 

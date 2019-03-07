@@ -42,7 +42,7 @@ SocketManager::SocketManager(Repository& repository) : repository(repository)
 // PRIVATE
 std::vector<Player*>::iterator SocketManager::GetPlayer(const std::string& token)
 {
-	const auto it = find_if(players.begin(), players.end(), [&token](Player& player) { return player.GetToken() == token; });
+	const auto it = find_if(players.begin(), players.end(), [&token](Player* player) { return player->GetToken() == token; });
 	if (it == players.end())
 		throw std::exception(PLAYER_NOT_FOUND);
 	return it;
@@ -145,7 +145,7 @@ void SocketManager::CreateCharacter(const std::string& token, const std::string&
 	}
 	else
 	{
-		repository.CreateCharacter((*it)->GetAccountId(), characterName);
+		repository.CreateCharacter(characterName, (*it)->GetAccountId());
 		SendPacket(OPCODE_CREATE_CHARACTER_SUCCESSFUL);
 	}
 }
@@ -184,10 +184,10 @@ void SocketManager::CloseSockets()
 void SocketManager::HandleTimeout()
 {
     const auto it = players.begin();
-    for_each(players.begin(), players.end(), [&it, this](Player& player) {
-        if (GetTickCount() > player.GetLastHeartbeat() + TIMEOUT_DURATION)
+    for_each(players.begin(), players.end(), [&it, this](Player* player) {
+        if (GetTickCount() > player->GetLastHeartbeat() + TIMEOUT_DURATION)
         {
-            std::cout << "AccountId " << player.GetAccountId() << " timed out." << "\n";
+            std::cout << "AccountId " << player->GetAccountId() << " timed out." << "\n";
 			delete(*it);
             players.erase(it);
         }
