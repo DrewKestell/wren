@@ -10,17 +10,19 @@ constexpr auto FAILED_TO_PREPARE = "Failed to prepare SQLite statement.";
 constexpr auto FAILED_TO_EXECUTE = "Failed to execute statement.";
 
 constexpr auto ACCOUNT_EXISTS_QUERY = "SELECT id FROM Accounts WHERE account_name = '%s' LIMIT 1;";
+constexpr auto CHARACTER_EXISTS_QUERY = "SELECT id FROM Characters WHERE character_name = '%s' LIMIT 1;";
 constexpr auto CREATE_ACCOUNT_QUERY = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
+constexpr auto CREATE_CHARACTER_QUERY = "INSERT INTO Characters (account_id, character_name) VALUES('%d', '%s');";
 constexpr auto GET_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
 
 bool Repository::AccountExists(const std::string& accountName)
 {
-    auto dbConnection = GetConnection();
+    const auto dbConnection = GetConnection();
 
     char query[100];
     sprintf_s(query, ACCOUNT_EXISTS_QUERY, accountName.c_str());
         
-    auto statement = PrepareStatement(dbConnection, query);
+    const auto statement = PrepareStatement(dbConnection, query);
 
     const auto result = sqlite3_step(statement);
     if (result == SQLITE_ROW)
@@ -40,20 +42,63 @@ bool Repository::AccountExists(const std::string& accountName)
     }
 }
 
+bool Repository::CharacterExists(const std::string& characterName)
+{
+	const auto dbConnection = GetConnection();
+
+	char query[100];
+	sprintf_s(query, CHARACTER_EXISTS_QUERY, characterName.c_str());
+
+	const auto statement = PrepareStatement(dbConnection, query);
+
+	const auto result = sqlite3_step(statement);
+	if (result == SQLITE_ROW)
+	{
+		sqlite3_finalize(statement);
+		return true;
+	}
+	else if (result == SQLITE_DONE)
+	{
+		sqlite3_finalize(statement);
+		return false;
+	}
+	else
+	{
+		sqlite3_finalize(statement);
+		throw std::exception(FAILED_TO_EXECUTE);
+	}
+}
+
 void Repository::CreateAccount(const std::string& accountName, const std::string& password)
 {
-    auto dbConnection = GetConnection();
+    const auto dbConnection = GetConnection();
 
     char query[300];
     sprintf_s(query, CREATE_ACCOUNT_QUERY, accountName.c_str(), password.c_str());
 
-    auto statement = PrepareStatement(dbConnection, query);
+	const auto statement = PrepareStatement(dbConnection, query);
 
     if (sqlite3_step(statement) != SQLITE_DONE)
     {
         sqlite3_finalize(statement);
         throw std::exception(FAILED_TO_EXECUTE);
     }
+}
+
+void Repository::CreateCharacter(const int accountId, const std::string& characterName)
+{
+	const auto dbConnection = GetConnection();
+
+	char query[300];
+	sprintf_s(query, CREATE_CHARACTER_QUERY, accountId, characterName.c_str());
+
+	const auto statement = PrepareStatement(dbConnection, query);
+
+	if (sqlite3_step(statement) != SQLITE_DONE)
+	{
+		sqlite3_finalize(statement);
+		throw std::exception(FAILED_TO_EXECUTE);
+	}
 }
 
 Account* Repository::GetAccount(const std::string& accountName)

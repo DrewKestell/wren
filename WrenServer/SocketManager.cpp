@@ -10,7 +10,13 @@
 #include "Repository.h"
 #include "Player.h"
 
+constexpr auto PLAYER_NOT_FOUND = "Player not found.";
 constexpr auto SOCKET_INIT_FAILED = "Failed to initialize sockets.";
+constexpr auto INCORRECT_USERNAME = "Incorrect Username.";
+constexpr auto INCORRECT_PASSWORD = "Incorrect Password.";
+constexpr auto ACCOUNT_ALREADY_EXISTS = "Account already exists.";
+constexpr auto LIBSODIUM_MEMORY_ERROR = "Ran out of memory while hashing password.";
+constexpr auto CHARACTER_ALREADY_EXISTS = "Character already exists.";
 
 constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
 constexpr auto PORT_NUMBER = 27015;
@@ -34,6 +40,14 @@ SocketManager::SocketManager(Repository& repository) : repository(repository)
 }
 
 // PRIVATE
+std::vector<Player*>::iterator SocketManager::GetPlayer(const std::string& token)
+{
+	const auto it = find_if(players.begin(), players.end(), [&token](Player& player) { return player.GetToken() == token; });
+	if (it == players.end())
+		throw std::exception(PLAYER_NOT_FOUND);
+	return it;
+}
+
 bool SocketManager::MessagePartsEqual(const char* first, const char* second, int length)
 {
     for (auto i = 0; i < length; i++)
@@ -42,6 +56,115 @@ bool SocketManager::MessagePartsEqual(const char* first, const char* second, int
             return false;
     }
     return true;
+}
+
+void SocketManager::Login(
+	const std::string& accountName,
+	const std::string& password,
+	const std::string& ipAndPort)
+{
+	std::string error;
+	auto account = repository.GetAccount(accountName);
+	if (account)
+	{
+		auto passwordArr = password.c_str();
+		if (crypto_pwhash_str_verify(account->GetPassword().c_str(), passwordArr, strlen(passwordArr)) != 0)
+			error = INCORRECT_PASSWORD;
+		else
+		{
+			GUID guid;
+			CoCreateGuid(&guid);
+			char guid_cstr[39];
+			snprintf(guid_cstr, sizeof(guid_cstr),
+				"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
+				guid.Data1, guid.Data2, guid.Data3,
+				guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+				guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+			const std::string token = std::string(guid_cstr);
+
+			auto player = new Player
+			{
+				account->GetId(),
+				token,
+				ipAndPort,
+				GetTickCount()
+			};
+			players.push_back(player);
+
+			SendPacket(OPCODE_LOGIN_SUCCESSFUL, 1, token);
+			std::cout << "AccountId " << account->GetId() << " connected to the server.\n";
+		}
+
+	}
+	else
+		error = INCORRECT_USERNAME;
+
+	if (error != "")
+		SendPacket(OPCODE_LOGIN_UNSUCCESSFUL, 1, error);
+}
+
+void SocketManager::Logout(const std::string& token)
+{
+	const auto it = GetPlayer(token);
+	delete(*it);
+	players.erase(it);
+}
+
+void SocketManager::CreateAccount(const std::string& accountName, const std::string& password)
+{
+	if (repository.AccountExists(accountName))
+	{
+		const std::string error = ACCOUNT_ALREADY_EXISTS;
+		SendPacket(OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL, 1, error);
+	}
+	else
+	{
+		char hashedPassword[crypto_pwhash_STRBYTES];
+		auto passwordArr = password.c_str();
+		const auto result = crypto_pwhash_str(
+			hashedPassword,
+			passwordArr,
+			strlen(passwordArr),
+			crypto_pwhash_OPSLIMIT_INTERACTIVE,
+			crypto_pwhash_MEMLIMIT_INTERACTIVE);
+		if (result != 0)
+			throw std::exception(LIBSODIUM_MEMORY_ERROR);
+
+		repository.CreateAccount(accountName, hashedPassword);
+		SendPacket(OPCODE_CREATE_ACCOUNT_SUCCESSFUL);
+	}
+}
+
+void SocketManager::CreateCharacter(const std::string& token, const std::string& characterName)
+{
+	const auto it = GetPlayer(token);
+	if (repository.CharacterExists(characterName))
+	{
+		const std::string error = CHARACTER_ALREADY_EXISTS;
+		SendPacket(OPCODE_CREATE_CHARACTER_UNSUCCESSFUL, 1, error);
+	}
+	else
+	{
+		repository.CreateCharacter((*it)->GetAccountId(), characterName);
+		SendPacket(OPCODE_CREATE_CHARACTER_SUCCESSFUL);
+	}
+}
+
+void SocketManager::SendPacket(const std::string& opcode, const int argCount, ...)
+{
+	std::string response = std::string(CHECKSUM) + opcode;
+
+	va_list args;
+	va_start(args, argCount);
+
+	for (auto i = 0; i < argCount; i++)
+		response += (va_arg(args, std::string) + "|");
+	va_end(args);
+
+	char responseBuffer[1024];
+	ZeroMemory(responseBuffer, sizeof(responseBuffer));
+	strcpy_s(responseBuffer, sizeof(responseBuffer), response.c_str());
+	sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
 }
 
 // PUBLIC
@@ -60,67 +183,22 @@ void SocketManager::CloseSockets()
 
 void SocketManager::HandleTimeout()
 {
-    std::vector<Player>::const_iterator it = players.begin();
+    const auto it = players.begin();
     for_each(players.begin(), players.end(), [&it, this](Player& player) {
         if (GetTickCount() > player.GetLastHeartbeat() + TIMEOUT_DURATION)
         {
-            std::cout << player.GetName() << " timed out." << "\n";
+            std::cout << "AccountId " << player.GetAccountId() << " timed out." << "\n";
+			delete(*it);
             players.erase(it);
         }
     });
 }
 
-void SocketManager::Login(
-    const std::string& accountName,
-    const std::string& password,
-    const std::string characterName,
-    const std::string ipAndPort,
-    const char* inBuffer,
-    char* outBuffer)
-{
-    std::string error;
-    auto account = repository.GetAccount(accountName);
-    if (account)
-    {
-        auto passwordArr = password.c_str();
-        if (crypto_pwhash_str_verify(account->GetPassword().c_str(), passwordArr, strlen(passwordArr)) != 0)
-            error = "Incorrect Password.";
-        else
-        {
-            Player player
-            {
-                characterName,
-                ipAndPort,
-                GetTickCount()
-            };
-            players.push_back(player);
-
-            auto responseMessage = (std::string(CHECKSUM) + std::string(OPCODE_LOGIN_SUCCESSFUL)).c_str();
-            strcpy_s(outBuffer, sizeof(outBuffer), responseMessage);
-            sendto(socketS, outBuffer, sizeof(outBuffer), 0, (sockaddr*)&from, fromlen);
-            std::cout << player.GetName() << " connected to the server.\n";
-        }
-
-    }
-    // account doesn't exist
-    else
-        error = "Incorrect Username.";
-
-    if (error != "")
-    {
-        auto responseMessage = (std::string(CHECKSUM) + std::string(OPCODE_LOGIN_SUCCESSFUL)).c_str();
-        strcpy_s(outBuffer, sizeof(outBuffer), responseMessage);
-        sendto(socketS, outBuffer, sizeof(outBuffer), 0, (sockaddr*)&from, fromlen);
-    }
-}
-
 void SocketManager::TryRecieveMessage()
 {
-    char buffer[1024];
-    char responseBuffer[1024];
+    char buffer[1024];   
     char str[INET_ADDRSTRLEN];
-    ZeroMemory(buffer, sizeof(buffer));
-    ZeroMemory(responseBuffer, sizeof(responseBuffer));
+    ZeroMemory(buffer, sizeof(buffer));   
     ZeroMemory(str, sizeof(str));
     if (recvfrom(socketS, buffer, sizeof(buffer), 0, (sockaddr*)&from, &fromlen) != SOCKET_ERROR)
     {
@@ -130,8 +208,11 @@ void SocketManager::TryRecieveMessage()
         const auto checksumArrLen = 8;
         char checksumArr[checksumArrLen];
         memcpy(&checksumArr[0], &buffer[0], checksumArrLen * sizeof(char));
-        if (!MessagePartsEqual(checksumArr, CHECKSUM, checksumArrLen))
-            return;
+		if (!MessagePartsEqual(checksumArr, CHECKSUM, checksumArrLen))
+		{
+			std::cout << "Wrong checksum. Ignoring packet.\n";
+			return;
+		}
 
         const auto opcodeArrLen = 2;
         char opcodeArr[opcodeArrLen];
@@ -158,65 +239,37 @@ void SocketManager::TryRecieveMessage()
             std::cout << "\n";
         }
 
-        // connect
+        // Login
         if (MessagePartsEqual(opcodeArr, OPCODE_CONNECT, opcodeArrLen))
         {
             const auto accountName = args[0];
             const auto password = args[1];
-            const auto characterName = args[2];
             const auto ipAndPort = std::string(str) + ":" + std::to_string(from.sin_port);
 
-            Login(accountName, password, characterName, ipAndPort, buffer, responseBuffer);
+            Login(accountName, password, ipAndPort);
         }
-        // disconnect
+        // Logout
         else if (MessagePartsEqual(opcodeArr, OPCODE_DISCONNECT, opcodeArrLen))
         {
-            auto playerName = args[0];
+			const auto token = args[0];
 
-            auto it = find_if(players.begin(), players.end(), [&playerName](Player& player) { return player.GetName() == playerName; });
-            if (it != players.end())
-                players.erase(it);
+			Logout(token);
         }
-        // create account
+        // CreateAccount
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT, opcodeArrLen))
         {
-            auto accountName = args[0];
-            auto password = args[1];
+            const auto accountName = args[0];
+            const auto password = args[1];
 
-            // account already exists
-            if (repository.AccountExists(accountName))
-            {
-                std::string error = "Account already exists.";
-                strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL) + error).c_str());
-                sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
-            }
-            // create the account
-            else
-            {
-                char hashedPassword[crypto_pwhash_STRBYTES];
-                auto passwordArr = password.c_str();
-                if (crypto_pwhash_str(
-                    hashedPassword,
-                    passwordArr,
-                    strlen(passwordArr),
-                    crypto_pwhash_OPSLIMIT_INTERACTIVE,
-                    crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0)
-                {
-                    std::cout << "Ran out of memory while hashing password.";
-                    return;
-                }
-
-                repository.CreateAccount(accountName, hashedPassword);
-
-                std::string response = "Account successfully created.";
-                strcpy_s(responseBuffer, (std::string(CHECKSUM) + std::string(OPCODE_CREATE_ACCOUNT_SUCCESSFUL) + response).c_str());
-                sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
-            }
+			CreateAccount(accountName, password);
         }
+		// CreateCharacter
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER, opcodeArrLen))
         {
+			const auto token = args[0];
+			const auto characterName = args[1];
 
+			CreateCharacter(token, characterName);
         }
     }
 }
-

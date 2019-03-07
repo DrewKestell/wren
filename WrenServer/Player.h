@@ -7,19 +7,28 @@
 
 class Player
 {
-    std::string name;
+	int accountId;
+	std::string token;
+    std::string characterName;
     std::string ipAndPort;
     DWORD lastHeartbeat;
 public:
-    Player(const std::string& name, const std::string& ipAndPort, const DWORD lastHeartbeat) :
-        name{ name }, 
-        ipAndPort { ipAndPort },
-        lastHeartbeat { lastHeartbeat }
+    Player(
+		const int accountId,
+		const std::string& token,
+		const std::string& ipAndPort,
+		const DWORD lastHeartbeat) :
+			token{ token },
+			ipAndPort { ipAndPort },
+			lastHeartbeat { lastHeartbeat }
     {}
-    const std::string& GetName() { return name; }
+	const int GetAccountId() { return accountId; }
+	const std::string& GetToken() { return token; }
+    const std::string& GetCharacterName() { return characterName; }
+	void SetCharacterName(const std::string characterName) { this->characterName = characterName; }
     const std::string& GetIPAndPort() { return ipAndPort; }
     const DWORD GetLastHeartbeat() { return lastHeartbeat; }
-    void SetLastHeartbeat(DWORD heartbeat) { lastHeartbeat = heartbeat; }
+    void SetLastHeartbeat(const DWORD heartbeat) { lastHeartbeat = heartbeat; }
 };
 
 #endif
