@@ -16,7 +16,7 @@ void DirectXManager::Initialize(HWND hWnd)
     sd.BufferCount = 1;
     sd.BufferDesc.Width = 800;
     sd.BufferDesc.Height = 600;
-    sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     sd.BufferDesc.RefreshRate.Numerator = 60;
     sd.BufferDesc.RefreshRate.Denominator = 1;
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -25,18 +25,28 @@ void DirectXManager::Initialize(HWND hWnd)
     sd.SampleDesc.Quality = 0;
     sd.Windowed = TRUE;
 
-    D3D_FEATURE_LEVEL featureLevelsRequested = D3D_FEATURE_LEVEL_11_0;
+	D3D_FEATURE_LEVEL featureLevelsRequested[] =
+	{
+		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_1,
+		D3D_FEATURE_LEVEL_10_0,
+		D3D_FEATURE_LEVEL_9_3,
+		D3D_FEATURE_LEVEL_9_2,
+		D3D_FEATURE_LEVEL_9_1
+	};
     UINT numFeatureLevelsRequested = 1;
     D3D_FEATURE_LEVEL featureLevelsSupported;
 
     HRESULT hr;
     // Create device, context and swap chain    
     ID3D11Device* device;
-    hr = D3D11CreateDeviceAndSwapChain(NULL,
+    hr = D3D11CreateDeviceAndSwapChain(
+		NULL,
         D3D_DRIVER_TYPE_HARDWARE,
         NULL,
-        0,
-        &featureLevelsRequested,
+		D3D11_CREATE_DEVICE_BGRA_SUPPORT,
+        featureLevelsRequested,
         numFeatureLevelsRequested,
         D3D11_SDK_VERSION,
         &sd,
@@ -87,8 +97,8 @@ void DirectXManager::Initialize(HWND hWnd)
         throw std::exception("Failed to create Direct2D Factory.");
     
     // Get the dxgi device
-    IDXGIDevice1* dxgiDevice;
-    hr = device->QueryInterface(__uuidof(IDXGIDevice1), reinterpret_cast<void**>(&dxgiDevice));
+    IDXGIDevice* dxgiDevice;
+    hr = device->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
     if (FAILED(hr))
         throw std::exception("Failed to get DXGI Device.");
 
@@ -100,7 +110,7 @@ void DirectXManager::Initialize(HWND hWnd)
 
     // Create D2D Device Context
     ID2D1DeviceContext1* d2dDeviceContext;
-    hr = d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &d2dDeviceContext);
+    hr = d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &d2dDeviceContext);
     if (FAILED(hr))
         throw std::exception("Failed to get Direct2D Device Context.");
 
@@ -114,7 +124,7 @@ void DirectXManager::Initialize(HWND hWnd)
     bp.colorContext = nullptr;
 
     // Get reference to DXGI back-buffer
-    IDXGISurface* dxgiBuffer;
+    IDXGISurface1* dxgiBuffer;
     hr = swapChain->GetBuffer(0, __uuidof(IDXGISurface), reinterpret_cast<void**>(&dxgiBuffer));
     if (FAILED(hr))
         throw std::exception("Failed to retrieve the back buffer.");
