@@ -1,6 +1,8 @@
 #include <d3d11.h>
 #include <d2d1_3.h>
 #include <dwrite_3.h>
+#include <iostream>
+#include <sstream>
 #include "DirectXManager.h"
 #include <exception>
 #include "Windows.h"
@@ -8,6 +10,8 @@
 constexpr auto FAILED_TO_CREATE_DEVICE_AND_SWAP_CHAIN = "Failed to create device and swap chain.";
 constexpr auto FAILED_TO_GET_BACK_BUFFER = "Failed to get pointer to back buffer.";
 constexpr auto FAILED_TO_SWAP_BUFFER = "Failed to swap buffer.";
+
+DirectXManager::DirectXManager(GameTimer& timer) : timer { timer } {};
 
 void DirectXManager::Initialize(HWND hWnd)
 {
@@ -21,7 +25,7 @@ void DirectXManager::Initialize(HWND hWnd)
     sd.BufferDesc.RefreshRate.Denominator = 1;
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     sd.OutputWindow = hWnd;
-    sd.SampleDesc.Count = 1;
+    sd.SampleDesc.Count = 4;
     sd.SampleDesc.Quality = 0;
     sd.Windowed = TRUE;
 
@@ -57,6 +61,9 @@ void DirectXManager::Initialize(HWND hWnd)
     if (FAILED(hr))
         throw std::exception(FAILED_TO_CREATE_DEVICE_AND_SWAP_CHAIN);
 
+    UINT levels;
+    device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, 4, &levels);
+
     // Get pointer to back buffer
     ID3D11Texture2D* backBuffer;
     hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
@@ -65,9 +72,6 @@ void DirectXManager::Initialize(HWND hWnd)
 
     // Create a render-target view   
     device->CreateRenderTargetView(backBuffer, NULL, &renderTargetView);
-
-    //// Release reference to back-buffer
-    //backBuffer->Release();
 
     // Bind the view to output/merger stage
     immediateContext->OMSetRenderTargets(1, &renderTargetView, NULL);
@@ -83,7 +87,6 @@ void DirectXManager::Initialize(HWND hWnd)
     immediateContext->RSSetViewports(1, &vp);
 
     // DWriteFactory
-    IDWriteFactory2* writeFactory;
     hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(&writeFactory));
     if (FAILED(hr))
         throw std::exception("Failed to initialize DirectWrite Factory.");
@@ -109,7 +112,7 @@ void DirectXManager::Initialize(HWND hWnd)
         throw std::exception("Failed to get Direct2D Device.");
 
     // Create D2D Device Context
-    ID2D1DeviceContext1* d2dDeviceContext;
+    
     hr = d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &d2dDeviceContext);
     if (FAILED(hr))
         throw std::exception("Failed to get Direct2D Device Context.");
@@ -137,25 +140,11 @@ void DirectXManager::Initialize(HWND hWnd)
 
     // set the newly created bitmap as render target
     d2dDeviceContext->SetTarget(targetBitmap);
-
-    // create standard brushes
-    ID2D1SolidColorBrush* yellowBrush;
-    if (FAILED(d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Yellow), &yellowBrush)))
-        throw std::exception("Critical error: Unable to create the yellow brush!");
-
-    ID2D1SolidColorBrush* blackBrush;
-    if (FAILED(d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &blackBrush)))
+    if (FAILED(d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::DarkSlateGray), &blackBrush)))
         throw std::exception("Critical error: Unable to create the black brush!");
 
-    ID2D1SolidColorBrush* whiteBrush;
-    if (FAILED(d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &whiteBrush)))
-        throw std::exception("Critical error: Unable to create the white brush!");
-
     // set up text formats
-
-    // FPS text
-    IDWriteTextFormat* textFormatFPS;
-    if (FAILED(writeFactory->CreateTextFormat(L"Lucida Console", nullptr, DWRITE_FONT_WEIGHT_LIGHT, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, L"en-GB", &textFormatFPS)))
+    if (FAILED(writeFactory->CreateTextFormat(L"Arial", nullptr, DWRITE_FONT_WEIGHT_LIGHT, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, L"en-US", &textFormatFPS)))
         throw std::exception("Critical error: Unable to create text format for FPS information!");
     if (FAILED(textFormatFPS->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING)))
         throw std::exception("Critical error: Unable to set text alignment!");
@@ -163,13 +152,67 @@ void DirectXManager::Initialize(HWND hWnd)
         throw std::exception("Critical error: Unable to set paragraph alignment!");
 }
 
+void DirectXManager::InitializeLoginScreen()
+{
+    // set up text formats
+    if (FAILED(writeFactory->CreateTextFormat(L"Arial", nullptr, DWRITE_FONT_WEIGHT_LIGHT, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 32.0f, L"en-US", &textFormatAccountCreds)))
+        throw std::exception("Critical error: Unable to create text format for FPS information!");
+    if (FAILED(textFormatAccountCreds->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING)))
+        throw std::exception("Critical error: Unable to set text alignment!");
+    if (FAILED(textFormatAccountCreds->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR)))
+        throw std::exception("Critical error: Unable to set paragraph alignment!");
+
+    std::wostringstream outAccountName;
+    outAccountName << "Account Name:";
+    if (FAILED(writeFactory->CreateTextLayout(outAccountName.str().c_str(), (UINT32)outAccountName.str().size(), textFormatAccountCreds, (float)800, (float)600, &textLayoutAccountName)))
+        throw std::exception("Critical error: Failed to create the text layout for FPS information!");
+
+    std::wostringstream outPassword;
+    outPassword << "Password:";
+    if (FAILED(writeFactory->CreateTextLayout(outPassword.str().c_str(), (UINT32)outPassword.str().size(), textFormatAccountCreds, (float)800, (float)600, &textLayoutPassword)))
+        throw std::exception("Critical error: Failed to create the text layout for FPS information!");
+}
+
 void DirectXManager::DrawScene()
 {
+    HRESULT hr;
+
     const float color[4] = { 1.0f, 0.5f, 0.3f, 1.0f };
     immediateContext->ClearRenderTargetView(renderTargetView, color);
-    HRESULT hr = swapChain->Present(0, 0);
+
+    static int frameCnt = 0;
+    static float timeElapsed = 0.0f;
+    frameCnt++;
+
+    if (timer.TotalTime() - timeElapsed >= 1)
+    {
+        float fps = (float)frameCnt; // fps = frameCnt / 1
+        
+        std::wostringstream outFPS;
+        outFPS.precision(6);
+        outFPS << "FPS: " << fps;
+
+        hr = writeFactory->CreateTextLayout(outFPS.str().c_str(), (UINT32)outFPS.str().size(), textFormatFPS, (float)800, (float)600, &textLayoutFPS);
+        if (FAILED(hr))
+            throw std::exception("Critical error: Failed to create the text layout for FPS information!");
+
+        frameCnt = 0;
+        timeElapsed += 1.0f;
+    }
+
+    d2dDeviceContext->BeginDraw();
+
+    // draw account creds
+    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(2.0f, 5.0f), textLayoutAccountName, blackBrush);
+    //d2dDeviceContext->DrawTextLayout(D2D1::Point2F(static_cast<FLOAT>(4.0f / 96.0f), static_cast<FLOAT>(20.0f / 52.0f)), textLayoutPassword, blackBrush);
+
+    // draw FPS
+    if (textLayoutFPS != nullptr)
+        d2dDeviceContext->DrawTextLayout(D2D1::Point2F(700.0f, 574.0f), textLayoutFPS, blackBrush);
+
+    hr = d2dDeviceContext->EndDraw();
+
+    hr = swapChain->Present(0, 0);
     if (FAILED(hr))
         throw std::exception(FAILED_TO_SWAP_BUFFER);
-
-    // draw text
 }

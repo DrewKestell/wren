@@ -145,10 +145,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DirectXManager.cpp" />
+    <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="WrenClient.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DirectXManager.h" />
+    <ClInclude Include="GameTimer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,11 +2,14 @@
 #include <tchar.h>
 #include <exception>
 #include "DirectXManager.h"
+#include "GameTimer.h"
 
 static TCHAR szWindowClass[] = _T("win32app");
 static TCHAR szTitle[] = _T("Wren Client");
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+
+GameTimer timer;
 
 int CALLBACK WinMain(
     _In_ HINSTANCE hInstance,
@@ -51,11 +54,17 @@ int CALLBACK WinMain(
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
-    DirectXManager dxManager;
+    GameTimer timer;
+    DirectXManager dxManager{ timer };
     dxManager.Initialize(hWnd);
+
+    dxManager.InitializeLoginScreen();
 
     // Main game loop:
     MSG msg = { 0 };
+
+    timer.Reset();
+
     while (msg.message != WM_QUIT)
     {
         // If there are Window messages then process them.
@@ -67,6 +76,7 @@ int CALLBACK WinMain(
         // Otherwise, do animation/game stuff.
         else
         {
+            timer.Tick();
             dxManager.DrawScene();
         }
     }
