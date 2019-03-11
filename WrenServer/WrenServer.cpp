@@ -11,8 +11,6 @@ int main()
 {
     Repository repository;
     SocketManager socketManager{ repository };
-   
-    socketManager.InitializeSockets();
 
     while (true)
     {

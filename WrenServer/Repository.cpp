@@ -113,9 +113,9 @@ Account* Repository::GetAccount(const std::string& accountName)
     const auto result = sqlite3_step(statement);
     if (result == SQLITE_ROW)
     {
-        sqlite3_finalize(statement);
         const int id = sqlite3_column_int(statement, 0);
         const unsigned char *hashedPassword = sqlite3_column_text(statement, 2);
+        sqlite3_finalize(statement);
         return new Account(id, accountName, std::string(reinterpret_cast<const char*>(hashedPassword)));
     }
     else if (result == SQLITE_DONE)

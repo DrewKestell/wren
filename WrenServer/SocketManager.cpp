@@ -26,6 +26,10 @@ SocketManager::SocketManager(Repository& repository) : repository(repository)
 {
     sodium_init();
 
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
+        throw new std::exception(SOCKET_INIT_FAILED);
+
     local.sin_family = AF_INET;
     local.sin_port = htons(PORT_NUMBER);
     local.sin_addr.s_addr = INADDR_ANY;
@@ -33,6 +37,9 @@ SocketManager::SocketManager(Repository& repository) : repository(repository)
     fromlen = sizeof(from);
 
     socketS = socket(AF_INET, SOCK_DGRAM, 0);
+    int error;
+    if (socketS == INVALID_SOCKET)
+        error = WSAGetLastError();
     bind(socketS, (sockaddr*)&local, sizeof(local));
 
     DWORD nonBlocking = 1;
@@ -68,7 +75,7 @@ void SocketManager::Login(
 	if (account)
 	{
 		auto passwordArr = password.c_str();
-		if (crypto_pwhash_str_verify(account->GetPassword().c_str(), passwordArr, strlen(passwordArr)) != 0)
+		if (!crypto_pwhash_str_verify(account->GetPassword().c_str(), passwordArr, strlen(passwordArr)) != 0) // TODO: fixme
 			error = INCORRECT_PASSWORD;
 		else
 		{
@@ -167,14 +174,6 @@ void SocketManager::SendPacket(const std::string& opcode, const int argCount, ..
 	sendto(socketS, responseBuffer, sizeof(responseBuffer), 0, (sockaddr*)&from, fromlen);
 }
 
-// PUBLIC
-void SocketManager::InitializeSockets()
-{
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
-        throw new std::exception(SOCKET_INIT_FAILED);
-}
-
 void SocketManager::CloseSockets()
 {
     closesocket(socketS);
@@ -200,7 +199,11 @@ void SocketManager::TryRecieveMessage()
     char str[INET_ADDRSTRLEN];
     ZeroMemory(buffer, sizeof(buffer));   
     ZeroMemory(str, sizeof(str));
-    if (recvfrom(socketS, buffer, sizeof(buffer), 0, (sockaddr*)&from, &fromlen) != SOCKET_ERROR)
+    auto result = recvfrom(socketS, buffer, sizeof(buffer), 0, (sockaddr*)&from, &fromlen);
+    int errorCode;
+    if (result == -1)
+        errorCode = WSAGetLastError();
+    if (result != SOCKET_ERROR)
     {
         inet_ntop(AF_INET, &(from.sin_addr), str, INET_ADDRSTRLEN);
         printf("Received message from %s:%i -  %s\n", str, from.sin_port, buffer);

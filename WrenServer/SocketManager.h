@@ -41,7 +41,6 @@ private:
 	void CreateCharacter(const std::string& token, const std::string& characterName);
 public:
     SocketManager(Repository& repository);
-    void InitializeSockets();
     void TryRecieveMessage();
     void CloseSockets();
     void HandleTimeout();
