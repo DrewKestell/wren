@@ -229,7 +229,7 @@ void DirectXManager::InitializeTextFormats()
         throw std::exception("Critical error: Unable to create text format for FPS information!");
     if (FAILED(textFormatFPS->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING)))
         throw std::exception("Critical error: Unable to set text alignment!");
-    if (FAILED(textFormatFPS->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR)))
+    if (FAILED(textFormatFPS->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER)))
         throw std::exception("Critical error: Unable to set paragraph alignment!");
 
     // Account Creds Labels
@@ -243,8 +243,8 @@ void DirectXManager::InitializeTextFormats()
 
 void DirectXManager::InitializeInputs()
 {
-    accountNameInput = new UIInput(15, 20, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
-    passwordInput = new UIInput(15, 50, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
+    accountNameInput = new UIInput(15, 20, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+    passwordInput = new UIInput(15, 50, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
 }
 
 void DirectXManager::InitializeButtons()

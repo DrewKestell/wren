@@ -18,9 +18,12 @@ class UIInput
     ID2D1SolidColorBrush* inputBrush;
     ID2D1SolidColorBrush* inputBorderBrush;
     ID2D1SolidColorBrush* inputValueBrush;
+    IDWriteTextFormat* inputValueTextFormat;
+    IDWriteFactory2* writeFactory;
     ID2D1RoundedRectangleGeometry* inputGeometry;
     ID2D1DeviceContext1* d2dDeviceContext;
     IDWriteTextLayout* labelTextLayout;
+    IDWriteTextLayout* inputvalueTextLayout;
 public:
     UIInput(
         const int locationX,
@@ -32,6 +35,7 @@ public:
         ID2D1SolidColorBrush* inputBrush,
         ID2D1SolidColorBrush* inputBorderBrush,
         ID2D1SolidColorBrush* inputValueBrush,
+        IDWriteTextFormat* inputValueTextFormat,
         ID2D1DeviceContext1* d2dDeviceContext,
         const char* inLabelText,
         IDWriteFactory2* writeFactory,
@@ -46,6 +50,7 @@ public:
         inputBrush{ inputBrush },
         inputBorderBrush{ inputBorderBrush },
         inputValueBrush{ inputValueBrush },
+        writeFactory{ writeFactory },
         d2dDeviceContext{ d2dDeviceContext }
     {
         ZeroMemory(inputValue, sizeof(inputValue));
