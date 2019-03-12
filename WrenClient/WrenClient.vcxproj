@@ -151,6 +151,10 @@
   <ItemGroup>
     <ClInclude Include="DirectXManager.h" />
     <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="LoginState.h" />
+    <ClInclude Include="UIButton.h" />
+    <ClInclude Include="UIInput.h" />
+    <ClInclude Include="UIView.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

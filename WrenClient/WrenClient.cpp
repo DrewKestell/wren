@@ -7,6 +7,7 @@
 #include <exception>
 #include "DirectXManager.h"
 #include "GameTimer.h"
+#include "LoginState.h"
 
 constexpr auto CHECKSUM = "65836216";
 constexpr char OPCODE_CONNECT[2] = { '0', '0' };
@@ -33,6 +34,8 @@ char passwordInputValue[32];
 SOCKET socketC;
 struct sockaddr_in serverInfo;
 int len;
+
+LoginState loginState = LoginScreen;
 
 void InitWinsock()
 {
@@ -119,7 +122,7 @@ int CALLBACK WinMain(
         else
         {
             timer.Tick();
-            dxManager.DrawScene(mouseX, mouseY, accountNameInputActive, passwordInputActive, loginButtonPressed, accountNameInputValue, passwordInputValue);
+            dxManager.DrawScene(mouseX, mouseY, accountNameInputActive, passwordInputActive, loginButtonPressed, accountNameInputValue, passwordInputValue, loginState);
         }
     }
     return (int)msg.wParam;
