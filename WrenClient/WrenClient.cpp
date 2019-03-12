@@ -93,8 +93,6 @@ int CALLBACK WinMain(
     DirectXManager dxManager{ timer };
     dxManager.Initialize(hWnd);
 
-    dxManager.InitializeLoginScreen();
-
     // initialize socket connection
     InitWinsock();
     len = sizeof(serverInfo);

@@ -188,8 +188,9 @@ void DirectXManager::Initialize(HWND hWnd)
     d2dDeviceContext->SetTarget(targetBitmap);
 
     InitializeBrushes();
-    InitializeGeometry();
     InitializeTextFormats();
+    InitializeInputs();
+    InitializeButtons();
 }
 
 void DirectXManager::InitializeBrushes()
@@ -210,17 +211,13 @@ void DirectXManager::InitializeBrushes()
         throw std::exception("Critical error: Unable to create the darkBlue brush!");
 }
 
-void DirectXManager::InitializeGeometry()
-{
-    d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(140, 16, 400, 40), 3.0f, 3.0f), &accountNameInputGeometry);
-    d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(140, 47, 400, 71), 3.0f, 3.0f), &passwordInputGeometry);
-    d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(140, 90, 220, 114), 3.0f, 3.0f), &loginButtonGeometry);
-}
-
 void DirectXManager::InitializeTextFormats()
 {
+    const WCHAR* arialFontFamily = L"Arial";
+    const WCHAR* locale = L"en-US";
+
     // FPS / MousePos
-    if (FAILED(writeFactory->CreateTextFormat(L"Arial", nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, L"en-US", &textFormatFPS)))
+    if (FAILED(writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, &textFormatFPS)))
         throw std::exception("Critical error: Unable to create text format for FPS information!");
     if (FAILED(textFormatFPS->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING)))
         throw std::exception("Critical error: Unable to set text alignment!");
@@ -228,7 +225,7 @@ void DirectXManager::InitializeTextFormats()
         throw std::exception("Critical error: Unable to set paragraph alignment!");
 
     // Account Creds Input Values
-    if (FAILED(writeFactory->CreateTextFormat(L"Arial", nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, L"en-US", &textFormatAccountCredsInputValue)))
+    if (FAILED(writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, &textFormatAccountCredsInputValue)))
         throw std::exception("Critical error: Unable to create text format for FPS information!");
     if (FAILED(textFormatFPS->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING)))
         throw std::exception("Critical error: Unable to set text alignment!");
@@ -236,47 +233,27 @@ void DirectXManager::InitializeTextFormats()
         throw std::exception("Critical error: Unable to set paragraph alignment!");
 
     // Account Creds Labels
-    if (FAILED(writeFactory->CreateTextFormat(L"Arial", nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, L"en-US", &textFormatAccountCreds)))
+    if (FAILED(writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, &textFormatAccountCreds)))
         throw std::exception("Critical error: Unable to create text format for FPS information!");
     if (FAILED(textFormatAccountCreds->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING)))
         throw std::exception("Critical error: Unable to set text alignment!");
-    if (FAILED(textFormatAccountCreds->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR)))
+    if (FAILED(textFormatAccountCreds->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER)))
         throw std::exception("Critical error: Unable to set paragraph alignment!");
 }
 
 void DirectXManager::InitializeInputs()
 {
-    accountNameInput = new UIInput(15, 20, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush);
-    passwordInput = new UIInput(15, 50, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush);
+    accountNameInput = new UIInput(15, 20, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+    passwordInput = new UIInput(15, 50, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
 }
 
 void DirectXManager::InitializeButtons()
 {
-
-}
-
-void DirectXManager::InitializeLoginScreen()
-{
-    std::wostringstream outAccountName;
-    outAccountName << "Account Name:";
-    if (FAILED(writeFactory->CreateTextLayout(outAccountName.str().c_str(), (UINT32)outAccountName.str().size(), textFormatAccountCreds, 120, 100, &textLayoutAccountName)))
-        throw std::exception("Critical error: Failed to create the text layout for FPS information!");
-
-    std::wostringstream outPassword;
-    outPassword << "Password:";
-    if (FAILED(writeFactory->CreateTextLayout(outPassword.str().c_str(), (UINT32)outPassword.str().size(), textFormatAccountCreds, 120, 100, &textLayoutPassword)))
-        throw std::exception("Critical error: Failed to create the text layout for FPS information!");
-
-    std::wostringstream outLogin;
-    outLogin << "LOGIN";
-    if (FAILED(writeFactory->CreateTextLayout(outLogin.str().c_str(), (UINT32)outLogin.str().size(), textFormatFPS, 120, 100, &textLayoutLoginButton)))
-        throw std::exception("Critical error: Failed to create the text layout for FPS information!");
+    loginButton = new UIButton(15, 100, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatFPS, d2dFactory);
 }
 
 void DirectXManager::DrawScene(int mouseX, int mouseY, bool accountNameInputActive, bool passwordInputActive, bool loginButtonPressed, const char* accountNameInputValue, const char* passwordInputValue, LoginState loginState)
 {
-    HRESULT hr;
-
     const float color[4] = { 1.0f, 0.5f, 0.3f, 1.0f };
     immediateContext->ClearRenderTargetView(renderTargetView, color);
     immediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -284,34 +261,12 @@ void DirectXManager::DrawScene(int mouseX, int mouseY, bool accountNameInputActi
     d2dDeviceContext->BeginDraw();
 
     // --- LOGIN SCREEN ---
-    // draw account creds
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(15.0f, 20.0f), textLayoutAccountName, blackBrush);
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(15.0f, 50.0f), textLayoutPassword, blackBrush);
-    
-    // draw inputs
-    float accountNameBorderWeight = accountNameInputActive ? 3.0f : 1.0f;
-    d2dDeviceContext->DrawGeometry(accountNameInputGeometry, grayBrush, accountNameBorderWeight);
-    d2dDeviceContext->FillGeometry(accountNameInputGeometry, whiteBrush);
-
-    float passwordBorderWeight = passwordInputActive ? 3.0f : 1.0f;
-    d2dDeviceContext->DrawGeometry(passwordInputGeometry, grayBrush, passwordBorderWeight);
-    d2dDeviceContext->FillGeometry(passwordInputGeometry, whiteBrush);
-
-    if (!loginButtonPressed)
-    {
-        d2dDeviceContext->DrawGeometry(loginButtonGeometry, grayBrush, 1.0f);
-        d2dDeviceContext->FillGeometry(loginButtonGeometry, blueBrush);
-    }
-    else
-    {
-        d2dDeviceContext->DrawGeometry(loginButtonGeometry, grayBrush, 2.0f);
-        d2dDeviceContext->FillGeometry(loginButtonGeometry, darkBlueBrush);
-    }
-
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(160.0f, 95.5f), textLayoutLoginButton, blackBrush);
+    accountNameInput->Draw();
+    passwordInput->Draw();
+    loginButton->Draw();
 
     // draw input text
-    std::wostringstream outAccountNameInputValue;
+    /*std::wostringstream outAccountNameInputValue;
     outAccountNameInputValue << accountNameInputValue;
     if (accountNameInputActive)
         outAccountNameInputValue << "|";
@@ -333,7 +288,7 @@ void DirectXManager::DrawScene(int mouseX, int mouseY, bool accountNameInputActi
         outPasswordInputValue << "|";
     if (FAILED(writeFactory->CreateTextLayout(outPasswordInputValue.str().c_str(), (UINT32)outPasswordInputValue.str().size(), textFormatAccountCredsInputValue, 260, 100, &textLayoutPasswordInputValue)))
         throw std::exception("Critical error: Failed to create the text layout for FPS information!");
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(146.0f, 49.0f), textLayoutPasswordInputValue, blackBrush);
+    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(146.0f, 49.0f), textLayoutPasswordInputValue, blackBrush);*/
 
     // --- CREATE ACCOUNT SCREEN ---
 
@@ -351,8 +306,7 @@ void DirectXManager::DrawScene(int mouseX, int mouseY, bool accountNameInputActi
         outFPS.precision(6);
         outFPS << "FPS: " << fps;
 
-        hr = writeFactory->CreateTextLayout(outFPS.str().c_str(), (UINT32)outFPS.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutFPS);
-        if (FAILED(hr))
+        if (FAILED(writeFactory->CreateTextLayout(outFPS.str().c_str(), (UINT32)outFPS.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutFPS)))
             throw std::exception("Critical error: Failed to create the text layout for FPS information!");
 
         frameCnt = 0;
@@ -369,9 +323,9 @@ void DirectXManager::DrawScene(int mouseX, int mouseY, bool accountNameInputActi
     writeFactory->CreateTextLayout(outMousePos.str().c_str(), (UINT32)outMousePos.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutMousePos);
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
 
-    hr = d2dDeviceContext->EndDraw();
+    if (FAILED(d2dDeviceContext->EndDraw()))
+        throw std::exception("Failed to call EndDraw.");
 
-    hr = swapChain->Present(0, 0);
-    if (FAILED(hr))
+    if (FAILED(swapChain->Present(0, 0)))
         throw std::exception(FAILED_TO_SWAP_BUFFER);
 }

@@ -146,6 +146,8 @@
   <ItemGroup>
     <ClCompile Include="DirectXManager.cpp" />
     <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="UIButton.cpp" />
+    <ClCompile Include="UIInput.cpp" />
     <ClCompile Include="WrenClient.cpp" />
   </ItemGroup>
   <ItemGroup>

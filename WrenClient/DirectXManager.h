@@ -27,9 +27,6 @@ class DirectXManager
     // D2D
     ID2D1Factory2* d2dFactory;
     ID2D1DeviceContext1* d2dDeviceContext;
-    ID2D1RoundedRectangleGeometry* accountNameInputGeometry;
-    ID2D1RoundedRectangleGeometry* passwordInputGeometry;
-    ID2D1RoundedRectangleGeometry* loginButtonGeometry;
 
     // DirectWrite
     IDWriteFactory2* writeFactory;
@@ -42,11 +39,8 @@ class DirectXManager
     // TextLayouts
     IDWriteTextLayout* textLayoutFPS = nullptr;
     IDWriteTextLayout* textLayoutMousePos = nullptr;
-    IDWriteTextLayout* textLayoutAccountName = nullptr;
-    IDWriteTextLayout* textLayoutPassword = nullptr;
-    IDWriteTextLayout* textLayoutLoginButton = nullptr;
-    IDWriteTextLayout* textLayoutAccountNameInputValue = nullptr;
-    IDWriteTextLayout* textLayoutPasswordInputValue = nullptr;
+    IDWriteTextLayout* textLayoutAccountNameInputValue = nullptr; // TODO: remove me
+    IDWriteTextLayout* textLayoutPasswordInputValue = nullptr; // TODO: remove me
 
     // Brushes
     ID2D1SolidColorBrush* grayBrush;
@@ -66,14 +60,12 @@ class DirectXManager
     UIButton* createAccountButton;
 
     void InitializeBrushes();
-    void InitializeGeometry();
     void InitializeTextFormats();
     void InitializeInputs();
     void InitializeButtons();
 public:
     DirectXManager(GameTimer& timer);
     void Initialize(HWND hWnd);
-    void InitializeLoginScreen();
     void DrawScene(int mouseX, int mouseY, bool accountNameInputActive, bool passwordInputActive, bool loginButtonPressed, const char* accountNameInputValue, const char* passwordInputValue, LoginState loginState);
 };
 
