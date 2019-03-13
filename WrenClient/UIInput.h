@@ -7,7 +7,8 @@
 
 class UIInput
 {
-    char inputValue[32];
+    int inputIndex;
+    char inputValue[30];
     bool active;
     int locationX;
     int locationY;
@@ -23,7 +24,7 @@ class UIInput
     ID2D1RoundedRectangleGeometry* inputGeometry;
     ID2D1DeviceContext1* d2dDeviceContext;
     IDWriteTextLayout* labelTextLayout;
-    IDWriteTextLayout* inputvalueTextLayout;
+    IDWriteTextLayout* inputValueTextLayout;
 public:
     UIInput(
         const int locationX,
@@ -50,6 +51,7 @@ public:
         inputBrush{ inputBrush },
         inputBorderBrush{ inputBorderBrush },
         inputValueBrush{ inputValueBrush },
+        inputValueTextFormat{ inputValueTextFormat },
         writeFactory{ writeFactory },
         d2dDeviceContext{ d2dDeviceContext }
     {
@@ -63,6 +65,11 @@ public:
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(locationX + labelWidth + 10, locationY, locationX + labelWidth + inputWidth, locationY + height), 3.0f, 3.0f), &inputGeometry);
     }
     void Draw();
+    bool IsActive();
+    void SetActive(bool isActive);
+    void PushCharacter(char c);
+    void PopCharacter();
+    bool DetectClick(int x, int y);
 };
 
 #endif

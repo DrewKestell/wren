@@ -7,7 +7,7 @@
 
 class UIButton
 {
-    const char* buttonText[32];
+    const char* buttonText[20];
     bool pressed;
     int locationX;
     int locationY;
@@ -49,13 +49,16 @@ public:
 
         std::wostringstream outButtonText;
         outButtonText << inButtonText;
-        if (FAILED(writeFactory->CreateTextLayout(outButtonText.str().c_str(), (UINT32)outButtonText.str().size(), buttonTextFormat, 120, 100, &buttonTextLayout))) // TODO: these hardcoded dimensions need to be fixed
+        if (FAILED(writeFactory->CreateTextLayout(outButtonText.str().c_str(), (UINT32)outButtonText.str().size(), buttonTextFormat, width, height, &buttonTextLayout)))
             throw std::exception("Failed to create text layout for UIInput.");
 
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(locationX, locationY, locationX + width, locationY + height), 3.0f, 3.0f), &buttonGeometry);
 
     }
+    bool IsPressed();
+    void SetPressed(bool isPressed);
     void Draw();
+    bool DetectClick(int x, int y);
 };
 
 #endif

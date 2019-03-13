@@ -17,25 +17,15 @@ static TCHAR szTitle[] = _T("Wren Client");
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-GameTimer timer;
+GameTimer* timer;
+DirectXManager* dxManager;
 
 int mouseX = 0;
 int mouseY = 0;
 
-bool accountNameInputActive = false;
-bool passwordInputActive = false;
-bool loginButtonPressed = false;
-
-int accountNameInputIndex = 0;
-char accountNameInputValue[32];
-int passwordInputIndex = 0;
-char passwordInputValue[32];
-
 SOCKET socketC;
 struct sockaddr_in serverInfo;
 int len;
-
-LoginState loginState = LoginScreen;
 
 void InitWinsock()
 {
@@ -83,15 +73,12 @@ int CALLBACK WinMain(
     if (!hWnd)
         throw std::exception("CreateWindow failed.");
 
-    ZeroMemory(accountNameInputValue, sizeof(accountNameInputValue));
-    ZeroMemory(passwordInputValue, sizeof(passwordInputValue));
-
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
-    GameTimer timer;
-    DirectXManager dxManager{ timer };
-    dxManager.Initialize(hWnd);
+    timer = new GameTimer;
+    dxManager = new DirectXManager{ *timer };
+    dxManager->Initialize(hWnd);
 
     // initialize socket connection
     InitWinsock();
@@ -106,7 +93,7 @@ int CALLBACK WinMain(
     // Main game loop:
     MSG msg = { 0 };
 
-    timer.Reset();
+    timer->Reset();
 
     while (msg.message != WM_QUIT)
     {
@@ -119,47 +106,11 @@ int CALLBACK WinMain(
         // Otherwise, do animation/game stuff.
         else
         {
-            timer.Tick();
-            dxManager.DrawScene(mouseX, mouseY, accountNameInputActive, passwordInputActive, loginButtonPressed, accountNameInputValue, passwordInputValue, loginState);
+            timer->Tick();
+            dxManager->DrawScene(mouseX, mouseY);
         }
     }
     return (int)msg.wParam;
-}
-
-bool IsWithinRect(int mouseX, int mouseY, int left, int top, int right, int bottom)
-{
-    return mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom;
-}
-
-void OnMouseDown(WPARAM wParam, int x, int y)
-{
-    if (accountNameInputActive)
-        accountNameInputActive = false;
-    if (passwordInputActive)
-        passwordInputActive = false;
-
-    if (IsWithinRect(x, y, 140, 16, 400, 40))
-        accountNameInputActive = true;
-    else if (IsWithinRect(x, y, 140, 47, 400, 71))
-        passwordInputActive = true;
-    else if (IsWithinRect(x, y, 140, 90, 220, 114))
-    {
-        loginButtonPressed = true;
-        std::string packet = CHECKSUM;
-        packet += "00" + std::string(accountNameInputValue) + "|" + std::string(passwordInputValue) + "|";;
-
-        char packetBuffer[1024];
-        ZeroMemory(packetBuffer, sizeof(packetBuffer));
-        auto packetArr = packet.c_str();
-        memcpy(&packetBuffer[0], &packetArr[0], strlen(packetArr) * sizeof(char));
-        auto foo = sendto(socketC, packetBuffer, sizeof(packetBuffer), 0, (sockaddr*)&serverInfo, len);
-    }
-}
-
-void OnMouseUp(WPARAM wParam, int x, int y)
-{
-    if (loginButtonPressed)
-        loginButtonPressed = false;
 }
 
 void OnMouseMove(WPARAM wParam, int x, int y)
@@ -178,12 +129,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
-        OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+        dxManager->MouseDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
         return 0;
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:
     case WM_RBUTTONUP:
-        OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+        dxManager->MouseUp();
         return 0;
     case WM_MOUSEMOVE:
         OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
@@ -191,73 +142,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CHAR:
         switch (wParam)
         {
-        case 0x08:
-            if (accountNameInputActive)
-            {
-                if (accountNameInputIndex == 0)
-                    break;
-
-                accountNameInputValue[accountNameInputIndex - 1] = 0;
-                accountNameInputIndex--;
-            }
-            else if (passwordInputActive)
-            {
-                if (passwordInputIndex == 0)
-                    break;
-
-                passwordInputValue[passwordInputIndex - 1] = 0;
-                passwordInputIndex--;
-            }
-
+        case 0x08: // Process a backspace.
+            dxManager->OnBackspace();
             break;
 
-        case 0x0A:
-            // Process a linefeed. 
+        case 0x0A: // Process a linefeed.           
             break;
 
-        case 0x1B:
-            // Process an escape. 
+        case 0x1B: // Process an escape.            
             break;
 
-        case 0x09:
-            if (!accountNameInputActive && !passwordInputActive)
-                accountNameInputActive = true;
-            else if (accountNameInputActive)
-            {
-                accountNameInputActive = false;
-                passwordInputActive = true;
-            }
-            else
-            {
-                accountNameInputActive = true;
-                passwordInputActive = false;
-            }
+        case 0x09: // Process a tab.          
+            dxManager->OnTab();
             break;
 
-        case 0x0D:
-            // Process a carriage return. 
+        case 0x0D: // Process a carriage return.             
             break;
 
-        default:
+        default: // Process a normal character press.            
             auto ch = (TCHAR)wParam;
-
-            if (accountNameInputActive)
-            {
-                if (accountNameInputIndex > 32)
-                    break;
-
-                accountNameInputValue[accountNameInputIndex] = ch;
-                accountNameInputIndex++;
-            }
-            else if (passwordInputActive)
-            {
-                if (passwordInputIndex > 32)
-                    break;
-
-                passwordInputValue[passwordInputIndex] = ch;
-                passwordInputIndex++;
-            }
-
+            dxManager->OnKeyPress(ch);
             break;
         }
     default:

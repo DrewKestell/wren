@@ -35,6 +35,7 @@ class DirectXManager
     IDWriteTextFormat* textFormatFPS = nullptr;
     IDWriteTextFormat* textFormatAccountCreds = nullptr;
     IDWriteTextFormat* textFormatAccountCredsInputValue = nullptr;
+    IDWriteTextFormat* textFormatButtonText = nullptr;
 
     // TextLayouts
     IDWriteTextLayout* textLayoutFPS = nullptr;
@@ -66,7 +67,12 @@ class DirectXManager
 public:
     DirectXManager(GameTimer& timer);
     void Initialize(HWND hWnd);
-    void DrawScene(int mouseX, int mouseY, bool accountNameInputActive, bool passwordInputActive, bool loginButtonPressed, const char* accountNameInputValue, const char* passwordInputValue, LoginState loginState);
+    void OnBackspace();
+    void OnKeyPress(TCHAR c);
+    void MouseDown(int mousePosX, int mousePosY);
+    void MouseUp();
+    void OnTab();
+    void DrawScene(int mouseX, int mouseY);
 };
 
 #endif
