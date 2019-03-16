@@ -18,6 +18,21 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\DirectXManager.cpp" />
+    <ClCompile Include="Source\GameTimer.cpp" />
+    <ClCompile Include="Source\UIButton.cpp" />
+    <ClCompile Include="Source\UIInput.cpp" />
+    <ClCompile Include="Source\WrenClient.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\DirectXManager.h" />
+    <ClInclude Include="Source\GameTimer.h" />
+    <ClInclude Include="Source\LoginState.h" />
+    <ClInclude Include="Source\UIButton.h" />
+    <ClInclude Include="Source\UIInput.h" />
+    <ClInclude Include="Source\UIView.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{2CF8663F-9AE1-48D9-8724-5C4E0980A5F0}</ProjectGuid>
@@ -143,21 +158,6 @@
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="DirectXManager.cpp" />
-    <ClCompile Include="GameTimer.cpp" />
-    <ClCompile Include="UIButton.cpp" />
-    <ClCompile Include="UIInput.cpp" />
-    <ClCompile Include="WrenClient.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="DirectXManager.h" />
-    <ClInclude Include="GameTimer.h" />
-    <ClInclude Include="LoginState.h" />
-    <ClInclude Include="UIButton.h" />
-    <ClInclude Include="UIInput.h" />
-    <ClInclude Include="UIView.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

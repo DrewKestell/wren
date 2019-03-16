@@ -18,6 +18,21 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Include\sodium.h" />
+    <ClInclude Include="Include\sqlite3.h" />
+    <ClInclude Include="Source\Account.h" />
+    <ClInclude Include="Source\Player.h" />
+    <ClInclude Include="Source\Repository.h" />
+    <ClInclude Include="Source\Result.h" />
+    <ClInclude Include="Source\SocketManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Repository.cpp" />
+    <ClCompile Include="Source\SocketManager.cpp" />
+    <ClCompile Include="Source\ThirdParty\sqlite3.c" />
+    <ClCompile Include="Source\WrenServer.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{3F223549-4B3E-4DA1-9C62-CD3571158450}</ProjectGuid>
@@ -78,12 +93,14 @@
     <LibraryPath>$(ProjectDir)Lib;$(LibraryPath)</LibraryPath>
     <IncludePath>$(ProjectDir)Include;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)ThirdParty;$(SourcePath)</SourcePath>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -157,21 +174,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Repository.cpp" />
-    <ClCompile Include="SocketManager.cpp" />
-    <ClCompile Include="ThirdParty\sqlite3.c" />
-    <ClCompile Include="WrenServer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Account.h" />
-    <ClInclude Include="Include\sodium.h" />
-    <ClInclude Include="Include\sqlite3.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="Repository.h" />
-    <ClInclude Include="Result.h" />
-    <ClInclude Include="SocketManager.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
