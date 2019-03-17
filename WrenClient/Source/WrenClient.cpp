@@ -1,9 +1,13 @@
 #include <winsock2.h>
 #include <Ws2tcpip.h>
+#include <stdio.h>
+#include <io.h>
+#include <fcntl.h>
 #include <windows.h>
 #include <windowsx.h>
 #include <tchar.h>
 #include <string>
+#include <iostream>
 #include <exception>
 #include "DirectXManager.h"
 #include "GameTimer.h"
@@ -40,77 +44,94 @@ int CALLBACK WinMain(
     _In_ int       nCmdShow
 )
 {
-    WNDCLASSEX wcex;
-    wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc = WndProc;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
-    wcex.hInstance = hInstance;
-    wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
-    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName = NULL;
-    wcex.lpszClassName = szWindowClass;
-    wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
-
-    if (!RegisterClassEx(&wcex))
-        throw std::exception("RegisterClassEx failed.");
-
-    HWND hWnd = CreateWindow(
-        szWindowClass,
-        szTitle,
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        800,
-        600,
-        NULL,
-        NULL,
-        hInstance,
-        NULL
-    );
-    if (!hWnd)
-        throw std::exception("CreateWindow failed.");
-
-    ShowWindow(hWnd, nCmdShow);
-    UpdateWindow(hWnd);
-
-    timer = new GameTimer;
-    dxManager = new DirectXManager{ *timer };
-    dxManager->Initialize(hWnd);
-
-    // initialize socket connection
-    InitWinsock();
-    len = sizeof(serverInfo);
-    serverInfo.sin_family = AF_INET;
-    serverInfo.sin_port = htons(27015);
-    inet_pton(AF_INET, "127.0.0.1", &serverInfo.sin_addr);
-    socketC = socket(AF_INET, SOCK_DGRAM, 0);
-    DWORD nonBlocking = 1;
-    ioctlsocket(socketC, FIONBIO, &nonBlocking);
-
-    // Main game loop:
-    MSG msg = { 0 };
-
-    timer->Reset();
-
-    while (msg.message != WM_QUIT)
+    try
     {
-        // If there are Window messages then process them.
-        if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+        // Allocate Console
+#ifdef _DEBUG
+        AllocConsole();
+        freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+        HWND consoleWindow = GetConsoleWindow();
+        MoveWindow(consoleWindow, 0, 600, 800, 400, TRUE);
+        std::cout << "WrenClient initialized.\n";
+#endif
+
+        WNDCLASSEX wcex;
+        wcex.cbSize = sizeof(WNDCLASSEX);
+        wcex.style = CS_HREDRAW | CS_VREDRAW;
+        wcex.lpfnWndProc = WndProc;
+        wcex.cbClsExtra = 0;
+        wcex.cbWndExtra = 0;
+        wcex.hInstance = hInstance;
+        wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
+        wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+        wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+        wcex.lpszMenuName = NULL;
+        wcex.lpszClassName = szWindowClass;
+        wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
+
+        if (!RegisterClassEx(&wcex))
+            throw std::exception("RegisterClassEx failed.");
+
+        HWND hWnd = CreateWindow(
+            szWindowClass,
+            szTitle,
+            WS_OVERLAPPEDWINDOW,
+            0,
+            0,
+            800,
+            600,
+            NULL,
+            NULL,
+            hInstance,
+            NULL
+        );
+        if (!hWnd)
+            throw std::exception("CreateWindow failed.");
+
+        ShowWindow(hWnd, nCmdShow);
+        UpdateWindow(hWnd);
+
+        timer = new GameTimer;
+        dxManager = new DirectXManager{ *timer };
+        dxManager->Initialize(hWnd);
+
+        // initialize socket connection
+        InitWinsock();
+        len = sizeof(serverInfo);
+        serverInfo.sin_family = AF_INET;
+        serverInfo.sin_port = htons(27015);
+        inet_pton(AF_INET, "127.0.0.1", &serverInfo.sin_addr);
+        socketC = socket(AF_INET, SOCK_DGRAM, 0);
+        DWORD nonBlocking = 1;
+        ioctlsocket(socketC, FIONBIO, &nonBlocking);
+
+        // Main game loop:
+        MSG msg = { 0 };
+
+        timer->Reset();
+
+        while (msg.message != WM_QUIT)
         {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
+            // If there are Window messages then process them.
+            if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+            // Otherwise, do animation/game stuff.
+            else
+            {
+                timer->Tick();
+                dxManager->DrawScene(mouseX, mouseY);
+            }
         }
-        // Otherwise, do animation/game stuff.
-        else
-        {
-            timer->Tick();
-            dxManager->DrawScene(mouseX, mouseY);
-        }
+        return (int)msg.wParam;
     }
-    return (int)msg.wParam;
+    catch (std::exception &e)
+    {
+        std::cout << e.what();
+        return -1;
+    }
 }
 
 void OnMouseMove(WPARAM wParam, int x, int y)
@@ -123,9 +144,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+    case WM_CLOSE:
+        DestroyWindow(hWnd);
+        return 0;
     case WM_DESTROY:
         PostQuitMessage(0);
-        break;
+        return 0;
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:

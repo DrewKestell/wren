@@ -8,13 +8,13 @@
 class UIInput
 {
     int inputIndex;
-    char inputValue[30];
+    TCHAR inputValue[30];
     bool active;
-    int locationX;
-    int locationY;
-    int labelWidth;
-    int inputWidth;
-    int height;
+    FLOAT locationX;
+    FLOAT locationY;
+    FLOAT labelWidth;
+    FLOAT inputWidth;
+    FLOAT height;
     ID2D1SolidColorBrush* labelBrush;
     ID2D1SolidColorBrush* inputBrush;
     ID2D1SolidColorBrush* inputBorderBrush;
@@ -27,11 +27,11 @@ class UIInput
     IDWriteTextLayout* inputValueTextLayout;
 public:
     UIInput(
-        const int locationX,
-        const int locationY,
-        const int labelWidth,
-        const int inputWidth,
-        const int height,
+        const FLOAT locationX,
+        const FLOAT locationY,
+        const FLOAT labelWidth,
+        const FLOAT inputWidth,
+        const FLOAT height,
         ID2D1SolidColorBrush* labelBrush,
         ID2D1SolidColorBrush* inputBrush,
         ID2D1SolidColorBrush* inputBorderBrush,
@@ -67,7 +67,7 @@ public:
     void Draw();
     bool IsActive();
     void SetActive(bool isActive);
-    void PushCharacter(char c);
+    void PushCharacter(TCHAR c);
     void PopCharacter();
     bool DetectClick(int x, int y);
 };

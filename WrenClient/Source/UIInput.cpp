@@ -30,7 +30,7 @@ void UIInput::SetActive(bool isActive)
     active = isActive;
 }
 
-void UIInput::PushCharacter(char c)
+void UIInput::PushCharacter(TCHAR c)
 {
     if (inputIndex > 30)
         return;
