@@ -40,8 +40,6 @@ class DirectXManager
     // TextLayouts
     IDWriteTextLayout* textLayoutFPS = nullptr;
     IDWriteTextLayout* textLayoutMousePos = nullptr;
-    IDWriteTextLayout* textLayoutAccountNameInputValue = nullptr; // TODO: remove me
-    IDWriteTextLayout* textLayoutPasswordInputValue = nullptr; // TODO: remove me
 
     // Brushes
     ID2D1SolidColorBrush* grayBrush;
@@ -51,14 +49,18 @@ class DirectXManager
     ID2D1SolidColorBrush* darkBlueBrush;
 
     // Inputs
-    UIInput* accountNameInput;
-    UIInput* passwordInput;
-    UIInput* newAccountAccountNameInput;
-    UIInput* newAccountPasswordInput;
+    UIInput* loginScreen_accountNameInput;
+    UIInput* loginScreen_passwordInput;
+    UIInput* loginScreen_newAccountAccountNameInput;
+    UIInput* loginScreen_newAccountPasswordInput;
+    UIInput* createAccount_accountNameInput;
+    UIInput* createAccount_passwordInput;
 
     // Buttons
-    UIButton* loginButton;
-    UIButton* createAccountButton;
+    UIButton* loginScreen_loginButton;
+    UIButton* loginScreen_createAccountButton;
+    UIButton* createAccount_createAccountButton;
+    UIButton* createAccount_cancelButton;
 
     void InitializeBrushes();
     void InitializeTextFormats();
@@ -73,6 +75,10 @@ public:
     void MouseUp();
     void OnTab();
     void DrawScene(int mouseX, int mouseY);
+
+    // Login Screen
+    const TCHAR* GetAccountName();
+    const TCHAR* GetPassword();
 };
 
 #endif

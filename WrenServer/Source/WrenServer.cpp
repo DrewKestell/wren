@@ -20,7 +20,6 @@ int main()
     {
         socketManager.TryRecieveMessage();
         socketManager.HandleTimeout();
-        Sleep(500);
     }
     
     socketManager.CloseSockets();    

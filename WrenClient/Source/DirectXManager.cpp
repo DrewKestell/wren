@@ -200,10 +200,15 @@ void DirectXManager::OnBackspace()
     switch (loginState)
     {
     case LoginScreen:
-        if (accountNameInput->IsActive())
-            accountNameInput->PopCharacter();
-        else if (passwordInput->IsActive())
-            passwordInput->PopCharacter();
+        if (loginScreen_accountNameInput->IsActive())
+            loginScreen_accountNameInput->PopCharacter();
+        else if (loginScreen_passwordInput->IsActive())
+            loginScreen_passwordInput->PopCharacter();
+    case CreateAccount:
+        if (createAccount_accountNameInput->IsActive())
+            createAccount_accountNameInput->PopCharacter();
+        else if (createAccount_passwordInput->IsActive())
+            createAccount_passwordInput->PopCharacter();
     default:
         break;
     }
@@ -214,10 +219,17 @@ void DirectXManager::OnKeyPress(TCHAR c)
     switch (loginState)
     {
     case LoginScreen:
-        if (accountNameInput->IsActive())
-            accountNameInput->PushCharacter(c);
-        else if (passwordInput->IsActive())
-            passwordInput->PushCharacter(c);
+        if (loginScreen_accountNameInput->IsActive())
+            loginScreen_accountNameInput->PushCharacter(c);
+        else if (loginScreen_passwordInput->IsActive())
+            loginScreen_passwordInput->PushCharacter(c);
+        break;
+    case CreateAccount:
+        if (createAccount_accountNameInput->IsActive())
+            createAccount_accountNameInput->PushCharacter(c);
+        else if (createAccount_passwordInput->IsActive())
+            createAccount_passwordInput->PushCharacter(c);
+        break;
     default:
         break;
     }
@@ -225,18 +237,37 @@ void DirectXManager::OnKeyPress(TCHAR c)
 
 void DirectXManager::MouseDown(int mousePosX, int mousePosY)
 {
-    accountNameInput->SetActive(false);
-    passwordInput->SetActive(false);
+    loginScreen_accountNameInput->SetActive(false);
+    loginScreen_passwordInput->SetActive(false);
 
     switch (loginState)
     {
     case LoginScreen:
-        if (accountNameInput->DetectClick(mousePosX, mousePosY))
-            accountNameInput->SetActive(true);
-        else if (passwordInput->DetectClick(mousePosX, mousePosY))
-            passwordInput->SetActive(true);
-        else if (loginButton->DetectClick(mousePosX, mousePosY))
-            loginButton->SetPressed(true);
+        if (loginScreen_accountNameInput->DetectClick(mousePosX, mousePosY))
+            loginScreen_accountNameInput->SetActive(true);
+        else if (loginScreen_passwordInput->DetectClick(mousePosX, mousePosY))
+            loginScreen_passwordInput->SetActive(true);
+        else if (loginScreen_loginButton->DetectClick(mousePosX, mousePosY))
+            loginScreen_loginButton->SetPressed(true);
+        else if (loginScreen_createAccountButton->DetectClick(mousePosX, mousePosY))
+        {
+            loginScreen_createAccountButton->SetPressed(true);
+            loginState = CreateAccount;
+        }
+        break;
+    case CreateAccount:
+        if (createAccount_accountNameInput->DetectClick(mousePosX, mousePosY))
+            createAccount_accountNameInput->SetActive(true);
+        else if (createAccount_passwordInput->DetectClick(mousePosX, mousePosY))
+            createAccount_passwordInput->SetActive(true);
+        else if (createAccount_createAccountButton->DetectClick(mousePosX, mousePosY))
+            createAccount_createAccountButton->SetPressed(true);
+        else if (createAccount_cancelButton->DetectClick(mousePosX, mousePosY))
+        {
+            createAccount_cancelButton->SetPressed(true);
+            loginState = LoginScreen;
+        }
+        break;
     default:
         break;
     }
@@ -247,7 +278,11 @@ void DirectXManager::MouseUp()
     switch (loginState)
     {
     case LoginScreen:
-        loginButton->SetPressed(false);
+        loginScreen_loginButton->SetPressed(false);
+        loginScreen_createAccountButton->SetPressed(false);
+        break;
+    case CreateAccount:
+
     default:
         break;
     }  
@@ -258,18 +293,21 @@ void DirectXManager::OnTab()
     switch (loginState)
     {
     case LoginScreen:
-        if (!accountNameInput->IsActive() && !passwordInput->IsActive())
-            accountNameInput->SetActive(true);
-        else if (accountNameInput->IsActive())
+        if (!loginScreen_accountNameInput->IsActive() && !loginScreen_passwordInput->IsActive())
+            loginScreen_accountNameInput->SetActive(true);
+        else if (loginScreen_accountNameInput->IsActive())
         {
-            accountNameInput->SetActive(false);
-            passwordInput->SetActive(true);
+            loginScreen_accountNameInput->SetActive(false);
+            loginScreen_passwordInput->SetActive(true);
         }
         else
         {
-            accountNameInput->SetActive(true);
-            passwordInput->SetActive(false);
+            loginScreen_accountNameInput->SetActive(true);
+            loginScreen_passwordInput->SetActive(false);
         }
+        break;
+    case CreateAccount:
+
     default:
         break;
     }
@@ -333,13 +371,14 @@ void DirectXManager::InitializeTextFormats()
 
 void DirectXManager::InitializeInputs()
 {
-    accountNameInput = new UIInput(15, 20, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
-    passwordInput = new UIInput(15, 50, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
+    loginScreen_accountNameInput = new UIInput(15, 20, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+    loginScreen_passwordInput = new UIInput(15, 50, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
 }
 
 void DirectXManager::InitializeButtons()
 {
-    loginButton = new UIButton(145, 96, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatButtonText, d2dFactory);
+    loginScreen_loginButton = new UIButton(145, 96, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatButtonText, d2dFactory);
+    loginScreen_createAccountButton = new UIButton(15, 520, 160, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE ACCOUNT", writeFactory, textFormatButtonText, d2dFactory);
 }
 
 void DirectXManager::DrawScene(int mouseX, int mouseY)
@@ -351,9 +390,20 @@ void DirectXManager::DrawScene(int mouseX, int mouseY)
     d2dDeviceContext->BeginDraw();
 
     // --- LOGIN SCREEN ---
-    accountNameInput->Draw();
-    passwordInput->Draw();
-    loginButton->Draw();
+    switch (loginState)
+    {
+    case LoginScreen:
+        loginScreen_accountNameInput->Draw();
+        loginScreen_passwordInput->Draw();
+        loginScreen_loginButton->Draw();
+        loginScreen_createAccountButton->Draw();
+        break;
+    case CreateAccount:
+
+    default:
+        break;
+    }
+    
 
     // --- CREATE ACCOUNT SCREEN ---
 
@@ -393,4 +443,14 @@ void DirectXManager::DrawScene(int mouseX, int mouseY)
 
     if (FAILED(swapChain->Present(0, 0)))
         throw std::exception(FAILED_TO_SWAP_BUFFER);
+}
+
+const TCHAR* DirectXManager::GetAccountName()
+{
+    return loginScreen_accountNameInput->GetInputValue();
+}
+
+const TCHAR* DirectXManager::GetPassword()
+{
+    return loginScreen_passwordInput->GetInputValue();
 }

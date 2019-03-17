@@ -70,6 +70,7 @@ public:
     void PushCharacter(TCHAR c);
     void PopCharacter();
     bool DetectClick(int x, int y);
+    const TCHAR* GetInputValue();
 };
 
 #endif

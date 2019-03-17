@@ -52,3 +52,8 @@ bool UIInput::DetectClick(int x, int y)
 {
     return x >= locationX + labelWidth && x <= locationX + inputWidth + labelWidth && y >= locationY && y <= locationY + height;
 }
+
+const TCHAR* UIInput::GetInputValue()
+{
+    return inputValue;
+}
