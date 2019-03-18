@@ -7,7 +7,7 @@
 #include "Player.h"
 #include "Repository.h"
 
-constexpr char CHECKSUM[8] = { '6', '5', '8', '3', '6', '2', '1', '6' };
+const std::string CHECKSUM = { '6', '5', '8', '3', '6', '2', '1', '6' };
 
 constexpr char OPCODE_CONNECT[2] = { '0', '0' };
 constexpr char OPCODE_DISCONNECT[2] = { '0', '1' };
@@ -19,6 +19,7 @@ constexpr char OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL[2] = { '0', '6' };
 constexpr char OPCODE_CREATE_CHARACTER[2] = { '0', '7' };
 constexpr char OPCODE_CREATE_CHARACTER_SUCCESSFUL[2] = { '0', '8' };
 constexpr char OPCODE_CREATE_CHARACTER_UNSUCCESSFUL[2] = { '0', '9' };
+constexpr char OPCODE_HEARTBEAT[2] = { '1', '0' };
 
 class SocketManager
 {
@@ -39,6 +40,7 @@ private:
 	void CreateAccount(const std::string& accountName, const std::string& password);	
 	void Logout(const std::string& token);
 	void CreateCharacter(const std::string& token, const std::string& characterName);
+    void UpdateLastHeartbeat(const std::string& token);
 public:
     SocketManager(Repository& repository);
     void TryRecieveMessage();

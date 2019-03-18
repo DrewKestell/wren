@@ -6,7 +6,6 @@ enum LoginState
     LoginScreen,
     CreateAccount,
     Connecting,
-    LoginFailed,
     CharacterSelect,
     CreateCharacter,
     EnteringWorld,

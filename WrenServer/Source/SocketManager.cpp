@@ -19,7 +19,7 @@ constexpr auto LIBSODIUM_MEMORY_ERROR = "Ran out of memory while hashing passwor
 constexpr auto CHARACTER_ALREADY_EXISTS = "Character already exists.";
 
 constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
-constexpr auto PORT_NUMBER = 27015;
+constexpr auto PORT_NUMBER = 27016;
 
 // CONSTRUCTOR
 SocketManager::SocketManager(Repository& repository) : repository(repository)
@@ -75,7 +75,7 @@ void SocketManager::Login(
 	if (account)
 	{
 		auto passwordArr = password.c_str();
-		if (!crypto_pwhash_str_verify(account->GetPassword().c_str(), passwordArr, strlen(passwordArr)) != 0) // TODO: fixme
+		if (crypto_pwhash_str_verify(account->GetPassword().c_str(), passwordArr, strlen(passwordArr)) != 0) // TODO: fixme
 			error = INCORRECT_PASSWORD;
 		else
 		{
@@ -98,8 +98,13 @@ void SocketManager::Login(
 			};
 			players.push_back(player);
 
-			SendPacket(OPCODE_LOGIN_SUCCESSFUL, 1, token);
-			std::cout << "AccountId " << account->GetId() << " connected to the server.\n";
+            auto characters = repository.ListCharacters(player->GetAccountId());
+            std::string characterString = "";
+            for (auto i = 0; i < characters->size(); i++)
+                characterString += (characters->at(i) + ";");
+
+			SendPacket(OPCODE_LOGIN_SUCCESSFUL, 2, token, characterString);
+			std::cout << "AccountId " << account->GetId() << " connected to the server.\n\n";
 		}
 
 	}
@@ -157,6 +162,12 @@ void SocketManager::CreateCharacter(const std::string& token, const std::string&
 	}
 }
 
+void SocketManager::UpdateLastHeartbeat(const std::string& token)
+{
+    const auto it = GetPlayer(token);
+    (*it)->SetLastHeartbeat(GetTickCount());
+}
+
 void SocketManager::SendPacket(const std::string& opcode, const int argCount, ...)
 {
 	std::string response = std::string(CHECKSUM) + opcode;
@@ -186,7 +197,7 @@ void SocketManager::HandleTimeout()
     for_each(players.begin(), players.end(), [&it, this](Player* player) {
         if (GetTickCount() > player->GetLastHeartbeat() + TIMEOUT_DURATION)
         {
-            std::cout << "AccountId " << player->GetAccountId() << " timed out." << "\n";
+            std::cout << "AccountId " << player->GetAccountId() << " timed out." << "\n\n";
 			delete(*it);
             players.erase(it);
         }
@@ -206,12 +217,12 @@ void SocketManager::TryRecieveMessage()
     if (result != SOCKET_ERROR)
     {
         inet_ntop(AF_INET, &(from.sin_addr), str, INET_ADDRSTRLEN);
-        printf("Received message from %s:%i -  %s\n", str, from.sin_port, buffer);
+        printf("Received message from %s:%i - %s\n", str, from.sin_port, buffer);
 
         const auto checksumArrLen = 8;
         char checksumArr[checksumArrLen];
         memcpy(&checksumArr[0], &buffer[0], checksumArrLen * sizeof(char));
-		if (!MessagePartsEqual(checksumArr, CHECKSUM, checksumArrLen))
+		if (!MessagePartsEqual(checksumArr, CHECKSUM.c_str(), checksumArrLen))
 		{
 			std::cout << "Wrong checksum. Ignoring packet.\n";
 			return;
@@ -220,6 +231,7 @@ void SocketManager::TryRecieveMessage()
         const auto opcodeArrLen = 2;
         char opcodeArr[opcodeArrLen];
         memcpy(&opcodeArr[0], &buffer[8], opcodeArrLen * sizeof(char));
+        std::cout << "Opcode: " << opcodeArr[0] << opcodeArr[1] << "\n";
 
         std::vector<std::string> args;
         auto bufferLength = strlen(buffer);
@@ -273,6 +285,11 @@ void SocketManager::TryRecieveMessage()
 			const auto characterName = args[1];
 
 			CreateCharacter(token, characterName);
+        }
+        else if (MessagePartsEqual(opcodeArr, OPCODE_HEARTBEAT, opcodeArrLen))
+        {
+            const auto token = args[0];
+            UpdateLastHeartbeat(token);
         }
     }
 }

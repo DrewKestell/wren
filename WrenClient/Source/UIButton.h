@@ -9,10 +9,10 @@ class UIButton
 {
     const char* buttonText[20];
     bool pressed;
-    FLOAT locationX;
-    FLOAT locationY;
-    FLOAT width;
-    FLOAT height;
+    int locationX;
+    int locationY;
+    int width;
+    int height;
     ID2D1SolidColorBrush* buttonBrush;
     ID2D1SolidColorBrush* pressedButtonBrush;
     ID2D1SolidColorBrush* buttonBorderBrush;
@@ -22,10 +22,10 @@ class UIButton
     IDWriteTextLayout* buttonTextLayout;
 public:
     UIButton(
-        const FLOAT locationX,
-        const FLOAT locationY,
-        const FLOAT width,
-        const FLOAT height,
+        const int locationX,
+        const int locationY,
+        const int width,
+        const int height,
         ID2D1SolidColorBrush* buttonBrush,
         ID2D1SolidColorBrush* pressedButtonBrush,
         ID2D1SolidColorBrush* buttonBorderBrush,

@@ -1,5 +1,4 @@
-#include <winsock2.h>
-#include <Ws2tcpip.h>
+#include "SocketManager.h"
 #include <stdio.h>
 #include <io.h>
 #include <fcntl.h>
@@ -9,12 +8,10 @@
 #include <string>
 #include <iostream>
 #include <exception>
+#include <tuple>
 #include "DirectXManager.h"
 #include "GameTimer.h"
 #include "LoginState.h"
-
-constexpr auto CHECKSUM = "65836216";
-constexpr char OPCODE_CONNECT[2] = { '0', '0' };
 
 static TCHAR szWindowClass[] = _T("win32app");
 static TCHAR szTitle[] = _T("Wren Client");
@@ -23,19 +20,10 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 GameTimer* timer;
 DirectXManager* dxManager;
+SocketManager* socketManager;
 
 int mouseX = 0;
 int mouseY = 0;
-
-SOCKET socketC;
-struct sockaddr_in serverInfo;
-int len;
-
-void InitWinsock()
-{
-    WSADATA wsaData;
-    WSAStartup(MAKEWORD(2, 2), &wsaData);
-}
 
 int CALLBACK WinMain(
     _In_ HINSTANCE hInstance,
@@ -92,18 +80,9 @@ int CALLBACK WinMain(
         UpdateWindow(hWnd);
 
         timer = new GameTimer;
-        dxManager = new DirectXManager{ *timer };
+        socketManager = new SocketManager;
+        dxManager = new DirectXManager{ *timer, *socketManager };
         dxManager->Initialize(hWnd);
-
-        // initialize socket connection
-        InitWinsock();
-        len = sizeof(serverInfo);
-        serverInfo.sin_family = AF_INET;
-        serverInfo.sin_port = htons(27015);
-        inet_pton(AF_INET, "127.0.0.1", &serverInfo.sin_addr);
-        socketC = socket(AF_INET, SOCK_DGRAM, 0);
-        DWORD nonBlocking = 1;
-        ioctlsocket(socketC, FIONBIO, &nonBlocking);
 
         // Main game loop:
         MSG msg = { 0 };
@@ -112,6 +91,17 @@ int CALLBACK WinMain(
 
         while (msg.message != WM_QUIT)
         {
+            // If there are socket messages then process them.
+            bool morePackets = true;
+            while (morePackets)
+            {
+                const auto result = socketManager->TryRecieveMessage();
+                const auto messageType = std::get<0>(result);
+                if (messageType == "SOCKET_BUFFER_EMPTY")
+                    morePackets = false;
+                else
+                    dxManager->HandleMessage(result);
+            }
             // If there are Window messages then process them.
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
             {
@@ -134,7 +124,7 @@ int CALLBACK WinMain(
     }
 }
 
-void OnMouseMove(WPARAM wParam, int x, int y)
+void OnMouseMove(WPARAM wParam, FLOAT x, FLOAT y)
 {
     mouseX = x;
     mouseY = y;
@@ -193,8 +183,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    closesocket(socketC);
-    WSACleanup();
+    socketManager->CloseSockets();
 
     return 0;
 }

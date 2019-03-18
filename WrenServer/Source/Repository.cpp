@@ -14,6 +14,7 @@ constexpr auto CHARACTER_EXISTS_QUERY = "SELECT id FROM Characters WHERE charact
 constexpr auto CREATE_ACCOUNT_QUERY = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
 constexpr auto CREATE_CHARACTER_QUERY = "INSERT INTO Characters (character_name, account_id) VALUES('%s', '%d');";
 constexpr auto GET_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
+constexpr auto LIST_CHARACTERS_QUERY = "SELECT * FROM Characters WHERE account_id = '%d';";
 
 bool Repository::AccountExists(const std::string& accountName)
 {
@@ -115,8 +116,9 @@ Account* Repository::GetAccount(const std::string& accountName)
     {
         const int id = sqlite3_column_int(statement, 0);
         const unsigned char *hashedPassword = sqlite3_column_text(statement, 2);
+        auto account = new Account(id, accountName, std::string(reinterpret_cast<const char*>(hashedPassword)));
         sqlite3_finalize(statement);
-        return new Account(id, accountName, std::string(reinterpret_cast<const char*>(hashedPassword)));
+        return account;
     }
     else if (result == SQLITE_DONE)
     {
@@ -147,4 +149,38 @@ sqlite3_stmt* Repository::PrepareStatement(sqlite3* dbConnection, const char *qu
         throw std::exception(FAILED_TO_PREPARE);
     }
     return statement;
+}
+
+std::vector<std::string>* Repository::ListCharacters(const int accountId)
+{
+    auto dbConnection = GetConnection();
+
+    char query[100];
+    sprintf_s(query, LIST_CHARACTERS_QUERY, accountId);
+
+    auto statement = PrepareStatement(dbConnection, query);
+
+    std::vector<std::string>* characters = new std::vector<std::string>;
+    auto result = sqlite3_step(statement);
+    if (result == SQLITE_DONE)
+    {
+        sqlite3_finalize(statement);
+        return characters;
+    }        
+    else if (result == SQLITE_ROW)
+    {
+        while (result == SQLITE_ROW)
+        {
+            const unsigned char *characterName = sqlite3_column_text(statement, 1);
+            characters->push_back(std::string(reinterpret_cast<const char*>(characterName)));
+            result = sqlite3_step(statement);
+        }
+        sqlite3_finalize(statement);
+        return characters;
+    }
+    else
+    {
+        sqlite3_finalize(statement);
+        throw std::exception(FAILED_TO_EXECUTE);
+    }
 }

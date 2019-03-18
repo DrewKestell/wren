@@ -22,7 +22,7 @@ void UIButton::Draw()
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(locationX, locationY + 1), buttonTextLayout, buttonTextBrush); // (location + 1) looks better
 }
 
-bool UIButton::DetectClick(int x, int y)
+bool UIButton::DetectClick(FLOAT x, FLOAT y)
 {
     return x >= locationX && x <= locationX + width && y >= locationY && y <= locationY + height;
 }

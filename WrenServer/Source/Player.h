@@ -18,6 +18,7 @@ public:
 		const std::string& token,
 		const std::string& ipAndPort,
 		const DWORD lastHeartbeat) :
+            accountId{ accountId },
 			token{ token },
 			ipAndPort { ipAndPort },
 			lastHeartbeat { lastHeartbeat }

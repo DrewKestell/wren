@@ -1,4 +1,5 @@
 #include "UIInput.h"
+#include <wchar.h>
 
 void UIInput::Draw()
 {
@@ -12,7 +13,13 @@ void UIInput::Draw()
 
     // Draw Input Text
     std::wostringstream outInputValue;
-    outInputValue << inputValue;
+    if (!secure)
+        outInputValue << inputValue;
+    else
+    {
+        for (auto i = 0; i < wcslen(inputValue); i++)
+            outInputValue << "*";
+    }
     if (active)
         outInputValue << "|";
     if (FAILED(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), inputValueTextFormat, inputWidth, height - 2, &inputValueTextLayout))) // (height - 2) takes the border into account, and looks more natural
@@ -48,7 +55,7 @@ void UIInput::PopCharacter()
     inputIndex--;
 }
 
-bool UIInput::DetectClick(int x, int y)
+bool UIInput::DetectClick(FLOAT x, FLOAT y)
 {
     return x >= locationX + labelWidth && x <= locationX + inputWidth + labelWidth && y >= locationY && y <= locationY + height;
 }
@@ -56,4 +63,10 @@ bool UIInput::DetectClick(int x, int y)
 const TCHAR* UIInput::GetInputValue()
 {
     return inputValue;
+}
+
+void UIInput::Clear()
+{
+    inputIndex = 0;
+    ZeroMemory(inputValue, sizeof(inputValue));
 }

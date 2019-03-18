@@ -1,21 +1,35 @@
+#include "SocketManager.h"
 #include <d3d11.h>
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <locale>
+#include <codecvt>
+#include <tuple>
 #include "DirectXManager.h"
 #include <exception>
 #include "Windows.h"
 #include "LoginState.h"
+#include "atlstr.h"
 
 constexpr auto FAILED_TO_CREATE_DEVICE = "Failed to create device.";
 constexpr auto FAILED_TO_GET_BACK_BUFFER = "Failed to get pointer to back buffer.";
 constexpr auto FAILED_TO_SWAP_BUFFER = "Failed to swap buffer.";
 
-DirectXManager::DirectXManager(GameTimer& timer) : timer { timer } {};
+DirectXManager::DirectXManager(GameTimer& timer, SocketManager& socketManager)
+    : timer{ timer }, socketManager{ socketManager } {};
 
 LoginState loginState = LoginScreen;
+
+std::string ws2s(const std::wstring& wstr)
+{
+    using convert_typeX = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+    return converterX.to_bytes(wstr);
+}
 
 void DirectXManager::Initialize(HWND hWnd)
 {
@@ -193,6 +207,7 @@ void DirectXManager::Initialize(HWND hWnd)
     InitializeTextFormats();
     InitializeInputs();
     InitializeButtons();
+    InitializeLabels();
 }
 
 void DirectXManager::OnBackspace()
@@ -204,11 +219,21 @@ void DirectXManager::OnBackspace()
             loginScreen_accountNameInput->PopCharacter();
         else if (loginScreen_passwordInput->IsActive())
             loginScreen_passwordInput->PopCharacter();
+        break;
     case CreateAccount:
         if (createAccount_accountNameInput->IsActive())
             createAccount_accountNameInput->PopCharacter();
         else if (createAccount_passwordInput->IsActive())
             createAccount_passwordInput->PopCharacter();
+        break;
+    case Connecting:
+        break;
+    case CharacterSelect:
+        break;
+    case CreateCharacter:
+        if (createCharacter_characterNameInput->IsActive())
+            createCharacter_characterNameInput->PopCharacter();
+        break;
     default:
         break;
     }
@@ -230,15 +255,26 @@ void DirectXManager::OnKeyPress(TCHAR c)
         else if (createAccount_passwordInput->IsActive())
             createAccount_passwordInput->PushCharacter(c);
         break;
+    case Connecting:
+        break;
+    case CharacterSelect:
+        break;
+    case CreateCharacter:
+        if (createCharacter_characterNameInput->IsActive())
+            createCharacter_characterNameInput->PushCharacter(c);
+        break;
     default:
         break;
     }
 }
 
-void DirectXManager::MouseDown(int mousePosX, int mousePosY)
+void DirectXManager::MouseDown(FLOAT mousePosX, FLOAT mousePosY)
 {
     loginScreen_accountNameInput->SetActive(false);
     loginScreen_passwordInput->SetActive(false);
+    createAccount_accountNameInput->SetActive(false);
+    createAccount_passwordInput->SetActive(false);
+    createCharacter_characterNameInput->SetActive(false);
 
     switch (loginState)
     {
@@ -250,10 +286,7 @@ void DirectXManager::MouseDown(int mousePosX, int mousePosY)
         else if (loginScreen_loginButton->DetectClick(mousePosX, mousePosY))
             loginScreen_loginButton->SetPressed(true);
         else if (loginScreen_createAccountButton->DetectClick(mousePosX, mousePosY))
-        {
             loginScreen_createAccountButton->SetPressed(true);
-            loginState = CreateAccount;
-        }
         break;
     case CreateAccount:
         if (createAccount_accountNameInput->DetectClick(mousePosX, mousePosY))
@@ -263,10 +296,23 @@ void DirectXManager::MouseDown(int mousePosX, int mousePosY)
         else if (createAccount_createAccountButton->DetectClick(mousePosX, mousePosY))
             createAccount_createAccountButton->SetPressed(true);
         else if (createAccount_cancelButton->DetectClick(mousePosX, mousePosY))
-        {
             createAccount_cancelButton->SetPressed(true);
-            loginState = LoginScreen;
-        }
+        break;
+    case Connecting:
+        break;
+    case CharacterSelect:
+        if (characterSelect_newCharacterButton->DetectClick(mousePosX, mousePosY))
+            characterSelect_newCharacterButton->SetPressed(true);
+        else if (characterSelect_logoutButton->DetectClick(mousePosX, mousePosY))
+            characterSelect_logoutButton->SetPressed(true);
+        break;
+    case CreateCharacter:
+        if (createCharacter_characterNameInput->DetectClick(mousePosX, mousePosY))
+            createCharacter_characterNameInput->SetActive(true);
+        else if (createCharacter_createCharacterButton->DetectClick(mousePosX, mousePosY))
+            createCharacter_createCharacterButton->SetPressed(true);
+        else if (createCharacter_backButton->DetectClick(mousePosX, mousePosY))
+            createCharacter_backButton->SetPressed(true);
         break;
     default:
         break;
@@ -278,14 +324,81 @@ void DirectXManager::MouseUp()
     switch (loginState)
     {
     case LoginScreen:
-        loginScreen_loginButton->SetPressed(false);
-        loginScreen_createAccountButton->SetPressed(false);
+        if (loginScreen_loginButton->IsPressed())
+        {
+            loginScreen_successMessageLabel->SetText("");
+            loginScreen_errorMessageLabel->SetText("");
+            loginState = Connecting;
+            const auto accountName = ws2s(std::wstring(loginScreen_accountNameInput->GetInputValue()));
+            const auto password = ws2s(std::wstring(loginScreen_passwordInput->GetInputValue()));
+            socketManager.SendPacket(OPCODE_CONNECT, 2, accountName, password);
+        }
+        if (loginScreen_createAccountButton->IsPressed())
+        {
+            loginScreen_accountNameInput->Clear();
+            loginScreen_passwordInput->Clear();
+            loginScreen_successMessageLabel->SetText("");
+            loginScreen_errorMessageLabel->SetText("");
+            loginState = CreateAccount;
+        }
         break;
     case CreateAccount:
-
+        if (createAccount_createAccountButton->IsPressed())
+        {
+            const auto accountName = ws2s(std::wstring(createAccount_accountNameInput->GetInputValue()));
+            const auto password = ws2s(std::wstring(createAccount_passwordInput->GetInputValue()));
+            socketManager.SendPacket(OPCODE_CREATE_ACCOUNT, 2, accountName, password);
+        }
+        else if (createAccount_cancelButton->IsPressed())
+        {
+            createAccount_accountNameInput->Clear();
+            createAccount_passwordInput->Clear();
+            createAccount_errorMessageLabel->SetText("");
+            loginState = LoginScreen;
+        }
+        break;
+    case Connecting:
+        break;
+    case CharacterSelect:
+        if (characterSelect_newCharacterButton->IsPressed())
+        {
+            characterSelect_successMessageLabel->SetText("");
+            loginState = CreateCharacter;
+        }
+        else if (characterSelect_logoutButton->IsPressed())
+        {
+            token = "";
+            loginState = LoginScreen;
+        }
+        break;
+    case CreateCharacter:
+        if (createCharacter_createCharacterButton->IsPressed())
+        {
+            const auto characterName = ws2s(std::wstring(createCharacter_characterNameInput->GetInputValue()));
+            socketManager.SendPacket(OPCODE_CREATE_CHARACTER, 2, token, characterName);
+        }
+        else if (createCharacter_backButton->IsPressed())
+        {
+            createCharacter_characterNameInput->Clear();
+            createCharacter_errorMessageLabel->SetText("");
+            loginState = CharacterSelect;
+        }
+        break;
     default:
         break;
-    }  
+    }
+
+    loginScreen_loginButton->SetPressed(false);
+    loginScreen_createAccountButton->SetPressed(false);
+
+    createAccount_createAccountButton->SetPressed(false);
+    createAccount_cancelButton->SetPressed(false);
+
+    characterSelect_newCharacterButton->SetPressed(false);
+    characterSelect_logoutButton->SetPressed(false);
+
+    createCharacter_createCharacterButton->SetPressed(false);
+    createCharacter_backButton->SetPressed(false);
 }
 
 void DirectXManager::OnTab()
@@ -307,7 +420,27 @@ void DirectXManager::OnTab()
         }
         break;
     case CreateAccount:
-
+        if (!createAccount_accountNameInput->IsActive() && !createAccount_passwordInput->IsActive())
+            createAccount_accountNameInput->SetActive(true);
+        else if (createAccount_accountNameInput->IsActive())
+        {
+            createAccount_accountNameInput->SetActive(false);
+            createAccount_passwordInput->SetActive(true);
+        }
+        else
+        {
+            createAccount_accountNameInput->SetActive(true);
+            createAccount_passwordInput->SetActive(false);
+        }
+        break;
+    case Connecting:
+        break;
+    case CharacterSelect:
+        break;
+    case CreateCharacter:
+        if (!createCharacter_characterNameInput->IsActive())
+            createCharacter_characterNameInput->SetActive(true);
+        break;
     default:
         break;
     }
@@ -329,6 +462,12 @@ void DirectXManager::InitializeBrushes()
 
     if (FAILED(d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(0.301f, 0.729f, 1.0f, 1.0f), &darkBlueBrush)))
         throw std::exception("Critical error: Unable to create the darkBlue brush!");
+
+    if (FAILED(d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(0.137f, 0.98f, 0.117f, 1.0f), &successMessageBrush)))
+        throw std::exception("Critical error: Unable to create the successMessage brush!");
+
+    if (FAILED(d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(0.98f, 0.117f, 0.156f, 1.0f), &errorMessageBrush)))
+        throw std::exception("Critical error: Unable to create the errorMessage brush!");
 }
 
 void DirectXManager::InitializeTextFormats()
@@ -360,6 +499,14 @@ void DirectXManager::InitializeTextFormats()
     if (FAILED(textFormatAccountCreds->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER)))
         throw std::exception("Critical error: Unable to set paragraph alignment!");
 
+    // Headers
+    if (FAILED(writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, &textFormatHeaders)))
+        throw std::exception("Critical error: Unable to create text format for FPS information!");
+    if (FAILED(textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING)))
+        throw std::exception("Critical error: Unable to set text alignment!");
+    if (FAILED(textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR)))
+        throw std::exception("Critical error: Unable to set paragraph alignment!");
+
     // Button Text
     if (FAILED(writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, &textFormatButtonText)))
         throw std::exception("Critical error: Unable to create text format for FPS information!");
@@ -367,21 +514,75 @@ void DirectXManager::InitializeTextFormats()
         throw std::exception("Critical error: Unable to set text alignment!");
     if (FAILED(textFormatButtonText->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER)))
         throw std::exception("Critical error: Unable to set paragraph alignment!");
+
+    // SuccessMessage Text
+    if (FAILED(writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, &textFormatSuccessMessage)))
+        throw std::exception("Critical error: Unable to create text format for FPS information!");
+    if (FAILED(textFormatSuccessMessage->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING)))
+        throw std::exception("Critical error: Unable to set text alignment!");
+    if (FAILED(textFormatSuccessMessage->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR)))
+        throw std::exception("Critical error: Unable to set paragraph alignment!");
+    
+    // ErrorMessage Message
+    if (FAILED(writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, &textFormatErrorMessage)))
+        throw std::exception("Critical error: Unable to create text format for FPS information!");
+    if (FAILED(textFormatErrorMessage->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING)))
+        throw std::exception("Critical error: Unable to set text alignment!");
+    if (FAILED(textFormatErrorMessage->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR)))
+        throw std::exception("Critical error: Unable to set paragraph alignment!");
 }
 
 void DirectXManager::InitializeInputs()
 {
-    loginScreen_accountNameInput = new UIInput(15, 20, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
-    loginScreen_passwordInput = new UIInput(15, 50, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
+    // LoginScreen
+    loginScreen_accountNameInput = new UIInput(false, 15, 20, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+    loginScreen_passwordInput = new UIInput(true, 15, 50, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
+
+    // CreateAccount
+    createAccount_accountNameInput = new UIInput(false, 15, 20, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+    createAccount_passwordInput = new UIInput(true, 15, 50, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
+
+    // CreateCharacter
+    createCharacter_characterNameInput = new UIInput(false, 15, 20, 140, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Character Name:", writeFactory, textFormatAccountCreds, d2dFactory);
 }
 
 void DirectXManager::InitializeButtons()
 {
+    // LoginScreen
     loginScreen_loginButton = new UIButton(145, 96, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatButtonText, d2dFactory);
-    loginScreen_createAccountButton = new UIButton(15, 520, 160, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE ACCOUNT", writeFactory, textFormatButtonText, d2dFactory);
+    loginScreen_createAccountButton = new UIButton(15, 522, 160, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE ACCOUNT", writeFactory, textFormatButtonText, d2dFactory);
+
+    // CreateAccount
+    createAccount_createAccountButton = new UIButton(145, 96, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE", writeFactory, textFormatButtonText, d2dFactory);
+    createAccount_cancelButton = new UIButton(15, 522, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CANCEL", writeFactory, textFormatButtonText, d2dFactory);
+
+    // CharacterSelect
+    characterSelect_newCharacterButton = new UIButton(15, 20, 140, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_logoutButton = new UIButton(15, 522, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
+
+    // CreateCharacter
+    createCharacter_createCharacterButton = new UIButton(165, 64, 160, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+    createCharacter_backButton = new UIButton(15, 522, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "BACK", writeFactory, textFormatButtonText, d2dFactory);
 }
 
-void DirectXManager::DrawScene(int mouseX, int mouseY)
+void DirectXManager::InitializeLabels()
+{
+    loginScreen_successMessageLabel = new UILabel(30.0f, 170.0f, 400.0f, successMessageBrush, textFormatSuccessMessage, d2dDeviceContext, writeFactory, d2dFactory);
+    loginScreen_errorMessageLabel = new UILabel(30.0f, 170.0f, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
+
+    createAccount_errorMessageLabel = new UILabel(30.0f, 170.0f, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
+
+    connecting_statusLabel = new UILabel(15.0f, 20.0f, 400.0f, blackBrush, textFormatAccountCreds, d2dDeviceContext, writeFactory, d2dFactory);
+    connecting_statusLabel->SetText("Connecting...");
+
+    characterSelect_successMessageLabel = new UILabel(30.0f, 400.0f, 400.0f, successMessageBrush, textFormatSuccessMessage, d2dDeviceContext, writeFactory, d2dFactory);
+    characterSelect_headerLabel = new UILabel(15.0f, 60.0f, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory);
+    characterSelect_headerLabel->SetText("Character List:");
+
+    createCharacter_errorMessageLabel = new UILabel(30.0f, 170.0f, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
+}
+
+void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
 {
     const float color[4] = { 1.0f, 0.5f, 0.3f, 1.0f };
     immediateContext->ClearRenderTargetView(renderTargetView, color);
@@ -389,24 +590,55 @@ void DirectXManager::DrawScene(int mouseX, int mouseY)
 
     d2dDeviceContext->BeginDraw();
 
-    // --- LOGIN SCREEN ---
     switch (loginState)
     {
     case LoginScreen:
         loginScreen_accountNameInput->Draw();
         loginScreen_passwordInput->Draw();
+
         loginScreen_loginButton->Draw();
         loginScreen_createAccountButton->Draw();
+
+        loginScreen_successMessageLabel->Draw();
+        loginScreen_errorMessageLabel->Draw();
         break;
     case CreateAccount:
+        createAccount_accountNameInput->Draw();
+        createAccount_passwordInput->Draw();
 
+        createAccount_createAccountButton->Draw();
+        createAccount_cancelButton->Draw();
+
+        createAccount_errorMessageLabel->Draw();
+        break;
+    case Connecting:
+        connecting_statusLabel->Draw();
+        break;
+    case CharacterSelect:
+        characterSelect_newCharacterButton->Draw();
+        characterSelect_logoutButton->Draw();
+
+        characterSelect_successMessageLabel->Draw();
+        characterSelect_headerLabel->Draw();
+
+        // draw character inputs. starting point: 15,100
+        for (auto i = 0; i < characterList->size(); i++)
+        {
+            auto y = 100 + (i * 30);
+        }
+        break;
+    case CreateCharacter:
+        createCharacter_characterNameInput->Draw();
+
+        createCharacter_createCharacterButton->Draw();
+        createCharacter_backButton->Draw();
+
+        createCharacter_errorMessageLabel->Draw();
+        break;
     default:
         break;
     }
     
-
-    // --- CREATE ACCOUNT SCREEN ---
-
     // --- SHARED ---
     // draw FPS
     static int frameCnt = 0;
@@ -426,6 +658,9 @@ void DirectXManager::DrawScene(int mouseX, int mouseY)
 
         frameCnt = 0;
         timeElapsed += 1.0f;
+
+        if (token != "")
+            socketManager.SendPacket(OPCODE_HEARTBEAT, 1, token);
     }
 
     if (textLayoutFPS != nullptr)
@@ -445,12 +680,58 @@ void DirectXManager::DrawScene(int mouseX, int mouseY)
         throw std::exception(FAILED_TO_SWAP_BUFFER);
 }
 
-const TCHAR* DirectXManager::GetAccountName()
+void DirectXManager::HandleMessage(std::tuple<std::string, std::string, std::vector<std::string>*> message)
 {
-    return loginScreen_accountNameInput->GetInputValue();
-}
+    const auto messageType = std::get<0>(message);
 
-const TCHAR* DirectXManager::GetPassword()
-{
-    return loginScreen_passwordInput->GetInputValue();
+    switch (loginState)
+    {
+    case LoginScreen:
+        
+        break;
+    case CreateAccount:
+        if (messageType == "CREATE_ACCOUNT_FAILED")
+            createAccount_errorMessageLabel->SetText(("Failed to create account. Reason: " + std::get<1>(message)).c_str());
+        else if (messageType == "CREATE_ACCOUNT_SUCCESS")
+        {
+            createAccount_accountNameInput->Clear();
+            createAccount_passwordInput->Clear();
+            createAccount_errorMessageLabel->SetText("");
+            loginState = LoginScreen;
+            loginScreen_successMessageLabel->SetText("Account created successfully.");
+        }
+        break;
+    case Connecting:
+        if (messageType == "LOGIN_FAILED")
+        {
+            loginScreen_errorMessageLabel->SetText(("Login failed. Reason: " + std::get<1>(message)).c_str());
+            loginState = LoginScreen;
+        }
+        else if (messageType == "LOGIN_SUCCESS")
+        {
+            token = std::get<1>(message);
+            loginState = CharacterSelect;
+            loginScreen_accountNameInput->Clear();
+            loginScreen_passwordInput->Clear();
+        }
+        break;
+    case CharacterSelect:
+        characterSelect_successMessageLabel->SetText("");
+        break;
+    case CreateCharacter:
+        if (messageType == "CREATE_CHARACTER_FAILED")
+            createCharacter_errorMessageLabel->SetText(("Character creation failed. Reason: " + std::get<1>(message)).c_str());
+        else if (messageType == "CREATE_CHARACTER_SUCCESS")
+        {
+            characterList = std::get<2>(message);
+            createCharacter_characterNameInput->Clear();
+            createCharacter_errorMessageLabel->SetText("");
+            characterSelect_successMessageLabel->SetText("Character created successfully.");
+            loginState = CharacterSelect;
+        }
+        break;
+    default:
+        break;
+    }
+    
 }

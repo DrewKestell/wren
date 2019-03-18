@@ -10,6 +10,7 @@ class UIInput
     int inputIndex;
     TCHAR inputValue[30];
     bool active;
+    bool secure;
     FLOAT locationX;
     FLOAT locationY;
     FLOAT labelWidth;
@@ -27,6 +28,7 @@ class UIInput
     IDWriteTextLayout* inputValueTextLayout;
 public:
     UIInput(
+        const bool secure,
         const FLOAT locationX,
         const FLOAT locationY,
         const FLOAT labelWidth,
@@ -42,6 +44,7 @@ public:
         IDWriteFactory2* writeFactory,
         IDWriteTextFormat* labelTextFormat,
         ID2D1Factory2* d2dFactory) :
+        secure{ secure },
         locationX{ locationX },
         locationY{ locationY },
         labelWidth{ labelWidth },
@@ -69,8 +72,9 @@ public:
     void SetActive(bool isActive);
     void PushCharacter(TCHAR c);
     void PopCharacter();
-    bool DetectClick(int x, int y);
+    bool DetectClick(FLOAT x, FLOAT y);
     const TCHAR* GetInputValue();
+    void Clear();
 };
 
 #endif

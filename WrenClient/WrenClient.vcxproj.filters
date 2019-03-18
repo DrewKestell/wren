@@ -6,6 +6,8 @@
     <ClCompile Include="Source\UIButton.cpp" />
     <ClCompile Include="Source\UIInput.cpp" />
     <ClCompile Include="Source\WrenClient.cpp" />
+    <ClCompile Include="Source\SocketManager.cpp" />
+    <ClCompile Include="Source\UILabel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DirectXManager.h" />
@@ -14,5 +16,7 @@
     <ClInclude Include="Source\UIButton.h" />
     <ClInclude Include="Source\UIInput.h" />
     <ClInclude Include="Source\UIView.h" />
+    <ClInclude Include="Source\SocketManager.h" />
+    <ClInclude Include="Source\UILabel.h" />
   </ItemGroup>
 </Project>
