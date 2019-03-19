@@ -97,13 +97,8 @@ void SocketManager::Login(
 				GetTickCount()
 			};
 			players.push_back(player);
-
-            auto characters = repository.ListCharacters(player->GetAccountId());
-            std::string characterString = "";
-            for (auto i = 0; i < characters->size(); i++)
-                characterString += (characters->at(i) + ";");
-
-			SendPacket(OPCODE_LOGIN_SUCCESSFUL, 2, token, characterString);
+            
+			SendPacket(OPCODE_LOGIN_SUCCESSFUL, 2, token, ListCharacters(player->GetAccountId()));
 			std::cout << "AccountId " << account->GetId() << " connected to the server.\n\n";
 		}
 
@@ -158,7 +153,7 @@ void SocketManager::CreateCharacter(const std::string& token, const std::string&
 	else
 	{
 		repository.CreateCharacter(characterName, (*it)->GetAccountId());
-		SendPacket(OPCODE_CREATE_CHARACTER_SUCCESSFUL);
+		SendPacket(OPCODE_CREATE_CHARACTER_SUCCESSFUL, 1, ListCharacters((*it)->GetAccountId()));
 	}
 }
 
@@ -289,7 +284,31 @@ void SocketManager::TryRecieveMessage()
         else if (MessagePartsEqual(opcodeArr, OPCODE_HEARTBEAT, opcodeArrLen))
         {
             const auto token = args[0];
+
             UpdateLastHeartbeat(token);
         }
+        else if (MessagePartsEqual(opcodeArr, OPCODE_ENTER_WORLD, opcodeArrLen))
+        {
+            const auto token = args[0];
+            const auto characterName = args[1];
+
+            EnterWorld(token, characterName);
+        }
     }
+}
+
+std::string SocketManager::ListCharacters(const int accountId)
+{
+    auto characters = repository.ListCharacters(accountId);
+    std::string characterString = "";
+    for (auto i = 0; i < characters->size(); i++)
+        characterString += (characters->at(i) + ";");
+    return characterString;
+}
+
+void SocketManager::EnterWorld(const std::string& token, const std::string& characterName)
+{
+    const auto it = GetPlayer(token);
+    (*it)->SetLastHeartbeat(GetTickCount());
+    SendPacket(OPCODE_ENTER_WORLD_SUCCESSFUL, 0);
 }

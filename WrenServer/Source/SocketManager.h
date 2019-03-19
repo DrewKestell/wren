@@ -20,6 +20,8 @@ constexpr char OPCODE_CREATE_CHARACTER[2] = { '0', '7' };
 constexpr char OPCODE_CREATE_CHARACTER_SUCCESSFUL[2] = { '0', '8' };
 constexpr char OPCODE_CREATE_CHARACTER_UNSUCCESSFUL[2] = { '0', '9' };
 constexpr char OPCODE_HEARTBEAT[2] = { '1', '0' };
+constexpr char OPCODE_ENTER_WORLD[2] = { '1', '1' };
+constexpr char OPCODE_ENTER_WORLD_SUCCESSFUL[2] = { '1', '2' };
 
 class SocketManager
 {
@@ -41,6 +43,8 @@ private:
 	void Logout(const std::string& token);
 	void CreateCharacter(const std::string& token, const std::string& characterName);
     void UpdateLastHeartbeat(const std::string& token);
+    std::string ListCharacters(const int accountId);
+    void EnterWorld(const std::string& token, const std::string& characterName);
 public:
     SocketManager(Repository& repository);
     void TryRecieveMessage();

@@ -8,7 +8,8 @@
 class UIButton
 {
     const char* buttonText[20];
-    bool pressed;
+    bool pressed = false;
+    bool enabled = true;
     int locationX;
     int locationY;
     int width;
@@ -17,6 +18,7 @@ class UIButton
     ID2D1SolidColorBrush* pressedButtonBrush;
     ID2D1SolidColorBrush* buttonBorderBrush;
     ID2D1SolidColorBrush* buttonTextBrush;
+    ID2D1SolidColorBrush* disabledBrush;
     ID2D1RoundedRectangleGeometry* buttonGeometry;
     ID2D1DeviceContext1* d2dDeviceContext;
     IDWriteTextLayout* buttonTextLayout;
@@ -55,10 +57,12 @@ public:
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(locationX, locationY, locationX + width, locationY + height), 3.0f, 3.0f), &buttonGeometry);
 
     }
+    bool IsEnabled();
+    void SetEnabled(bool isEnabled);
     bool IsPressed();
     void SetPressed(bool isPressed);
     void Draw();
-    bool DetectClick(int x, int y);
+    bool DetectClick(FLOAT x, FLOAT y);
 };
 
 #endif

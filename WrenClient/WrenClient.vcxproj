@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -23,6 +23,7 @@
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\UIButton.cpp" />
+    <ClCompile Include="Source\UICharacterListing.cpp" />
     <ClCompile Include="Source\UIInput.cpp" />
     <ClCompile Include="Source\UILabel.cpp" />
     <ClCompile Include="Source\WrenClient.cpp" />
@@ -33,6 +34,7 @@
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\UIButton.h" />
+    <ClInclude Include="Source\UICharacterListing.h" />
     <ClInclude Include="Source\UIInput.h" />
     <ClInclude Include="Source\UILabel.h" />
     <ClInclude Include="Source\UIView.h" />

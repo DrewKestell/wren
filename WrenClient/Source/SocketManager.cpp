@@ -137,18 +137,7 @@ std::tuple<std::string, std::string, std::vector<std::string>*> SocketManager::T
         {
             const auto token = args[0];
             const auto characterString = args[1];
-            std::vector<std::string>* characterList = new std::vector<std::string>;
-            std::string arg = "";
-            for (auto i = 0; i < characterString.length(); i++)
-            {
-                if (characterString[i] == ';')
-                {
-                    characterList->push_back(arg);
-                    arg = "";
-                }
-                else
-                    arg += characterString[i];
-            }
+            const auto characterList = BuildCharacterVector(characterString);
 
             std::cout << "Login successful. Token received: " + token + "\n";
             return std::make_tuple("LOGIN_SUCCESS", token, characterList);
@@ -161,8 +150,11 @@ std::tuple<std::string, std::string, std::vector<std::string>*> SocketManager::T
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER_SUCCESSFUL, opcodeArrLen))
         {
+            const auto characterString = args[0];
+            const auto characterList = BuildCharacterVector(characterString);
+
             std::cout << "Character creation succesful.";
-            return std::make_tuple("CREATE_CHARACTER_SUCCESS", "", nullptr);
+            return std::make_tuple("CREATE_CHARACTER_SUCCESS", "", characterList);
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER_UNSUCCESSFUL, opcodeArrLen))
         {
@@ -170,8 +162,30 @@ std::tuple<std::string, std::string, std::vector<std::string>*> SocketManager::T
             std::cout << "Character creation failed. Reason: " + error + "\n";
             return std::make_tuple("CREATE_CHARACTER_FAILED", error, nullptr);
         }
+        else if (MessagePartsEqual(opcodeArr, OPCODE_ENTER_WORLD_SUCCESSFUL, opcodeArrLen))
+        {
+            std::cout << "Connected to game world!\n";
+            return std::make_tuple("ENTER_WORLD_SUCCESSFUL", "", nullptr);
+        }
         else
             return std::make_tuple("NOT_IMPLEMENTED", "", nullptr);
     }
     return std::make_tuple("SOCKET_BUFFER_EMPTY", "", nullptr);
+}
+
+std::vector<std::string>* SocketManager::BuildCharacterVector(std::string characterString)
+{
+    std::vector<std::string>* characterList = new std::vector<std::string>;
+    std::string arg = "";
+    for (auto i = 0; i < characterString.length(); i++)
+    {
+        if (characterString[i] == ';')
+        {
+            characterList->push_back(arg);
+            arg = "";
+        }
+        else
+            arg += characterString[i];
+    }
+    return characterList;
 }

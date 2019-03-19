@@ -11,11 +11,12 @@
 #include "UIInput.h"
 #include "UIButton.h"
 #include "UILabel.h"
+#include "UICharacterListing.h"
 #include "SocketManager.h"
 
 class DirectXManager
 {
-    std::vector<std::string>* characterList = nullptr;
+    std::vector<UICharacterListing*>* characterList = new std::vector<UICharacterListing*>;
     std::string token = "";
     UINT clientWidth;
     UINT clientHeight;
@@ -60,6 +61,7 @@ class DirectXManager
     ID2D1SolidColorBrush* darkBlueBrush;
     ID2D1SolidColorBrush* successMessageBrush;
     ID2D1SolidColorBrush* errorMessageBrush;
+    ID2D1SolidColorBrush* selectedCharacterBrush;
 
     // Inputs
     UIInput* loginScreen_accountNameInput;
@@ -76,6 +78,7 @@ class DirectXManager
     UIButton* createAccount_createAccountButton;
     UIButton* createAccount_cancelButton;
     UIButton* characterSelect_newCharacterButton;
+    UIButton* characterSelect_enterWorldButton;
     UIButton* characterSelect_logoutButton;
     UIButton* createCharacter_createCharacterButton;
     UIButton* createCharacter_backButton;
@@ -88,12 +91,14 @@ class DirectXManager
     UILabel* characterSelect_successMessageLabel;
     UILabel* characterSelect_headerLabel;
     UILabel* createCharacter_errorMessageLabel;
+    UILabel* enteringWorld_statusLabel;
 
     void InitializeBrushes();
     void InitializeTextFormats();
     void InitializeInputs();
     void InitializeButtons();
     void InitializeLabels();
+    void RecreateCharacterListings(std::vector<std::string>* characterNames);
 public:
     DirectXManager(GameTimer& timer, SocketManager& socketManager);
     void Initialize(HWND hWnd);

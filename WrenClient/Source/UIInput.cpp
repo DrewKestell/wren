@@ -7,10 +7,10 @@ void UIInput::Draw()
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(locationX, locationY), labelTextLayout, labelBrush);
 
     // Draw Input
-    float borderWeight = active ? 3.0f : 1.0f;
-    d2dDeviceContext->DrawGeometry(inputGeometry, inputBorderBrush, borderWeight);
+    float borderWeight = active ? 2.0f : 1.0f;
     d2dDeviceContext->FillGeometry(inputGeometry, inputBrush);
-
+    d2dDeviceContext->DrawGeometry(inputGeometry, inputBorderBrush, borderWeight);
+    
     // Draw Input Text
     std::wostringstream outInputValue;
     if (!secure)

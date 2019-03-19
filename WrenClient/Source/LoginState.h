@@ -9,7 +9,7 @@ enum LoginState
     CharacterSelect,
     CreateCharacter,
     EnteringWorld,
-    Connected,
+    InGame,
     Disconnected
 };
 

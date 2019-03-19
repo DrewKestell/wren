@@ -6,6 +6,7 @@
 
 class UICharacterListing
 {
+    std::string characterName;
     bool selected;
     FLOAT locationX;
     FLOAT locationY;
@@ -43,6 +44,8 @@ public:
         textBrush{ textBrush },
         d2dDeviceContext{ d2dDeviceContext }
     {
+        characterName = std::string(inText);
+
         std::wostringstream outText;
         outText << inText;
         if (FAILED(writeFactory->CreateTextLayout(outText.str().c_str(), (UINT32)outText.str().size(), textFormat, width, height, &textLayout)))
@@ -55,4 +58,5 @@ public:
     void SetSelected(bool isPressed);
     void Draw();
     bool DetectClick(FLOAT x, FLOAT y);
+    std::string GetCharacterName();
 };

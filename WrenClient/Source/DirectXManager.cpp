@@ -234,6 +234,10 @@ void DirectXManager::OnBackspace()
         if (createCharacter_characterNameInput->IsActive())
             createCharacter_characterNameInput->PopCharacter();
         break;
+    case EnteringWorld:
+        break;
+    case InGame:
+        break;
     default:
         break;
     }
@@ -263,6 +267,10 @@ void DirectXManager::OnKeyPress(TCHAR c)
         if (createCharacter_characterNameInput->IsActive())
             createCharacter_characterNameInput->PushCharacter(c);
         break;
+    case EnteringWorld:
+        break;
+    case InGame:
+        break;
     default:
         break;
     }
@@ -275,6 +283,9 @@ void DirectXManager::MouseDown(FLOAT mousePosX, FLOAT mousePosY)
     createAccount_accountNameInput->SetActive(false);
     createAccount_passwordInput->SetActive(false);
     createCharacter_characterNameInput->SetActive(false);
+
+    for (auto i = 0; i < characterList->size(); i++)
+        characterList->at(i)->SetSelected(false);
 
     switch (loginState)
     {
@@ -301,8 +312,14 @@ void DirectXManager::MouseDown(FLOAT mousePosX, FLOAT mousePosY)
     case Connecting:
         break;
     case CharacterSelect:
+        for (auto i = 0; i < characterList->size(); i++)
+            if (characterList->at(i)->DetectClick(mousePosX, mousePosY))
+                characterList->at(i)->SetSelected(true);
+
         if (characterSelect_newCharacterButton->DetectClick(mousePosX, mousePosY))
             characterSelect_newCharacterButton->SetPressed(true);
+        else if (characterSelect_enterWorldButton->DetectClick(mousePosX, mousePosY))
+            characterSelect_enterWorldButton->SetPressed(true);
         else if (characterSelect_logoutButton->DetectClick(mousePosX, mousePosY))
             characterSelect_logoutButton->SetPressed(true);
         break;
@@ -313,6 +330,10 @@ void DirectXManager::MouseDown(FLOAT mousePosX, FLOAT mousePosY)
             createCharacter_createCharacterButton->SetPressed(true);
         else if (createCharacter_backButton->DetectClick(mousePosX, mousePosY))
             createCharacter_backButton->SetPressed(true);
+        break;
+    case EnteringWorld:
+        break;
+    case InGame:
         break;
     default:
         break;
@@ -365,6 +386,19 @@ void DirectXManager::MouseUp()
             characterSelect_successMessageLabel->SetText("");
             loginState = CreateCharacter;
         }
+        else if (characterSelect_enterWorldButton->IsPressed())
+        {
+            std::string characterName = "";
+            for (auto i = 0; i < characterList->size(); i++)
+                if (characterList->at(i)->IsSelected())
+                {
+                    characterName = characterList->at(i)->GetCharacterName();
+                    break;
+                }
+            socketManager.SendPacket(OPCODE_ENTER_WORLD, 2, token, characterName);
+            characterSelect_successMessageLabel->SetText("");
+            loginState = EnteringWorld;
+        }
         else if (characterSelect_logoutButton->IsPressed())
         {
             token = "";
@@ -384,6 +418,10 @@ void DirectXManager::MouseUp()
             loginState = CharacterSelect;
         }
         break;
+    case EnteringWorld:
+        break;
+    case InGame:
+        break;
     default:
         break;
     }
@@ -395,6 +433,7 @@ void DirectXManager::MouseUp()
     createAccount_cancelButton->SetPressed(false);
 
     characterSelect_newCharacterButton->SetPressed(false);
+    characterSelect_enterWorldButton->SetPressed(false);
     characterSelect_logoutButton->SetPressed(false);
 
     createCharacter_createCharacterButton->SetPressed(false);
@@ -441,6 +480,10 @@ void DirectXManager::OnTab()
         if (!createCharacter_characterNameInput->IsActive())
             createCharacter_characterNameInput->SetActive(true);
         break;
+    case EnteringWorld:
+        break;
+    case InGame:
+        break;
     default:
         break;
     }
@@ -468,6 +511,9 @@ void DirectXManager::InitializeBrushes()
 
     if (FAILED(d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(0.98f, 0.117f, 0.156f, 1.0f), &errorMessageBrush)))
         throw std::exception("Critical error: Unable to create the errorMessage brush!");
+
+    if (FAILED(d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(0.921f, 1.0f, 0.921f, 1.0f), &selectedCharacterBrush)))
+        throw std::exception("Critical error: Unable to create the selectedCharacter brush!");
 }
 
 void DirectXManager::InitializeTextFormats()
@@ -558,8 +604,9 @@ void DirectXManager::InitializeButtons()
 
     // CharacterSelect
     characterSelect_newCharacterButton = new UIButton(15, 20, 140, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_enterWorldButton = new UIButton(170, 20, 120, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "ENTER WORLD", writeFactory, textFormatButtonText, d2dFactory);
     characterSelect_logoutButton = new UIButton(15, 522, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
-
+    
     // CreateCharacter
     createCharacter_createCharacterButton = new UIButton(165, 64, 160, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
     createCharacter_backButton = new UIButton(15, 522, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "BACK", writeFactory, textFormatButtonText, d2dFactory);
@@ -580,11 +627,27 @@ void DirectXManager::InitializeLabels()
     characterSelect_headerLabel->SetText("Character List:");
 
     createCharacter_errorMessageLabel = new UILabel(30.0f, 170.0f, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
+
+    enteringWorld_statusLabel = new UILabel(15.0f, 20.0f, 400.0f, blackBrush, textFormatAccountCreds, d2dDeviceContext, writeFactory, d2dFactory);
+    enteringWorld_statusLabel->SetText("Entering World...");
 }
 
 void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
 {
-    const float color[4] = { 1.0f, 0.5f, 0.3f, 1.0f };
+    float color[4];
+    color[3] = 1.0f;
+    if (loginState == InGame)
+    {
+        color[0] = 1.0f;
+        color[1] = 1.0f;
+        color[2] = 1.0f;
+    }
+    else
+    {
+        color[0] = 1.0f;
+        color[1] = 0.5f;
+        color[2] = 0.3f;
+    }
     immediateContext->ClearRenderTargetView(renderTargetView, color);
     immediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
@@ -616,6 +679,7 @@ void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
         break;
     case CharacterSelect:
         characterSelect_newCharacterButton->Draw();
+        characterSelect_enterWorldButton->Draw();
         characterSelect_logoutButton->Draw();
 
         characterSelect_successMessageLabel->Draw();
@@ -623,9 +687,8 @@ void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
 
         // draw character inputs. starting point: 15,100
         for (auto i = 0; i < characterList->size(); i++)
-        {
-            auto y = 100 + (i * 30);
-        }
+            characterList->at(i)->Draw();
+
         break;
     case CreateCharacter:
         createCharacter_characterNameInput->Draw();
@@ -634,6 +697,11 @@ void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
         createCharacter_backButton->Draw();
 
         createCharacter_errorMessageLabel->Draw();
+        break;
+    case EnteringWorld:
+        enteringWorld_statusLabel->Draw();
+        break;
+    case InGame:
         break;
     default:
         break;
@@ -686,8 +754,7 @@ void DirectXManager::HandleMessage(std::tuple<std::string, std::string, std::vec
 
     switch (loginState)
     {
-    case LoginScreen:
-        
+    case LoginScreen:        
         break;
     case CreateAccount:
         if (messageType == "CREATE_ACCOUNT_FAILED")
@@ -710,6 +777,7 @@ void DirectXManager::HandleMessage(std::tuple<std::string, std::string, std::vec
         else if (messageType == "LOGIN_SUCCESS")
         {
             token = std::get<1>(message);
+            RecreateCharacterListings(std::get<2>(message));
             loginState = CharacterSelect;
             loginScreen_accountNameInput->Clear();
             loginScreen_passwordInput->Clear();
@@ -723,15 +791,31 @@ void DirectXManager::HandleMessage(std::tuple<std::string, std::string, std::vec
             createCharacter_errorMessageLabel->SetText(("Character creation failed. Reason: " + std::get<1>(message)).c_str());
         else if (messageType == "CREATE_CHARACTER_SUCCESS")
         {
-            characterList = std::get<2>(message);
+            RecreateCharacterListings(std::get<2>(message));
             createCharacter_characterNameInput->Clear();
             createCharacter_errorMessageLabel->SetText("");
             characterSelect_successMessageLabel->SetText("Character created successfully.");
             loginState = CharacterSelect;
         }
         break;
+    case EnteringWorld:
+        if (messageType == "ENTER_WORLD_SUCCESSFUL")
+            loginState = InGame;
+        break;
+    case InGame:
+        break;
     default:
         break;
     }
-    
+}
+
+void DirectXManager::RecreateCharacterListings(std::vector<std::string>* characterNames)
+{
+    // delete UICharList pointers
+    characterList->clear();
+    for (auto i = 0; i < characterNames->size(); i++)
+    {
+        const float y = 100 + (i * 40);
+        characterList->push_back(new UICharacterListing(25.0f, y, 260.0f, 30.0f, whiteBrush, selectedCharacterBrush, grayBrush, blackBrush, d2dDeviceContext, characterNames->at(i).c_str(), writeFactory, textFormatAccountCredsInputValue, d2dFactory));
+    }
 }
