@@ -9,13 +9,19 @@
 #include "GameTimer.h"
 #include "LoginState.h"
 #include "UIInput.h"
-#include "UIButton.h"
 #include "UILabel.h"
 #include "UICharacterListing.h"
+#include "UIButton.h"
 #include "SocketManager.h"
+
+struct VERTEX
+{
+    float X, Y, Z;
+};
 
 class DirectXManager
 {
+    ID3D11Buffer* buffer;
     std::vector<UICharacterListing*>* characterList = new std::vector<UICharacterListing*>;
     std::string token = "";
     UINT clientWidth;
@@ -27,9 +33,10 @@ class DirectXManager
     IDXGISwapChain* swapChain;
 
     // D3D
+    ID3D11Device* device;
     ID3D11DeviceContext* immediateContext;
     ID3D11RenderTargetView* renderTargetView;
-    ID3D11DepthStencilView* mDepthStencilView;
+    ID3D11DepthStencilView* depthStencilView;
 
     // D2D
     ID2D1Factory2* d2dFactory;
@@ -99,6 +106,8 @@ class DirectXManager
     void InitializeButtons();
     void InitializeLabels();
     void RecreateCharacterListings(std::vector<std::string>* characterNames);
+    void InitializeGameWorld();
+    char* ReadBytesFromFile(const char *name);
 public:
     DirectXManager(GameTimer& timer, SocketManager& socketManager);
     void Initialize(HWND hWnd);

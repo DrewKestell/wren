@@ -13,6 +13,7 @@
 #include "Windows.h"
 #include "LoginState.h"
 #include "atlstr.h"
+#include <fstream>  
 
 constexpr auto FAILED_TO_CREATE_DEVICE = "Failed to create device.";
 constexpr auto FAILED_TO_GET_BACK_BUFFER = "Failed to get pointer to back buffer.";
@@ -21,7 +22,7 @@ constexpr auto FAILED_TO_SWAP_BUFFER = "Failed to swap buffer.";
 DirectXManager::DirectXManager(GameTimer& timer, SocketManager& socketManager)
     : timer{ timer }, socketManager{ socketManager } {};
 
-LoginState loginState = LoginScreen;
+LoginState loginState = InGame;
 
 std::string ws2s(const std::wstring& wstr)
 {
@@ -34,7 +35,6 @@ std::string ws2s(const std::wstring& wstr)
 void DirectXManager::Initialize(HWND hWnd)
 {
     HRESULT hr;
-    ID3D11Device* device;
     D3D_FEATURE_LEVEL featureLevelsRequested[] =
     {
         D3D_FEATURE_LEVEL_11_1,
@@ -135,21 +135,21 @@ void DirectXManager::Initialize(HWND hWnd)
     depthStencilDesc.CPUAccessFlags = 0;
     depthStencilDesc.MiscFlags = 0;
 
-    ID3D11Texture2D* mDepthStencilBuffer;   
-    hr = device->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer);
+    ID3D11Texture2D* depthStencilBuffer;   
+    hr = device->CreateTexture2D(&depthStencilDesc, 0, &depthStencilBuffer);
     if (FAILED(hr))
         throw std::exception("Failed to create texture 2d.");
-    hr = device->CreateDepthStencilView(mDepthStencilBuffer, 0, &mDepthStencilView);
+    hr = device->CreateDepthStencilView(depthStencilBuffer, 0, &depthStencilView);
     if (FAILED(hr))
         throw std::exception("Failed to create texture depth stencil view.");
 
     // Bind the view to output/merger stage
-    immediateContext->OMSetRenderTargets(1, &renderTargetView, mDepthStencilView);
+    immediateContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 
     // Setup the viewport
     D3D11_VIEWPORT vp;
-    vp.Width = 800;
-    vp.Height = 600;
+    vp.Width = clientWidth;
+    vp.Height = clientHeight;
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     vp.TopLeftX = 0;
@@ -208,6 +208,7 @@ void DirectXManager::Initialize(HWND hWnd)
     InitializeInputs();
     InitializeButtons();
     InitializeLabels();
+    InitializeGameWorld();
 }
 
 void DirectXManager::OnBackspace()
@@ -634,13 +635,14 @@ void DirectXManager::InitializeLabels()
 
 void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
 {
+    HRESULT hr;
     float color[4];
     color[3] = 1.0f;
     if (loginState == InGame)
     {
-        color[0] = 1.0f;
-        color[1] = 1.0f;
-        color[2] = 1.0f;
+        color[0] = 0.5f;
+        color[1] = 0.5f;
+        color[2] = 0.5f;
     }
     else
     {
@@ -649,9 +651,59 @@ void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
         color[2] = 0.3f;
     }
     immediateContext->ClearRenderTargetView(renderTargetView, color);
-    immediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    immediateContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
     d2dDeviceContext->BeginDraw();
+
+    // --- SHARED ---
+    // draw FPS
+    static int frameCnt = 0;
+    static float timeElapsed = 0.0f;
+    frameCnt++;
+
+    if (timer.TotalTime() - timeElapsed >= 1)
+    {
+        float fps = (float)frameCnt;
+
+        std::wostringstream outFPS;
+        outFPS.precision(6);
+        outFPS << "FPS: " << fps;
+
+        if (FAILED(writeFactory->CreateTextLayout(outFPS.str().c_str(), (UINT32)outFPS.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutFPS)))
+            throw std::exception("Critical error: Failed to create the text layout for FPS information!");
+
+        frameCnt = 0;
+        timeElapsed += 1.0f;
+
+        if (token != "")
+            socketManager.SendPacket(OPCODE_HEARTBEAT, 1, token);
+    }
+
+    if (textLayoutFPS != nullptr)
+        d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 540.0f), textLayoutFPS, blackBrush);
+
+    // draw MousePos
+    std::wostringstream outMousePos;
+    outMousePos.precision(6);
+    outMousePos << "MousePosX: " << mouseX << ", MousePosY: " << mouseY;
+    writeFactory->CreateTextLayout(outMousePos.str().c_str(), (UINT32)outMousePos.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutMousePos);
+    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
+
+    D2D1_TAG tag1;
+    D2D1_TAG tag2;
+    /*hr = d2dDeviceContext->EndDraw(&tag1, &tag2);
+    if (FAILED(hr))
+        throw std::exception("EndDraw failed.");*/
+
+    hr = d2dDeviceContext->EndDraw(&tag1, &tag2);
+    if (hr == D2DERR_RECREATE_TARGET)
+    {
+        immediateContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+        return;
+    }
+
+    UINT stride = sizeof(VERTEX);
+    UINT offset = 0;
 
     switch (loginState)
     {
@@ -702,50 +754,17 @@ void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
         enteringWorld_statusLabel->Draw();
         break;
     case InGame:
+        immediateContext->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
+        immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        immediateContext->Draw(3, 0);
         break;
     default:
         break;
     }
     
-    // --- SHARED ---
-    // draw FPS
-    static int frameCnt = 0;
-    static float timeElapsed = 0.0f;
-    frameCnt++;
-
-    if (timer.TotalTime() - timeElapsed >= 1)
-    {
-        float fps = (float)frameCnt;
-
-        std::wostringstream outFPS;
-        outFPS.precision(6);
-        outFPS << "FPS: " << fps;
-
-        if (FAILED(writeFactory->CreateTextLayout(outFPS.str().c_str(), (UINT32)outFPS.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutFPS)))
-            throw std::exception("Critical error: Failed to create the text layout for FPS information!");
-
-        frameCnt = 0;
-        timeElapsed += 1.0f;
-
-        if (token != "")
-            socketManager.SendPacket(OPCODE_HEARTBEAT, 1, token);
-    }
-
-    if (textLayoutFPS != nullptr)
-        d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 540.0f), textLayoutFPS, blackBrush);
-
-    // draw MousePos
-    std::wostringstream outMousePos;
-    outMousePos.precision(6);
-    outMousePos << "MousePosX: " << mouseX << ", MousePosY: " << mouseY;
-    writeFactory->CreateTextLayout(outMousePos.str().c_str(), (UINT32)outMousePos.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutMousePos);
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
-
-    if (FAILED(d2dDeviceContext->EndDraw()))
-        throw std::exception("Failed to call EndDraw.");
-
-    if (FAILED(swapChain->Present(0, 0)))
-        throw std::exception(FAILED_TO_SWAP_BUFFER);
+    hr = swapChain->Present(0, 0);
+    if (FAILED(hr))
+        throw std::exception("Present failed.");
 }
 
 void DirectXManager::HandleMessage(std::tuple<std::string, std::string, std::vector<std::string>*> message)
@@ -818,4 +837,61 @@ void DirectXManager::RecreateCharacterListings(std::vector<std::string>* charact
         const float y = 100 + (i * 40);
         characterList->push_back(new UICharacterListing(25.0f, y, 260.0f, 30.0f, whiteBrush, selectedCharacterBrush, grayBrush, blackBrush, d2dDeviceContext, characterNames->at(i).c_str(), writeFactory, textFormatAccountCredsInputValue, d2dFactory));
     }
+}
+
+void DirectXManager::InitializeGameWorld()
+{
+    VERTEX OurVertices[] =
+    {
+        { 0.0f, 0.1f, 0.3f }, { 0.11f, -0.1f, 0.3f }, { -0.11f, -0.1f, 0.3f }
+    };
+
+    D3D11_BUFFER_DESC bufferDesc;
+    bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    bufferDesc.ByteWidth = sizeof(OurVertices) * ARRAYSIZE(OurVertices);
+    bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    bufferDesc.CPUAccessFlags = 0;
+    bufferDesc.MiscFlags = 0;
+
+    D3D11_SUBRESOURCE_DATA InitData;
+    InitData.pSysMem = OurVertices;
+    InitData.SysMemPitch = 0;
+    InitData.SysMemSlicePitch = 0;
+
+    device->CreateBuffer(&bufferDesc, &InitData, &buffer);
+
+    char* vertexShaderBytes = ReadBytesFromFile("VertexShader.cso");
+    ID3D11VertexShader* vertexShader;
+    device->CreateVertexShader(vertexShaderBytes, sizeof(vertexShaderBytes) / sizeof(vertexShaderBytes[0]), nullptr, &vertexShader);
+
+    char* pixelShaderBytes = ReadBytesFromFile("PixelShader.cso");
+    ID3D11PixelShader* pixelShader;
+    device->CreatePixelShader(pixelShaderBytes, sizeof(pixelShaderBytes) / sizeof(pixelShaderBytes[0]), nullptr, &pixelShader);
+
+    immediateContext->VSSetShader(vertexShader, nullptr, 0);
+    immediateContext->PSSetShader(pixelShader, nullptr, 0);
+
+    D3D11_INPUT_ELEMENT_DESC ied[] =
+    {
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0}
+    };
+
+    ID3D11InputLayout* inputLayout;
+    device->CreateInputLayout(ied, ARRAYSIZE(ied), vertexShaderBytes, sizeof(vertexShaderBytes) / sizeof(vertexShaderBytes[0]), &inputLayout);
+    immediateContext->IASetInputLayout(inputLayout);
+}
+
+char* DirectXManager::ReadBytesFromFile(const char *name)
+{
+    char buf[256];
+    GetCurrentDirectoryA(256, buf);
+
+    std::ifstream fl(name);
+    fl.seekg(0, std::ios::end);
+    size_t len = fl.tellg();
+    char *ret = new char[len];
+    fl.seekg(0, std::ios::beg);
+    fl.read(ret, len);
+    fl.close();
+    return ret;
 }
