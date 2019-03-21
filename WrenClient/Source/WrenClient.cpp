@@ -128,6 +128,7 @@ void OnMouseMove(WPARAM wParam, FLOAT x, FLOAT y)
 {
     mouseX = x;
     mouseY = y;
+    dxManager->MouseMove(x, y);
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -163,7 +164,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case 0x0A: // Process a linefeed.           
             break;
 
-        case 0x1B: // Process an escape.            
+        case 0x1B: // Process an escape. 
+            dxManager->OnEscape();
             break;
 
         case 0x09: // Process a tab.          

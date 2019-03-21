@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Source\DirectXManager.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
+    <ClCompile Include="Source\UIPanel.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\UIButton.cpp" />
     <ClCompile Include="Source\UICharacterListing.cpp" />
@@ -32,6 +33,7 @@
     <ClInclude Include="Source\DirectXManager.h" />
     <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\LoginState.h" />
+    <ClInclude Include="Source\UIPanel.h" />
     <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\UIButton.h" />
     <ClInclude Include="Source\UICharacterListing.h" />

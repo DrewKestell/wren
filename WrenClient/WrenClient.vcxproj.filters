@@ -9,6 +9,7 @@
     <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\UILabel.cpp" />
     <ClCompile Include="Source\UICharacterListing.cpp" />
+    <ClCompile Include="Source\UIPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DirectXManager.h" />
@@ -20,6 +21,7 @@
     <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\UILabel.h" />
     <ClInclude Include="Source\UICharacterListing.h" />
+    <ClInclude Include="Source\UIPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

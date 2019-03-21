@@ -66,8 +66,9 @@ void DirectXManager::Initialize(HWND hWnd)
     if (FAILED(hr))
         throw std::exception(FAILED_TO_CREATE_DEVICE);
 
-    UINT m4xMsaaQuality;
-    hr = device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, 4, &m4xMsaaQuality);    if (FAILED(hr))
+    UINT msaaCount = 8;
+    UINT m4xMsaaQuality = 0;
+    hr = device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, msaaCount, &m4xMsaaQuality);    if (FAILED(hr))
         throw std::exception("Failed to check MSAA quality.");
 
     DXGI_SWAP_CHAIN_DESC sd;
@@ -80,7 +81,7 @@ void DirectXManager::Initialize(HWND hWnd)
     sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     sd.OutputWindow = hWnd;
-    sd.SampleDesc.Count = 4;
+    sd.SampleDesc.Count = msaaCount;
     sd.SampleDesc.Quality = m4xMsaaQuality - 1;
     sd.Windowed = TRUE;
     sd.Flags = 0;
@@ -119,7 +120,8 @@ void DirectXManager::Initialize(HWND hWnd)
     if (FAILED(hr))
         throw std::exception(FAILED_TO_GET_BACK_BUFFER);
 
-    // Create a render-target view   
+    // Create a render-target view 
+    D3D11_RENDER_TARGET_VIEW_DESC viewDesc;
     device->CreateRenderTargetView(backBuffer, NULL, &renderTargetView);
 
     // Create Depth/Stencil Buffer and View
@@ -129,7 +131,7 @@ void DirectXManager::Initialize(HWND hWnd)
     depthStencilDesc.MipLevels = 1;
     depthStencilDesc.ArraySize = 1;
     depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    depthStencilDesc.SampleDesc.Count = 4;
+    depthStencilDesc.SampleDesc.Count = msaaCount;
     depthStencilDesc.SampleDesc.Quality = m4xMsaaQuality - 1;    depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
     depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
     depthStencilDesc.CPUAccessFlags = 0;
@@ -139,12 +141,22 @@ void DirectXManager::Initialize(HWND hWnd)
     hr = device->CreateTexture2D(&depthStencilDesc, 0, &depthStencilBuffer);
     if (FAILED(hr))
         throw std::exception("Failed to create texture 2d.");
-    hr = device->CreateDepthStencilView(depthStencilBuffer, 0, &depthStencilView);
+
+    CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2DMS);
+    hr = device->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDesc, &depthStencilView);
     if (FAILED(hr))
         throw std::exception("Failed to create texture depth stencil view.");
 
     // Bind the view to output/merger stage
     immediateContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+
+    CD3D11_RASTERIZER_DESC rasterDesc(D3D11_FILL_SOLID, D3D11_CULL_NONE, FALSE,
+        D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
+        D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE);
+
+    ID3D11RasterizerState* rasterState;
+    device->CreateRasterizerState(&rasterDesc, &rasterState);
+    immediateContext->RSSetState(rasterState);
 
     // Setup the viewport
     D3D11_VIEWPORT vp;
@@ -208,6 +220,7 @@ void DirectXManager::Initialize(HWND hWnd)
     InitializeInputs();
     InitializeButtons();
     InitializeLabels();
+    InitializePanels();
     InitializeGameWorld();
 }
 
@@ -234,6 +247,53 @@ void DirectXManager::OnBackspace()
     case CreateCharacter:
         if (createCharacter_characterNameInput->IsActive())
             createCharacter_characterNameInput->PopCharacter();
+        break;
+    case EnteringWorld:
+        break;
+    case InGame:
+        break;
+    default:
+        break;
+    }
+}
+
+void DirectXManager::OnEscape()
+{
+    switch (loginState)
+    {
+    case LoginScreen:
+        break;
+    case CreateAccount:
+        break;
+    case Connecting:
+        break;
+    case CharacterSelect:
+        break;
+    case CreateCharacter:
+        break;
+    case EnteringWorld:
+        break;
+    case InGame:
+        gameSettingsPanel->SetVisible(!gameSettingsPanel->IsVisible());
+        break;
+    default:
+        break;
+    }
+}
+
+void DirectXManager::OnF1()
+{
+    switch (loginState)
+    {
+    case LoginScreen:
+        break;
+    case CreateAccount:
+        break;
+    case Connecting:
+        break;
+    case CharacterSelect:
+        break;
+    case CreateCharacter:
         break;
     case EnteringWorld:
         break;
@@ -271,6 +331,33 @@ void DirectXManager::OnKeyPress(TCHAR c)
     case EnteringWorld:
         break;
     case InGame:
+        if (c == 'z')
+            gameEditorPanel->SetVisible(!gameEditorPanel->IsVisible());
+        break;
+    default:
+        break;
+    }
+}
+
+void DirectXManager::MouseMove(FLOAT mousePosX, FLOAT mousePosY)
+{
+    switch (loginState)
+    {
+    case LoginScreen:
+        break;
+    case CreateAccount:
+        break;
+    case Connecting:
+        break;
+    case CharacterSelect:
+        break;
+    case CreateCharacter:
+        break;
+    case EnteringWorld:
+        break;
+    case InGame:
+        if (gameEditorPanel->IsVisible() && gameEditorPanel->IsDragging())
+            gameEditorPanel->UpdatePosition(mousePosX, mousePosY);
         break;
     default:
         break;
@@ -335,6 +422,8 @@ void DirectXManager::MouseDown(FLOAT mousePosX, FLOAT mousePosY)
     case EnteringWorld:
         break;
     case InGame:
+        if (gameEditorPanel->IsVisible() && gameEditorPanel->DetectHeaderClick(mousePosX, mousePosY))
+            gameEditorPanel->StartDragging(mousePosX, mousePosY);
         break;
     default:
         break;
@@ -439,6 +528,8 @@ void DirectXManager::MouseUp()
 
     createCharacter_createCharacterButton->SetPressed(false);
     createCharacter_backButton->SetPressed(false);
+
+    gameEditorPanel->StopDragging();
 }
 
 void DirectXManager::OnTab()
@@ -633,6 +724,12 @@ void DirectXManager::InitializeLabels()
     enteringWorld_statusLabel->SetText("Entering World...");
 }
 
+void DirectXManager::InitializePanels()
+{
+    gameSettingsPanel = new UIPanel(false, (clientWidth - 400.0f) / 2.0f, (clientHeight - 200.0f) / 2.0f, 400.0f, 200.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, writeFactory, d2dFactory);
+    gameEditorPanel = new UIPanel(true, 590.0f, 10.0f, 200.0f, 400.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, writeFactory, d2dFactory);
+}
+
 void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
 {
     HRESULT hr;
@@ -689,19 +786,6 @@ void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
     writeFactory->CreateTextLayout(outMousePos.str().c_str(), (UINT32)outMousePos.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutMousePos);
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
 
-    D2D1_TAG tag1;
-    D2D1_TAG tag2;
-    /*hr = d2dDeviceContext->EndDraw(&tag1, &tag2);
-    if (FAILED(hr))
-        throw std::exception("EndDraw failed.");*/
-
-    hr = d2dDeviceContext->EndDraw(&tag1, &tag2);
-    if (hr == D2DERR_RECREATE_TARGET)
-    {
-        immediateContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
-        return;
-    }
-
     UINT stride = sizeof(VERTEX);
     UINT offset = 0;
 
@@ -757,10 +841,17 @@ void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
         immediateContext->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
         immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         immediateContext->Draw(3, 0);
+
+        if (gameSettingsPanel->IsVisible())
+            gameSettingsPanel->Draw();
+        if (gameEditorPanel->IsVisible())
+            gameEditorPanel->Draw();
         break;
     default:
         break;
     }
+
+    d2dDeviceContext->EndDraw();
     
     hr = swapChain->Present(0, 0);
     if (FAILED(hr))
@@ -843,7 +934,7 @@ void DirectXManager::InitializeGameWorld()
 {
     VERTEX OurVertices[] =
     {
-        { 0.0f, 0.1f, 0.3f }, { 0.11f, -0.1f, 0.3f }, { -0.11f, -0.1f, 0.3f }
+        { 0.0f, 0.5f, 0.5f }, { 0.5f, -0.5f, 0.5f }, { -0.5f, -0.5f, 0.5f }
     };
 
     D3D11_BUFFER_DESC bufferDesc;
@@ -860,13 +951,13 @@ void DirectXManager::InitializeGameWorld()
 
     device->CreateBuffer(&bufferDesc, &InitData, &buffer);
 
-    char* vertexShaderBytes = ReadBytesFromFile("VertexShader.cso");
+    ShaderBuffer vertexShaderBytes = LoadShader(L"VertexShader.cso");
     ID3D11VertexShader* vertexShader;
-    device->CreateVertexShader(vertexShaderBytes, sizeof(vertexShaderBytes) / sizeof(vertexShaderBytes[0]), nullptr, &vertexShader);
+    device->CreateVertexShader(vertexShaderBytes.buffer, vertexShaderBytes.size, nullptr, &vertexShader);
 
-    char* pixelShaderBytes = ReadBytesFromFile("PixelShader.cso");
+    ShaderBuffer pixelShaderBytes = LoadShader(L"PixelShader.cso");
     ID3D11PixelShader* pixelShader;
-    device->CreatePixelShader(pixelShaderBytes, sizeof(pixelShaderBytes) / sizeof(pixelShaderBytes[0]), nullptr, &pixelShader);
+    device->CreatePixelShader(pixelShaderBytes.buffer, pixelShaderBytes.size, nullptr, &pixelShader);
 
     immediateContext->VSSetShader(vertexShader, nullptr, 0);
     immediateContext->PSSetShader(pixelShader, nullptr, 0);
@@ -877,21 +968,34 @@ void DirectXManager::InitializeGameWorld()
     };
 
     ID3D11InputLayout* inputLayout;
-    device->CreateInputLayout(ied, ARRAYSIZE(ied), vertexShaderBytes, sizeof(vertexShaderBytes) / sizeof(vertexShaderBytes[0]), &inputLayout);
+    device->CreateInputLayout(ied, ARRAYSIZE(ied), vertexShaderBytes.buffer, vertexShaderBytes.size, &inputLayout);
     immediateContext->IASetInputLayout(inputLayout);
 }
 
-char* DirectXManager::ReadBytesFromFile(const char *name)
+ShaderBuffer DirectXManager::LoadShader(std::wstring filename)
 {
-    char buf[256];
-    GetCurrentDirectoryA(256, buf);
+    // load precompiled shaders from .cso objects
+    ShaderBuffer sb;
+    byte* fileData = nullptr;
 
-    std::ifstream fl(name);
-    fl.seekg(0, std::ios::end);
-    size_t len = fl.tellg();
-    char *ret = new char[len];
-    fl.seekg(0, std::ios::beg);
-    fl.read(ret, len);
-    fl.close();
-    return ret;
+    // open the file
+    std::ifstream csoFile(filename, std::ios::in | std::ios::binary | std::ios::ate);
+
+    if (csoFile.is_open())
+    {
+        // get shader size
+        sb.size = (unsigned int)csoFile.tellg();
+
+        // collect shader data
+        fileData = new byte[sb.size];
+        csoFile.seekg(0, std::ios::beg);
+        csoFile.read(reinterpret_cast<char*>(fileData), sb.size);
+        csoFile.close();
+        sb.buffer = fileData;
+    }
+    else
+        throw std::exception("Critical error: Unable to open the compiled shader object!");
+
+    // return the shader buffer
+    return sb;
 }

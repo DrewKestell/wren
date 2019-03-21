@@ -10,6 +10,7 @@
 #include "LoginState.h"
 #include "UIInput.h"
 #include "UILabel.h"
+#include "UIPanel.h"
 #include "UICharacterListing.h"
 #include "UIButton.h"
 #include "SocketManager.h"
@@ -17,6 +18,12 @@
 struct VERTEX
 {
     float X, Y, Z;
+};
+
+struct ShaderBuffer
+{
+    BYTE* buffer;
+    int size;
 };
 
 class DirectXManager
@@ -100,19 +107,27 @@ class DirectXManager
     UILabel* createCharacter_errorMessageLabel;
     UILabel* enteringWorld_statusLabel;
 
+    // Panels
+    UIPanel* gameSettingsPanel;
+    UIPanel* gameEditorPanel;
+
     void InitializeBrushes();
     void InitializeTextFormats();
     void InitializeInputs();
     void InitializeButtons();
     void InitializeLabels();
+    void InitializePanels();
     void RecreateCharacterListings(std::vector<std::string>* characterNames);
     void InitializeGameWorld();
-    char* ReadBytesFromFile(const char *name);
+    ShaderBuffer LoadShader(std::wstring filename);
 public:
     DirectXManager(GameTimer& timer, SocketManager& socketManager);
     void Initialize(HWND hWnd);
     void OnBackspace();
+    void OnEscape();
+    void OnF1();
     void OnKeyPress(TCHAR c);
+    void MouseMove(FLOAT mousePosX, FLOAT mousePosY);
     void MouseDown(FLOAT mousePosX, FLOAT mousePosY);
     void MouseUp();
     void OnTab();
