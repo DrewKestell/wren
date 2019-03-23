@@ -9,23 +9,22 @@ void UIPanel::StartDragging(FLOAT mousePosX, FLOAT mousePosY)
 
 void UIPanel::UpdatePosition(FLOAT mousePosX, FLOAT mousePosY)
 {
-    locationX = (mousePosX - lastDragX);
-    locationY = (mousePosY - lastDragY);
+    locationX = locationX + (mousePosX - lastDragX);
+    locationY = locationY + (mousePosY - lastDragY);
     lastDragX = mousePosX;
     lastDragY = mousePosY;
 
     d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(locationX, locationY, locationX + width, locationY + HEADER_HEIGHT), 3.0f, 3.0f), &headerGeometry);
-    d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(locationX, HEADER_HEIGHT, locationX + width, HEADER_HEIGHT + height), 3.0f, 3.0f), &bodyGeometry);
+    d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(locationX, locationY + HEADER_HEIGHT, locationX + width, locationY + HEADER_HEIGHT + height), 3.0f, 3.0f), &bodyGeometry);
 }
 
 bool UIPanel::DetectHeaderClick(FLOAT x, FLOAT y)
 {
-    if (isDraggable)
+    if (!isDraggable)
         return false;
-    bool isWithinX = x >= locationX && x <= locationX + width;
-    bool isWithinY = y >= locationY && y <= locationY + HEADER_HEIGHT;
-    bool both = isWithinX && isWithinY;
-    return both;
+
+    bool isTrue = x >= locationX && x <= locationX + width && y >= locationY && y <= locationY + HEADER_HEIGHT;
+    return isTrue;
 }
 
 void UIPanel::Draw()

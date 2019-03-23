@@ -13,7 +13,9 @@ GameTimer::GameTimer() :
     __int64 countsPerSec;
     QueryPerformanceFrequency((LARGE_INTEGER*)&countsPerSec);
     mSecondsPerCount = 1.0 / (double)countsPerSec;
-}void GameTimer::Tick()
+}
+
+void GameTimer::Tick()
 {
     if (mStopped)
     {
@@ -40,7 +42,9 @@ GameTimer::GameTimer() :
 float GameTimer::DeltaTime()
 {
     return (float)mDeltaTime;
-}void GameTimer::Reset()
+}
+
+void GameTimer::Reset()
 {
     __int64 currTime;
     QueryPerformanceCounter((LARGE_INTEGER*)&currTime);
@@ -48,7 +52,9 @@ float GameTimer::DeltaTime()
     mPrevTime = currTime;
     mStopTime = 0;
     mStopped = false;
-}void GameTimer::Stop()
+}
+
+void GameTimer::Stop()
 {
     // If we are already stopped, then don't do anything.
     if (!mStopped)
@@ -60,7 +66,9 @@ float GameTimer::DeltaTime()
         mStopTime = currTime;
         mStopped = true;
     }
-}void GameTimer::Start()
+}
+
+void GameTimer::Start()
 {
     __int64 startTime;
     QueryPerformanceCounter((LARGE_INTEGER*)&startTime);
@@ -82,7 +90,9 @@ float GameTimer::DeltaTime()
         mStopTime = 0;
         mStopped = false;
     }
-}float GameTimer::TotalTime()
+}
+
+float GameTimer::TotalTime()
 {
     // If we are stopped, do not count the time that has passed
     // since we stopped. Moreover, if we previously already had

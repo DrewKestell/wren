@@ -22,7 +22,7 @@ constexpr auto FAILED_TO_SWAP_BUFFER = "Failed to swap buffer.";
 DirectXManager::DirectXManager(GameTimer& timer, SocketManager& socketManager)
     : timer{ timer }, socketManager{ socketManager } {};
 
-LoginState loginState = InGame;
+LoginState loginState = LoginScreen;
 
 std::string ws2s(const std::wstring& wstr)
 {
@@ -68,7 +68,8 @@ void DirectXManager::Initialize(HWND hWnd)
 
     UINT msaaCount = 8;
     UINT m4xMsaaQuality = 0;
-    hr = device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, msaaCount, &m4xMsaaQuality);    if (FAILED(hr))
+    hr = device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, msaaCount, &m4xMsaaQuality);
+    if (FAILED(hr))
         throw std::exception("Failed to check MSAA quality.");
 
     DXGI_SWAP_CHAIN_DESC sd;
@@ -132,7 +133,8 @@ void DirectXManager::Initialize(HWND hWnd)
     depthStencilDesc.ArraySize = 1;
     depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
     depthStencilDesc.SampleDesc.Count = msaaCount;
-    depthStencilDesc.SampleDesc.Quality = m4xMsaaQuality - 1;    depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthStencilDesc.SampleDesc.Quality = m4xMsaaQuality - 1;
+    depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
     depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
     depthStencilDesc.CPUAccessFlags = 0;
     depthStencilDesc.MiscFlags = 0;
