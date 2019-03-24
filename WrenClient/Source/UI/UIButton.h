@@ -4,16 +4,15 @@
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 #include <sstream>
+#include "../GameObject.h"
 
-class UIButton
+class UIButton : public GameObject
 {
     const char* buttonText[20];
     bool pressed = false;
     bool enabled = true;
-    int locationX;
-    int locationY;
-    int width;
-    int height;
+    float width;
+    float height;
     ID2D1SolidColorBrush* buttonBrush;
     ID2D1SolidColorBrush* pressedButtonBrush;
     ID2D1SolidColorBrush* buttonBorderBrush;
@@ -24,10 +23,9 @@ class UIButton
     IDWriteTextLayout* buttonTextLayout;
 public:
     UIButton(
-        const int locationX,
-        const int locationY,
-        const int width,
-        const int height,
+        const DirectX::XMFLOAT3 position,
+        const float width,
+        const float height,
         ID2D1SolidColorBrush* buttonBrush,
         ID2D1SolidColorBrush* pressedButtonBrush,
         ID2D1SolidColorBrush* buttonBorderBrush,
@@ -37,8 +35,7 @@ public:
         IDWriteFactory2* writeFactory,
         IDWriteTextFormat* buttonTextFormat,
         ID2D1Factory2* d2dFactory) :
-        locationX{ locationX },
-        locationY{ locationY },
+        GameObject(position),
         width{ width },
         height{ height },
         buttonBrush{ buttonBrush },
@@ -53,16 +50,15 @@ public:
         outButtonText << inButtonText;
         if (FAILED(writeFactory->CreateTextLayout(outButtonText.str().c_str(), (UINT32)outButtonText.str().size(), buttonTextFormat, width, height, &buttonTextLayout)))
             throw std::exception("Failed to create text layout for UIInput.");
-
-        d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(locationX, locationY, locationX + width, locationY + height), 3.0f, 3.0f), &buttonGeometry);
+        d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), &buttonGeometry);
 
     }
     bool IsEnabled();
-    void SetEnabled(bool isEnabled);
+    void SetEnabled(const bool isEnabled);
     bool IsPressed();
-    void SetPressed(bool isPressed);
-    void Draw();
-    bool DetectClick(FLOAT x, FLOAT y);
+    void SetPressed(const bool isPressed);
+    virtual void Draw();
+    bool DetectClick(const float x, const float y);
 };
 
 #endif

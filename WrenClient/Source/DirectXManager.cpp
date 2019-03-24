@@ -122,7 +122,6 @@ void DirectXManager::Initialize(HWND hWnd)
         throw std::exception(FAILED_TO_GET_BACK_BUFFER);
 
     // Create a render-target view 
-    D3D11_RENDER_TARGET_VIEW_DESC viewDesc;
     device->CreateRenderTargetView(backBuffer, NULL, &renderTargetView);
 
     // Create Depth/Stencil Buffer and View
@@ -162,12 +161,12 @@ void DirectXManager::Initialize(HWND hWnd)
 
     // Setup the viewport
     D3D11_VIEWPORT vp;
-    vp.Width = clientWidth;
-    vp.Height = clientHeight;
+    vp.Width = (float)clientWidth;
+    vp.Height = (float)clientHeight;
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
-    vp.TopLeftX = 0;
-    vp.TopLeftY = 0;
+    vp.TopLeftX = 0.0f;
+    vp.TopLeftY = 0.0f;
     immediateContext->RSSetViewports(1, &vp);
 
     // DWriteFactory
@@ -675,61 +674,72 @@ void DirectXManager::InitializeTextFormats()
 void DirectXManager::InitializeInputs()
 {
     // LoginScreen
-    loginScreen_accountNameInput = new UIInput(false, 15, 20, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
-    loginScreen_passwordInput = new UIInput(true, 15, 50, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
+    loginScreen_accountNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, false, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+    loginScreen_passwordInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 50.0f, 0.0f}, true, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
 
     // CreateAccount
-    createAccount_accountNameInput = new UIInput(false, 15, 20, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
-    createAccount_passwordInput = new UIInput(true, 15, 50, 120, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
+    createAccount_accountNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, false, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+    createAccount_passwordInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 50.0f, 0.0f }, true, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
 
     // CreateCharacter
-    createCharacter_characterNameInput = new UIInput(false, 15, 20, 140, 260, 24, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Character Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+    createCharacter_characterNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, false, 140.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Character Name:", writeFactory, textFormatAccountCreds, d2dFactory);
 }
 
 void DirectXManager::InitializeButtons()
 {
     // LoginScreen
-    loginScreen_loginButton = new UIButton(145, 96, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatButtonText, d2dFactory);
-    loginScreen_createAccountButton = new UIButton(15, 522, 160, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE ACCOUNT", writeFactory, textFormatButtonText, d2dFactory);
+    loginScreen_loginButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatButtonText, d2dFactory);
+    loginScreen_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE ACCOUNT", writeFactory, textFormatButtonText, d2dFactory);
 
     // CreateAccount
-    createAccount_createAccountButton = new UIButton(145, 96, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE", writeFactory, textFormatButtonText, d2dFactory);
-    createAccount_cancelButton = new UIButton(15, 522, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CANCEL", writeFactory, textFormatButtonText, d2dFactory);
+    createAccount_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE", writeFactory, textFormatButtonText, d2dFactory);
+    createAccount_cancelButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CANCEL", writeFactory, textFormatButtonText, d2dFactory);
 
     // CharacterSelect
-    characterSelect_newCharacterButton = new UIButton(15, 20, 140, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
-    characterSelect_enterWorldButton = new UIButton(170, 20, 120, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "ENTER WORLD", writeFactory, textFormatButtonText, d2dFactory);
-    characterSelect_logoutButton = new UIButton(15, 522, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_newCharacterButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, 140.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_enterWorldButton = new UIButton(DirectX::XMFLOAT3{ 170.0f, 20.0f, 0.0f }, 120.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "ENTER WORLD", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_logoutButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
     
     // CreateCharacter
-    createCharacter_createCharacterButton = new UIButton(165, 64, 160, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
-    createCharacter_backButton = new UIButton(15, 522, 80, 24, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "BACK", writeFactory, textFormatButtonText, d2dFactory);
+    createCharacter_createCharacterButton = new UIButton(DirectX::XMFLOAT3{ 165.0f, 64.0f, 0.0f }, 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+    createCharacter_backButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "BACK", writeFactory, textFormatButtonText, d2dFactory);
 }
 
 void DirectXManager::InitializeLabels()
 {
-    loginScreen_successMessageLabel = new UILabel(30.0f, 170.0f, 400.0f, successMessageBrush, textFormatSuccessMessage, d2dDeviceContext, writeFactory, d2dFactory);
-    loginScreen_errorMessageLabel = new UILabel(30.0f, 170.0f, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
+    loginScreen_successMessageLabel = new UILabel(DirectX::XMFLOAT3{30.0f, 170.0f, 0.0f}, 400.0f, successMessageBrush, textFormatSuccessMessage, d2dDeviceContext, writeFactory, d2dFactory);
+    loginScreen_errorMessageLabel = new UILabel(DirectX::XMFLOAT3{30.0f, 170.0f, 0.0f}, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
 
-    createAccount_errorMessageLabel = new UILabel(30.0f, 170.0f, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
+    createAccount_errorMessageLabel = new UILabel(DirectX::XMFLOAT3{30.0f, 170.0f, 0.0f}, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
 
-    connecting_statusLabel = new UILabel(15.0f, 20.0f, 400.0f, blackBrush, textFormatAccountCreds, d2dDeviceContext, writeFactory, d2dFactory);
+    connecting_statusLabel = new UILabel(DirectX::XMFLOAT3{15.0f, 20.0f, 0.0f}, 400.0f, blackBrush, textFormatAccountCreds, d2dDeviceContext, writeFactory, d2dFactory);
     connecting_statusLabel->SetText("Connecting...");
 
-    characterSelect_successMessageLabel = new UILabel(30.0f, 400.0f, 400.0f, successMessageBrush, textFormatSuccessMessage, d2dDeviceContext, writeFactory, d2dFactory);
-    characterSelect_headerLabel = new UILabel(15.0f, 60.0f, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory);
+    characterSelect_successMessageLabel = new UILabel(DirectX::XMFLOAT3{30.0f, 400.0f, 0.0f}, 400.0f, successMessageBrush, textFormatSuccessMessage, d2dDeviceContext, writeFactory, d2dFactory);
+    characterSelect_headerLabel = new UILabel(DirectX::XMFLOAT3{15.0f, 60.0f, 0.0f}, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory);
     characterSelect_headerLabel->SetText("Character List:");
 
-    createCharacter_errorMessageLabel = new UILabel(30.0f, 170.0f, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
+    createCharacter_errorMessageLabel = new UILabel(DirectX::XMFLOAT3{30.0f, 170.0f, 0.0f}, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
 
-    enteringWorld_statusLabel = new UILabel(15.0f, 20.0f, 400.0f, blackBrush, textFormatAccountCreds, d2dDeviceContext, writeFactory, d2dFactory);
+    enteringWorld_statusLabel = new UILabel(DirectX::XMFLOAT3{ 5.0f, 20.0f, 0.0f}, 400.0f, blackBrush, textFormatAccountCreds, d2dDeviceContext, writeFactory, d2dFactory);
     enteringWorld_statusLabel->SetText("Entering World...");
 }
 
 void DirectXManager::InitializePanels()
 {
-    gameSettingsPanel = new UIPanel(false, (clientWidth - 400.0f) / 2.0f, (clientHeight - 200.0f) / 2.0f, 400.0f, 200.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, writeFactory, d2dFactory);
-    gameEditorPanel = new UIPanel(true, 590.0f, 10.0f, 200.0f, 400.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, writeFactory, d2dFactory);
+    const auto gameSettingsPanelX = (clientWidth - 400.0f) / 2.0f;
+    const auto gameSettingsPanelY = (clientHeight - 200.0f) / 2.0f;
+    auto gameSettingsPanelHeader = new UILabel{DirectX::XMFLOAT3{2.0f, 2.0f, 0.0f}, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory};
+    gameSettingsPanelHeader->SetText("Game Settings");
+    gameSettingsPanel = new UIPanel(DirectX::XMFLOAT3{gameSettingsPanelX, gameSettingsPanelY, 0.0f}, false, 400.0f, 200.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
+    gameSettingsPanel->AddChildComponent(gameSettingsPanelHeader);
+
+    const auto gameEditorPanelX = 580.0f;
+    const auto gameEditorPanelY = 5.0f;
+    auto gameEditorPanelHeader = new UILabel(DirectX::XMFLOAT3{2.0f, 2.0f, 0.0f}, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory);
+    gameEditorPanelHeader->SetText("Game Editor");
+    gameEditorPanel = new UIPanel(DirectX::XMFLOAT3{gameEditorPanelX, gameEditorPanelY, 0.0f}, true, 200.0f, 400.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
+    gameEditorPanel->AddChildComponent(gameEditorPanelHeader);
 }
 
 void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
@@ -923,15 +933,16 @@ void DirectXManager::HandleMessage(std::tuple<std::string, std::string, std::vec
 
 void DirectXManager::RecreateCharacterListings(std::vector<std::string>* characterNames)
 {
-    // delete UICharList pointers
+    for (auto i = 0; i < characterList->size(); i++)
+        delete(characterList->at(i));
     characterList->clear();
+
     for (auto i = 0; i < characterNames->size(); i++)
     {
-        const float y = 100 + (i * 40);
-        characterList->push_back(new UICharacterListing(25.0f, y, 260.0f, 30.0f, whiteBrush, selectedCharacterBrush, grayBrush, blackBrush, d2dDeviceContext, characterNames->at(i).c_str(), writeFactory, textFormatAccountCredsInputValue, d2dFactory));
+        const float y = 100.0f + (i * 40.0f);
+        characterList->push_back(new UICharacterListing(DirectX::XMFLOAT3{ 25.0f, y, 0.0f }, 260.0f, 30.0f, whiteBrush, selectedCharacterBrush, grayBrush, blackBrush, d2dDeviceContext, characterNames->at(i).c_str(), writeFactory, textFormatAccountCredsInputValue, d2dFactory));
     }
 }
-
 void DirectXManager::InitializeGameWorld()
 {
     VERTEX OurVertices[] =

@@ -3,13 +3,12 @@
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 #include <sstream>
+#include "../GameObject.h"
 
-class UILabel
+class UILabel : public GameObject
 {
     char text[200];
-    FLOAT locationX;
-    FLOAT locationY;
-    FLOAT width;
+    float width;
     ID2D1SolidColorBrush* textBrush;
     IDWriteTextFormat* textFormat;
     IDWriteFactory2* writeFactory;
@@ -17,16 +16,14 @@ class UILabel
     IDWriteTextLayout* textLayout;
 public:
     UILabel(
-        const FLOAT locationX,
-        const FLOAT locationY,
-        const FLOAT width,
+        const DirectX::XMFLOAT3 position,
+        const float width,
         ID2D1SolidColorBrush* textBrush,
         IDWriteTextFormat* textFormat,
         ID2D1DeviceContext1* d2dDeviceContext,
         IDWriteFactory2* writeFactory,
         ID2D1Factory2* d2dFactory) :
-        locationX{ locationX },
-        locationY{ locationY },
+        GameObject(position),
         width{ width },
         textBrush{ textBrush },
         textFormat{ textFormat },
@@ -35,6 +32,6 @@ public:
     {
         ZeroMemory(text, sizeof(text));
     }
-    void Draw();
+    virtual void Draw();
     void SetText(const char* arr);
 };

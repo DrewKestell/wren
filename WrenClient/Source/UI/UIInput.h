@@ -4,18 +4,17 @@
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 #include <sstream>
+#include "../GameObject.h"
 
-class UIInput
+class UIInput : public GameObject
 {
     int inputIndex;
     TCHAR inputValue[30];
     bool active;
     bool secure;
-    FLOAT locationX;
-    FLOAT locationY;
-    FLOAT labelWidth;
-    FLOAT inputWidth;
-    FLOAT height;
+    float labelWidth;
+    float inputWidth;
+    float height;
     ID2D1SolidColorBrush* labelBrush;
     ID2D1SolidColorBrush* inputBrush;
     ID2D1SolidColorBrush* inputBorderBrush;
@@ -28,12 +27,11 @@ class UIInput
     IDWriteTextLayout* inputValueTextLayout;
 public:
     UIInput(
+        const DirectX::XMFLOAT3 position,
         const bool secure,
-        const FLOAT locationX,
-        const FLOAT locationY,
-        const FLOAT labelWidth,
-        const FLOAT inputWidth,
-        const FLOAT height,
+        const float labelWidth,
+        const float inputWidth,
+        const float height,
         ID2D1SolidColorBrush* labelBrush,
         ID2D1SolidColorBrush* inputBrush,
         ID2D1SolidColorBrush* inputBorderBrush,
@@ -44,9 +42,8 @@ public:
         IDWriteFactory2* writeFactory,
         IDWriteTextFormat* labelTextFormat,
         ID2D1Factory2* d2dFactory) :
+        GameObject(position),
         secure{ secure },
-        locationX{ locationX },
-        locationY{ locationY },
         labelWidth{ labelWidth },
         inputWidth{ inputWidth },
         height{ height },
@@ -65,14 +62,14 @@ public:
         if (FAILED(writeFactory->CreateTextLayout(outLabelText.str().c_str(), (UINT32)outLabelText.str().size(), labelTextFormat, labelWidth, height, &labelTextLayout)))
             throw std::exception("Failed to create text layout for UIInput.");
 
-        d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(locationX + labelWidth + 10, locationY, locationX + labelWidth + inputWidth, locationY + height), 3.0f, 3.0f), &inputGeometry);
+        d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x + labelWidth + 10, position.y, position.x + labelWidth + inputWidth, position.y + height), 3.0f, 3.0f), &inputGeometry);
     }
-    void Draw();
+    virtual void Draw();
     bool IsActive();
-    void SetActive(bool isActive);
-    void PushCharacter(TCHAR c);
+    void SetActive(const bool isActive);
+    void PushCharacter(const TCHAR c);
     void PopCharacter();
-    bool DetectClick(FLOAT x, FLOAT y);
+    bool DetectClick(const float x, const float y);
     const TCHAR* GetInputValue();
     void Clear();
 };

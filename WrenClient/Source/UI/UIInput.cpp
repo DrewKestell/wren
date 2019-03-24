@@ -4,10 +4,11 @@
 void UIInput::Draw()
 {
     // Draw Label
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(locationX, locationY), labelTextLayout, labelBrush);
+    const auto position = GetWorldPosition();
+    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y), labelTextLayout, labelBrush);
 
     // Draw Input
-    float borderWeight = active ? 2.0f : 1.0f;
+    const float borderWeight = active ? 2.0f : 1.0f;
     d2dDeviceContext->FillGeometry(inputGeometry, inputBrush);
     d2dDeviceContext->DrawGeometry(inputGeometry, inputBorderBrush, borderWeight);
     
@@ -24,7 +25,7 @@ void UIInput::Draw()
         outInputValue << "|";
     if (FAILED(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), inputValueTextFormat, inputWidth, height - 2, &inputValueTextLayout))) // (height - 2) takes the border into account, and looks more natural
         throw std::exception("Critical error: Failed to create the text layout for FPS information!");
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(locationX + labelWidth + 14, locationY), inputValueTextLayout, inputValueBrush);
+    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + labelWidth + 14, position.y), inputValueTextLayout, inputValueBrush);
 }
 
 bool UIInput::IsActive()
@@ -32,12 +33,12 @@ bool UIInput::IsActive()
     return active;
 }
 
-void UIInput::SetActive(bool isActive)
+void UIInput::SetActive(const bool isActive)
 {
     active = isActive;
 }
 
-void UIInput::PushCharacter(TCHAR c)
+void UIInput::PushCharacter(const TCHAR c)
 {
     if (inputIndex > 30)
         return;
@@ -55,9 +56,10 @@ void UIInput::PopCharacter()
     inputIndex--;
 }
 
-bool UIInput::DetectClick(FLOAT x, FLOAT y)
+bool UIInput::DetectClick(const float x, const float y)
 {
-    return x >= locationX + labelWidth && x <= locationX + inputWidth + labelWidth && y >= locationY && y <= locationY + height;
+    const auto position = GetWorldPosition();
+    return x >= position.x + labelWidth && x <= position.x + inputWidth + labelWidth && y >= position.y && y <= position.y + height;
 }
 
 const TCHAR* UIInput::GetInputValue()

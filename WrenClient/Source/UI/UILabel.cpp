@@ -1,13 +1,13 @@
 #include "UILabel.h"
-#include "atlstr.h"
 
 void UILabel::Draw()
 {
     std::wostringstream outInputValue;
     outInputValue << text;
-    if (FAILED(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormat, width, 24, &textLayout)))
+    if (FAILED(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormat, width, 24.0f, &textLayout)))
         throw std::exception("Critical error: Failed to create the text layout for UILabel.");
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(locationX, locationY), textLayout, textBrush);
+    const auto position = GetWorldPosition();
+    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y), textLayout, textBrush);
 }
 
 void UILabel::SetText(const char* arr)

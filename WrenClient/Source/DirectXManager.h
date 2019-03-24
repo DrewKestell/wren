@@ -8,11 +8,11 @@
 #include <vector>
 #include "GameTimer.h"
 #include "LoginState.h"
-#include "UIInput.h"
-#include "UILabel.h"
-#include "UIPanel.h"
-#include "UICharacterListing.h"
-#include "UIButton.h"
+#include "UI/UIInput.h"
+#include "UI/UILabel.h"
+#include "UI/UIPanel.h"
+#include "UI/UICharacterListing.h"
+#include "UI/UIButton.h"
 #include "SocketManager.h"
 
 struct VERTEX
