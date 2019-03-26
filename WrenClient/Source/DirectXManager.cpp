@@ -11,7 +11,7 @@
 #include "DirectXManager.h"
 #include <exception>
 #include "Windows.h"
-#include "LoginState.h"
+#include "LoginState.h"	
 #include "atlstr.h"
 #include <fstream>  
 
@@ -340,8 +340,11 @@ void DirectXManager::OnKeyPress(TCHAR c)
     }
 }
 
-void DirectXManager::MouseMove(FLOAT mousePosX, FLOAT mousePosY)
+void DirectXManager::MouseMove(float mousePosX, float mousePosY)
 {
+	this->mousePosX = mousePosX;
+	this->mousePosY = mousePosY;
+
     switch (loginState)
     {
     case LoginScreen:
@@ -365,9 +368,9 @@ void DirectXManager::MouseMove(FLOAT mousePosX, FLOAT mousePosY)
     }
 }
 
-void DirectXManager::MouseDown(FLOAT mousePosX, FLOAT mousePosY)
+void DirectXManager::MouseDown(float mousePosX, float mousePosY)
 {
-    loginScreen_accountNameInput->SetActive(false);
+    /*loginScreen_accountNameInput->SetActive(false);
     loginScreen_passwordInput->SetActive(false);
     createAccount_accountNameInput->SetActive(false);
     createAccount_passwordInput->SetActive(false);
@@ -428,7 +431,7 @@ void DirectXManager::MouseDown(FLOAT mousePosX, FLOAT mousePosY)
         break;
     default:
         break;
-    }
+    }*/
 }
 
 void DirectXManager::MouseUp()
@@ -517,7 +520,7 @@ void DirectXManager::MouseUp()
         break;
     }
 
-    loginScreen_loginButton->SetPressed(false);
+    /*loginScreen_loginButton->SetPressed(false);
     loginScreen_createAccountButton->SetPressed(false);
 
     createAccount_createAccountButton->SetPressed(false);
@@ -528,7 +531,7 @@ void DirectXManager::MouseUp()
     characterSelect_logoutButton->SetPressed(false);
 
     createCharacter_createCharacterButton->SetPressed(false);
-    createCharacter_backButton->SetPressed(false);
+    createCharacter_backButton->SetPressed(false);*/
 
     gameEditorPanel->StopDragging();
 }
@@ -688,21 +691,21 @@ void DirectXManager::InitializeInputs()
 void DirectXManager::InitializeButtons()
 {
     // LoginScreen
-    loginScreen_loginButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatButtonText, d2dFactory);
-    loginScreen_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE ACCOUNT", writeFactory, textFormatButtonText, d2dFactory);
+	loginScreen_loginButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, eventHandler, "Login", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatButtonText, d2dFactory);
+    loginScreen_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, eventHandler, "LoginScreen_CreateAccount", 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE ACCOUNT", writeFactory, textFormatButtonText, d2dFactory);
 
     // CreateAccount
-    createAccount_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE", writeFactory, textFormatButtonText, d2dFactory);
-    createAccount_cancelButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CANCEL", writeFactory, textFormatButtonText, d2dFactory);
+    createAccount_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, eventHandler, "CreateAccountCreateAccount", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE", writeFactory, textFormatButtonText, d2dFactory);
+    createAccount_cancelButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, eventHandler, "CreateAccountCancel", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CANCEL", writeFactory, textFormatButtonText, d2dFactory);
 
     // CharacterSelect
-    characterSelect_newCharacterButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, 140.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
-    characterSelect_enterWorldButton = new UIButton(DirectX::XMFLOAT3{ 170.0f, 20.0f, 0.0f }, 120.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "ENTER WORLD", writeFactory, textFormatButtonText, d2dFactory);
-    characterSelect_logoutButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_newCharacterButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, eventHandler, "CharacterSelectNewCharacter", 140.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_enterWorldButton = new UIButton(DirectX::XMFLOAT3{ 170.0f, 20.0f, 0.0f }, eventHandler, "CharacterSelectEnterWorld", 120.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "ENTER WORLD", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_logoutButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, eventHandler, "CharacterSelectLogout", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
     
     // CreateCharacter
-    createCharacter_createCharacterButton = new UIButton(DirectX::XMFLOAT3{ 165.0f, 64.0f, 0.0f }, 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
-    createCharacter_backButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "BACK", writeFactory, textFormatButtonText, d2dFactory);
+    createCharacter_createCharacterButton = new UIButton(DirectX::XMFLOAT3{ 165.0f, 64.0f, 0.0f }, eventHandler, "CreateCharacterCreateCharacter", 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+    createCharacter_backButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, eventHandler, "CreateCharacterBack", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "BACK", writeFactory, textFormatButtonText, d2dFactory);
 }
 
 void DirectXManager::InitializeLabels()
@@ -742,7 +745,7 @@ void DirectXManager::InitializePanels()
     gameEditorPanel->AddChildComponent(gameEditorPanelHeader);
 }
 
-void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
+void DirectXManager::DrawScene()
 {
     HRESULT hr;
     float color[4];
@@ -794,7 +797,7 @@ void DirectXManager::DrawScene(FLOAT mouseX, FLOAT mouseY)
     // draw MousePos
     std::wostringstream outMousePos;
     outMousePos.precision(6);
-    outMousePos << "MousePosX: " << mouseX << ", MousePosY: " << mouseY;
+    outMousePos << "MousePosX: " << mousePosX << ", MousePosY: " << mousePosY;
     writeFactory->CreateTextLayout(outMousePos.str().c_str(), (UINT32)outMousePos.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutMousePos);
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
 

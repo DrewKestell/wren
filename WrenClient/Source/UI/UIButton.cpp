@@ -1,4 +1,8 @@
 #include "UIButton.h"
+#include "../EventHandling/Events/MouseDownEvent.h"
+#include "../EventHandling/Events/MouseUpEvent.h"
+#include "../EventHandling/Events/ButtonPressEvent.h"
+#include "../Math.h"
 
 bool UIButton::IsEnabled()
 {
@@ -13,11 +17,6 @@ void UIButton::SetEnabled(const bool isEnabled)
 bool UIButton::IsPressed()
 {
     return pressed;
-}
-
-void UIButton::SetPressed(const bool isPressed)
-{
-    pressed = isPressed;
 }
 
 void UIButton::Draw()
@@ -39,8 +38,32 @@ void UIButton::Draw()
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y + 1), buttonTextLayout, buttonTextBrush); // (location + 1) looks better
 }
 
-bool UIButton::DetectClick(const float x, const float y)
+void UIButton::HandleEvent(const Event& event)
 {
-    const auto position = GetWorldPosition();
-    return x >= position.x && x <= position.x + width && y >= position.y && y <= position.y + height;
+	const auto type = event.type;
+	switch (type)
+	{
+		case EventType::MouseDownEvent:
+			{
+				const auto mouseDownEvent = (MouseDownEvent&)event;
+
+				const auto position = GetWorldPosition();
+				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
+				{
+					pressed = true;
+					const ButtonPressEvent event{ buttonId };
+					PublishEvent(event);
+				}
+
+				break;
+			}
+		case EventType::MouseUpEvent:
+		{
+			const auto mouseUpEvent = (MouseUpEvent&)event;
+
+			pressed = false;
+
+			break;
+		}
+	}
 }

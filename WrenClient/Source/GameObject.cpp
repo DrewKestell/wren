@@ -12,5 +12,3 @@ DirectX::XMFLOAT3 GameObject::GetWorldPosition()
     
     return worldPosition;
 }
-
-GameObject::~GameObject() {}

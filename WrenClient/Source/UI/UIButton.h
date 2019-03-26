@@ -5,12 +5,15 @@
 #include <dwrite_3.h>
 #include <sstream>
 #include "../GameObject.h"
+#include "../EventHandling/Observer.h"
+#include "../EventHandling/Publisher.h"
 
-class UIButton : public GameObject
+class UIButton : public GameObject, public Observer, public Publisher
 {
     const char* buttonText[20];
     bool pressed = false;
     bool enabled = true;
+	const std::string& buttonId;
     float width;
     float height;
     ID2D1SolidColorBrush* buttonBrush;
@@ -24,6 +27,8 @@ class UIButton : public GameObject
 public:
     UIButton(
         const DirectX::XMFLOAT3 position,
+		EventHandler* eventHandler,
+		const std::string& buttonId,
         const float width,
         const float height,
         ID2D1SolidColorBrush* buttonBrush,
@@ -36,6 +41,9 @@ public:
         IDWriteTextFormat* buttonTextFormat,
         ID2D1Factory2* d2dFactory) :
         GameObject(position),
+		Observer(eventHandler),
+		Publisher(eventHandler),
+		buttonId{ buttonId },
         width{ width },
         height{ height },
         buttonBrush{ buttonBrush },
@@ -56,9 +64,8 @@ public:
     bool IsEnabled();
     void SetEnabled(const bool isEnabled);
     bool IsPressed();
-    void SetPressed(const bool isPressed);
     virtual void Draw();
-    bool DetectClick(const float x, const float y);
+	virtual void HandleEvent(const Event& event);
 };
 
 #endif

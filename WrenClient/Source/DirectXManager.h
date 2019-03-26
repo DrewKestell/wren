@@ -12,8 +12,10 @@
 #include "UI/UILabel.h"
 #include "UI/UIPanel.h"
 #include "UI/UICharacterListing.h"
-#include "UI/UIButton.h"
 #include "SocketManager.h"
+#include "EventHandling/EventHandler.h"
+#include "EventHandling/Observer.h"
+#include "UI/UIButton.h"
 
 struct VERTEX
 {
@@ -28,6 +30,8 @@ struct ShaderBuffer
 
 class DirectXManager
 {
+	EventHandler* eventHandler;
+	std::vector<Observer*>* observers;
     ID3D11Buffer* buffer;
     std::vector<UICharacterListing*>* characterList = new std::vector<UICharacterListing*>;
     std::string token = "";
@@ -35,6 +39,8 @@ class DirectXManager
     UINT clientHeight;
     GameTimer& timer;
     SocketManager& socketManager;
+	float mousePosX;
+	float mousePosY;
 
     // DXGI
     IDXGISwapChain* swapChain;
@@ -127,12 +133,13 @@ public:
     void OnEscape();
     void OnF1();
     void OnKeyPress(TCHAR c);
-    void MouseMove(FLOAT mousePosX, FLOAT mousePosY);
-    void MouseDown(FLOAT mousePosX, FLOAT mousePosY);
+    void MouseMove(float mousePosX, float mousePosY);
+    void MouseDown(float mousePosX, float mousePosY);
     void MouseUp();
     void OnTab();
-    void DrawScene(FLOAT mouseX, FLOAT mouseY);
+    void DrawScene();
     void HandleMessage(std::tuple<std::string, std::string, std::vector<std::string>*> message);
+	std::vector<Observer*>* GetObservers() { return observers; }
 };
 
 #endif

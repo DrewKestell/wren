@@ -1,0 +1,8 @@
+#pragma once
+
+enum class EventType
+{
+	MouseDownEvent,
+	MouseUpEvent,
+	ButtonPressEvent
+};

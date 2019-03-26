@@ -48,7 +48,7 @@ public:
         if (FAILED(writeFactory->CreateTextLayout(outText.str().c_str(), (UINT32)outText.str().size(), textFormat, width, height, &textLayout)))
             throw std::exception("Failed to create text layout for UICharacterListing.");
 
-        d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.y, position.y, position.x + width, position.y + height), 3.0f, 3.0f), &geometry);
+        d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), &geometry);
 
     }
     bool IsSelected();

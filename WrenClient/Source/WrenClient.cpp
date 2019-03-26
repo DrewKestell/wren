@@ -22,9 +22,6 @@ GameTimer* timer;
 DirectXManager* dxManager;
 SocketManager* socketManager;
 
-int mouseX = 0;
-int mouseY = 0;
-
 int CALLBACK WinMain(
     _In_ HINSTANCE hInstance,
     _In_ HINSTANCE hPrevInstance,
@@ -112,7 +109,7 @@ int CALLBACK WinMain(
             else
             {
                 timer->Tick();
-                dxManager->DrawScene(mouseX, mouseY);
+                dxManager->DrawScene();
             }
         }
         return (int)msg.wParam;
@@ -122,13 +119,6 @@ int CALLBACK WinMain(
         std::cout << e.what();
         return -1;
     }
-}
-
-void OnMouseMove(WPARAM wParam, FLOAT x, FLOAT y)
-{
-    mouseX = x;
-    mouseY = y;
-    dxManager->MouseMove(x, y);
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -144,7 +134,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
-        dxManager->MouseDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+        dxManager->MouseDown((float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
         return 0;
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:
@@ -152,7 +142,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         dxManager->MouseUp();
         return 0;
     case WM_MOUSEMOVE:
-        OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		dxManager->MouseMove((float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
         return 0;
     case WM_CHAR:
         switch (wParam)

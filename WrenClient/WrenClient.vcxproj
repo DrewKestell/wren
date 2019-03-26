@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\DirectXManager.cpp" />
+    <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
+    <ClCompile Include="Source\EventHandling\Publisher.cpp" />
     <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\Math.cpp" />
@@ -33,10 +35,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DirectXManager.h" />
+    <ClInclude Include="Source\EventHandling\EventHandler.h" />
+    <ClInclude Include="Source\EventHandling\Events\ButtonPressEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\Event.h" />
+    <ClInclude Include="Source\EventHandling\Events\MouseDownEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\EventType.h" />
+    <ClInclude Include="Source\EventHandling\Events\MouseUpEvent.h" />
+    <ClInclude Include="Source\EventHandling\Publisher.h" />
     <ClInclude Include="Source\GameObject.h" />
     <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\Math.h" />
+    <ClInclude Include="Source\EventHandling\Observer.h" />
     <ClInclude Include="Source\UI\UIPanel.h" />
     <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\UI\UIButton.h" />

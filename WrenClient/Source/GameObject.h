@@ -27,5 +27,4 @@ public:
     DirectX::XMFLOAT3 GetWorldPosition();
 
     virtual void Draw() = 0;
-    virtual ~GameObject() = 0;
 };
