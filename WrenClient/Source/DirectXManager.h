@@ -28,7 +28,7 @@ struct ShaderBuffer
     int size;
 };
 
-class DirectXManager
+class DirectXManager : public Observer, public Publisher
 {
 	EventHandler* eventHandler;
 	std::vector<Observer*>* observers;
@@ -127,7 +127,7 @@ class DirectXManager
     void InitializeGameWorld();
     ShaderBuffer LoadShader(std::wstring filename);
 public:
-    DirectXManager(GameTimer& timer, SocketManager& socketManager);
+    DirectXManager(GameTimer& timer, SocketManager& socketManager, EventHandler* eventHandler);
     void Initialize(HWND hWnd);
     void OnBackspace();
     void OnEscape();

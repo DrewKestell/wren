@@ -12,6 +12,7 @@
 #include "DirectXManager.h"
 #include "GameTimer.h"
 #include "LoginState.h"
+#include "EventHandling/EventHandler.h"
 
 static TCHAR szWindowClass[] = _T("win32app");
 static TCHAR szTitle[] = _T("Wren Client");
@@ -20,6 +21,7 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 GameTimer* timer;
 DirectXManager* dxManager;
+EventHandler* eventHandler;
 SocketManager* socketManager;
 
 int CALLBACK WinMain(
@@ -78,7 +80,8 @@ int CALLBACK WinMain(
 
         timer = new GameTimer;
         socketManager = new SocketManager;
-        dxManager = new DirectXManager{ *timer, *socketManager };
+		eventHandler = new EventHandler;
+        dxManager = new DirectXManager{ *timer, *socketManager, eventHandler };
         dxManager->Initialize(hWnd);
 
         // Main game loop:

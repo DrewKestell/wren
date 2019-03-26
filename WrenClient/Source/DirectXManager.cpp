@@ -19,8 +19,13 @@ constexpr auto FAILED_TO_CREATE_DEVICE = "Failed to create device.";
 constexpr auto FAILED_TO_GET_BACK_BUFFER = "Failed to get pointer to back buffer.";
 constexpr auto FAILED_TO_SWAP_BUFFER = "Failed to swap buffer.";
 
-DirectXManager::DirectXManager(GameTimer& timer, SocketManager& socketManager)
-    : timer{ timer }, socketManager{ socketManager } {};
+DirectXManager::DirectXManager(GameTimer& timer, SocketManager& socketManager, EventHandler* eventHandler)
+	: 
+	Observer{ eventHandler },
+	Publisher{ eventHandler },
+	timer{ timer }, socketManager{ socketManager }
+{
+};
 
 LoginState loginState = LoginScreen;
 
