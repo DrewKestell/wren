@@ -4,5 +4,6 @@ enum class EventType
 {
 	MouseDownEvent,
 	MouseUpEvent,
-	ButtonPressEvent
+	ButtonPressEvent,
+	KeyDownEvent
 };

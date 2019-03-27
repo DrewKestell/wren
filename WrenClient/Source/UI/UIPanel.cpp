@@ -1,4 +1,6 @@
 #include "UIPanel.h"
+#include "../EventHandling/Events/MouseDownEvent.h"
+#include "../EventHandling/Events/MouseUpEvent.h"
 
 void UIPanel::StartDragging(const float mousePosX, const float mousePosY)
 {
@@ -47,4 +49,32 @@ void UIPanel::Draw()
     const auto children = GetChildren();
     for (auto i = 0; i < children.size(); i++)
         children.at(i)->Draw();
+}
+
+void UIPanel::HandleEvent(const Event& event)
+{
+	const auto type = event.type;
+	switch (type)
+	{
+	case EventType::MouseDownEvent:
+	{
+		const auto mouseDownEvent = (MouseDownEvent&)event;
+
+		const auto position = GetWorldPosition();
+		if (DetectClick(isDraggable && position.x, position.y, position.x + width, position.y + HEADER_HEIGHT, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
+		{
+			// handle drag
+		}
+
+		break;
+	}
+	case EventType::MouseUpEvent:
+	{
+		const auto mouseUpEvent = (MouseUpEvent&)event;
+
+		isDragging = false;
+
+		break;
+	}
+	}
 }

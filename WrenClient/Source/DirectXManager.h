@@ -135,10 +135,10 @@ public:
     void OnKeyPress(TCHAR c);
     void MouseMove(float mousePosX, float mousePosY);
     void MouseDown(float mousePosX, float mousePosY);
-    void MouseUp();
     void OnTab();
     void DrawScene();
     void HandleMessage(std::tuple<std::string, std::string, std::vector<std::string>*> message);
+	virtual void HandleEvent(const Event& event);
 	std::vector<Observer*>* GetObservers() { return observers; }
 };
 

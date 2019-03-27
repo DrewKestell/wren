@@ -38,6 +38,8 @@
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
     <ClInclude Include="Source\EventHandling\Events\ButtonPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\Event.h" />
+    <ClInclude Include="Source\EventHandling\Events\KeyDownEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\KeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\EventType.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseUpEvent.h" />

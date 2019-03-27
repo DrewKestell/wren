@@ -14,6 +14,7 @@
 #include "LoginState.h"	
 #include "atlstr.h"
 #include <fstream>  
+#include "EventHandling/Events/ButtonPressEvent.h"
 
 constexpr auto FAILED_TO_CREATE_DEVICE = "Failed to create device.";
 constexpr auto FAILED_TO_GET_BACK_BUFFER = "Failed to get pointer to back buffer.";
@@ -287,29 +288,6 @@ void DirectXManager::OnEscape()
     }
 }
 
-void DirectXManager::OnF1()
-{
-    switch (loginState)
-    {
-    case LoginScreen:
-        break;
-    case CreateAccount:
-        break;
-    case Connecting:
-        break;
-    case CharacterSelect:
-        break;
-    case CreateCharacter:
-        break;
-    case EnteringWorld:
-        break;
-    case InGame:
-        break;
-    default:
-        break;
-    }
-}
-
 void DirectXManager::OnKeyPress(TCHAR c)
 {
     switch (loginState)
@@ -437,108 +415,6 @@ void DirectXManager::MouseDown(float mousePosX, float mousePosY)
     default:
         break;
     }*/
-}
-
-void DirectXManager::MouseUp()
-{
-    switch (loginState)
-    {
-    case LoginScreen:
-        if (loginScreen_loginButton->IsPressed())
-        {
-            loginScreen_successMessageLabel->SetText("");
-            loginScreen_errorMessageLabel->SetText("");
-            loginState = Connecting;
-            const auto accountName = ws2s(std::wstring(loginScreen_accountNameInput->GetInputValue()));
-            const auto password = ws2s(std::wstring(loginScreen_passwordInput->GetInputValue()));
-            socketManager.SendPacket(OPCODE_CONNECT, 2, accountName, password);
-        }
-        if (loginScreen_createAccountButton->IsPressed())
-        {
-            loginScreen_accountNameInput->Clear();
-            loginScreen_passwordInput->Clear();
-            loginScreen_successMessageLabel->SetText("");
-            loginScreen_errorMessageLabel->SetText("");
-            loginState = CreateAccount;
-        }
-        break;
-    case CreateAccount:
-        if (createAccount_createAccountButton->IsPressed())
-        {
-            const auto accountName = ws2s(std::wstring(createAccount_accountNameInput->GetInputValue()));
-            const auto password = ws2s(std::wstring(createAccount_passwordInput->GetInputValue()));
-            socketManager.SendPacket(OPCODE_CREATE_ACCOUNT, 2, accountName, password);
-        }
-        else if (createAccount_cancelButton->IsPressed())
-        {
-            createAccount_accountNameInput->Clear();
-            createAccount_passwordInput->Clear();
-            createAccount_errorMessageLabel->SetText("");
-            loginState = LoginScreen;
-        }
-        break;
-    case Connecting:
-        break;
-    case CharacterSelect:
-        if (characterSelect_newCharacterButton->IsPressed())
-        {
-            characterSelect_successMessageLabel->SetText("");
-            loginState = CreateCharacter;
-        }
-        else if (characterSelect_enterWorldButton->IsPressed())
-        {
-            std::string characterName = "";
-            for (auto i = 0; i < characterList->size(); i++)
-                if (characterList->at(i)->IsSelected())
-                {
-                    characterName = characterList->at(i)->GetCharacterName();
-                    break;
-                }
-            socketManager.SendPacket(OPCODE_ENTER_WORLD, 2, token, characterName);
-            characterSelect_successMessageLabel->SetText("");
-            loginState = EnteringWorld;
-        }
-        else if (characterSelect_logoutButton->IsPressed())
-        {
-            token = "";
-            loginState = LoginScreen;
-        }
-        break;
-    case CreateCharacter:
-        if (createCharacter_createCharacterButton->IsPressed())
-        {
-            const auto characterName = ws2s(std::wstring(createCharacter_characterNameInput->GetInputValue()));
-            socketManager.SendPacket(OPCODE_CREATE_CHARACTER, 2, token, characterName);
-        }
-        else if (createCharacter_backButton->IsPressed())
-        {
-            createCharacter_characterNameInput->Clear();
-            createCharacter_errorMessageLabel->SetText("");
-            loginState = CharacterSelect;
-        }
-        break;
-    case EnteringWorld:
-        break;
-    case InGame:
-        break;
-    default:
-        break;
-    }
-
-    /*loginScreen_loginButton->SetPressed(false);
-    loginScreen_createAccountButton->SetPressed(false);
-
-    createAccount_createAccountButton->SetPressed(false);
-    createAccount_cancelButton->SetPressed(false);
-
-    characterSelect_newCharacterButton->SetPressed(false);
-    characterSelect_enterWorldButton->SetPressed(false);
-    characterSelect_logoutButton->SetPressed(false);
-
-    createCharacter_createCharacterButton->SetPressed(false);
-    createCharacter_backButton->SetPressed(false);*/
-
-    gameEditorPanel->StopDragging();
 }
 
 void DirectXManager::OnTab()
@@ -696,21 +572,21 @@ void DirectXManager::InitializeInputs()
 void DirectXManager::InitializeButtons()
 {
     // LoginScreen
-	loginScreen_loginButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, eventHandler, "Login", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatButtonText, d2dFactory);
+	loginScreen_loginButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, eventHandler, "LoginScreen_Login", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatButtonText, d2dFactory);
     loginScreen_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, eventHandler, "LoginScreen_CreateAccount", 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE ACCOUNT", writeFactory, textFormatButtonText, d2dFactory);
 
     // CreateAccount
-    createAccount_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, eventHandler, "CreateAccountCreateAccount", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE", writeFactory, textFormatButtonText, d2dFactory);
-    createAccount_cancelButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, eventHandler, "CreateAccountCancel", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CANCEL", writeFactory, textFormatButtonText, d2dFactory);
+    createAccount_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, eventHandler, "CreateAccount_CreateAccount", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE", writeFactory, textFormatButtonText, d2dFactory);
+    createAccount_cancelButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, eventHandler, "CreateAccount_Cancel", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CANCEL", writeFactory, textFormatButtonText, d2dFactory);
 
     // CharacterSelect
-    characterSelect_newCharacterButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, eventHandler, "CharacterSelectNewCharacter", 140.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
-    characterSelect_enterWorldButton = new UIButton(DirectX::XMFLOAT3{ 170.0f, 20.0f, 0.0f }, eventHandler, "CharacterSelectEnterWorld", 120.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "ENTER WORLD", writeFactory, textFormatButtonText, d2dFactory);
-    characterSelect_logoutButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, eventHandler, "CharacterSelectLogout", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_newCharacterButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, eventHandler, "CharacterSelect_NewCharacter", 140.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_enterWorldButton = new UIButton(DirectX::XMFLOAT3{ 170.0f, 20.0f, 0.0f }, eventHandler, "CharacterSelect_EnterWorld", 120.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "ENTER WORLD", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_logoutButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, eventHandler, "CharacterSelect_Logout", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
     
     // CreateCharacter
-    createCharacter_createCharacterButton = new UIButton(DirectX::XMFLOAT3{ 165.0f, 64.0f, 0.0f }, eventHandler, "CreateCharacterCreateCharacter", 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
-    createCharacter_backButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, eventHandler, "CreateCharacterBack", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "BACK", writeFactory, textFormatButtonText, d2dFactory);
+    createCharacter_createCharacterButton = new UIButton(DirectX::XMFLOAT3{ 165.0f, 64.0f, 0.0f }, eventHandler, "CreateCharacter_CreateCharacter", 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+    createCharacter_backButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, eventHandler, "CreateCharacter_Back", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "BACK", writeFactory, textFormatButtonText, d2dFactory);
 }
 
 void DirectXManager::InitializeLabels()
@@ -739,14 +615,14 @@ void DirectXManager::InitializePanels()
     const auto gameSettingsPanelY = (clientHeight - 200.0f) / 2.0f;
     auto gameSettingsPanelHeader = new UILabel{DirectX::XMFLOAT3{2.0f, 2.0f, 0.0f}, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory};
     gameSettingsPanelHeader->SetText("Game Settings");
-    gameSettingsPanel = new UIPanel(DirectX::XMFLOAT3{gameSettingsPanelX, gameSettingsPanelY, 0.0f}, false, 400.0f, 200.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
+    gameSettingsPanel = new UIPanel(DirectX::XMFLOAT3{gameSettingsPanelX, gameSettingsPanelY, 0.0f}, eventHandler, false, 400.0f, 200.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
     gameSettingsPanel->AddChildComponent(gameSettingsPanelHeader);
 
     const auto gameEditorPanelX = 580.0f;
     const auto gameEditorPanelY = 5.0f;
     auto gameEditorPanelHeader = new UILabel(DirectX::XMFLOAT3{2.0f, 2.0f, 0.0f}, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory);
     gameEditorPanelHeader->SetText("Game Editor");
-    gameEditorPanel = new UIPanel(DirectX::XMFLOAT3{gameEditorPanelX, gameEditorPanelY, 0.0f}, true, 200.0f, 400.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
+    gameEditorPanel = new UIPanel(DirectX::XMFLOAT3{gameEditorPanelX, gameEditorPanelY, 0.0f}, eventHandler, true, 200.0f, 400.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
     gameEditorPanel->AddChildComponent(gameEditorPanelHeader);
 }
 
@@ -841,7 +717,6 @@ void DirectXManager::DrawScene()
         characterSelect_successMessageLabel->Draw();
         characterSelect_headerLabel->Draw();
 
-        // draw character inputs. starting point: 15,100
         for (auto i = 0; i < characterList->size(); i++)
             characterList->at(i)->Draw();
 
@@ -1019,4 +894,83 @@ ShaderBuffer DirectXManager::LoadShader(std::wstring filename)
 
     // return the shader buffer
     return sb;
+}
+
+void DirectXManager::HandleEvent(const Event& event)
+{
+	const auto type = event.type;
+	switch (type)
+	{
+		case EventType::ButtonPressEvent:
+		{
+			const auto buttonPressEvent = (ButtonPressEvent&)event;
+
+			if (buttonPressEvent.buttonId == "LoginScreen_Login")
+			{
+				loginScreen_successMessageLabel->SetText("");
+				loginScreen_errorMessageLabel->SetText("");
+				loginState = Connecting;
+				const auto accountName = ws2s(std::wstring(loginScreen_accountNameInput->GetInputValue()));
+				const auto password = ws2s(std::wstring(loginScreen_passwordInput->GetInputValue()));
+				socketManager.SendPacket(OPCODE_CONNECT, 2, accountName, password);
+			}
+			else if (buttonPressEvent.buttonId == "LoginScreen_CreateAccount")
+			{
+				loginScreen_accountNameInput->Clear();
+				loginScreen_passwordInput->Clear();
+				loginScreen_successMessageLabel->SetText("");
+				loginScreen_errorMessageLabel->SetText("");
+				loginState = CreateAccount;
+			}
+			else if (buttonPressEvent.buttonId == "CreateAccount_CreateAccount")
+			{
+				const auto accountName = ws2s(std::wstring(createAccount_accountNameInput->GetInputValue()));
+				const auto password = ws2s(std::wstring(createAccount_passwordInput->GetInputValue()));
+				socketManager.SendPacket(OPCODE_CREATE_ACCOUNT, 2, accountName, password);
+			}
+			else if (buttonPressEvent.buttonId == "CreateAccount_Cancel")
+			{
+				createAccount_accountNameInput->Clear();
+				createAccount_passwordInput->Clear();
+				createAccount_errorMessageLabel->SetText("");
+				loginState = LoginScreen;
+			}
+			else if (buttonPressEvent.buttonId == "CharacterSelect_NewCharacter")
+			{
+				characterSelect_successMessageLabel->SetText("");
+				loginState = CreateCharacter;
+			}
+			else if (buttonPressEvent.buttonId == "CharacterSelect_EnterWorld")
+			{
+				std::string characterName = "";
+				for (auto i = 0; i < characterList->size(); i++)
+					if (characterList->at(i)->IsSelected())
+					{
+						characterName = characterList->at(i)->GetCharacterName();
+						break;
+					}
+				socketManager.SendPacket(OPCODE_ENTER_WORLD, 2, token, characterName);
+				characterSelect_successMessageLabel->SetText("");
+				loginState = EnteringWorld;
+			}
+			else if (buttonPressEvent.buttonId == "CharacterSelect_Logout")
+			{
+				token = "";
+				loginState = LoginScreen;
+			}
+			else if (buttonPressEvent.buttonId == "CreateCharacter_CreateCharacter")
+			{
+				const auto characterName = ws2s(std::wstring(createCharacter_characterNameInput->GetInputValue()));
+				socketManager.SendPacket(OPCODE_CREATE_CHARACTER, 2, token, characterName);
+			}
+			else if (buttonPressEvent.buttonId == "CreateCharacter_Back")
+			{
+				createCharacter_characterNameInput->Clear();
+				createCharacter_errorMessageLabel->SetText("");
+				loginState = CharacterSelect;
+			}
+
+			break;
+		}
+	}
 }

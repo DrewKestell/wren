@@ -126,6 +126,7 @@ int CALLBACK WinMain(
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	wchar_t msg[32];
     switch (message)
     {
     case WM_CLOSE:
@@ -142,12 +143,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:
     case WM_RBUTTONUP:
-        dxManager->MouseUp();
+        //dxManager->MouseUp();
         return 0;
     case WM_MOUSEMOVE:
 		dxManager->MouseMove((float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
         return 0;
+	case WM_SYSKEYDOWN:
+		swprintf_s(msg, L"WM_SYSKEYDOWN: 0x%x\n", wParam);
+		std::wcout << msg << "\n";
+		break;
+
+	case WM_SYSCHAR:
+		swprintf_s(msg, L"WM_SYSCHAR: %c\n", (wchar_t)wParam);
+		std::wcout << msg << "\n";
+		break;
+
+	case WM_SYSKEYUP:
+		swprintf_s(msg, L"WM_SYSKEYUP: 0x%x\n", wParam);
+		std::wcout << msg << "\n";
+		break;
+
+	case WM_KEYDOWN:
+		swprintf_s(msg, L"WM_KEYDOWN: 0x%x\n", wParam);
+		std::wcout << msg << "\n";
+		break;
+
+	case WM_KEYUP:
+		swprintf_s(msg, L"WM_KEYUP: 0x%x\n", wParam);
+		std::wcout << msg << "\n";
+		break;
     case WM_CHAR:
+		swprintf_s(msg, L"WM_CHAR: 0x%x\n", wParam);
+		std::wcout << msg << "\n";
+
         switch (wParam)
         {
         case 0x08: // Process a backspace.

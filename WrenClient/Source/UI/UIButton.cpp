@@ -44,19 +44,19 @@ void UIButton::HandleEvent(const Event& event)
 	switch (type)
 	{
 		case EventType::MouseDownEvent:
+		{
+			const auto mouseDownEvent = (MouseDownEvent&)event;
+
+			const auto position = GetWorldPosition();
+			if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
 			{
-				const auto mouseDownEvent = (MouseDownEvent&)event;
-
-				const auto position = GetWorldPosition();
-				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
-				{
-					pressed = true;
-					const ButtonPressEvent event{ buttonId };
-					PublishEvent(event);
-				}
-
-				break;
+				pressed = true;
+				const ButtonPressEvent event{ buttonId };
+				PublishEvent(event);
 			}
+
+			break;
+		}
 		case EventType::MouseUpEvent:
 		{
 			const auto mouseUpEvent = (MouseUpEvent&)event;

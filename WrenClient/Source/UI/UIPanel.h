@@ -6,10 +6,12 @@
 #include <sstream>
 #include <vector>
 #include "../GameObject.h"
+#include "../EventHandling/Observer.h"
+#include "../EventHandling/Publisher.h"
 
 const FLOAT HEADER_HEIGHT = 20.0f;
 
-class UIPanel : public GameObject
+class UIPanel : public GameObject, public Observer, public Publisher
 {
     bool isVisible = false;
     bool isDragging = false;
@@ -28,6 +30,7 @@ class UIPanel : public GameObject
 public:
     UIPanel(
         const DirectX::XMFLOAT3 position,
+		EventHandler* eventHandler,
         const bool isDraggable,
         const float width,
         const float height,
@@ -37,6 +40,8 @@ public:
         ID2D1DeviceContext1* d2dDeviceContext,
         ID2D1Factory2* d2dFactory) :
         GameObject(position),
+		Observer(eventHandler),
+		Publisher(eventHandler),
         isDraggable{ isDraggable },
         width{ width },
         height{ height },
@@ -63,6 +68,7 @@ public:
     void UpdatePosition(const float mousePosX, const float mousePosY);
     bool DetectHeaderClick(const float x, const float y);
     virtual void Draw();
+	virtual void HandleEvent(const Event& event);
 };
 
 #endif

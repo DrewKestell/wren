@@ -9,6 +9,6 @@ class EventHandler
 {
 	std::forward_list<Observer*> observers;
 public:
-	void Subscribe(Observer* observer) { observers.push_front(observer); }
+	void Subscribe(Observer* observer) { /*observers.push_front(observer);*/ }
 	void PublishEvent(const Event& event);
 };
