@@ -205,14 +205,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_KEYDOWN:
-		SystemKey keyCode;
 		switch (wParam)
 		{
 		case VK_F1:
-			keyCode = SystemKey::F1;
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F1 });
 			break;
 		case VK_F2:
-			keyCode = SystemKey::F2;
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F2 });
 			break;
 		case VK_F3:
 			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F3 });
@@ -257,14 +256,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::Tab });
 			break;
 		case 0x0D: // Process a carriage return.
-			keyCode = SystemKey::CarriageReturn;
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::CarriageReturn });
 			break;
 		case VK_SHIFT:
 		case VK_CONTROL:
-			keyCode = MapLeftRightKeys(wParam, lParam);
+			const auto keyCode = MapLeftRightKeys(wParam, lParam);
+			eventHandler->PublishEvent(SystemKeyDownEvent{ keyCode });
 			break;
 		}
-		eventHandler->PublishEvent(SystemKeyDownEvent{ keyCode });
 		break;
 
 	case WM_KEYUP:

@@ -59,14 +59,7 @@ public:
         }
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, startHeight, position.x + width, startHeight + height), 3.0f, 3.0f), &bodyGeometry);
     }
-    bool IsVisible() { return isVisible; }
-    void SetVisible(const bool isVisible) { this->isVisible = isVisible; }
-    bool IsDraggable() { return isDraggable; }
-    bool IsDragging() { return isDragging; }
-    void StopDragging() { isDragging = false; }
-    void StartDragging(const float mousePosX, const float mousePosY);
-    void UpdatePosition(const float mousePosX, const float mousePosY);
-    bool DetectHeaderClick(const float x, const float y);
+    
     virtual void Draw();
 	virtual void HandleEvent(const Event& event);
 };

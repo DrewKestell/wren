@@ -4,8 +4,10 @@
 #include <dwrite_3.h>
 #include <sstream>
 #include "../GameObject.h"
+#include "../EventHandling/Observer.h"
+#include "../EventHandling/Publisher.h"
 
-class UICharacterListing : public GameObject
+class UICharacterListing : public GameObject, public Observer, public Publisher
 {
     std::string characterName;
     bool selected;
@@ -21,6 +23,7 @@ class UICharacterListing : public GameObject
 public:
     UICharacterListing(
         const DirectX::XMFLOAT3 position,
+		EventHandler* eventHandler,
         const float width,
         const float height,
         ID2D1SolidColorBrush* brush,
@@ -33,6 +36,8 @@ public:
         IDWriteTextFormat* textFormat,
         ID2D1Factory2* d2dFactory) :
         GameObject{ position },
+		Observer(eventHandler),
+		Publisher(eventHandler),
         width{ width },
         height{ height },
         brush{ brush },
@@ -51,9 +56,7 @@ public:
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), &geometry);
 
     }
-    bool IsSelected();
-    void SetSelected(const bool isPressed);
     virtual void Draw();
-    bool DetectClick(const float x, const float y);
-    std::string GetCharacterName();
+	virtual void HandleEvent(const Event& event);
+    std::string& GetCharacterName();
 };

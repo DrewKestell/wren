@@ -5,11 +5,11 @@
 class KeyPressEvent : public Event
 {
 public:
-	KeyPressEvent(const EventType eventType, const int c)
+	KeyPressEvent(const EventType eventType, const wchar_t charCode)
 		: Event(eventType),
 		charCode{ charCode }
 	{
 	}
 	virtual ~KeyPressEvent() = 0;
-	const int charCode;
+	wchar_t charCode;
 };

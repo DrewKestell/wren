@@ -24,6 +24,7 @@ DirectXManager::DirectXManager(GameTimer& timer, SocketManager& socketManager, E
 	: 
 	Observer{ eventHandler },
 	Publisher{ eventHandler },
+	eventHandler{ eventHandler },
 	timer{ timer }, socketManager{ socketManager }
 {
 };
@@ -231,240 +232,70 @@ void DirectXManager::Initialize(HWND hWnd)
     InitializeGameWorld();
 }
 
-void DirectXManager::OnBackspace()
-{
-    switch (loginState)
-    {
-    case LoginScreen:
-        if (loginScreen_accountNameInput->IsActive())
-            loginScreen_accountNameInput->PopCharacter();
-        else if (loginScreen_passwordInput->IsActive())
-            loginScreen_passwordInput->PopCharacter();
-        break;
-    case CreateAccount:
-        if (createAccount_accountNameInput->IsActive())
-            createAccount_accountNameInput->PopCharacter();
-        else if (createAccount_passwordInput->IsActive())
-            createAccount_passwordInput->PopCharacter();
-        break;
-    case Connecting:
-        break;
-    case CharacterSelect:
-        break;
-    case CreateCharacter:
-        if (createCharacter_characterNameInput->IsActive())
-            createCharacter_characterNameInput->PopCharacter();
-        break;
-    case EnteringWorld:
-        break;
-    case InGame:
-        break;
-    default:
-        break;
-    }
-}
-
-void DirectXManager::OnEscape()
-{
-    switch (loginState)
-    {
-    case LoginScreen:
-        break;
-    case CreateAccount:
-        break;
-    case Connecting:
-        break;
-    case CharacterSelect:
-        break;
-    case CreateCharacter:
-        break;
-    case EnteringWorld:
-        break;
-    case InGame:
-        gameSettingsPanel->SetVisible(!gameSettingsPanel->IsVisible());
-        break;
-    default:
-        break;
-    }
-}
-
-void DirectXManager::OnKeyPress(TCHAR c)
-{
-    switch (loginState)
-    {
-    case LoginScreen:
-        if (loginScreen_accountNameInput->IsActive())
-            loginScreen_accountNameInput->PushCharacter(c);
-        else if (loginScreen_passwordInput->IsActive())
-            loginScreen_passwordInput->PushCharacter(c);
-        break;
-    case CreateAccount:
-        if (createAccount_accountNameInput->IsActive())
-            createAccount_accountNameInput->PushCharacter(c);
-        else if (createAccount_passwordInput->IsActive())
-            createAccount_passwordInput->PushCharacter(c);
-        break;
-    case Connecting:
-        break;
-    case CharacterSelect:
-        break;
-    case CreateCharacter:
-        if (createCharacter_characterNameInput->IsActive())
-            createCharacter_characterNameInput->PushCharacter(c);
-        break;
-    case EnteringWorld:
-        break;
-    case InGame:
-        if (c == 'z')
-            gameEditorPanel->SetVisible(!gameEditorPanel->IsVisible());
-        break;
-    default:
-        break;
-    }
-}
-
-void DirectXManager::MouseMove(float mousePosX, float mousePosY)
-{
-	this->mousePosX = mousePosX;
-	this->mousePosY = mousePosY;
-
-    switch (loginState)
-    {
-    case LoginScreen:
-        break;
-    case CreateAccount:
-        break;
-    case Connecting:
-        break;
-    case CharacterSelect:
-        break;
-    case CreateCharacter:
-        break;
-    case EnteringWorld:
-        break;
-    case InGame:
-        if (gameEditorPanel->IsVisible() && gameEditorPanel->IsDragging())
-            gameEditorPanel->UpdatePosition(mousePosX, mousePosY);
-        break;
-    default:
-        break;
-    }
-}
-
-void DirectXManager::MouseDown(float mousePosX, float mousePosY)
-{
-    /*loginScreen_accountNameInput->SetActive(false);
-    loginScreen_passwordInput->SetActive(false);
-    createAccount_accountNameInput->SetActive(false);
-    createAccount_passwordInput->SetActive(false);
-    createCharacter_characterNameInput->SetActive(false);
-
-    for (auto i = 0; i < characterList->size(); i++)
-        characterList->at(i)->SetSelected(false);
-
-    switch (loginState)
-    {
-    case LoginScreen:
-        if (loginScreen_accountNameInput->DetectClick(mousePosX, mousePosY))
-            loginScreen_accountNameInput->SetActive(true);
-        else if (loginScreen_passwordInput->DetectClick(mousePosX, mousePosY))
-            loginScreen_passwordInput->SetActive(true);
-        else if (loginScreen_loginButton->DetectClick(mousePosX, mousePosY))
-            loginScreen_loginButton->SetPressed(true);
-        else if (loginScreen_createAccountButton->DetectClick(mousePosX, mousePosY))
-            loginScreen_createAccountButton->SetPressed(true);
-        break;
-    case CreateAccount:
-        if (createAccount_accountNameInput->DetectClick(mousePosX, mousePosY))
-            createAccount_accountNameInput->SetActive(true);
-        else if (createAccount_passwordInput->DetectClick(mousePosX, mousePosY))
-            createAccount_passwordInput->SetActive(true);
-        else if (createAccount_createAccountButton->DetectClick(mousePosX, mousePosY))
-            createAccount_createAccountButton->SetPressed(true);
-        else if (createAccount_cancelButton->DetectClick(mousePosX, mousePosY))
-            createAccount_cancelButton->SetPressed(true);
-        break;
-    case Connecting:
-        break;
-    case CharacterSelect:
-        for (auto i = 0; i < characterList->size(); i++)
-            if (characterList->at(i)->DetectClick(mousePosX, mousePosY))
-                characterList->at(i)->SetSelected(true);
-
-        if (characterSelect_newCharacterButton->DetectClick(mousePosX, mousePosY))
-            characterSelect_newCharacterButton->SetPressed(true);
-        else if (characterSelect_enterWorldButton->DetectClick(mousePosX, mousePosY))
-            characterSelect_enterWorldButton->SetPressed(true);
-        else if (characterSelect_logoutButton->DetectClick(mousePosX, mousePosY))
-            characterSelect_logoutButton->SetPressed(true);
-        break;
-    case CreateCharacter:
-        if (createCharacter_characterNameInput->DetectClick(mousePosX, mousePosY))
-            createCharacter_characterNameInput->SetActive(true);
-        else if (createCharacter_createCharacterButton->DetectClick(mousePosX, mousePosY))
-            createCharacter_createCharacterButton->SetPressed(true);
-        else if (createCharacter_backButton->DetectClick(mousePosX, mousePosY))
-            createCharacter_backButton->SetPressed(true);
-        break;
-    case EnteringWorld:
-        break;
-    case InGame:
-        if (gameEditorPanel->IsVisible() && gameEditorPanel->DetectHeaderClick(mousePosX, mousePosY))
-            gameEditorPanel->StartDragging(mousePosX, mousePosY);
-        break;
-    default:
-        break;
-    }*/
-}
-
-void DirectXManager::OnTab()
-{
-    switch (loginState)
-    {
-    case LoginScreen:
-        if (!loginScreen_accountNameInput->IsActive() && !loginScreen_passwordInput->IsActive())
-            loginScreen_accountNameInput->SetActive(true);
-        else if (loginScreen_accountNameInput->IsActive())
-        {
-            loginScreen_accountNameInput->SetActive(false);
-            loginScreen_passwordInput->SetActive(true);
-        }
-        else
-        {
-            loginScreen_accountNameInput->SetActive(true);
-            loginScreen_passwordInput->SetActive(false);
-        }
-        break;
-    case CreateAccount:
-        if (!createAccount_accountNameInput->IsActive() && !createAccount_passwordInput->IsActive())
-            createAccount_accountNameInput->SetActive(true);
-        else if (createAccount_accountNameInput->IsActive())
-        {
-            createAccount_accountNameInput->SetActive(false);
-            createAccount_passwordInput->SetActive(true);
-        }
-        else
-        {
-            createAccount_accountNameInput->SetActive(true);
-            createAccount_passwordInput->SetActive(false);
-        }
-        break;
-    case Connecting:
-        break;
-    case CharacterSelect:
-        break;
-    case CreateCharacter:
-        if (!createCharacter_characterNameInput->IsActive())
-            createCharacter_characterNameInput->SetActive(true);
-        break;
-    case EnteringWorld:
-        break;
-    case InGame:
-        break;
-    default:
-        break;
-    }
-}
+//void DirectXManager::OnEscape()
+//{
+//    case InGame:
+//		if (c == "escape")
+//			gameSettingsPanel->SetVisible(!gameSettingsPanel->IsVisible());
+//		break;
+//}
+//
+//void DirectXManager::OnKeyPress(TCHAR c)
+//{
+//    case InGame:
+//		if (c == 'z')
+//			gameEditorPanel->SetVisible(!gameEditorPanel->IsVisible());
+//		break;
+//}
+//
+//void DirectXManager::OnTab()
+//{
+//    switch (loginState)
+//    {
+//    case LoginScreen:
+//        if (!loginScreen_accountNameInput->IsActive() && !loginScreen_passwordInput->IsActive())
+//            loginScreen_accountNameInput->SetActive(true);
+//        else if (loginScreen_accountNameInput->IsActive())
+//        {
+//            loginScreen_accountNameInput->SetActive(false);
+//            loginScreen_passwordInput->SetActive(true);
+//        }
+//        else
+//        {
+//            loginScreen_accountNameInput->SetActive(true);
+//            loginScreen_passwordInput->SetActive(false);
+//        }
+//        break;
+//    case CreateAccount:
+//        if (!createAccount_accountNameInput->IsActive() && !createAccount_passwordInput->IsActive())
+//            createAccount_accountNameInput->SetActive(true);
+//        else if (createAccount_accountNameInput->IsActive())
+//        {
+//            createAccount_accountNameInput->SetActive(false);
+//            createAccount_passwordInput->SetActive(true);
+//        }
+//        else
+//        {
+//            createAccount_accountNameInput->SetActive(true);
+//            createAccount_passwordInput->SetActive(false);
+//        }
+//        break;
+//    case Connecting:
+//        break;
+//    case CharacterSelect:
+//        break;
+//    case CreateCharacter:
+//        if (!createCharacter_characterNameInput->IsActive())
+//            createCharacter_characterNameInput->SetActive(true);
+//        break;
+//    case EnteringWorld:
+//        break;
+//    case InGame:
+//        break;
+//    default:
+//        break;
+//    }
+//}
 
 void DirectXManager::InitializeBrushes()
 {
@@ -558,15 +389,15 @@ void DirectXManager::InitializeTextFormats()
 void DirectXManager::InitializeInputs()
 {
     // LoginScreen
-    loginScreen_accountNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, false, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
-    loginScreen_passwordInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 50.0f, 0.0f}, true, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
+    loginScreen_accountNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, eventHandler, false, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+    loginScreen_passwordInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 50.0f, 0.0f}, eventHandler, true, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
 
     // CreateAccount
-    createAccount_accountNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, false, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
-    createAccount_passwordInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 50.0f, 0.0f }, true, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
+    createAccount_accountNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, eventHandler, false, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+    createAccount_passwordInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 50.0f, 0.0f }, eventHandler, true, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
 
     // CreateCharacter
-    createCharacter_characterNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, false, 140.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Character Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+    createCharacter_characterNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, eventHandler, false, 140.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Character Name:", writeFactory, textFormatAccountCreds, d2dFactory);
 }
 
 void DirectXManager::InitializeButtons()
@@ -737,9 +568,9 @@ void DirectXManager::DrawScene()
         immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         immediateContext->Draw(3, 0);
 
-        if (gameSettingsPanel->IsVisible())
+        //if (gameSettingsPanel->IsVisible())
             gameSettingsPanel->Draw();
-        if (gameEditorPanel->IsVisible())
+        //if (gameEditorPanel->IsVisible())
             gameEditorPanel->Draw();
         break;
     default:
@@ -823,7 +654,7 @@ void DirectXManager::RecreateCharacterListings(std::vector<std::string>* charact
     for (auto i = 0; i < characterNames->size(); i++)
     {
         const float y = 100.0f + (i * 40.0f);
-        characterList->push_back(new UICharacterListing(DirectX::XMFLOAT3{ 25.0f, y, 0.0f }, 260.0f, 30.0f, whiteBrush, selectedCharacterBrush, grayBrush, blackBrush, d2dDeviceContext, characterNames->at(i).c_str(), writeFactory, textFormatAccountCredsInputValue, d2dFactory));
+        characterList->push_back(new UICharacterListing(DirectX::XMFLOAT3{ 25.0f, y, 0.0f }, eventHandler, 260.0f, 30.0f, whiteBrush, selectedCharacterBrush, grayBrush, blackBrush, d2dDeviceContext, characterNames->at(i).c_str(), writeFactory, textFormatAccountCredsInputValue, d2dFactory));
     }
 }
 void DirectXManager::InitializeGameWorld()
@@ -943,12 +774,12 @@ void DirectXManager::HandleEvent(const Event& event)
 			else if (buttonPressEvent.buttonId == "CharacterSelect_EnterWorld")
 			{
 				std::string characterName = "";
-				for (auto i = 0; i < characterList->size(); i++)
+				/*for (auto i = 0; i < characterList->size(); i++)
 					if (characterList->at(i)->IsSelected())
 					{
 						characterName = characterList->at(i)->GetCharacterName();
 						break;
-					}
+					}*/
 				socketManager.SendPacket(OPCODE_ENTER_WORLD, 2, token, characterName);
 				characterSelect_successMessageLabel->SetText("");
 				loginState = EnteringWorld;

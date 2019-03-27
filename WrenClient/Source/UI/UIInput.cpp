@@ -1,5 +1,9 @@
 #include "UIInput.h"
 #include <wchar.h>
+#include "../EventHandling/Events/MouseDownEvent.h"
+#include "../EventHandling/Events/KeyDownEvent.h"
+#include "../EventHandling/Events/SystemKeyDownEvent.h"
+#include "../Math.h"
 
 void UIInput::Draw()
 {
@@ -28,41 +32,7 @@ void UIInput::Draw()
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + labelWidth + 14, position.y), inputValueTextLayout, inputValueBrush);
 }
 
-bool UIInput::IsActive()
-{
-    return active;
-}
-
-void UIInput::SetActive(const bool isActive)
-{
-    active = isActive;
-}
-
-void UIInput::PushCharacter(const TCHAR c)
-{
-    if (inputIndex > 30)
-        return;
-
-    inputValue[inputIndex] = c;
-    inputIndex++;
-}
-
-void UIInput::PopCharacter()
-{
-    if (inputIndex == 0)    
-        return;
-
-    inputValue[inputIndex - 1] = 0;
-    inputIndex--;
-}
-
-bool UIInput::DetectClick(const float x, const float y)
-{
-    const auto position = GetWorldPosition();
-    return x >= position.x + labelWidth && x <= position.x + inputWidth + labelWidth && y >= position.y && y <= position.y + height;
-}
-
-const TCHAR* UIInput::GetInputValue()
+const wchar_t* UIInput::GetInputValue()
 {
     return inputValue;
 }
@@ -71,4 +41,64 @@ void UIInput::Clear()
 {
     inputIndex = 0;
     ZeroMemory(inputValue, sizeof(inputValue));
+}
+
+void UIInput::HandleEvent(const Event& event)
+{
+	const auto type = event.type;
+	switch (type)
+	{
+		case EventType::MouseDownEvent:
+		{
+			active = false;
+
+			const auto mouseDownEvent = (MouseDownEvent&)event;
+
+			const auto position = GetWorldPosition();
+			if (DetectClick(position.x + labelWidth, position.y, position.x + inputWidth + labelWidth, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
+			{
+				active = true;
+			}
+
+			break;
+		}
+		case EventType::KeyDownEvent:
+		{
+			if (active)
+			{
+				const auto keyDownEvent = (KeyDownEvent&)event;
+
+				if (inputIndex <= 30)
+				{
+					inputValue[inputIndex] = keyDownEvent.charCode;
+					inputIndex++;
+				}
+			}
+			
+			break;
+		}
+		case EventType::SystemKeyDownEvent:
+		{
+			if (active)
+			{
+				const auto keyDownEvent = (SystemKeyDownEvent&)event;
+				const auto keyCode = keyDownEvent.code;
+
+				switch (keyCode)
+				{
+					case SystemKey::Backspace:
+					{
+						if (inputIndex > 0)
+						{
+							inputValue[inputIndex - 1] = 0;
+							inputIndex--;
+						}
+						break;
+					}
+				}
+			}
+			
+			break;
+		}
+	}
 }

@@ -10,6 +10,7 @@ protected:
 	Observer(EventHandler* eventHandler)
 		: eventHandler{ eventHandler }
 	{
+		const auto foo = this;
 		eventHandler->Subscribe(this);
 	}
 public:	

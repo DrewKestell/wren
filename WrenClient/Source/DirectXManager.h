@@ -129,11 +129,6 @@ class DirectXManager : public Observer, public Publisher
 public:
     DirectXManager(GameTimer& timer, SocketManager& socketManager, EventHandler* eventHandler);
     void Initialize(HWND hWnd);
-    void OnBackspace();
-    void OnEscape();
-    void OnF1();
-    void MouseMove(float mousePosX, float mousePosY);
-    void MouseDown(float mousePosX, float mousePosY);
     void OnTab();
     void DrawScene();
     void HandleMessage(std::tuple<std::string, std::string, std::vector<std::string>*> message);

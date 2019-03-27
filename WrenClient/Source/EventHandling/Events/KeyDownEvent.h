@@ -5,7 +5,7 @@
 class KeyDownEvent : public KeyPressEvent
 {
 public:
-	KeyDownEvent(const int charCode)
+	KeyDownEvent(const wchar_t charCode)
 		: KeyPressEvent(EventType::KeyDownEvent, charCode)
 	{
 	}

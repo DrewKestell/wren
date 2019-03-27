@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Event.h"
+#include "MouseEvent.h"
 
-class MouseUpEvent : public Event
+class MouseUpEvent : public MouseEvent
 {
 public:
-	MouseUpEvent()
-		: Event(EventType::MouseUpEvent)
+	MouseUpEvent(const float mousePosX, const float mousePosY)
+		: MouseEvent(EventType::MouseUpEvent, mousePosX, mousePosY)
 	{
 	}
 };

@@ -5,11 +5,13 @@
 #include <dwrite_3.h>
 #include <sstream>
 #include "../GameObject.h"
+#include "../EventHandling/Observer.h"
+#include "../EventHandling/Publisher.h"
 
-class UIInput : public GameObject
+class UIInput : public GameObject, public Observer, public Publisher
 {
     int inputIndex;
-    TCHAR inputValue[30];
+    wchar_t inputValue[30];
     bool active;
     bool secure;
     float labelWidth;
@@ -28,6 +30,7 @@ class UIInput : public GameObject
 public:
     UIInput(
         const DirectX::XMFLOAT3 position,
+		EventHandler* eventHandler,
         const bool secure,
         const float labelWidth,
         const float inputWidth,
@@ -43,6 +46,8 @@ public:
         IDWriteTextFormat* labelTextFormat,
         ID2D1Factory2* d2dFactory) :
         GameObject(position),
+		Observer(eventHandler),
+		Publisher(eventHandler),
         secure{ secure },
         labelWidth{ labelWidth },
         inputWidth{ inputWidth },
@@ -65,12 +70,8 @@ public:
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x + labelWidth + 10, position.y, position.x + labelWidth + inputWidth, position.y + height), 3.0f, 3.0f), &inputGeometry);
     }
     virtual void Draw();
-    bool IsActive();
-    void SetActive(const bool isActive);
-    void PushCharacter(const TCHAR c);
-    void PopCharacter();
-    bool DetectClick(const float x, const float y);
-    const TCHAR* GetInputValue();
+	virtual void HandleEvent(const Event& event);
+    const wchar_t* GetInputValue();
     void Clear();
 };
 

@@ -43,6 +43,8 @@
     <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKey.h" />
+    <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\MouseMoveEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />
