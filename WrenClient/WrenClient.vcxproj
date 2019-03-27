@@ -21,6 +21,9 @@
   <ItemGroup>
     <ClCompile Include="Source\DirectXManager.cpp" />
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
+    <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
+    <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
+    <ClCompile Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
     <ClCompile Include="Source\EventHandling\Publisher.cpp" />
     <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
@@ -43,6 +46,9 @@
     <ClInclude Include="Source\EventHandling\Events\MouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\EventType.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseUpEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\SystemKey.h" />
+    <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Publisher.h" />
     <ClInclude Include="Source\GameObject.h" />
     <ClInclude Include="Source\GameTimer.h" />

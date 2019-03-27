@@ -1,5 +1,5 @@
 #include "EventHandler.h"
-#include "Observer.h"
+#include "Observer.h">
 
 void EventHandler::PublishEvent(const Event& event)
 {

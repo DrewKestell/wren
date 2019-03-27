@@ -13,6 +13,9 @@
 #include "GameTimer.h"
 #include "LoginState.h"
 #include "EventHandling/EventHandler.h"
+#include "EventHandling/Events/SystemKeyUpEvent.h"
+#include "EventHandling/Events/SystemKeyDownEvent.h"
+#include "EventHandling/Events/KeyDownEvent.h"
 
 static TCHAR szWindowClass[] = _T("win32app");
 static TCHAR szTitle[] = _T("Wren Client");
@@ -124,81 +127,219 @@ int CALLBACK WinMain(
     }
 }
 
+SystemKey MapLeftRightKeys(WPARAM vk, LPARAM lParam)
+{
+	UINT scancode = (lParam & 0x00ff0000) >> 16;
+	int extended = (lParam & 0x01000000) != 0;
+
+	switch (vk)
+	{
+	case VK_SHIFT:
+		if (MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX) == VK_LSHIFT)
+			return SystemKey::LeftShift;
+		else
+			return SystemKey::RightShift;
+		break;
+	case VK_CONTROL:
+		if (extended)
+			return SystemKey::RightControl;
+		else
+			return SystemKey::LeftControl;
+		break;
+	case VK_MENU:
+		if (extended)
+			return SystemKey::RightAlt;
+		else
+			return SystemKey::LeftAlt;
+		break;
+	}
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	wchar_t msg[32];
     switch (message)
     {
     case WM_CLOSE:
         DestroyWindow(hWnd);
-        return 0;
+		break;
     case WM_DESTROY:
         PostQuitMessage(0);
-        return 0;
+		break;
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
         dxManager->MouseDown((float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
-        return 0;
+		break;
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:
     case WM_RBUTTONUP:
         //dxManager->MouseUp();
-        return 0;
+		break;
     case WM_MOUSEMOVE:
 		dxManager->MouseMove((float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
-        return 0;
-	case WM_SYSKEYDOWN:
-		swprintf_s(msg, L"WM_SYSKEYDOWN: 0x%x\n", wParam);
-		std::wcout << msg << "\n";
-		break;
+        break;
 
-	case WM_SYSCHAR:
-		swprintf_s(msg, L"WM_SYSCHAR: %c\n", (wchar_t)wParam);
-		std::wcout << msg << "\n";
+	case WM_SYSKEYDOWN:
+		switch (wParam)
+		{
+		case VK_MENU:
+			const auto keyCode = MapLeftRightKeys(wParam, lParam);
+			eventHandler->PublishEvent(SystemKeyDownEvent{ keyCode });
+			break;
+		}
 		break;
 
 	case WM_SYSKEYUP:
-		swprintf_s(msg, L"WM_SYSKEYUP: 0x%x\n", wParam);
-		std::wcout << msg << "\n";
+		switch (wParam)
+		{
+		case VK_MENU:
+			const auto keyCode = MapLeftRightKeys(wParam, lParam);
+			eventHandler->PublishEvent(SystemKeyUpEvent{ keyCode });
+			break;
+		}
 		break;
 
 	case WM_KEYDOWN:
-		swprintf_s(msg, L"WM_KEYDOWN: 0x%x\n", wParam);
-		std::wcout << msg << "\n";
+		switch (wParam)
+		{
+		case VK_F1:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F1 });
+			break;
+		case VK_F2:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F2 });
+			break;
+		case VK_F3:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F3 });
+			break;
+		case VK_F4:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F4 });
+			break;
+		case VK_F5:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F5 });
+			break;
+		case VK_F6:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F6 });
+			break;
+		case VK_F7:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F7 });
+			break;
+		case VK_F8:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F8 });
+			break;
+		case VK_F9:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F9 });
+			break;
+		case VK_F10:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F10 });
+			break;
+		case VK_F11:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F11 });
+			break;
+		case VK_F12:
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F12 });
+			break;
+		case 0x08: // Process a backspace.
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::Backspace });
+			break;
+		case 0x0A: // Process a linefeed.   
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::Linefeed });
+			break;
+		case 0x1B: // Process an escape. 
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::Escape });
+			break;
+		case 0x09: // Process a tab.          
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::Tab });
+			break;
+		case 0x0D: // Process a carriage return.
+			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::CarriageReturn });
+			break;
+		case VK_SHIFT:
+		case VK_CONTROL:
+			const auto keyCode = MapLeftRightKeys(wParam, lParam);
+			eventHandler->PublishEvent(SystemKeyDownEvent{ keyCode });
+			break;
+		}
 		break;
 
 	case WM_KEYUP:
-		swprintf_s(msg, L"WM_KEYUP: 0x%x\n", wParam);
-		std::wcout << msg << "\n";
-		break;
-    case WM_CHAR:
-		swprintf_s(msg, L"WM_CHAR: 0x%x\n", wParam);
-		std::wcout << msg << "\n";
+		switch (wParam)
+		{
+		case VK_F1:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F1 });
+			break;
+		case VK_F2:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F2 });
+			break;
+		case VK_F3:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F3 });
+			break;
+		case VK_F4:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F4 });
+			break;
+		case VK_F5:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F5 });
+			break;
+		case VK_F6:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F6 });
+			break;
+		case VK_F7:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F7 });
+			break;
+		case VK_F8:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F8 });
+			break;
+		case VK_F9:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F9 });
+			break;
+		case VK_F10:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F10 });
+			break;
+		case VK_F11:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F11 });
+			break;
+		case VK_F12:
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F12 });
+			break;
+		case 0x08: // Process a backspace.
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::Backspace });
+			break;
+		case 0x0A: // Process a linefeed.   
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::Linefeed });
+			break;
+		case 0x1B: // Process an escape. 
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::Escape });
+			break;
+		case 0x09: // Process a tab.          
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::Tab });
+			break;
+		case 0x0D: // Process a carriage return.
+			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::CarriageReturn });
+			break;
+		case VK_SHIFT:
+		case VK_CONTROL:
+			const auto keyCode = MapLeftRightKeys(wParam, lParam);
+			eventHandler->PublishEvent(SystemKeyUpEvent{ keyCode });
+			break;
+		}
 
+		break;
+
+    case WM_CHAR:
         switch (wParam)
         {
-        case 0x08: // Process a backspace.
-            dxManager->OnBackspace();
+        case 0x08: // Ignore backspace.
             break;
-
-        case 0x0A: // Process a linefeed.           
+        case 0x0A: // Ignore linefeed.   
             break;
-
-        case 0x1B: // Process an escape. 
-            dxManager->OnEscape();
+        case 0x1B: // Ignore escape. 
             break;
-
-        case 0x09: // Process a tab.          
-            dxManager->OnTab();
+        case 0x09: // Ignore tab.          
             break;
-
-        case 0x0D: // Process a carriage return.             
+        case 0x0D: // Ignore carriage return.
             break;
-
         default: // Process a normal character press.            
-            auto ch = (TCHAR)wParam;
-            dxManager->OnKeyPress(ch);
+            auto ch = (wchar_t)wParam;
+			eventHandler->PublishEvent(KeyDownEvent{ ch });
             break;
         }
     default:

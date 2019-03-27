@@ -132,7 +132,6 @@ public:
     void OnBackspace();
     void OnEscape();
     void OnF1();
-    void OnKeyPress(TCHAR c);
     void MouseMove(float mousePosX, float mousePosY);
     void MouseDown(float mousePosX, float mousePosY);
     void OnTab();
