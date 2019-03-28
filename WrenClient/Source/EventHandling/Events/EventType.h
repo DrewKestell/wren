@@ -8,5 +8,7 @@ enum class EventType
 	ButtonPressEvent,
 	KeyDownEvent,
 	SystemKeyDownEvent,
-	SystemKeyUpEvent
+	SystemKeyUpEvent,
+	SelectCharacterListing,
+	DeselectCharacterListing
 };

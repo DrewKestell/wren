@@ -5,13 +5,13 @@
 #include <dwrite_3.h>
 #include <sstream>
 #include <vector>
-#include "../GameObject.h"
+#include "UIComponent.h"
 #include "../EventHandling/Observer.h"
 #include "../EventHandling/Publisher.h"
 
 const FLOAT HEADER_HEIGHT = 20.0f;
 
-class UIPanel : public GameObject, public Observer, public Publisher
+class UIPanel : public UIComponent, public Observer, public Publisher
 {
     bool isVisible = false;
     bool isDragging = false;
@@ -30,6 +30,7 @@ class UIPanel : public GameObject, public Observer, public Publisher
 public:
     UIPanel(
         const DirectX::XMFLOAT3 position,
+		const Layer uiLayer,
 		EventHandler* eventHandler,
         const bool isDraggable,
         const float width,
@@ -39,7 +40,7 @@ public:
         ID2D1SolidColorBrush* borderBrush,
         ID2D1DeviceContext1* d2dDeviceContext,
         ID2D1Factory2* d2dFactory) :
-        GameObject(position),
+        UIComponent(position, uiLayer),
 		Observer(eventHandler),
 		Publisher(eventHandler),
         isDraggable{ isDraggable },
@@ -60,8 +61,8 @@ public:
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, startHeight, position.x + width, startHeight + height), 3.0f, 3.0f), &bodyGeometry);
     }
     
-    virtual void Draw();
-	virtual void HandleEvent(const Event& event);
+    virtual void Draw(const Layer layer);
+	virtual void HandleEvent(const Event& event, const Layer layer);
 };
 
 #endif

@@ -11,7 +11,7 @@
 #include <tuple>
 #include "DirectXManager.h"
 #include "GameTimer.h"
-#include "LoginState.h"
+#include "Layer.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/SystemKeyUpEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"

@@ -4,11 +4,11 @@
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 #include <sstream>
-#include "../GameObject.h"
+#include "UIComponent.h"
 #include "../EventHandling/Observer.h"
 #include "../EventHandling/Publisher.h"
 
-class UIButton : public GameObject, public Observer, public Publisher
+class UIButton : public UIComponent, public Observer, public Publisher
 {
     const char* buttonText[20];
     bool pressed = false;
@@ -27,6 +27,7 @@ class UIButton : public GameObject, public Observer, public Publisher
 public:
     UIButton(
         const DirectX::XMFLOAT3 position,
+		const Layer uiLayer,
 		EventHandler* eventHandler,
 		const std::string& buttonId,
         const float width,
@@ -40,7 +41,7 @@ public:
         IDWriteFactory2* writeFactory,
         IDWriteTextFormat* buttonTextFormat,
         ID2D1Factory2* d2dFactory) :
-        GameObject(position),
+        UIComponent(position, uiLayer),
 		Observer(eventHandler),
 		Publisher(eventHandler),
 		buttonId{ buttonId },
@@ -64,8 +65,8 @@ public:
     bool IsEnabled();
     void SetEnabled(const bool isEnabled);
     bool IsPressed();
-    virtual void Draw();
-	virtual void HandleEvent(const Event& event);
+    virtual void Draw(const Layer layer);
+	virtual void HandleEvent(const Event& event, const Layer layer);
 };
 
 #endif

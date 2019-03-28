@@ -14,5 +14,5 @@ protected:
 		eventHandler->Subscribe(this);
 	}
 public:	
-	virtual void HandleEvent(const Event& event) = 0;
+	virtual void HandleEvent(const Event& event, const Layer layer) = 0;
 };

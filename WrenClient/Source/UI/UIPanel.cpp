@@ -3,31 +3,40 @@
 #include "../EventHandling/Events/MouseUpEvent.h"
 #include "../EventHandling/Events/MouseMoveEvent.h"
 
-void UIPanel::Draw()
+void UIPanel::Draw(const Layer layer)
 {
-    // Draw Panel
-    const float borderWeight = 2.0f;
-    if (isDraggable)
-    {
-        d2dDeviceContext->FillGeometry(headerGeometry, headerBrush);
-        d2dDeviceContext->DrawGeometry(headerGeometry, borderBrush, borderWeight);
-    }
-    d2dDeviceContext->FillGeometry(bodyGeometry, bodyBrush);
-    d2dDeviceContext->DrawGeometry(bodyGeometry, borderBrush, borderWeight);
+	if (uiLayer & layer & Any == 0)
+		return;
 
-    // Draw Children
-    const auto children = GetChildren();
-    for (auto i = 0; i < children.size(); i++)
-        children.at(i)->Draw();
+	if (isVisible)
+	{
+		// Draw Panel
+		const float borderWeight = 2.0f;
+		if (isDraggable)
+		{
+			d2dDeviceContext->FillGeometry(headerGeometry, headerBrush);
+			d2dDeviceContext->DrawGeometry(headerGeometry, borderBrush, borderWeight);
+		}
+		d2dDeviceContext->FillGeometry(bodyGeometry, bodyBrush);
+		d2dDeviceContext->DrawGeometry(bodyGeometry, borderBrush, borderWeight);
+
+		// Draw Children
+		const auto children = GetChildren();
+		for (auto i = 0; i < children.size(); i++)
+			children.at(i)->Draw();
+	}
 }
 
-void UIPanel::HandleEvent(const Event& event)
+void UIPanel::HandleEvent(const Event& event, const Layer layer)
 {
 	const auto type = event.type;
 	switch (type)
 	{
 		case EventType::MouseDownEvent:
 		{
+			if (uiLayer & layer & Any == 0)
+				break;
+
 			const auto mouseDownEvent = (MouseDownEvent&)event;
 
 			const auto position = GetWorldPosition();
@@ -50,6 +59,9 @@ void UIPanel::HandleEvent(const Event& event)
 		}
 		case EventType::MouseMoveEvent:
 		{
+			if (uiLayer & layer & Any == 0)
+				break;
+
 			const auto mouseMoveEvent = (MouseMoveEvent&)event;
 
 			if (isDragging)

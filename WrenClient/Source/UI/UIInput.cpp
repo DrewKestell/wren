@@ -5,8 +5,11 @@
 #include "../EventHandling/Events/SystemKeyDownEvent.h"
 #include "../Math.h"
 
-void UIInput::Draw()
+void UIInput::Draw(const Layer layer)
 {
+	if (uiLayer & layer & Any == 0)
+		return;
+
     // Draw Label
     const auto position = GetWorldPosition();
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y), labelTextLayout, labelBrush);
@@ -43,7 +46,7 @@ void UIInput::Clear()
     ZeroMemory(inputValue, sizeof(inputValue));
 }
 
-void UIInput::HandleEvent(const Event& event)
+void UIInput::HandleEvent(const Event& event, const Layer layer)
 {
 	const auto type = event.type;
 	switch (type)
@@ -51,6 +54,9 @@ void UIInput::HandleEvent(const Event& event)
 		case EventType::MouseDownEvent:
 		{
 			active = false;
+
+			if (uiLayer & layer & Any == 0)
+				break;
 
 			const auto mouseDownEvent = (MouseDownEvent&)event;
 
@@ -64,6 +70,9 @@ void UIInput::HandleEvent(const Event& event)
 		}
 		case EventType::KeyDownEvent:
 		{
+			if (uiLayer & layer & Any == 0)
+				break;
+
 			if (active)
 			{
 				const auto keyDownEvent = (KeyDownEvent&)event;
@@ -79,6 +88,9 @@ void UIInput::HandleEvent(const Event& event)
 		}
 		case EventType::SystemKeyDownEvent:
 		{
+			if (uiLayer & layer & Any == 0)
+				break;
+
 			if (active)
 			{
 				const auto keyDownEvent = (SystemKeyDownEvent&)event;

@@ -3,11 +3,11 @@
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 #include <sstream>
-#include "../GameObject.h"
+#include "UIComponent.h"
 #include "../EventHandling/Observer.h"
 #include "../EventHandling/Publisher.h"
 
-class UICharacterListing : public GameObject, public Observer, public Publisher
+class UICharacterListing : public UIComponent, public Observer, public Publisher
 {
     std::string characterName;
     bool selected;
@@ -23,6 +23,7 @@ class UICharacterListing : public GameObject, public Observer, public Publisher
 public:
     UICharacterListing(
         const DirectX::XMFLOAT3 position,
+		const Layer uiLayer,
 		EventHandler* eventHandler,
         const float width,
         const float height,
@@ -35,7 +36,7 @@ public:
         IDWriteFactory2* writeFactory,
         IDWriteTextFormat* textFormat,
         ID2D1Factory2* d2dFactory) :
-        GameObject{ position },
+        UIComponent{ position, uiLayer },
 		Observer(eventHandler),
 		Publisher(eventHandler),
         width{ width },
@@ -56,7 +57,6 @@ public:
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), &geometry);
 
     }
-    virtual void Draw();
-	virtual void HandleEvent(const Event& event);
-    std::string& GetCharacterName();
+    virtual void Draw(const Layer layer);
+	virtual void HandleEvent(const Event& event, const Layer layer);
 };

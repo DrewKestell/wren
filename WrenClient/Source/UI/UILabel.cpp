@@ -1,7 +1,10 @@
 #include "UILabel.h"
 
-void UILabel::Draw()
+void UILabel::Draw(const Layer layer)
 {
+	if (uiLayer & layer & Any == 0)
+		return;
+
     std::wostringstream outInputValue;
     outInputValue << text;
     if (FAILED(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormat, width, 24.0f, &textLayout)))

@@ -45,6 +45,8 @@
     <ClInclude Include="Source\EventHandling\Events\SystemKey.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseMoveEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\DeselectCharacterListing.h" />
+    <ClInclude Include="Source\EventHandling\Events\SelectCharacterListing.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

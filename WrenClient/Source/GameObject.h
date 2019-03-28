@@ -3,6 +3,7 @@
 #include <DirectXMath.h>
 #include <vector>
 #include "Math.h"
+#include "Layer.h"
 
 class GameObject
 {
@@ -26,5 +27,5 @@ public:
 
     DirectX::XMFLOAT3 GetWorldPosition();
 
-    virtual void Draw() = 0;
+    virtual void Draw(const Layer layer) = 0;
 };

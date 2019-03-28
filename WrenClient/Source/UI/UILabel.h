@@ -3,9 +3,9 @@
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 #include <sstream>
-#include "../GameObject.h"
+#include "UIComponent.h"
 
-class UILabel : public GameObject
+class UILabel : public UIComponent
 {
     char text[200];
     float width;
@@ -17,13 +17,14 @@ class UILabel : public GameObject
 public:
     UILabel(
         const DirectX::XMFLOAT3 position,
+		const Layer uiLayer,
         const float width,
         ID2D1SolidColorBrush* textBrush,
         IDWriteTextFormat* textFormat,
         ID2D1DeviceContext1* d2dDeviceContext,
         IDWriteFactory2* writeFactory,
         ID2D1Factory2* d2dFactory) :
-        GameObject(position),
+        UIComponent(position, uiLayer),
         width{ width },
         textBrush{ textBrush },
         textFormat{ textFormat },
@@ -32,6 +33,6 @@ public:
     {
         ZeroMemory(text, sizeof(text));
     }
-    virtual void Draw();
+    virtual void Draw(const Layer layer);
     void SetText(const char* arr);
 };

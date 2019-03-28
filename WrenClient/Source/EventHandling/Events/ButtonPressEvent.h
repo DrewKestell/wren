@@ -2,14 +2,15 @@
 
 #include <string>
 #include "Event.h"
+#include "../../UI/UIButton.h"
 
 class ButtonPressEvent : public Event
 {
 public:
-	ButtonPressEvent(const std::string& buttonId)
+	ButtonPressEvent(const UIButton* button)
 		: Event(EventType::ButtonPressEvent),
-		buttonId{ buttonId }
+		button{ button }
 	{
 	}
-	const std::string& buttonId;
+	const UIButton* button;
 };
