@@ -4,6 +4,7 @@
 #include <vector>
 #include "Math.h"
 #include "Layer.h"
+#include "ObjectManager.h"
 
 class GameObject
 {
@@ -11,9 +12,10 @@ class GameObject
     GameObject* parent = nullptr;
     std::vector<GameObject*> children;
 protected:
-    GameObject(const DirectX::XMFLOAT3 localPosition)
+    GameObject(ObjectManager& objectManager, const DirectX::XMFLOAT3 localPosition)
         : localPosition{ localPosition }
     {
+		objectManager.RegisterGameObject(*this);
     }
 public:
     DirectX::XMFLOAT3 GetLocalPosition() { return localPosition; }

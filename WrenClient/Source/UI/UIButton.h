@@ -65,8 +65,8 @@ public:
     bool IsEnabled();
     void SetEnabled(const bool isEnabled);
     bool IsPressed();
-    virtual void Draw(const Layer layer);
-	virtual void HandleEvent(const Event& event, const Layer layer);
+    virtual void Draw();
+	virtual void HandleEvent(const Event& event);
 };
 
 #endif

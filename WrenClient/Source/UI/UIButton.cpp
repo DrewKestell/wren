@@ -19,11 +19,8 @@ bool UIButton::IsPressed()
     return pressed;
 }
 
-void UIButton::Draw(const Layer layer)
+void UIButton::Draw()
 {
-	if (uiLayer & layer & Any == 0)
-		return;
-
     // Draw Input
     const float borderWeight = pressed ? 2.0f : 1.0f;
     ID2D1SolidColorBrush* buttonColor;
@@ -41,7 +38,7 @@ void UIButton::Draw(const Layer layer)
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y + 1), buttonTextLayout, buttonTextBrush); // (location + 1) looks better
 }
 
-void UIButton::HandleEvent(const Event& event, const Layer layer)
+void UIButton::HandleEvent(const Event& event)
 {
 	const auto type = event.type;
 	switch (type)

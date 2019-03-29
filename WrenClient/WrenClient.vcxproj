@@ -28,6 +28,7 @@
     <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\Math.cpp" />
+    <ClCompile Include="Source\UI\UIComponent.cpp" />
     <ClCompile Include="Source\UI\UIPanel.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\UI\UIButton.cpp" />
@@ -56,9 +57,12 @@
     <ClInclude Include="Source\EventHandling\Publisher.h" />
     <ClInclude Include="Source\GameObject.h" />
     <ClInclude Include="Source\GameTimer.h" />
+    <ClInclude Include="Source\Layer.h" />
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\Math.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
+    <ClInclude Include="Source\ObjectManager.h" />
+    <ClInclude Include="Source\UI\UIComponent.h" />
     <ClInclude Include="Source\UI\UIPanel.h" />
     <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\UI\UIButton.h" />

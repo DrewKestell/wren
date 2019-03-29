@@ -6,13 +6,12 @@
 class Observer
 {
 protected:
-	EventHandler* eventHandler;
-	Observer(EventHandler* eventHandler)
+	EventHandler& eventHandler;
+	Observer(EventHandler& eventHandler)
 		: eventHandler{ eventHandler }
 	{
-		const auto foo = this;
-		eventHandler->Subscribe(this);
+		eventHandler.Subscribe(*this);
 	}
 public:	
-	virtual void HandleEvent(const Event& event, const Layer layer) = 0;
+	virtual void HandleEvent(const Event& event) = 0;
 };

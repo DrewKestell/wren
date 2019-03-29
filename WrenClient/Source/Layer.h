@@ -1,27 +1,13 @@
-#ifndef LOGINSTATE_H
-#define LOGINSTATE_H
+#pragma once
 
 enum Layer
 {
-	Any = 1,
-    Login = 2,
-    CreateAccount = 4,
-    Connecting = 8,
-    CharacterSelect = 16,
-    CreateCharacter = 32,
-    EnteringWorld = 64,
-    InGame = 128,
-    Disconnected = 256
+    Login,
+    CreateAccount,
+    Connecting,
+    CharacterSelect,
+    CreateCharacter,
+    EnteringWorld,
+    InGame,
+    Disconnected,
 };
-
-inline Layer operator|(Layer a, Layer b)
-{
-	return static_cast<Layer>(static_cast<int>(a) | static_cast<int>(b));
-}
-
-inline Layer operator&(Layer a, Layer b)
-{
-	return static_cast<Layer>(static_cast<int>(a) & static_cast<int>(b));
-}
-
-#endif
