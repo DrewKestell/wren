@@ -1,5 +1,4 @@
-#ifndef UIBUTTON_H
-#define UIBUTTON_H
+#pragma once
 
 #include <d2d1_3.h>
 #include <dwrite_3.h>
@@ -27,8 +26,9 @@ class UIButton : public UIComponent, public Observer, public Publisher
 public:
     UIButton(
         const DirectX::XMFLOAT3 position,
+		ObjectManager& objectManager,
 		const Layer uiLayer,
-		EventHandler* eventHandler,
+		EventHandler& eventHandler,
 		const std::string& buttonId,
         const float width,
         const float height,
@@ -41,7 +41,7 @@ public:
         IDWriteFactory2* writeFactory,
         IDWriteTextFormat* buttonTextFormat,
         ID2D1Factory2* d2dFactory) :
-        UIComponent(position, uiLayer),
+        UIComponent(objectManager, position, uiLayer),
 		Observer(eventHandler),
 		Publisher(eventHandler),
 		buttonId{ buttonId },
@@ -64,9 +64,6 @@ public:
     }
     bool IsEnabled();
     void SetEnabled(const bool isEnabled);
-    bool IsPressed();
     virtual void Draw();
-	virtual void HandleEvent(const Event& event);
+	virtual bool HandleEvent(const Event& event);
 };
-
-#endif

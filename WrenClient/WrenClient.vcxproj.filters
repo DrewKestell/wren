@@ -18,6 +18,7 @@
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
+    <ClCompile Include="Source\ObjectManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DirectXManager.h" />
@@ -51,6 +52,7 @@
     <ClInclude Include="Source\UI\UIComponent.h" />
     <ClInclude Include="Source\Layer.h" />
     <ClInclude Include="Source\ObjectManager.h" />
+    <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

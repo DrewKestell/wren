@@ -6,8 +6,8 @@
 class Publisher
 {
 protected:
-	EventHandler* eventHandler;
-	Publisher(EventHandler* eventHandler)
+	EventHandler eventHandler;
+	Publisher(EventHandler& eventHandler)
 		: eventHandler{ eventHandler }
 	{
 	}

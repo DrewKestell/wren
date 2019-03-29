@@ -3,12 +3,12 @@
 #include "../EventHandling/Events/MouseDownEvent.h"
 #include "../EventHandling/Events/KeyDownEvent.h"
 #include "../EventHandling/Events/SystemKeyDownEvent.h"
+#include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../Math.h"
 
-void UIInput::Draw(const Layer layer)
+void UIInput::Draw()
 {
-	if (uiLayer & layer & Any == 0)
-		return;
+	if (!isVisible) return;
 
     // Draw Label
     const auto position = GetWorldPosition();
@@ -46,7 +46,7 @@ void UIInput::Clear()
     ZeroMemory(inputValue, sizeof(inputValue));
 }
 
-void UIInput::HandleEvent(const Event& event, const Layer layer)
+bool UIInput::HandleEvent(const Event& event)
 {
 	const auto type = event.type;
 	switch (type)
@@ -55,24 +55,21 @@ void UIInput::HandleEvent(const Event& event, const Layer layer)
 		{
 			active = false;
 
-			if (uiLayer & layer & Any == 0)
-				break;
-
 			const auto mouseDownEvent = (MouseDownEvent&)event;
 
-			const auto position = GetWorldPosition();
-			if (DetectClick(position.x + labelWidth, position.y, position.x + inputWidth + labelWidth, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
+			if (isVisible)
 			{
-				active = true;
+				const auto position = GetWorldPosition();
+				if (DetectClick(position.x + labelWidth, position.y, position.x + inputWidth + labelWidth, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
+				{
+					active = true;
+				}
 			}
 
 			break;
 		}
 		case EventType::KeyDownEvent:
 		{
-			if (uiLayer & layer & Any == 0)
-				break;
-
 			if (active)
 			{
 				const auto keyDownEvent = (KeyDownEvent&)event;
@@ -88,9 +85,6 @@ void UIInput::HandleEvent(const Event& event, const Layer layer)
 		}
 		case EventType::SystemKeyDownEvent:
 		{
-			if (uiLayer & layer & Any == 0)
-				break;
-
 			if (active)
 			{
 				const auto keyDownEvent = (SystemKeyDownEvent&)event;
@@ -112,5 +106,18 @@ void UIInput::HandleEvent(const Event& event, const Layer layer)
 			
 			break;
 		}
+		case EventType::ChangeActiveLayer:
+		{
+			const auto derivedEvent = (ChangeActiveLayerEvent&)event;
+
+			if (derivedEvent.layer == uiLayer)
+				isVisible = true;
+			else
+				isVisible = false;
+
+			break;
+		}
 	}
+
+	return false;
 }

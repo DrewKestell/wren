@@ -10,5 +10,6 @@ enum class EventType
 	SystemKeyDownEvent,
 	SystemKeyUpEvent,
 	SelectCharacterListing,
-	DeselectCharacterListing
+	DeselectCharacterListing,
+	ChangeActiveLayer
 };

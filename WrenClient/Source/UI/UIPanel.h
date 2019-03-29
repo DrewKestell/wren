@@ -1,5 +1,4 @@
-#ifndef UIPANEL_H
-#define UIPANEL_H
+#pragma once
 
 #include <d2d1_3.h>
 #include <dwrite_3.h>
@@ -13,7 +12,6 @@ const FLOAT HEADER_HEIGHT = 20.0f;
 
 class UIPanel : public UIComponent, public Observer, public Publisher
 {
-    bool isVisible = false;
     bool isDragging = false;
     float lastDragX = 0.0f;
     float lastDragY = 0.0f;
@@ -30,8 +28,9 @@ class UIPanel : public UIComponent, public Observer, public Publisher
 public:
     UIPanel(
         const DirectX::XMFLOAT3 position,
+		ObjectManager& objectManager,
 		const Layer uiLayer,
-		EventHandler* eventHandler,
+		EventHandler& eventHandler,
         const bool isDraggable,
         const float width,
         const float height,
@@ -40,7 +39,7 @@ public:
         ID2D1SolidColorBrush* borderBrush,
         ID2D1DeviceContext1* d2dDeviceContext,
         ID2D1Factory2* d2dFactory) :
-        UIComponent(position, uiLayer),
+        UIComponent(objectManager, position, uiLayer),
 		Observer(eventHandler),
 		Publisher(eventHandler),
         isDraggable{ isDraggable },
@@ -61,8 +60,6 @@ public:
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, startHeight, position.x + width, startHeight + height), 3.0f, 3.0f), &bodyGeometry);
     }
     
-    virtual void Draw(const Layer layer);
-	virtual void HandleEvent(const Event& event, const Layer layer);
+    virtual void Draw();
+	virtual bool HandleEvent(const Event& event);
 };
-
-#endif

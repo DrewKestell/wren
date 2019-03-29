@@ -6,12 +6,12 @@
 class Observer
 {
 protected:
-	EventHandler& eventHandler;
+	EventHandler eventHandler;
 	Observer(EventHandler& eventHandler)
 		: eventHandler{ eventHandler }
 	{
 		eventHandler.Subscribe(*this);
 	}
 public:	
-	virtual void HandleEvent(const Event& event) = 0;
+	virtual bool HandleEvent(const Event& event) = 0;
 };

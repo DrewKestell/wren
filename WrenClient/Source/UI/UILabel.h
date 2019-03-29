@@ -17,6 +17,7 @@ class UILabel : public UIComponent
 public:
     UILabel(
         const DirectX::XMFLOAT3 position,
+		ObjectManager& objectManager,
 		const Layer uiLayer,
         const float width,
         ID2D1SolidColorBrush* textBrush,
@@ -24,7 +25,7 @@ public:
         ID2D1DeviceContext1* d2dDeviceContext,
         IDWriteFactory2* writeFactory,
         ID2D1Factory2* d2dFactory) :
-        UIComponent(position, uiLayer),
+        UIComponent(objectManager, position, uiLayer),
         width{ width },
         textBrush{ textBrush },
         textFormat{ textFormat },
@@ -33,6 +34,6 @@ public:
     {
         ZeroMemory(text, sizeof(text));
     }
-    virtual void Draw(const Layer layer);
+    virtual void Draw();
     void SetText(const char* arr);
 };

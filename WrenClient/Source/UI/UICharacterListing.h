@@ -23,8 +23,9 @@ class UICharacterListing : public UIComponent, public Observer, public Publisher
 public:
     UICharacterListing(
         const DirectX::XMFLOAT3 position,
+		ObjectManager& objectManager,
 		const Layer uiLayer,
-		EventHandler* eventHandler,
+		EventHandler& eventHandler,
         const float width,
         const float height,
         ID2D1SolidColorBrush* brush,
@@ -36,7 +37,7 @@ public:
         IDWriteFactory2* writeFactory,
         IDWriteTextFormat* textFormat,
         ID2D1Factory2* d2dFactory) :
-        UIComponent{ position, uiLayer },
+        UIComponent{ objectManager, position, uiLayer },
 		Observer(eventHandler),
 		Publisher(eventHandler),
         width{ width },
@@ -57,6 +58,6 @@ public:
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), &geometry);
 
     }
-    virtual void Draw(const Layer layer);
-	virtual void HandleEvent(const Event& event, const Layer layer);
+    virtual void Draw();
+	virtual bool HandleEvent(const Event& event);
 };

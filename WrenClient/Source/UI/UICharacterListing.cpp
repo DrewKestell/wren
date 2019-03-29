@@ -2,11 +2,11 @@
 #include "../EventHandling/Events/MouseDownEvent.h"
 #include "../EventHandling/Events/SelectCharacterListing.h"
 #include "../EventHandling/Events/DeselectCharacterListing.h"
+#include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 
-void UICharacterListing::Draw(const Layer layer)
+void UICharacterListing::Draw()
 {
-	if (uiLayer & layer & Any == 0)
-		return;
+	if (!isVisible) return;
 
     // Draw Input
     const float borderWeight = selected ? 2.0f : 1.0f;
@@ -19,7 +19,7 @@ void UICharacterListing::Draw(const Layer layer)
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + 10.0f, position.y + 1), textLayout, textBrush); // (location + 1) looks better
 }
 
-void UICharacterListing::HandleEvent(const Event& event, const Layer layer)
+bool UICharacterListing::HandleEvent(const Event& event)
 {
 	const auto type = event.type;
 	switch (type)
@@ -28,23 +28,36 @@ void UICharacterListing::HandleEvent(const Event& event, const Layer layer)
 		{
 			selected = false;
 
-			if (uiLayer & layer & Any == 0)
-				break;
-
 			const auto mouseDownEvent = (MouseDownEvent&)event;
 
-			const auto position = GetWorldPosition();
-			if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
+			if (isVisible)
 			{
-				selected = true;
-				PublishEvent(SelectCharacterListing{ &characterName });
+				const auto position = GetWorldPosition();
+				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
+				{
+					selected = true;
+					PublishEvent(SelectCharacterListing{ &characterName });
+				}
+				else
+				{
+					PublishEvent(DeselectCharacterListing{});
+				}
 			}
+			
+			break;
+		}
+		case EventType::ChangeActiveLayer:
+		{
+			const auto derivedEvent = (ChangeActiveLayerEvent&)event;
+
+			if (derivedEvent.layer == uiLayer)
+				isVisible = true;
 			else
-			{
-				PublishEvent(DeselectCharacterListing{});
-			}
+				isVisible = false;
 
 			break;
 		}
 	}
+
+	return false;
 }

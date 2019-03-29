@@ -1,9 +1,8 @@
 #include "UILabel.h"
 
-void UILabel::Draw(const Layer layer)
+void UILabel::Draw()
 {
-	if (uiLayer & layer & Any == 0)
-		return;
+	if (!isVisible) return;
 
     std::wostringstream outInputValue;
     outInputValue << text;

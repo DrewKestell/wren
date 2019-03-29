@@ -1,5 +1,4 @@
-#ifndef UIINPUT_H
-#define UIINPUT_H
+#pragma once
 
 #include <d2d1_3.h>
 #include <dwrite_3.h>
@@ -30,8 +29,9 @@ class UIInput : public UIComponent, public Observer, public Publisher
 public:
     UIInput(
         const DirectX::XMFLOAT3 position,
+		ObjectManager& objectManager,
 		const Layer uiLayer,
-		EventHandler* eventHandler,
+		EventHandler& eventHandler,
         const bool secure,
         const float labelWidth,
         const float inputWidth,
@@ -46,7 +46,7 @@ public:
         IDWriteFactory2* writeFactory,
         IDWriteTextFormat* labelTextFormat,
         ID2D1Factory2* d2dFactory) :
-        UIComponent(position, uiLayer),
+        UIComponent(objectManager, position, uiLayer),
 		Observer(eventHandler),
 		Publisher(eventHandler),
         secure{ secure },
@@ -70,10 +70,8 @@ public:
 
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x + labelWidth + 10, position.y, position.x + labelWidth + inputWidth, position.y + height), 3.0f, 3.0f), &inputGeometry);
     }
-    virtual void Draw(const Layer layer);
-	virtual void HandleEvent(const Event& event, const Layer layer);
+    virtual void Draw();
+	virtual bool HandleEvent(const Event& event);
     const wchar_t* GetInputValue();
     void Clear();
 };
-
-#endif

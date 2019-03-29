@@ -2,7 +2,7 @@
 
 void Publisher::PublishEvent(const Event& event)
 {
-	eventHandler->PublishEvent(event);
+	eventHandler.PublishEvent(event);
 }
 
 Publisher::~Publisher() {}

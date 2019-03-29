@@ -28,6 +28,7 @@
     <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\Math.cpp" />
+    <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
     <ClCompile Include="Source\UI\UIPanel.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
@@ -41,6 +42,7 @@
     <ClInclude Include="Source\DirectXManager.h" />
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
     <ClInclude Include="Source\EventHandling\Events\ButtonPressEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\DeselectCharacterListing.h" />
     <ClInclude Include="Source\EventHandling\Events\Event.h" />
     <ClInclude Include="Source\EventHandling\Events\KeyDownEvent.h" />

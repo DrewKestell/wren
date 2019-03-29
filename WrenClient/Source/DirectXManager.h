@@ -31,7 +31,8 @@ struct ShaderBuffer
 class DirectXManager : public Observer, public Publisher
 {
 	const std::string* currentlySelectedCharacterName;
-	EventHandler* eventHandler;
+	EventHandler& eventHandler;
+	ObjectManager& objectManager;
 	std::vector<Observer*>* observers;
     ID3D11Buffer* buffer;
     std::vector<UICharacterListing*>* characterList = new std::vector<UICharacterListing*>;
@@ -128,13 +129,13 @@ class DirectXManager : public Observer, public Publisher
     void InitializeGameWorld();
     ShaderBuffer LoadShader(std::wstring filename);
 public:
-    DirectXManager(GameTimer& timer, SocketManager& socketManager, EventHandler* eventHandler);
+    DirectXManager(GameTimer& timer, SocketManager& socketManager, EventHandler& eventHandler, ObjectManager& objectManager);
     void Initialize(HWND hWnd);
     void OnTab();
     void DrawScene();
     void HandleMessage(std::tuple<std::string, std::string, std::vector<std::string>*> message);
-	Layer GetActiveLayer() { return activeLayer; }
-	virtual void HandleEvent(const Event& event);
+	virtual bool HandleEvent(const Event& event);
+	void SetActiveLayer(const Layer layer);
 };
 
 #endif
