@@ -41,8 +41,9 @@ bool UIButton::HandleEvent(const Event& event)
 				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
 				{
 					pressed = true;
-					const ButtonPressEvent event{ this };
-					PublishEvent(event);
+					/*const ButtonPressEvent event{ this };
+					PublishEvent(event);*/
+					onClick();
 					return true;
 				}
 			}

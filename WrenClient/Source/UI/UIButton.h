@@ -3,6 +3,7 @@
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 #include <sstream>
+#include <functional>
 #include "UIComponent.h"
 #include "../EventHandling/Observer.h"
 #include "../EventHandling/Publisher.h"
@@ -14,6 +15,7 @@ class UIButton : public UIComponent, public Observer, public Publisher
     bool enabled = true;
     float width;
     float height;
+	std::function<void()> onClick;
     ID2D1SolidColorBrush* buttonBrush;
     ID2D1SolidColorBrush* pressedButtonBrush;
     ID2D1SolidColorBrush* buttonBorderBrush;
@@ -30,6 +32,7 @@ public:
 		EventHandler& eventHandler,
         const float width,
         const float height,
+		std::function<void()> onClick,
         ID2D1SolidColorBrush* buttonBrush,
         ID2D1SolidColorBrush* pressedButtonBrush,
         ID2D1SolidColorBrush* buttonBorderBrush,
@@ -44,6 +47,7 @@ public:
 		Publisher(eventHandler),
         width{ width },
         height{ height },
+		onClick{ onClick },
         buttonBrush{ buttonBrush },
         pressedButtonBrush{ pressedButtonBrush },
         buttonBorderBrush{ buttonBorderBrush },
