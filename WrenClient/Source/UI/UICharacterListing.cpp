@@ -50,6 +50,8 @@ bool UICharacterListing::HandleEvent(const Event& event)
 		{
 			const auto derivedEvent = (ChangeActiveLayerEvent&)event;
 
+			selected = false;
+
 			if (derivedEvent.layer == uiLayer)
 				isVisible = true;
 			else

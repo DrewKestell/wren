@@ -1,16 +1,16 @@
 #pragma once
 
 #include "Event.h"
-#include "SystemKey.h"
+#include <Windows.h>
 
 class SystemKeyPressEvent : public Event
 {
 public:
-	SystemKeyPressEvent(const EventType eventType, const SystemKey code)
+	SystemKeyPressEvent(const EventType eventType, const WPARAM keyCode)
 		: Event(eventType),
-		code{ code }
+		keyCode{ keyCode }
 	{
 	}
 	virtual ~SystemKeyPressEvent() = 0;
-	const SystemKey code;
+	const WPARAM keyCode;
 };

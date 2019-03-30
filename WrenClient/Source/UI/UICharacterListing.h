@@ -60,4 +60,9 @@ public:
     }
     virtual void Draw();
 	virtual bool HandleEvent(const Event& event);
+	~UICharacterListing()
+	{
+		textLayout->Release();
+		geometry->Release();
+	}
 };

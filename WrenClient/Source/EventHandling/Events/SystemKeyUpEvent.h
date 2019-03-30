@@ -5,8 +5,8 @@
 class SystemKeyUpEvent : public SystemKeyPressEvent
 {
 public:
-	SystemKeyUpEvent(const SystemKey code)
-		: SystemKeyPressEvent(EventType::SystemKeyUpEvent, code)
+	SystemKeyUpEvent(const WPARAM keyCode)
+		: SystemKeyPressEvent(EventType::SystemKeyUpEvent, keyCode)
 	{
 	}
 };

@@ -12,12 +12,14 @@ const FLOAT HEADER_HEIGHT = 20.0f;
 
 class UIPanel : public UIComponent, public Observer, public Publisher
 {
+	bool isActive = false;
     bool isDragging = false;
     float lastDragX = 0.0f;
     float lastDragY = 0.0f;
     const bool isDraggable;
     float width;
     float height;
+	WPARAM showKey;
     ID2D1SolidColorBrush* headerBrush;
     ID2D1SolidColorBrush* bodyBrush;
     ID2D1SolidColorBrush* borderBrush;
@@ -34,6 +36,7 @@ public:
         const bool isDraggable,
         const float width,
         const float height,
+		const WPARAM showKey,
         ID2D1SolidColorBrush* headerBrush,
         ID2D1SolidColorBrush* bodyBrush,
         ID2D1SolidColorBrush* borderBrush,
@@ -45,6 +48,7 @@ public:
         isDraggable{ isDraggable },
         width{ width },
         height{ height },
+		showKey{ showKey },
         headerBrush{ headerBrush },
         bodyBrush{ bodyBrush },
         borderBrush{ borderBrush },

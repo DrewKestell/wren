@@ -254,54 +254,6 @@ void DirectXManager::Initialize(HWND hWnd)
 //		break;
 //}
 //
-//void DirectXManager::OnTab()
-//{
-//    switch (loginState)
-//    {
-//    case LoginScreen:
-//        if (!loginScreen_accountNameInput->IsActive() && !loginScreen_passwordInput->IsActive())
-//            loginScreen_accountNameInput->SetActive(true);
-//        else if (loginScreen_accountNameInput->IsActive())
-//        {
-//            loginScreen_accountNameInput->SetActive(false);
-//            loginScreen_passwordInput->SetActive(true);
-//        }
-//        else
-//        {
-//            loginScreen_accountNameInput->SetActive(true);
-//            loginScreen_passwordInput->SetActive(false);
-//        }
-//        break;
-//    case CreateAccount:
-//        if (!createAccount_accountNameInput->IsActive() && !createAccount_passwordInput->IsActive())
-//            createAccount_accountNameInput->SetActive(true);
-//        else if (createAccount_accountNameInput->IsActive())
-//        {
-//            createAccount_accountNameInput->SetActive(false);
-//            createAccount_passwordInput->SetActive(true);
-//        }
-//        else
-//        {
-//            createAccount_accountNameInput->SetActive(true);
-//            createAccount_passwordInput->SetActive(false);
-//        }
-//        break;
-//    case Connecting:
-//        break;
-//    case CharacterSelect:
-//        break;
-//    case CreateCharacter:
-//        if (!createCharacter_characterNameInput->IsActive())
-//            createCharacter_characterNameInput->SetActive(true);
-//        break;
-//    case EnteringWorld:
-//        break;
-//    case InGame:
-//        break;
-//    default:
-//        break;
-//    }
-//}
 
 void DirectXManager::InitializeBrushes()
 {
@@ -397,33 +349,41 @@ void DirectXManager::InitializeInputs()
     // LoginScreen
     loginScreen_accountNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, objectManager, Login, eventHandler, false, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
     loginScreen_passwordInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 50.0f, 0.0f}, objectManager, Login, eventHandler, true, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
+	loginScreen_inputGroup = new UIInputGroup(eventHandler, Login);
+	loginScreen_inputGroup->AddInput(loginScreen_accountNameInput);
+	loginScreen_inputGroup->AddInput(loginScreen_passwordInput);
 
     // CreateAccount
     createAccount_accountNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, objectManager, CreateAccount, eventHandler, false, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Account Name:", writeFactory, textFormatAccountCreds, d2dFactory);
     createAccount_passwordInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 50.0f, 0.0f }, objectManager, CreateAccount, eventHandler, true, 120.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Password:", writeFactory, textFormatAccountCreds, d2dFactory);
+	createAccount_inputGroup = new UIInputGroup(eventHandler, CreateAccount);
+	createAccount_inputGroup->AddInput(createAccount_accountNameInput);
+	createAccount_inputGroup->AddInput(createAccount_passwordInput);
 
     // CreateCharacter
     createCharacter_characterNameInput = new UIInput(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, objectManager, CreateCharacter, eventHandler, false, 140.0f, 260.0f, 24.0f, blackBrush, whiteBrush, grayBrush, blackBrush, textFormatAccountCredsInputValue, d2dDeviceContext, "Character Name:", writeFactory, textFormatAccountCreds, d2dFactory);
+	createCharacter_inputGroup = new UIInputGroup(eventHandler, CreateCharacter);
+	createCharacter_inputGroup->AddInput(createCharacter_characterNameInput);
 }
 
 void DirectXManager::InitializeButtons()
 {
     // LoginScreen
-	//loginScreen_loginButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, objectManager, Login, eventHandler, "LoginScreen_Login", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatButtonText, d2dFactory);
-    loginScreen_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, Login, eventHandler, "LoginScreen_CreateAccount", 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE ACCOUNT", writeFactory, textFormatButtonText, d2dFactory);
+	loginScreen_loginButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, objectManager, Login, eventHandler, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGIN", writeFactory, textFormatButtonText, d2dFactory);
+    loginScreen_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, Login, eventHandler, 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE ACCOUNT", writeFactory, textFormatButtonText, d2dFactory);
 
     // CreateAccount
-    //createAccount_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, objectManager, CreateAccount, eventHandler, "CreateAccount_CreateAccount", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE", writeFactory, textFormatButtonText, d2dFactory);
-    createAccount_cancelButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, CreateAccount, eventHandler, "CreateAccount_Cancel", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CANCEL", writeFactory, textFormatButtonText, d2dFactory);
+    createAccount_createAccountButton = new UIButton(DirectX::XMFLOAT3{ 145.0f, 96.0f, 0.0f }, objectManager, CreateAccount, eventHandler, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE", writeFactory, textFormatButtonText, d2dFactory);
+    createAccount_cancelButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, CreateAccount, eventHandler, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CANCEL", writeFactory, textFormatButtonText, d2dFactory);
 
     // CharacterSelect
-    //characterSelect_newCharacterButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, objectManager, CharacterSelect, eventHandler, "CharacterSelect_NewCharacter", 140.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
-    //characterSelect_enterWorldButton = new UIButton(DirectX::XMFLOAT3{ 170.0f, 20.0f, 0.0f }, objectManager, CharacterSelect, eventHandler, "CharacterSelect_EnterWorld", 120.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "ENTER WORLD", writeFactory, textFormatButtonText, d2dFactory);
-    //characterSelect_logoutButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, CharacterSelect, eventHandler, "CharacterSelect_Logout", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_newCharacterButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, objectManager, CharacterSelect, eventHandler, 140.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_enterWorldButton = new UIButton(DirectX::XMFLOAT3{ 170.0f, 20.0f, 0.0f }, objectManager, CharacterSelect, eventHandler, 120.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "ENTER WORLD", writeFactory, textFormatButtonText, d2dFactory);
+    characterSelect_logoutButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, CharacterSelect, eventHandler, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
     
     // CreateCharacter
-    //createCharacter_createCharacterButton = new UIButton(DirectX::XMFLOAT3{ 165.0f, 64.0f, 0.0f }, objectManager, CreateCharacter, eventHandler, "CreateCharacter_CreateCharacter", 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
-    //createCharacter_backButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, CreateCharacter, eventHandler, "CreateCharacter_Back", 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "BACK", writeFactory, textFormatButtonText, d2dFactory);
+    createCharacter_createCharacterButton = new UIButton(DirectX::XMFLOAT3{ 165.0f, 64.0f, 0.0f }, objectManager, CreateCharacter, eventHandler, 160.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+    createCharacter_backButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, CreateCharacter, eventHandler, 80.0f, 24.0f, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "BACK", writeFactory, textFormatButtonText, d2dFactory);
 }
 
 void DirectXManager::InitializeLabels()
@@ -452,14 +412,14 @@ void DirectXManager::InitializePanels()
     const auto gameSettingsPanelY = (clientHeight - 200.0f) / 2.0f;
     auto gameSettingsPanelHeader = new UILabel{DirectX::XMFLOAT3{2.0f, 2.0f, 0.0f}, objectManager, InGame, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory};
     gameSettingsPanelHeader->SetText("Game Settings");
-    gameSettingsPanel = new UIPanel(DirectX::XMFLOAT3{gameSettingsPanelX, gameSettingsPanelY, 0.0f}, objectManager, InGame, eventHandler, false, 400.0f, 200.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
+    gameSettingsPanel = new UIPanel(DirectX::XMFLOAT3{gameSettingsPanelX, gameSettingsPanelY, 0.0f}, objectManager, InGame, eventHandler, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
     gameSettingsPanel->AddChildComponent(*gameSettingsPanelHeader);
 
     const auto gameEditorPanelX = 580.0f;
     const auto gameEditorPanelY = 5.0f;
     auto gameEditorPanelHeader = new UILabel(DirectX::XMFLOAT3{2.0f, 2.0f, 0.0f}, objectManager, InGame, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory);
     gameEditorPanelHeader->SetText("Game Editor");
-    gameEditorPanel = new UIPanel(DirectX::XMFLOAT3{gameEditorPanelX, gameEditorPanelY, 0.0f}, objectManager, InGame, eventHandler, true, 200.0f, 400.0f, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
+    gameEditorPanel = new UIPanel(DirectX::XMFLOAT3{gameEditorPanelX, gameEditorPanelY, 0.0f}, objectManager, InGame, eventHandler, true, 200.0f, 400.0f, VK_F1, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
     gameEditorPanel->AddChildComponent(*gameEditorPanelHeader);
 }
 
@@ -522,9 +482,10 @@ void DirectXManager::DrawScene()
     UINT stride = sizeof(VERTEX);
     UINT offset = 0;
 
+	// draw all GameObjects
 	objectManager.Draw();
 
-	// TODO: handle me
+	// draw test triangle - TODO: move this into GameObjects
 	if (activeLayer == InGame)
 	{
 		immediateContext->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
@@ -552,26 +513,22 @@ void DirectXManager::HandleMessage(std::tuple<std::string, std::string, std::vec
             createAccount_errorMessageLabel->SetText(("Failed to create account. Reason: " + std::get<1>(message)).c_str());
         else if (messageType == "CREATE_ACCOUNT_SUCCESS")
         {
-            createAccount_accountNameInput->Clear();
-            createAccount_passwordInput->Clear();
             createAccount_errorMessageLabel->SetText("");
-            activeLayer = Login;
             loginScreen_successMessageLabel->SetText("Account created successfully.");
+			SetActiveLayer(Login);
         }
         break;
     case Connecting:
         if (messageType == "LOGIN_FAILED")
         {
             loginScreen_errorMessageLabel->SetText(("Login failed. Reason: " + std::get<1>(message)).c_str());
-            activeLayer = Login;
+			SetActiveLayer(Login);
         }
         else if (messageType == "LOGIN_SUCCESS")
         {
             token = std::get<1>(message);
             RecreateCharacterListings(std::get<2>(message));
-            activeLayer = CharacterSelect;
-            loginScreen_accountNameInput->Clear();
-            loginScreen_passwordInput->Clear();
+			SetActiveLayer(CharacterSelect);
         }
         break;
     case CharacterSelect:
@@ -583,15 +540,14 @@ void DirectXManager::HandleMessage(std::tuple<std::string, std::string, std::vec
         else if (messageType == "CREATE_CHARACTER_SUCCESS")
         {
             RecreateCharacterListings(std::get<2>(message));
-            createCharacter_characterNameInput->Clear();
             createCharacter_errorMessageLabel->SetText("");
             characterSelect_successMessageLabel->SetText("Character created successfully.");
-			activeLayer = CharacterSelect;
+			SetActiveLayer(CharacterSelect);
         }
         break;
     case EnteringWorld:
-        if (messageType == "ENTER_WORLD_SUCCESSFUL")
-			activeLayer = InGame;
+		if (messageType == "ENTER_WORLD_SUCCESSFUL")
+			SetActiveLayer(InGame);
         break;
     case InGame:
         break;
@@ -702,8 +658,6 @@ bool DirectXManager::HandleEvent(const Event& event)
 			}
 			else if (buttonPressEvent.button == loginScreen_createAccountButton)
 			{
-				loginScreen_accountNameInput->Clear();
-				loginScreen_passwordInput->Clear();
 				loginScreen_successMessageLabel->SetText("");
 				loginScreen_errorMessageLabel->SetText("");
 				SetActiveLayer(CreateAccount);
@@ -716,8 +670,6 @@ bool DirectXManager::HandleEvent(const Event& event)
 			}
 			else if (buttonPressEvent.button == createAccount_cancelButton)
 			{
-				createAccount_accountNameInput->Clear();
-				createAccount_passwordInput->Clear();
 				createAccount_errorMessageLabel->SetText("");
 				SetActiveLayer(Login);
 			}
@@ -745,7 +697,6 @@ bool DirectXManager::HandleEvent(const Event& event)
 			}
 			else if (buttonPressEvent.button == createCharacter_backButton)
 			{
-				createCharacter_characterNameInput->Clear();
 				createCharacter_errorMessageLabel->SetText("");
 				SetActiveLayer(CharacterSelect);
 			}

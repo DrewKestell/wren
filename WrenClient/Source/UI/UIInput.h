@@ -73,5 +73,6 @@ public:
     virtual void Draw();
 	virtual bool HandleEvent(const Event& event);
     const wchar_t* GetInputValue();
-    void Clear();
+	bool IsActive() { return active; }
+	void SetActive(bool active) { this->active = active; }
 };

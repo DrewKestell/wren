@@ -6,7 +6,7 @@
 class Observer
 {
 protected:
-	EventHandler eventHandler;
+	EventHandler& eventHandler;
 	Observer(EventHandler& eventHandler)
 		: eventHandler{ eventHandler }
 	{
@@ -14,4 +14,8 @@ protected:
 	}
 public:	
 	virtual bool HandleEvent(const Event& event) = 0;
+	~Observer()
+	{
+		eventHandler.Unsubscribe(*this);
+	}
 };

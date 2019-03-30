@@ -11,9 +11,11 @@ class GameObject
     DirectX::XMFLOAT3 localPosition;
     GameObject* parent = nullptr;
     std::vector<GameObject*> children;
+	ObjectManager& objectManager;
 protected:
     GameObject(ObjectManager& objectManager, const DirectX::XMFLOAT3 localPosition)
-        : localPosition{ localPosition }
+        : localPosition{ localPosition },
+		  objectManager{ objectManager }
     {
 		objectManager.RegisterGameObject(*this);
     }
@@ -30,4 +32,8 @@ public:
     DirectX::XMFLOAT3 GetWorldPosition();
 
     virtual void Draw() = 0;
+	~GameObject()
+	{
+		objectManager.DeleteGameObject(*this);
+	}
 };

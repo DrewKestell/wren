@@ -94,9 +94,7 @@ int CALLBACK WinMain(
 
         // Main game loop:
         MSG msg = { 0 };
-
         timer->Reset();
-
         while (msg.message != WM_QUIT)
         {
             // If there are socket messages then process them.
@@ -123,6 +121,8 @@ int CALLBACK WinMain(
                 dxManager->DrawScene();
             }
         }
+
+		socketManager->CloseSockets();
         return (int)msg.wParam;
     }
     catch (std::exception &e)
@@ -132,7 +132,7 @@ int CALLBACK WinMain(
     }
 }
 
-SystemKey MapLeftRightKeys(WPARAM vk, LPARAM lParam)
+WPARAM MapLeftRightKeys(WPARAM vk, LPARAM lParam)
 {
 	UINT scancode = (lParam & 0x00ff0000) >> 16;
 	int extended = (lParam & 0x01000000) != 0;
@@ -141,21 +141,21 @@ SystemKey MapLeftRightKeys(WPARAM vk, LPARAM lParam)
 	{
 	case VK_SHIFT:
 		if (MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX) == VK_LSHIFT)
-			return SystemKey::LeftShift;
+			return VK_LSHIFT;
 		else
-			return SystemKey::RightShift;
+			return VK_RSHIFT;
 		break;
 	case VK_CONTROL:
 		if (extended)
-			return SystemKey::RightControl;
+			return VK_RCONTROL;
 		else
-			return SystemKey::LeftControl;
+			return VK_LCONTROL;
 		break;
 	case VK_MENU:
 		if (extended)
-			return SystemKey::RightAlt;
+			return VK_RMENU;
 		else
-			return SystemKey::LeftAlt;
+			return VK_LMENU;
 		break;
 	}
 
@@ -164,6 +164,7 @@ SystemKey MapLeftRightKeys(WPARAM vk, LPARAM lParam)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	WPARAM keyCode;
     switch (message)
     {
     case WM_CLOSE:
@@ -206,64 +207,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 
-	case WM_KEYDOWN:
-		SystemKey keyCode;
+	case WM_KEYDOWN:		
 		switch (wParam)
 		{
-		case VK_F1:
-			keyCode = SystemKey::F1;
-			break;
-		case VK_F2:
-			keyCode = SystemKey::F2;
-			break;
-		case VK_F3:
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F3 });
-			break;
-		case VK_F4:
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F4 });
-			break;
-		case VK_F5:
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F5 });
-			break;
-		case VK_F6:
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F6 });
-			break;
-		case VK_F7:
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F7 });
-			break;
-		case VK_F8:
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F8 });
-			break;
-		case VK_F9:
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F9 });
-			break;
-		case VK_F10:
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F10 });
-			break;
-		case VK_F11:
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F11 });
-			break;
-		case VK_F12:
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::F12 });
-			break;
-		case 0x08: // Process a backspace.
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::Backspace });
-			break;
-		case 0x0A: // Process a linefeed.   
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::Linefeed });
-			break;
-		case 0x1B: // Process an escape. 
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::Escape });
-			break;
-		case 0x09: // Process a tab.          
-			eventHandler->PublishEvent(SystemKeyDownEvent{ SystemKey::Tab });
-			break;
-		case 0x0D: // Process a carriage return.
-			keyCode = SystemKey::CarriageReturn;
-			break;
 		case VK_SHIFT:
 		case VK_CONTROL:
 			keyCode = MapLeftRightKeys(wParam, lParam);
+			break;
+		default:
+			keyCode = wParam;
 			break;
 		}
 		eventHandler->PublishEvent(SystemKeyDownEvent{ keyCode });
@@ -272,64 +224,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYUP:
 		switch (wParam)
 		{
-		case VK_F1:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F1 });
-			break;
-		case VK_F2:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F2 });
-			break;
-		case VK_F3:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F3 });
-			break;
-		case VK_F4:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F4 });
-			break;
-		case VK_F5:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F5 });
-			break;
-		case VK_F6:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F6 });
-			break;
-		case VK_F7:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F7 });
-			break;
-		case VK_F8:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F8 });
-			break;
-		case VK_F9:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F9 });
-			break;
-		case VK_F10:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F10 });
-			break;
-		case VK_F11:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F11 });
-			break;
-		case VK_F12:
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::F12 });
-			break;
-		case 0x08: // Process a backspace.
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::Backspace });
-			break;
-		case 0x0A: // Process a linefeed.   
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::Linefeed });
-			break;
-		case 0x1B: // Process an escape. 
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::Escape });
-			break;
-		case 0x09: // Process a tab.          
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::Tab });
-			break;
-		case 0x0D: // Process a carriage return.
-			eventHandler->PublishEvent(SystemKeyUpEvent{ SystemKey::CarriageReturn });
-			break;
 		case VK_SHIFT:
 		case VK_CONTROL:
-			const auto keyCode = MapLeftRightKeys(wParam, lParam);
-			eventHandler->PublishEvent(SystemKeyUpEvent{ keyCode });
+			keyCode = MapLeftRightKeys(wParam, lParam);
+			break;
+		default:
+			keyCode = wParam;
 			break;
 		}
-
+		eventHandler->PublishEvent(SystemKeyUpEvent{ keyCode });
 		break;
 
     case WM_CHAR:
@@ -354,8 +257,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;
     }
-
-    socketManager->CloseSockets();
 
     return 0;
 }

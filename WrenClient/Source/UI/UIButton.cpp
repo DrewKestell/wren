@@ -5,16 +5,6 @@
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../Math.h"
 
-bool UIButton::IsEnabled()
-{
-    return enabled;
-}
-
-void UIButton::SetEnabled(const bool isEnabled)
-{
-    enabled = isEnabled;
-}
-
 void UIButton::Draw()
 {
 	if (!isVisible) return;

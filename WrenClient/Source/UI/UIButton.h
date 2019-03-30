@@ -12,7 +12,6 @@ class UIButton : public UIComponent, public Observer, public Publisher
     const char* buttonText[20];
     bool pressed = false;
     bool enabled = true;
-	const std::string& buttonId;
     float width;
     float height;
     ID2D1SolidColorBrush* buttonBrush;
@@ -29,7 +28,6 @@ public:
 		ObjectManager& objectManager,
 		const Layer uiLayer,
 		EventHandler& eventHandler,
-		const std::string& buttonId,
         const float width,
         const float height,
         ID2D1SolidColorBrush* buttonBrush,
@@ -44,7 +42,6 @@ public:
         UIComponent(objectManager, position, uiLayer),
 		Observer(eventHandler),
 		Publisher(eventHandler),
-		buttonId{ buttonId },
         width{ width },
         height{ height },
         buttonBrush{ buttonBrush },
@@ -62,8 +59,6 @@ public:
         d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), &buttonGeometry);
 
     }
-    bool IsEnabled();
-    void SetEnabled(const bool isEnabled);
     virtual void Draw();
 	virtual bool HandleEvent(const Event& event);
 };

@@ -12,6 +12,7 @@
 #include "UI/UILabel.h"
 #include "UI/UIPanel.h"
 #include "UI/UICharacterListing.h"
+#include "UI/UIInputGroup.h"
 #include "SocketManager.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Observer.h"
@@ -94,6 +95,11 @@ class DirectXManager : public Observer, public Publisher
     UIInput* createAccount_passwordInput;
     UIInput* createCharacter_characterNameInput;
 
+	// InputGroups
+	UIInputGroup* loginScreen_inputGroup;
+	UIInputGroup* createAccount_inputGroup;
+	UIInputGroup* createCharacter_inputGroup;
+
     // Buttons
     UIButton* loginScreen_loginButton;
     UIButton* loginScreen_createAccountButton;
@@ -131,7 +137,6 @@ class DirectXManager : public Observer, public Publisher
 public:
     DirectXManager(GameTimer& timer, SocketManager& socketManager, EventHandler& eventHandler, ObjectManager& objectManager);
     void Initialize(HWND hWnd);
-    void OnTab();
     void DrawScene();
     void HandleMessage(std::tuple<std::string, std::string, std::vector<std::string>*> message);
 	virtual bool HandleEvent(const Event& event);

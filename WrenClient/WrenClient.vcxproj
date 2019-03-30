@@ -29,6 +29,7 @@
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\Math.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
+    <ClCompile Include="Source\UI\UIInputGroup.cpp" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
     <ClCompile Include="Source\UI\UIPanel.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
@@ -54,7 +55,6 @@
     <ClInclude Include="Source\EventHandling\Events\MouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SelectCharacterListing.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\SystemKey.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Publisher.h" />
     <ClInclude Include="Source\GameObject.h" />
@@ -64,6 +64,7 @@
     <ClInclude Include="Source\Math.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
     <ClInclude Include="Source\ObjectManager.h" />
+    <ClInclude Include="Source\UI\UIInputGroup.h" />
     <ClInclude Include="Source\UI\UIComponent.h" />
     <ClInclude Include="Source\UI\UIPanel.h" />
     <ClInclude Include="Source\SocketManager.h" />

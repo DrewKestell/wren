@@ -3,6 +3,7 @@
 #include "../EventHandling/Events/MouseUpEvent.h"
 #include "../EventHandling/Events/MouseMoveEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "../EventHandling/Events/SystemKeyDownEvent.h"
 
 void UIPanel::Draw()
 {
@@ -72,15 +73,31 @@ bool UIPanel::HandleEvent(const Event& event)
 				d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT), 3.0f, 3.0f), &headerGeometry);
 				d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y + HEADER_HEIGHT, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT + height), 3.0f, 3.0f), &bodyGeometry);
 			}
+
+			break;
 		}
 		case EventType::ChangeActiveLayer:
 		{
 			const auto derivedEvent = (ChangeActiveLayerEvent&)event;
 
+			isVisible = false;
+
 			if (derivedEvent.layer == uiLayer)
-				isVisible = true;
+				isActive = true;
 			else
-				isVisible = false;
+				isActive = false;
+
+			break;
+		}
+		case EventType::SystemKeyDownEvent:
+		{
+			if (isActive)
+			{
+				const auto keyDownEvent = (SystemKeyDownEvent&)event;
+
+				if (keyDownEvent.keyCode == showKey)
+					isVisible = !isVisible;
+			}
 
 			break;
 		}

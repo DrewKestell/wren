@@ -19,6 +19,7 @@
     <ClCompile Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
+    <ClCompile Include="Source\UI\UIInputGroup.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DirectXManager.h" />
@@ -44,7 +45,6 @@
     <ClInclude Include="Source\EventHandling\Events\KeyDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\SystemKey.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseMoveEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\DeselectCharacterListing.h" />
@@ -53,6 +53,7 @@
     <ClInclude Include="Source\Layer.h" />
     <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
+    <ClInclude Include="Source\UI\UIInputGroup.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

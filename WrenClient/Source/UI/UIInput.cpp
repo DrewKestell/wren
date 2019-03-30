@@ -40,12 +40,6 @@ const wchar_t* UIInput::GetInputValue()
     return inputValue;
 }
 
-void UIInput::Clear()
-{
-    inputIndex = 0;
-    ZeroMemory(inputValue, sizeof(inputValue));
-}
-
 bool UIInput::HandleEvent(const Event& event)
 {
 	const auto type = event.type;
@@ -88,11 +82,11 @@ bool UIInput::HandleEvent(const Event& event)
 			if (active)
 			{
 				const auto keyDownEvent = (SystemKeyDownEvent&)event;
-				const auto keyCode = keyDownEvent.code;
+				const auto keyCode = keyDownEvent.keyCode;
 
 				switch (keyCode)
 				{
-					case SystemKey::Backspace:
+					case VK_BACK:
 					{
 						if (inputIndex > 0)
 						{
@@ -109,6 +103,12 @@ bool UIInput::HandleEvent(const Event& event)
 		case EventType::ChangeActiveLayer:
 		{
 			const auto derivedEvent = (ChangeActiveLayerEvent&)event;
+
+			active = false;
+			
+			// Clear input text
+			inputIndex = 0;
+			ZeroMemory(inputValue, sizeof(inputValue));
 
 			if (derivedEvent.layer == uiLayer)
 				isVisible = true;
