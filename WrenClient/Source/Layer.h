@@ -7,6 +7,7 @@ enum Layer
     Connecting,
     CharacterSelect,
     CreateCharacter,
+	DeleteCharacter,
     EnteringWorld,
     InGame,
     Disconnected,

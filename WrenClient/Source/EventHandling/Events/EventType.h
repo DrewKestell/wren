@@ -8,8 +8,6 @@ enum class EventType
 	KeyDownEvent,
 	SystemKeyDownEvent,
 	SystemKeyUpEvent,
-	SelectCharacterListing,
-	DeselectCharacterListing,
 	ChangeActiveLayer,
 	CreateAccountFailed,
 	CreateAccountSuccess,

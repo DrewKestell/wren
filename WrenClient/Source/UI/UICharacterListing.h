@@ -56,6 +56,8 @@ public:
     }
     virtual void Draw();
 	virtual bool HandleEvent(const Event* event);
+	std::string& GetName() { return characterName; }
+	bool IsSelected() { return selected; }
 	~UICharacterListing()
 	{
 		textLayout->Release();

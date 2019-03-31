@@ -1,7 +1,6 @@
 #include "UICharacterListing.h"
 #include "../EventHandling/EventHandler.h"
 #include "../EventHandling/Events/MouseDownEvent.h"
-#include "../EventHandling/Events/SelectCharacterListing.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 
 extern EventHandler* g_eventHandler;
@@ -36,14 +35,7 @@ bool UICharacterListing::HandleEvent(const Event* event)
 			{
 				const auto position = GetWorldPosition();
 				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
-				{
 					selected = true;
-					g_eventHandler->QueueEvent(new SelectCharacterListing{ &characterName });
-				}
-				else
-				{
-					g_eventHandler->QueueEvent(new Event{EventType::DeselectCharacterListing });
-				}
 			}
 			
 			break;

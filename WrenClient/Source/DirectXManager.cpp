@@ -6,7 +6,7 @@
 #include "Windows.h"
 #include "Layer.h"
 #include <fstream>  
-#include "EventHandling/Events/SelectCharacterListing.h"
+#include "EventHandling/Events/MouseMoveEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -59,7 +59,7 @@ void DirectXManager::Initialize(HWND hWnd)
 
     DXGI_SWAP_CHAIN_DESC sd;
     ZeroMemory(&sd, sizeof(sd));
-    sd.BufferCount = 1;
+    sd.BufferCount = 2;
     sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     sd.BufferDesc.RefreshRate.Numerator = 60;
     sd.BufferDesc.RefreshRate.Denominator = 1;
@@ -67,10 +67,11 @@ void DirectXManager::Initialize(HWND hWnd)
     sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     sd.OutputWindow = hWnd;
-    sd.SampleDesc.Count = msaaCount;
-    sd.SampleDesc.Quality = m4xMsaaQuality - 1;
+    sd.SampleDesc.Count = 1;
+    sd.SampleDesc.Quality = 0;
     sd.Windowed = TRUE;
-    sd.Flags = 0;
+	sd.Flags = 0;
+	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
     RECT rect;
     GetClientRect(hWnd, &rect);
@@ -116,8 +117,8 @@ void DirectXManager::Initialize(HWND hWnd)
     depthStencilDesc.MipLevels = 1;
     depthStencilDesc.ArraySize = 1;
     depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    depthStencilDesc.SampleDesc.Count = msaaCount;
-    depthStencilDesc.SampleDesc.Quality = m4xMsaaQuality - 1;
+    depthStencilDesc.SampleDesc.Count = 1;
+    depthStencilDesc.SampleDesc.Quality = 0;
     depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
     depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
     depthStencilDesc.CPUAccessFlags = 0;
@@ -133,10 +134,7 @@ void DirectXManager::Initialize(HWND hWnd)
     if (FAILED(hr))
         throw std::exception("Failed to create texture depth stencil view.");
 
-    // Bind the view to output/merger stage
-    immediateContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
-
-    CD3D11_RASTERIZER_DESC rasterDesc(D3D11_FILL_SOLID, D3D11_CULL_NONE, FALSE,
+    CD3D11_RASTERIZER_DESC rasterDesc(D3D11_FILL_WIREFRAME, D3D11_CULL_NONE, FALSE,
         D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
         D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE);
 
@@ -209,7 +207,7 @@ void DirectXManager::Initialize(HWND hWnd)
     InitializePanels();
     InitializeGameWorld();
 
-	g_eventHandler->QueueEvent(new ChangeActiveLayerEvent{ Login });
+	SetActiveLayer(InGame);
 }
 
 void DirectXManager::InitializeBrushes()
@@ -393,7 +391,11 @@ void DirectXManager::InitializeButtons()
 	const auto onClickCharacterSelectNewCharacterButton = [this]()
 	{
 		characterSelect_successMessageLabel->SetText("");
-		SetActiveLayer(CreateCharacter);
+
+		if (characterList->size() == 5)
+			characterSelect_errorMessageLabel->SetText("You can not have more than 5 characters.");
+		else
+			SetActiveLayer(CreateCharacter);
 	};
 
 	const auto onClickCharacterSelectEnterWorldButton = [this]()
@@ -401,11 +403,12 @@ void DirectXManager::InitializeButtons()
 		characterSelect_successMessageLabel->SetText("");
 		characterSelect_errorMessageLabel->SetText("");
 
-		if (currentlySelectedCharacterName == nullptr)
+		auto characterInput = GetCurrentlySelectedCharacterListing();
+		if (characterInput == nullptr)
 			characterSelect_errorMessageLabel->SetText("You must select a character before entering the game.");
 		else
 		{
-			socketManager.SendPacket(OPCODE_ENTER_WORLD, 2, token, currentlySelectedCharacterName);
+			socketManager.SendPacket(OPCODE_ENTER_WORLD, 2, token, characterInput->GetName());
 			SetActiveLayer(EnteringWorld);
 		}
 	};
@@ -415,11 +418,13 @@ void DirectXManager::InitializeButtons()
 		characterSelect_successMessageLabel->SetText("");
 		characterSelect_errorMessageLabel->SetText("");
 
-		if (currentlySelectedCharacterName == nullptr)
+		auto characterInput = GetCurrentlySelectedCharacterListing();
+		if (characterInput == nullptr)
 			characterSelect_errorMessageLabel->SetText("You must select a character to delete.");
 		else
 		{
-			socketManager.SendPacket(OPCODE_DELETE_CHARACTER, 2, token, currentlySelectedCharacterName);
+			characterNamePendingDeletion = characterInput->GetName();
+			SetActiveLayer(DeleteCharacter);
 		}
 	};
 
@@ -432,7 +437,7 @@ void DirectXManager::InitializeButtons()
     // CharacterSelect
     characterSelect_newCharacterButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, objectManager, CharacterSelect, 140.0f, 24.0f, onClickCharacterSelectNewCharacterButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
     characterSelect_enterWorldButton = new UIButton(DirectX::XMFLOAT3{ 170.0f, 20.0f, 0.0f }, objectManager, CharacterSelect, 120.0f, 24.0f, onClickCharacterSelectEnterWorldButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "ENTER WORLD", writeFactory, textFormatButtonText, d2dFactory);
-	characterSelect_deleteCharacterButton = new UIButton(DirectX::XMFLOAT3{ 345.0f, 20.0f, 0.0f }, objectManager, CharacterSelect, 160.0f, 24.0f, onClickCharacterSelectDeleteCharacterButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "DELETE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+	characterSelect_deleteCharacterButton = new UIButton(DirectX::XMFLOAT3{ 305.0f, 20.0f, 0.0f }, objectManager, CharacterSelect, 160.0f, 24.0f, onClickCharacterSelectDeleteCharacterButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "DELETE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
 	characterSelect_logoutButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, CharacterSelect, 80.0f, 24.0f, onClickCharacterSelectLogoutButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
     
 	const auto onClickCreateCharacterCreateCharacterButton = [this]()
@@ -459,6 +464,22 @@ void DirectXManager::InitializeButtons()
     // CreateCharacter
     createCharacter_createCharacterButton = new UIButton(DirectX::XMFLOAT3{ 165.0f, 64.0f, 0.0f }, objectManager, CreateCharacter, 160.0f, 24.0f, onClickCreateCharacterCreateCharacterButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CREATE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
     createCharacter_backButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, CreateCharacter, 80.0f, 24.0f, onClickCreateCharacterBackButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "BACK", writeFactory, textFormatButtonText, d2dFactory);
+
+	// DeleteCharacter
+
+	const auto onClickDeleteCharacterConfirm = [this]()
+	{
+		socketManager.SendPacket(OPCODE_DELETE_CHARACTER, 2, token, characterNamePendingDeletion);
+	};
+
+	const auto onClickDeleteCharacterCancel = [this]()
+	{
+		characterNamePendingDeletion = "";
+		SetActiveLayer(CharacterSelect);
+	};
+
+	deleteCharacter_confirmButton = new UIButton(DirectX::XMFLOAT3{ 10.0f, 30.0f, 0.0f }, objectManager, DeleteCharacter, 100.0f, 24.0f, onClickDeleteCharacterConfirm, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CONFIRM", writeFactory, textFormatButtonText, d2dFactory);
+	deleteCharacter_cancelButton = new UIButton(DirectX::XMFLOAT3{ 120.0f, 30.0f, 0.0f }, objectManager, DeleteCharacter, 100.0f, 24.0f, onClickDeleteCharacterCancel, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "CANCEL", writeFactory, textFormatButtonText, d2dFactory);
 }
 
 void DirectXManager::InitializeLabels()
@@ -477,6 +498,9 @@ void DirectXManager::InitializeLabels()
     characterSelect_headerLabel->SetText("Character List:");
 
     createCharacter_errorMessageLabel = new UILabel(DirectX::XMFLOAT3{30.0f, 170.0f, 0.0f}, objectManager, CreateCharacter, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
+
+	deleteCharacter_headerLabel = new UILabel(DirectX::XMFLOAT3{ 10.0f, 10.0f, 0.0f }, objectManager, DeleteCharacter, 400.0f, errorMessageBrush, textFormatErrorMessage, d2dDeviceContext, writeFactory, d2dFactory);
+	deleteCharacter_headerLabel->SetText("Are you sure you want to delete this character?");
 
     enteringWorld_statusLabel = new UILabel(DirectX::XMFLOAT3{ 5.0f, 20.0f, 0.0f}, objectManager, EnteringWorld, 400.0f, blackBrush, textFormatAccountCreds, d2dDeviceContext, writeFactory, d2dFactory);
     enteringWorld_statusLabel->SetText("Entering World...");
@@ -507,6 +531,17 @@ void DirectXManager::InitializePanels()
     gameEditorPanel->AddChildComponent(*gameEditorPanelHeader);
 }
 
+UICharacterListing* DirectXManager::GetCurrentlySelectedCharacterListing()
+{
+	UICharacterListing* characterListing = nullptr;
+	for (auto i = 0; i < characterList->size(); i++)
+	{
+		if (characterList->at(i)->IsSelected())
+			characterListing = characterList->at(i);
+	}
+	return characterListing;
+}
+
 void DirectXManager::DrawScene()
 {
     HRESULT hr;
@@ -527,9 +562,10 @@ void DirectXManager::DrawScene()
     immediateContext->ClearRenderTargetView(renderTargetView, color);
     immediateContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
+	immediateContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+
     d2dDeviceContext->BeginDraw();
 
-    // --- SHARED ---
     // draw FPS
     static int frameCnt = 0;
     static float timeElapsed = 0.0f;
@@ -543,6 +579,8 @@ void DirectXManager::DrawScene()
         outFPS.precision(6);
         outFPS << "FPS: " << fps;
 
+		if (textLayoutFPS != nullptr)
+			textLayoutFPS->Release();
         if (FAILED(writeFactory->CreateTextLayout(outFPS.str().c_str(), (UINT32)outFPS.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutFPS)))
             throw std::exception("Critical error: Failed to create the text layout for FPS information!");
 
@@ -560,6 +598,8 @@ void DirectXManager::DrawScene()
     std::wostringstream outMousePos;
     outMousePos.precision(6);
     outMousePos << "MousePosX: " << mousePosX << ", MousePosY: " << mousePosY;
+	if (textLayoutMousePos != nullptr)
+		textLayoutMousePos->Release();
     writeFactory->CreateTextLayout(outMousePos.str().c_str(), (UINT32)outMousePos.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutMousePos);
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
 
@@ -573,8 +613,8 @@ void DirectXManager::DrawScene()
 	if (activeLayer == InGame)
 	{
 		immediateContext->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
-		immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		immediateContext->Draw(3, 0);
+		immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		immediateContext->Draw(6, 0);
 	}
 	
     d2dDeviceContext->EndDraw();
@@ -600,7 +640,8 @@ void DirectXManager::InitializeGameWorld()
 {
     VERTEX OurVertices[] =
     {
-        { 0.0f, 0.5f, 0.5f }, { 0.5f, -0.5f, 0.5f }, { -0.5f, -0.5f, 0.5f }
+        { -1.0f, -1.0f, 0.5f }, { -1.0f, -0.8f, 0.5f }, { -0.8f, -1.0f, 0.5f },
+		{ -0.8f, -1.0f, 0.5f }, { -0.8f, -0.8f, 0.5f }, { -1.0f, -0.8f, 0.5f },
     };
 
     D3D11_BUFFER_DESC bufferDesc;
@@ -670,17 +711,12 @@ bool DirectXManager::HandleEvent(const Event* event)
 	const auto type = event->type;
 	switch (type)
 	{
-		case EventType::SelectCharacterListing:
+		case EventType::MouseMoveEvent:
 		{
-			const auto derivedEvent = (SelectCharacterListing*)event;
+			const auto derivedEvent = (MouseMoveEvent*)event;
 
-			currentlySelectedCharacterName = derivedEvent->characterName;
-
-			break;
-		}
-		case EventType::DeselectCharacterListing:
-		{
-			currentlySelectedCharacterName = nullptr;
+			mousePosX = derivedEvent->mousePosX;
+			mousePosY = derivedEvent->mousePosY;
 
 			break;
 		}
@@ -743,8 +779,10 @@ bool DirectXManager::HandleEvent(const Event* event)
 			const auto derivedEvent = (DeleteCharacterSuccessEvent*)event;
 
 			RecreateCharacterListings(derivedEvent->characterList);
+			characterNamePendingDeletion = "";
 			createCharacter_errorMessageLabel->SetText("");
 			characterSelect_successMessageLabel->SetText("Character deleted successfully.");
+			SetActiveLayer(CharacterSelect);
 
 			break;
 		}

@@ -11,6 +11,7 @@
 #include <tuple>
 #include "DirectXManager.h"
 #include "GameTimer.h"
+#include "GameMap/GameMap.h"
 #include "Layer.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/SystemKeyUpEvent.h"
@@ -30,6 +31,7 @@ DirectXManager* dxManager;
 EventHandler* g_eventHandler;
 SocketManager* socketManager;
 ObjectManager* objectManager;
+GameMap* gameMap;
 
 int CALLBACK WinMain(
     _In_ HINSTANCE hInstance,
@@ -89,7 +91,8 @@ int CALLBACK WinMain(
 		g_eventHandler = new EventHandler;
 		objectManager = new ObjectManager;
 		socketManager = new SocketManager;
-        dxManager = new DirectXManager{ *timer, *socketManager, *objectManager };
+		gameMap = new GameMap{ *objectManager };
+        dxManager = new DirectXManager{ *timer, *socketManager, *objectManager, *gameMap };
         dxManager->Initialize(hWnd);
 
         // Main game loop:

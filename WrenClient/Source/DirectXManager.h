@@ -16,6 +16,7 @@
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Observer.h"
 #include "UI/UIButton.h"
+#include "GameMap/GameMap.h"
 
 struct VERTEX
 {
@@ -31,8 +32,9 @@ struct ShaderBuffer
 class DirectXManager : public Observer
 {
 	Layer activeLayer = Login;
-	const std::string* currentlySelectedCharacterName;
+	std::string characterNamePendingDeletion;
 	ObjectManager& objectManager;
+	GameMap& gameMap;
 	std::vector<Observer*>* observers;
     ID3D11Buffer* buffer;
     std::vector<UICharacterListing*>* characterList = new std::vector<UICharacterListing*>;
@@ -110,6 +112,8 @@ class DirectXManager : public Observer
     UIButton* characterSelect_logoutButton;
     UIButton* createCharacter_createCharacterButton;
     UIButton* createCharacter_backButton;
+	UIButton* deleteCharacter_confirmButton;
+	UIButton* deleteCharacter_cancelButton;
 	UIButton* gameSettings_logoutButton;
 
     // Labels
@@ -121,6 +125,7 @@ class DirectXManager : public Observer
 	UILabel* characterSelect_errorMessageLabel;
     UILabel* characterSelect_headerLabel;
     UILabel* createCharacter_errorMessageLabel;
+	UILabel* deleteCharacter_headerLabel;
     UILabel* enteringWorld_statusLabel;
 
     // Panels
@@ -136,11 +141,13 @@ class DirectXManager : public Observer
     void RecreateCharacterListings(const std::vector<std::string*>* characterNames);
     void InitializeGameWorld();
     ShaderBuffer LoadShader(std::wstring filename);
+	UICharacterListing* GetCurrentlySelectedCharacterListing();
 public:
-	DirectXManager(GameTimer& timer, SocketManager& socketManager, ObjectManager& objectManager)
+	DirectXManager(GameTimer& timer, SocketManager& socketManager, ObjectManager& objectManager, GameMap& gameMap)
 		: objectManager{ objectManager },
 		timer{ timer },
-		socketManager{ socketManager }
+		socketManager{ socketManager },
+		gameMap{ gameMap }
 	{
 	};
     void Initialize(HWND hWnd);

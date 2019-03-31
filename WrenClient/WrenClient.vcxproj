@@ -24,6 +24,7 @@
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
+    <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
     <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\Utility.cpp" />
@@ -56,9 +57,11 @@
     <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseMoveEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseUpEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\SelectCharacterListing.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
+    <ClInclude Include="Source\GameMap\GameMap.h" />
+    <ClInclude Include="Source\GameMap\GameMapTile.h" />
+    <ClInclude Include="Source\GameMap\TerrainType.h" />
     <ClInclude Include="Source\GameObject.h" />
     <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\Layer.h" />

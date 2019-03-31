@@ -45,7 +45,6 @@ bool UIButton::HandleEvent(const Event* event)
 				{
 					pressed = true;
 					onClick();
-					return true;
 				}
 			}
 
