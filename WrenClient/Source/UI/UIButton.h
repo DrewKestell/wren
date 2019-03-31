@@ -15,7 +15,7 @@ class UIButton : public UIComponent, public Observer, public Publisher
     bool enabled = true;
     float width;
     float height;
-	std::function<void()> onClick;
+	const std::function<void()> onClick;
     ID2D1SolidColorBrush* buttonBrush;
     ID2D1SolidColorBrush* pressedButtonBrush;
     ID2D1SolidColorBrush* buttonBorderBrush;
@@ -32,7 +32,7 @@ public:
 		EventHandler& eventHandler,
         const float width,
         const float height,
-		std::function<void()> onClick,
+		const std::function<void()> onClick,
         ID2D1SolidColorBrush* buttonBrush,
         ID2D1SolidColorBrush* pressedButtonBrush,
         ID2D1SolidColorBrush* buttonBorderBrush,
@@ -64,5 +64,5 @@ public:
 
     }
     virtual void Draw();
-	virtual bool HandleEvent(const Event& event);
+	virtual bool HandleEvent(const Event* event);
 };

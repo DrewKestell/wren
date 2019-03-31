@@ -1,7 +1,6 @@
 #include "UICharacterListing.h"
 #include "../EventHandling/Events/MouseDownEvent.h"
 #include "../EventHandling/Events/SelectCharacterListing.h"
-#include "../EventHandling/Events/DeselectCharacterListing.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 
 void UICharacterListing::Draw()
@@ -36,11 +35,11 @@ bool UICharacterListing::HandleEvent(const Event& event)
 				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
 				{
 					selected = true;
-					PublishEvent(SelectCharacterListing{ &characterName });
+					QueueEvent(SelectCharacterListing{ &characterName });
 				}
 				else
 				{
-					PublishEvent(DeselectCharacterListing{});
+					QueueEvent(Event{EventType::DeselectCharacterListing });
 				}
 			}
 			

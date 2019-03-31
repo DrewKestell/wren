@@ -11,5 +11,5 @@ class EventHandler
 public:
 	void Subscribe(Observer& observer) { observers.push_front(&observer); }
 	void Unsubscribe(Observer& observer) { observers.remove(&observer); }
-	void PublishEvent(const Event& event);
+	void PublishEvent(const Event* event);
 };

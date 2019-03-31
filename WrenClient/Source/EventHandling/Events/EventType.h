@@ -11,5 +11,14 @@ enum class EventType
 	SystemKeyUpEvent,
 	SelectCharacterListing,
 	DeselectCharacterListing,
-	ChangeActiveLayer
+	ChangeActiveLayer,
+	CreateAccountFailed,
+	CreateAccountSuccess,
+	LoginFailed,
+	LoginSuccess,
+	CreateCharacterFailed,
+	CreateCharacterSuccess,
+	EnterWorldSuccess,
+	WrongChecksum,
+	OpcodeNotImplemented
 };

@@ -4,6 +4,8 @@
 #include <Ws2tcpip.h>
 #include <string>
 #include <vector>
+#include "EventHandling/EventHandler.h"
+#include "EventHandling/Publisher.h"
 
 const std::string CHECKSUM = "65836216";
 
@@ -21,7 +23,7 @@ constexpr char OPCODE_HEARTBEAT[2] = { '1', '0' };
 constexpr char OPCODE_ENTER_WORLD[2] = { '1', '1' };
 constexpr char OPCODE_ENTER_WORLD_SUCCESSFUL[2] = { '1', '2' };
 
-class SocketManager
+class SocketManager : public Publisher
 {
 private:
     sockaddr_in local;
@@ -31,8 +33,8 @@ private:
     bool MessagePartsEqual(const char* first, const char* second, int length);
     std::vector<std::string>* BuildCharacterVector(std::string characterString);
 public:
-    SocketManager();
-    std::tuple<std::string, std::string, std::vector<std::string>*> TryRecieveMessage();
+	SocketManager(EventHandler& eventHandler);
+    bool TryRecieveMessage();
     void CloseSockets();
     void SendPacket(const std::string& opcode, const int argCount = 0, ...);
 };

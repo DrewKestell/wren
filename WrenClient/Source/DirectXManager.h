@@ -117,6 +117,7 @@ class DirectXManager : public Observer, public Publisher
     UILabel* createAccount_errorMessageLabel;
     UILabel* connecting_statusLabel;
     UILabel* characterSelect_successMessageLabel;
+	UILabel* characterSelect_errorMessageLabel;
     UILabel* characterSelect_headerLabel;
     UILabel* createCharacter_errorMessageLabel;
     UILabel* enteringWorld_statusLabel;
@@ -131,16 +132,17 @@ class DirectXManager : public Observer, public Publisher
     void InitializeButtons();
     void InitializeLabels();
     void InitializePanels();
-    void RecreateCharacterListings(std::vector<std::string>* characterNames);
+    void RecreateCharacterListings(const std::vector<std::string>* characterNames);
     void InitializeGameWorld();
     ShaderBuffer LoadShader(std::wstring filename);
 public:
     DirectXManager(GameTimer& timer, SocketManager& socketManager, EventHandler& eventHandler, ObjectManager& objectManager);
     void Initialize(HWND hWnd);
     void DrawScene();
-    void HandleMessage(std::tuple<std::string, std::string, std::vector<std::string>*> message);
 	virtual bool HandleEvent(const Event& event);
 	void SetActiveLayer(const Layer layer);
+	void QueueEvent(const Event& event) { Publisher::QueueEvent(event); }
+	void PublishEvents() { Publisher::PublishEvents(); }
 };
 
 #endif

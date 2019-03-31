@@ -86,9 +86,9 @@ int CALLBACK WinMain(
         UpdateWindow(hWnd);
 
         timer = new GameTimer;
-        socketManager = new SocketManager;
 		eventHandler = new EventHandler;
 		objectManager = new ObjectManager;
+		socketManager = new SocketManager{ *eventHandler };
         dxManager = new DirectXManager{ *timer, *socketManager, *eventHandler, *objectManager };
         dxManager->Initialize(hWnd);
 
@@ -97,27 +97,21 @@ int CALLBACK WinMain(
         timer->Reset();
         while (msg.message != WM_QUIT)
         {
-            // If there are socket messages then process them.
-            bool morePackets = true;
-            while (morePackets)
-            {
-                const auto result = socketManager->TryRecieveMessage();
-                const auto messageType = std::get<0>(result);
-                if (messageType == "SOCKET_BUFFER_EMPTY")
-                    morePackets = false;
-                else
-                    dxManager->HandleMessage(result);
-            }
-            // If there are Window messages then process them.
+            // Process packets from server.
+			// This method will return false when the socket buffer is empty.
+			while (socketManager->TryRecieveMessage()) {}
+
+            // Process window messages.
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
             {
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }
-            // Otherwise, do animation/game stuff.
+            // Tick game engine
             else
             {
                 timer->Tick();
+				dxManager->PublishEvents();
                 dxManager->DrawScene();
             }
         }
@@ -176,15 +170,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
-		eventHandler->PublishEvent(MouseDownEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		dxManager->QueueEvent(MouseDownEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:
     case WM_RBUTTONUP:
-		eventHandler->PublishEvent(MouseUpEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		dxManager->QueueEvent(MouseUpEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_MOUSEMOVE:
-		eventHandler->PublishEvent(MouseMoveEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		dxManager->QueueEvent(MouseMoveEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
         break;
 
 	case WM_SYSKEYDOWN:
@@ -192,7 +186,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_MENU:
 			const auto keyCode = MapLeftRightKeys(wParam, lParam);
-			eventHandler->PublishEvent(SystemKeyDownEvent{ keyCode });
+			dxManager->QueueEvent(SystemKeyDownEvent{ keyCode });
 			break;
 		}
 		break;
@@ -202,7 +196,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_MENU:
 			const auto keyCode = MapLeftRightKeys(wParam, lParam);
-			eventHandler->PublishEvent(SystemKeyUpEvent{ keyCode });
+			dxManager->QueueEvent(SystemKeyUpEvent{ keyCode });
 			break;
 		}
 		break;
@@ -218,7 +212,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			keyCode = wParam;
 			break;
 		}
-		eventHandler->PublishEvent(SystemKeyDownEvent{ keyCode });
+		dxManager->QueueEvent(SystemKeyDownEvent{ keyCode });
 		break;
 
 	case WM_KEYUP:
@@ -232,7 +226,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			keyCode = wParam;
 			break;
 		}
-		eventHandler->PublishEvent(SystemKeyUpEvent{ keyCode });
+		dxManager->QueueEvent(SystemKeyUpEvent{ keyCode });
 		break;
 
     case WM_CHAR:
@@ -248,9 +242,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
         case 0x0D: // Ignore carriage return.
             break;
-        default: // Process a normal character press.            
+        default:   // Process a normal character press.            
             auto ch = (wchar_t)wParam;
-			eventHandler->PublishEvent(KeyDownEvent{ ch });
+			dxManager->QueueEvent(KeyDownEvent{ ch });
             break;
         }
     default:

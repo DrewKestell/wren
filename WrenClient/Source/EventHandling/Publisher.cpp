@@ -1,8 +1,13 @@
 #include "Publisher.h"
 
-void Publisher::PublishEvent(const Event& event)
+void Publisher::PublishEvents()
 {
-	eventHandler.PublishEvent(event);
+	while (!eventQueue.empty())
+	{
+		const auto event = eventQueue.front();
+		eventQueue.pop();
+		eventHandler.PublishEvent(event);
+	}
 }
 
 Publisher::~Publisher() {}

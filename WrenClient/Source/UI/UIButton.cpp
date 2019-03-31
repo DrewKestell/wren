@@ -26,23 +26,21 @@ void UIButton::Draw()
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y + 1), buttonTextLayout, buttonTextBrush); // (location + 1) looks better
 }
 
-bool UIButton::HandleEvent(const Event& event)
+bool UIButton::HandleEvent(const Event* event)
 {
-	const auto type = event.type;
+	const auto type = event->type;
 	switch (type)
 	{
 		case EventType::MouseDownEvent:
 		{
-			const auto mouseDownEvent = (MouseDownEvent&)event;
+			const auto mouseDownEvent = (MouseDownEvent*)event;
 
 			if (isVisible)
 			{
 				const auto position = GetWorldPosition();
-				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
+				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 				{
 					pressed = true;
-					/*const ButtonPressEvent event{ this };
-					PublishEvent(event);*/
 					onClick();
 					return true;
 				}
@@ -52,7 +50,7 @@ bool UIButton::HandleEvent(const Event& event)
 		}
 		case EventType::MouseUpEvent:
 		{
-			const auto mouseUpEvent = (MouseUpEvent&)event;
+			const auto mouseUpEvent = (MouseUpEvent*)event;
 
 			pressed = false;
 
@@ -60,9 +58,9 @@ bool UIButton::HandleEvent(const Event& event)
 		}
 		case EventType::ChangeActiveLayer:
 		{
-			const auto derivedEvent = (ChangeActiveLayerEvent&)event;
+			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
-			if (derivedEvent.layer == uiLayer)
+			if (derivedEvent->layer == uiLayer)
 				isVisible = true;
 			else
 				isVisible = false;

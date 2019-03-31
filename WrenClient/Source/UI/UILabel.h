@@ -4,8 +4,9 @@
 #include <dwrite_3.h>
 #include <sstream>
 #include "UIComponent.h"
+#include "../EventHandling/Observer.h"
 
-class UILabel : public UIComponent
+class UILabel : public UIComponent, public Observer
 {
     char text[200];
     float width;
@@ -19,6 +20,7 @@ public:
         const DirectX::XMFLOAT3 position,
 		ObjectManager& objectManager,
 		const Layer uiLayer,
+		EventHandler& eventHandler,
         const float width,
         ID2D1SolidColorBrush* textBrush,
         IDWriteTextFormat* textFormat,
@@ -26,6 +28,7 @@ public:
         IDWriteFactory2* writeFactory,
         ID2D1Factory2* d2dFactory) :
         UIComponent(objectManager, position, uiLayer),
+		Observer(eventHandler),
         width{ width },
         textBrush{ textBrush },
         textFormat{ textFormat },
@@ -35,5 +38,6 @@ public:
         ZeroMemory(text, sizeof(text));
     }
     virtual void Draw();
+	virtual bool HandleEvent(const Event& event);
     void SetText(const char* arr);
 };

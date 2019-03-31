@@ -5,13 +5,19 @@
 #include <algorithm>
 #include <tuple>
 #include "SocketManager.h"
+#include "EventHandling/Events/CreateAccountFailedEvent.h"
+#include "EventHandling/Events/LoginSuccessEvent.h"
+#include "EventHandling/Events/LoginFailedEvent.h"
+#include "EventHandling/Events/CreateCharacterFailedEvent.h"
+#include "EventHandling/Events/CreateCharacterSuccessEvent.h"
 
 constexpr auto SOCKET_INIT_FAILED = "Failed to initialize sockets.";
 constexpr auto CLIENT_PORT_NUMBER = 27015;
 constexpr auto SERVER_PORT_NUMBER = 27016;
 
 // CONSTRUCTOR
-SocketManager::SocketManager()
+SocketManager::SocketManager(EventHandler& eventHandler)
+	: Publisher(eventHandler)
 {
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
@@ -72,7 +78,7 @@ void SocketManager::CloseSockets()
     WSACleanup();
 }
 
-std::tuple<std::string, std::string, std::vector<std::string>*> SocketManager::TryRecieveMessage()
+bool SocketManager::TryRecieveMessage()
 {
     char buffer[1024];
     char str[INET_ADDRSTRLEN];
@@ -92,7 +98,8 @@ std::tuple<std::string, std::string, std::vector<std::string>*> SocketManager::T
         if (!MessagePartsEqual(checksumArr, CHECKSUM.c_str(), checksumArrLen))
         {
             std::cout << "Wrong checksum. Ignoring packet.\n";
-            return std::make_tuple("WRONG_CHECKSUM", "", nullptr);
+			QueueEvent(Event{ EventType::WrongChecksum });
+			return true;
         }
 
         const auto opcodeArrLen = 2;
@@ -125,13 +132,15 @@ std::tuple<std::string, std::string, std::vector<std::string>*> SocketManager::T
         {
             const auto error = args[0];
             std::cout << "Failed to create account. Reason: " + error + "\n";
-            return std::make_tuple("CREATE_ACCOUNT_FAILED", error, nullptr);
+			QueueEvent(CreateAccountFailedEvent{ error });
+			return true;
         }
         // CreateAccount Successful
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT_SUCCESSFUL, opcodeArrLen))
         {
             std::cout << "Successfully created account.\n";
-            return std::make_tuple("CREATE_ACCOUNT_SUCCESS", "", nullptr);
+			QueueEvent(Event{EventType::CreateAccountSuccess});
+			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_LOGIN_SUCCESSFUL, opcodeArrLen))
         {
@@ -140,13 +149,15 @@ std::tuple<std::string, std::string, std::vector<std::string>*> SocketManager::T
             const auto characterList = BuildCharacterVector(characterString);
 
             std::cout << "Login successful. Token received: " + token + "\n";
-            return std::make_tuple("LOGIN_SUCCESS", token, characterList);
+			QueueEvent(LoginSuccessEvent{ token, characterList });
+			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_LOGIN_UNSUCCESSFUL, opcodeArrLen))
         {
             const auto error = args[0];
             std::cout << "Login failed. Reason: " + error + "\n";
-            return std::make_tuple("LOGIN_FAILED", error, nullptr);
+			QueueEvent(LoginFailedEvent{ error });
+			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER_SUCCESSFUL, opcodeArrLen))
         {
@@ -154,23 +165,30 @@ std::tuple<std::string, std::string, std::vector<std::string>*> SocketManager::T
             const auto characterList = BuildCharacterVector(characterString);
 
             std::cout << "Character creation succesful.";
-            return std::make_tuple("CREATE_CHARACTER_SUCCESS", "", characterList);
+			QueueEvent(CreateCharacterSuccessEvent{ characterList });
+			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER_UNSUCCESSFUL, opcodeArrLen))
         {
             const auto error = args[0];
             std::cout << "Character creation failed. Reason: " + error + "\n";
-            return std::make_tuple("CREATE_CHARACTER_FAILED", error, nullptr);
+			QueueEvent(CreateCharacterFailedEvent{ error });
+			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_ENTER_WORLD_SUCCESSFUL, opcodeArrLen))
         {
             std::cout << "Connected to game world!\n";
-            return std::make_tuple("ENTER_WORLD_SUCCESSFUL", "", nullptr);
+			QueueEvent(Event{ EventType::EnterWorldSuccess });
+			return true;
         }
-        else
-            return std::make_tuple("NOT_IMPLEMENTED", "", nullptr);
+		else
+		{
+			std::cout << "Opcode not implemented.\n";
+			QueueEvent(Event{ EventType::OpcodeNotImplemented });
+			return true;
+		}
     }
-    return std::make_tuple("SOCKET_BUFFER_EMPTY", "", nullptr);
+	return false;
 }
 
 std::vector<std::string>* SocketManager::BuildCharacterVector(std::string characterString)

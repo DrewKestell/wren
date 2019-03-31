@@ -47,13 +47,17 @@
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseMoveEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\DeselectCharacterListing.h" />
     <ClInclude Include="Source\EventHandling\Events\SelectCharacterListing.h" />
     <ClInclude Include="Source\UI\UIComponent.h" />
     <ClInclude Include="Source\Layer.h" />
     <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
     <ClInclude Include="Source\UI\UIInputGroup.h" />
+    <ClInclude Include="Source\EventHandling\Events\CreateAccountFailedEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\LoginFailedEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\CreateCharacterFailedEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\CreateCharacterSuccessEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

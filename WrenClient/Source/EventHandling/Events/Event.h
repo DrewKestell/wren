@@ -1,7 +1,6 @@
 #pragma once
 
 #include "EventType.h"
-#include "../../Layer.h"
 
 class Event
 {
