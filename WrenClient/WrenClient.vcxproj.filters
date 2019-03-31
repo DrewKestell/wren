@@ -11,8 +11,6 @@
     <ClCompile Include="Source\UI\UIInput.cpp" />
     <ClCompile Include="Source\UI\UILabel.cpp" />
     <ClCompile Include="Source\UI\UIPanel.cpp" />
-    <ClCompile Include="Source\Math.cpp" />
-    <ClCompile Include="Source\EventHandling\Publisher.cpp" />
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
@@ -20,6 +18,7 @@
     <ClCompile Include="Source\UI\UIComponent.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
+    <ClCompile Include="Source\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DirectXManager.h" />
@@ -32,14 +31,11 @@
     <ClInclude Include="Source\UI\UIInput.h" />
     <ClInclude Include="Source\UI\UILabel.h" />
     <ClInclude Include="Source\UI\UIPanel.h" />
-    <ClInclude Include="Source\Math.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
     <ClInclude Include="Source\EventHandling\Events\Event.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\EventType.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseUpEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\ButtonPressEvent.h" />
-    <ClInclude Include="Source\EventHandling\Publisher.h" />
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
     <ClInclude Include="Source\EventHandling\Events\KeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\KeyDownEvent.h" />
@@ -58,6 +54,7 @@
     <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterSuccessEvent.h" />
+    <ClInclude Include="Source\Utility.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

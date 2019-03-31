@@ -11,5 +11,6 @@ public:
 		characterName{ characterName }
 	{
 	}
+	~SelectCharacterListing() { delete characterName; }
 	const std::string* characterName;
 };

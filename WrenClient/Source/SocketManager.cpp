@@ -3,7 +3,6 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <tuple>
 #include "SocketManager.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -11,17 +10,17 @@
 #include "EventHandling/Events/CreateCharacterFailedEvent.h"
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
 
-constexpr auto SOCKET_INIT_FAILED = "Failed to initialize sockets.";
 constexpr auto CLIENT_PORT_NUMBER = 27015;
 constexpr auto SERVER_PORT_NUMBER = 27016;
 
+extern EventHandler* g_eventHandler;
+
 // CONSTRUCTOR
-SocketManager::SocketManager(EventHandler& eventHandler)
-	: Publisher(eventHandler)
+SocketManager::SocketManager()
 {
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
-        throw new std::exception(SOCKET_INIT_FAILED);
+        throw new std::exception("Failed to initialize sockets.");
 
     local.sin_family = AF_INET;
     local.sin_port = htons(CLIENT_PORT_NUMBER);
@@ -98,7 +97,7 @@ bool SocketManager::TryRecieveMessage()
         if (!MessagePartsEqual(checksumArr, CHECKSUM.c_str(), checksumArrLen))
         {
             std::cout << "Wrong checksum. Ignoring packet.\n";
-			QueueEvent(Event{ EventType::WrongChecksum });
+			g_eventHandler->QueueEvent(new Event{ EventType::WrongChecksum });
 			return true;
         }
 
@@ -106,40 +105,39 @@ bool SocketManager::TryRecieveMessage()
         char opcodeArr[opcodeArrLen];
         memcpy(&opcodeArr[0], &buffer[8], opcodeArrLen * sizeof(char));
 
-        std::vector<std::string> args;
+        std::vector<std::string*> args;
         auto bufferLength = strlen(buffer);
         if (bufferLength > 10)
         {
-            std::string arg = "";
+			auto arg = new std::string;
             for (unsigned int i = 10; i < bufferLength; i++)
             {
+				
                 if (buffer[i] == '|')
                 {
                     args.push_back(arg);
-                    arg = "";
+					arg = new std::string;
                 }
                 else
-                    arg += buffer[i];
+                    *arg += buffer[i];
             }
 
             std::cout << "Args:\n";
-            for_each(args.begin(), args.end(), [](std::string str) { std::cout << "  " << str << "\n";  });
+            for_each(args.begin(), args.end(), [](std::string* str) { std::cout << "  " << *str << "\n";  });
             std::cout << "\n";
         }
 
-        // CreateAccount Unsuccessful
         if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL, opcodeArrLen))
         {
             const auto error = args[0];
-            std::cout << "Failed to create account. Reason: " + error + "\n";
-			QueueEvent(CreateAccountFailedEvent{ error });
+            std::cout << "Failed to create account. Reason: " + *error + "\n";
+			g_eventHandler->QueueEvent(new CreateAccountFailedEvent{ error });
 			return true;
         }
-        // CreateAccount Successful
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT_SUCCESSFUL, opcodeArrLen))
         {
             std::cout << "Successfully created account.\n";
-			QueueEvent(Event{EventType::CreateAccountSuccess});
+			g_eventHandler->QueueEvent(new Event{EventType::CreateAccountSuccess});
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_LOGIN_SUCCESSFUL, opcodeArrLen))
@@ -148,15 +146,15 @@ bool SocketManager::TryRecieveMessage()
             const auto characterString = args[1];
             const auto characterList = BuildCharacterVector(characterString);
 
-            std::cout << "Login successful. Token received: " + token + "\n";
-			QueueEvent(LoginSuccessEvent{ token, characterList });
+            std::cout << "Login successful. Token received: " + *token + "\n";
+			g_eventHandler->QueueEvent(new LoginSuccessEvent{ token, characterList });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_LOGIN_UNSUCCESSFUL, opcodeArrLen))
         {
             const auto error = args[0];
-            std::cout << "Login failed. Reason: " + error + "\n";
-			QueueEvent(LoginFailedEvent{ error });
+            std::cout << "Login failed. Reason: " + *error + "\n";
+			g_eventHandler->QueueEvent(new LoginFailedEvent{ error });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER_SUCCESSFUL, opcodeArrLen))
@@ -165,45 +163,45 @@ bool SocketManager::TryRecieveMessage()
             const auto characterList = BuildCharacterVector(characterString);
 
             std::cout << "Character creation succesful.";
-			QueueEvent(CreateCharacterSuccessEvent{ characterList });
+			g_eventHandler->QueueEvent(new CreateCharacterSuccessEvent{ characterList });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER_UNSUCCESSFUL, opcodeArrLen))
         {
             const auto error = args[0];
-            std::cout << "Character creation failed. Reason: " + error + "\n";
-			QueueEvent(CreateCharacterFailedEvent{ error });
+            std::cout << "Character creation failed. Reason: " + *error + "\n";
+			g_eventHandler->QueueEvent(new CreateCharacterFailedEvent{ error });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_ENTER_WORLD_SUCCESSFUL, opcodeArrLen))
         {
             std::cout << "Connected to game world!\n";
-			QueueEvent(Event{ EventType::EnterWorldSuccess });
+			g_eventHandler->QueueEvent(new Event{ EventType::EnterWorldSuccess });
 			return true;
         }
 		else
 		{
 			std::cout << "Opcode not implemented.\n";
-			QueueEvent(Event{ EventType::OpcodeNotImplemented });
+			g_eventHandler->QueueEvent(new Event{ EventType::OpcodeNotImplemented });
 			return true;
 		}
     }
 	return false;
 }
 
-std::vector<std::string>* SocketManager::BuildCharacterVector(std::string characterString)
+std::vector<std::string*>* SocketManager::BuildCharacterVector(std::string* characterString)
 {
-    std::vector<std::string>* characterList = new std::vector<std::string>;
-    std::string arg = "";
-    for (auto i = 0; i < characterString.length(); i++)
+    std::vector<std::string*>* characterList = new std::vector<std::string*>;
+	auto arg = new std::string;
+    for (auto i = 0; i < characterString->length(); i++)
     {
-        if (characterString[i] == ';')
+        if ((*characterString)[i] == ';')
         {
             characterList->push_back(arg);
-            arg = "";
+			arg = new std::string;
         }
         else
-            arg += characterString[i];
+            *arg += (*characterString)[i];
     }
     return characterList;
 }

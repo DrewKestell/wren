@@ -18,18 +18,18 @@ void UILabel::SetText(const char* arr)
     memcpy(&text[0], &arr[0], strlen(arr) + 1);
 }
 
-bool UILabel::HandleEvent(const Event& event)
+bool UILabel::HandleEvent(const Event* event)
 {
-	const auto type = event.type;
+	const auto type = event->type;
 	switch (type)
 	{
 	case EventType::ChangeActiveLayer:
 	{
-		const auto derivedEvent = (ChangeActiveLayerEvent&)event;
+		const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
 		isVisible = false;
 
-		if (derivedEvent.layer == uiLayer)
+		if (derivedEvent->layer == uiLayer)
 			isVisible = true;
 		else
 			isVisible = false;

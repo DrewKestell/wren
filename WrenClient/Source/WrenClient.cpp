@@ -27,7 +27,7 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 GameTimer* timer;
 DirectXManager* dxManager;
-EventHandler* eventHandler;
+EventHandler* g_eventHandler;
 SocketManager* socketManager;
 ObjectManager* objectManager;
 
@@ -86,10 +86,10 @@ int CALLBACK WinMain(
         UpdateWindow(hWnd);
 
         timer = new GameTimer;
-		eventHandler = new EventHandler;
+		g_eventHandler = new EventHandler;
 		objectManager = new ObjectManager;
-		socketManager = new SocketManager{ *eventHandler };
-        dxManager = new DirectXManager{ *timer, *socketManager, *eventHandler, *objectManager };
+		socketManager = new SocketManager;
+        dxManager = new DirectXManager{ *timer, *socketManager, *objectManager };
         dxManager->Initialize(hWnd);
 
         // Main game loop:
@@ -111,7 +111,7 @@ int CALLBACK WinMain(
             else
             {
                 timer->Tick();
-				dxManager->PublishEvents();
+				g_eventHandler->PublishEvents();
                 dxManager->DrawScene();
             }
         }
@@ -170,15 +170,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
-		dxManager->QueueEvent(MouseDownEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler->QueueEvent(new MouseDownEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:
     case WM_RBUTTONUP:
-		dxManager->QueueEvent(MouseUpEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler->QueueEvent(new MouseUpEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_MOUSEMOVE:
-		dxManager->QueueEvent(MouseMoveEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler->QueueEvent(new MouseMoveEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
         break;
 
 	case WM_SYSKEYDOWN:
@@ -186,7 +186,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_MENU:
 			const auto keyCode = MapLeftRightKeys(wParam, lParam);
-			dxManager->QueueEvent(SystemKeyDownEvent{ keyCode });
+			g_eventHandler->QueueEvent(new SystemKeyDownEvent{ keyCode });
 			break;
 		}
 		break;
@@ -196,7 +196,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_MENU:
 			const auto keyCode = MapLeftRightKeys(wParam, lParam);
-			dxManager->QueueEvent(SystemKeyUpEvent{ keyCode });
+			g_eventHandler->QueueEvent(new SystemKeyUpEvent{ keyCode });
 			break;
 		}
 		break;
@@ -212,7 +212,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			keyCode = wParam;
 			break;
 		}
-		dxManager->QueueEvent(SystemKeyDownEvent{ keyCode });
+		g_eventHandler->QueueEvent(new SystemKeyDownEvent{ keyCode });
 		break;
 
 	case WM_KEYUP:
@@ -226,7 +226,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			keyCode = wParam;
 			break;
 		}
-		dxManager->QueueEvent(SystemKeyUpEvent{ keyCode });
+		g_eventHandler->QueueEvent(new SystemKeyUpEvent{ keyCode });
 		break;
 
     case WM_CHAR:
@@ -244,7 +244,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
         default:   // Process a normal character press.            
             auto ch = (wchar_t)wParam;
-			dxManager->QueueEvent(KeyDownEvent{ ch });
+			g_eventHandler->QueueEvent(new KeyDownEvent{ ch });
             break;
         }
     default:

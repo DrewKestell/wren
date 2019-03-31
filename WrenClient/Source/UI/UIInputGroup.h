@@ -9,14 +9,10 @@ class UIInputGroup : public Observer
 	Layer uiLayer;
 	std::vector<UIInput*> inputs;
 public:
-	UIInputGroup(
-		EventHandler& eventHandler,
-		Layer uiLayer
-	) : 
-		Observer{ eventHandler },
-		uiLayer{ uiLayer }
+	UIInputGroup(Layer uiLayer)
+		: uiLayer{ uiLayer }
 	{
 	}
-	virtual bool HandleEvent(const Event& event);
+	virtual bool HandleEvent(const Event* event);
 	void AddInput(UIInput* input) { inputs.push_back(input); }
 };

@@ -1,9 +1,8 @@
 #include "UIButton.h"
 #include "../EventHandling/Events/MouseDownEvent.h"
 #include "../EventHandling/Events/MouseUpEvent.h"
-#include "../EventHandling/Events/ButtonPressEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "../Math.h"
+#include "../Utility.h"
 
 void UIButton::Draw()
 {

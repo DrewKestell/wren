@@ -6,11 +6,10 @@
 #include <vector>
 #include "UIComponent.h"
 #include "../EventHandling/Observer.h"
-#include "../EventHandling/Publisher.h"
 
 const FLOAT HEADER_HEIGHT = 20.0f;
 
-class UIPanel : public UIComponent, public Observer, public Publisher
+class UIPanel : public UIComponent, public Observer
 {
 	bool isActive = false;
     bool isDragging = false;
@@ -32,7 +31,6 @@ public:
         const DirectX::XMFLOAT3 position,
 		ObjectManager& objectManager,
 		const Layer uiLayer,
-		EventHandler& eventHandler,
         const bool isDraggable,
         const float width,
         const float height,
@@ -43,8 +41,6 @@ public:
         ID2D1DeviceContext1* d2dDeviceContext,
         ID2D1Factory2* d2dFactory) :
         UIComponent(objectManager, position, uiLayer),
-		Observer(eventHandler),
-		Publisher(eventHandler),
         isDraggable{ isDraggable },
         width{ width },
         height{ height },
@@ -65,5 +61,5 @@ public:
     }
     
     virtual void Draw();
-	virtual bool HandleEvent(const Event& event);
+	virtual bool HandleEvent(const Event* event);
 };

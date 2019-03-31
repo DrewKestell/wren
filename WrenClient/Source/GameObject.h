@@ -2,7 +2,7 @@
 
 #include <DirectXMath.h>
 #include <vector>
-#include "Math.h"
+#include "Utility.h"
 #include "Layer.h"
 #include "ObjectManager.h"
 

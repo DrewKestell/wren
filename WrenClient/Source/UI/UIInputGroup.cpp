@@ -2,16 +2,16 @@
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../EventHandling/Events/SystemKeyDownEvent.h"
 
-bool UIInputGroup::HandleEvent(const Event& event)
+bool UIInputGroup::HandleEvent(const Event* event)
 {
-	const auto type = event.type;
+	const auto type = event->type;
 	switch (type)
 	{
 		case EventType::ChangeActiveLayer:
 		{
-			const auto derivedEvent = (ChangeActiveLayerEvent&)event;
+			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
-			if (derivedEvent.layer == uiLayer)
+			if (derivedEvent->layer == uiLayer)
 				active = true;
 			else
 				active = false;
@@ -20,10 +20,10 @@ bool UIInputGroup::HandleEvent(const Event& event)
 		}
 		case EventType::SystemKeyDownEvent:
 		{
-			const auto derivedEvent = (SystemKeyDownEvent&)event;
+			const auto derivedEvent = (SystemKeyDownEvent*)event;
 
 			auto activeInputExists = false;
-			if (active && derivedEvent.keyCode == VK_TAB)
+			if (active && derivedEvent->keyCode == VK_TAB)
 			{
 				for (auto it = inputs.begin(); it != inputs.end(); it++)
 				{

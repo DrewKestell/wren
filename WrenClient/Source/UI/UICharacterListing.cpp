@@ -1,7 +1,10 @@
 #include "UICharacterListing.h"
+#include "../EventHandling/EventHandler.h"
 #include "../EventHandling/Events/MouseDownEvent.h"
 #include "../EventHandling/Events/SelectCharacterListing.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
+
+extern EventHandler* g_eventHandler;
 
 void UICharacterListing::Draw()
 {
@@ -18,28 +21,28 @@ void UICharacterListing::Draw()
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + 10.0f, position.y + 1), textLayout, textBrush); // (location + 1) looks better
 }
 
-bool UICharacterListing::HandleEvent(const Event& event)
+bool UICharacterListing::HandleEvent(const Event* event)
 {
-	const auto type = event.type;
+	const auto type = event->type;
 	switch (type)
 	{
 		case EventType::MouseDownEvent:
 		{
 			selected = false;
 
-			const auto mouseDownEvent = (MouseDownEvent&)event;
+			const auto mouseDownEvent = (MouseDownEvent*)event;
 
 			if (isVisible)
 			{
 				const auto position = GetWorldPosition();
-				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
+				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 				{
 					selected = true;
-					QueueEvent(SelectCharacterListing{ &characterName });
+					g_eventHandler->QueueEvent(new SelectCharacterListing{ &characterName });
 				}
 				else
 				{
-					QueueEvent(Event{EventType::DeselectCharacterListing });
+					g_eventHandler->QueueEvent(new Event{EventType::DeselectCharacterListing });
 				}
 			}
 			
@@ -47,11 +50,11 @@ bool UICharacterListing::HandleEvent(const Event& event)
 		}
 		case EventType::ChangeActiveLayer:
 		{
-			const auto derivedEvent = (ChangeActiveLayerEvent&)event;
+			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
 			selected = false;
 
-			if (derivedEvent.layer == uiLayer)
+			if (derivedEvent->layer == uiLayer)
 				isVisible = true;
 			else
 				isVisible = false;

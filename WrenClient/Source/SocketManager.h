@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 #include "EventHandling/EventHandler.h"
-#include "EventHandling/Publisher.h"
 
 const std::string CHECKSUM = "65836216";
 
@@ -23,7 +22,7 @@ constexpr char OPCODE_HEARTBEAT[2] = { '1', '0' };
 constexpr char OPCODE_ENTER_WORLD[2] = { '1', '1' };
 constexpr char OPCODE_ENTER_WORLD_SUCCESSFUL[2] = { '1', '2' };
 
-class SocketManager : public Publisher
+class SocketManager
 {
 private:
     sockaddr_in local;
@@ -31,9 +30,9 @@ private:
     int toLen;
     SOCKET socketC;   
     bool MessagePartsEqual(const char* first, const char* second, int length);
-    std::vector<std::string>* BuildCharacterVector(std::string characterString);
+    std::vector<std::string*>* BuildCharacterVector(std::string* characterString);
 public:
-	SocketManager(EventHandler& eventHandler);
+	SocketManager();
     bool TryRecieveMessage();
     void CloseSockets();
     void SendPacket(const std::string& opcode, const int argCount = 0, ...);

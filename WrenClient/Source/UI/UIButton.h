@@ -6,9 +6,8 @@
 #include <functional>
 #include "UIComponent.h"
 #include "../EventHandling/Observer.h"
-#include "../EventHandling/Publisher.h"
 
-class UIButton : public UIComponent, public Observer, public Publisher
+class UIButton : public UIComponent, public Observer
 {
     const char* buttonText[20];
     bool pressed = false;
@@ -29,7 +28,6 @@ public:
         const DirectX::XMFLOAT3 position,
 		ObjectManager& objectManager,
 		const Layer uiLayer,
-		EventHandler& eventHandler,
         const float width,
         const float height,
 		const std::function<void()> onClick,
@@ -43,8 +41,6 @@ public:
         IDWriteTextFormat* buttonTextFormat,
         ID2D1Factory2* d2dFactory) :
         UIComponent(objectManager, position, uiLayer),
-		Observer(eventHandler),
-		Publisher(eventHandler),
         width{ width },
         height{ height },
 		onClick{ onClick },

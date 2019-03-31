@@ -25,22 +25,22 @@ void UIPanel::Draw()
 		children.at(i)->Draw();
 }
 
-bool UIPanel::HandleEvent(const Event& event)
+bool UIPanel::HandleEvent(const Event* event)
 {
-	const auto type = event.type;
+	const auto type = event->type;
 	switch (type)
 	{
 		case EventType::MouseDownEvent:
 		{
-			const auto mouseDownEvent = (MouseDownEvent&)event;
+			const auto mouseDownEvent = (MouseDownEvent*)event;
 
 			if (isVisible)
 			{
 				const auto position = GetWorldPosition();
-				if (isVisible && isDraggable && DetectClick(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
+				if (isVisible && isDraggable && DetectClick(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 				{
-					lastDragX = mouseDownEvent.mousePosX;
-					lastDragY = mouseDownEvent.mousePosY;
+					lastDragX = mouseDownEvent->mousePosX;
+					lastDragY = mouseDownEvent->mousePosY;
 					isDragging = true;
 				}
 			}
@@ -49,7 +49,7 @@ bool UIPanel::HandleEvent(const Event& event)
 		}
 		case EventType::MouseUpEvent:
 		{
-			const auto mouseUpEvent = (MouseUpEvent&)event;
+			const auto mouseUpEvent = (MouseUpEvent*)event;
 
 			isDragging = false;
 
@@ -57,17 +57,17 @@ bool UIPanel::HandleEvent(const Event& event)
 		}
 		case EventType::MouseMoveEvent:
 		{
-			const auto mouseMoveEvent = (MouseMoveEvent&)event;
+			const auto mouseMoveEvent = (MouseMoveEvent*)event;
 
 			if (isDragging)
 			{
-				const auto deltaX = mouseMoveEvent.mousePosX - lastDragX;
-				const auto deltaY = mouseMoveEvent.mousePosY - lastDragY;
+				const auto deltaX = mouseMoveEvent->mousePosX - lastDragX;
+				const auto deltaY = mouseMoveEvent->mousePosY - lastDragY;
 
 				Translate(DirectX::XMFLOAT3(deltaX, deltaY, 0.0f));
 
-				lastDragX = mouseMoveEvent.mousePosX;
-				lastDragY = mouseMoveEvent.mousePosY;
+				lastDragX = mouseMoveEvent->mousePosX;
+				lastDragY = mouseMoveEvent->mousePosY;
 
 				const auto currentPosition = GetWorldPosition();
 				d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT), 3.0f, 3.0f), &headerGeometry);
@@ -78,11 +78,11 @@ bool UIPanel::HandleEvent(const Event& event)
 		}
 		case EventType::ChangeActiveLayer:
 		{
-			const auto derivedEvent = (ChangeActiveLayerEvent&)event;
+			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
 			isVisible = false;
 
-			if (derivedEvent.layer == uiLayer)
+			if (derivedEvent->layer == uiLayer)
 				isActive = true;
 			else
 				isActive = false;
@@ -93,9 +93,9 @@ bool UIPanel::HandleEvent(const Event& event)
 		{
 			if (isActive)
 			{
-				const auto keyDownEvent = (SystemKeyDownEvent&)event;
+				const auto keyDownEvent = (SystemKeyDownEvent*)event;
 
-				if (keyDownEvent.keyCode == showKey)
+				if (keyDownEvent->keyCode == showKey)
 					isVisible = !isVisible;
 			}
 

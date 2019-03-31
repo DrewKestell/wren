@@ -4,7 +4,7 @@
 #include "../EventHandling/Events/KeyDownEvent.h"
 #include "../EventHandling/Events/SystemKeyDownEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "../Math.h"
+#include "../Utility.h"
 
 void UIInput::Draw()
 {
@@ -40,21 +40,21 @@ const wchar_t* UIInput::GetInputValue()
     return inputValue;
 }
 
-bool UIInput::HandleEvent(const Event& event)
+bool UIInput::HandleEvent(const Event* event)
 {
-	const auto type = event.type;
+	const auto type = event->type;
 	switch (type)
 	{
 		case EventType::MouseDownEvent:
 		{
 			active = false;
 
-			const auto mouseDownEvent = (MouseDownEvent&)event;
+			const auto mouseDownEvent = (MouseDownEvent*)event;
 
 			if (isVisible)
 			{
 				const auto position = GetWorldPosition();
-				if (DetectClick(position.x + labelWidth, position.y, position.x + inputWidth + labelWidth, position.y + height, mouseDownEvent.mousePosX, mouseDownEvent.mousePosY))
+				if (DetectClick(position.x + labelWidth, position.y, position.x + inputWidth + labelWidth, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 				{
 					active = true;
 				}
@@ -66,11 +66,11 @@ bool UIInput::HandleEvent(const Event& event)
 		{
 			if (active)
 			{
-				const auto keyDownEvent = (KeyDownEvent&)event;
+				const auto keyDownEvent = (KeyDownEvent*)event;
 
 				if (inputIndex <= 30)
 				{
-					inputValue[inputIndex] = keyDownEvent.charCode;
+					inputValue[inputIndex] = keyDownEvent->charCode;
 					inputIndex++;
 				}
 			}
@@ -81,8 +81,8 @@ bool UIInput::HandleEvent(const Event& event)
 		{
 			if (active)
 			{
-				const auto keyDownEvent = (SystemKeyDownEvent&)event;
-				const auto keyCode = keyDownEvent.keyCode;
+				const auto keyDownEvent = (SystemKeyDownEvent*)event;
+				const auto keyCode = keyDownEvent->keyCode;
 
 				switch (keyCode)
 				{
@@ -102,7 +102,7 @@ bool UIInput::HandleEvent(const Event& event)
 		}
 		case EventType::ChangeActiveLayer:
 		{
-			const auto derivedEvent = (ChangeActiveLayerEvent&)event;
+			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
 			active = false;
 			
@@ -110,7 +110,7 @@ bool UIInput::HandleEvent(const Event& event)
 			inputIndex = 0;
 			ZeroMemory(inputValue, sizeof(inputValue));
 
-			if (derivedEvent.layer == uiLayer)
+			if (derivedEvent->layer == uiLayer)
 				isVisible = true;
 			else
 				isVisible = false;

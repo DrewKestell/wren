@@ -3,19 +3,19 @@
 #include "Events/Event.h"
 #include "EventHandler.h"
 
+extern EventHandler* g_eventHandler;
+
 class Observer
 {
 protected:
-	EventHandler& eventHandler;
-	Observer(EventHandler& eventHandler)
-		: eventHandler{ eventHandler }
+	Observer()
 	{
-		eventHandler.Subscribe(*this);
+		g_eventHandler->Subscribe(*this);
 	}
 public:	
 	virtual bool HandleEvent(const Event* event) = 0;
 	~Observer()
 	{
-		eventHandler.Unsubscribe(*this);
+		g_eventHandler->Unsubscribe(*this);
 	}
 };

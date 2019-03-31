@@ -8,7 +8,7 @@ class SystemKeyPressEvent : public Event
 public:
 	SystemKeyPressEvent(const EventType eventType, const WPARAM keyCode)
 		: Event(eventType),
-		keyCode{ keyCode }
+		  keyCode{ keyCode }
 	{
 	}
 	virtual ~SystemKeyPressEvent() = 0;

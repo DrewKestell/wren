@@ -10,3 +10,13 @@ void EventHandler::PublishEvent(const Event* event)
 			break;
 	}
 }
+
+void EventHandler::PublishEvents()
+{
+	while (!eventQueue.empty())
+	{
+		const auto event = eventQueue.front();
+		eventQueue.pop();
+		PublishEvent(event);
+	}
+}

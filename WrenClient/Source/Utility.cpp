@@ -1,4 +1,5 @@
-#include "Math.h"
+#include <codecvt>
+#include "Utility.h"
 
 DirectX::XMFLOAT3 XMFLOAT3Sum(DirectX::XMFLOAT3 l, DirectX::XMFLOAT3 r)
 {
@@ -8,4 +9,12 @@ DirectX::XMFLOAT3 XMFLOAT3Sum(DirectX::XMFLOAT3 l, DirectX::XMFLOAT3 r)
 bool DetectClick(float topLeftX, float topLeftY, float bottomRightX, float bottomRightY, float mousePosX, float mousePosY)
 {
 	return mousePosX >= topLeftX && mousePosX <= bottomRightX && mousePosY >= topLeftY && mousePosY <= bottomRightY;
+}
+
+std::string ws2s(const std::wstring& wstr)
+{
+	using convert_typeX = std::codecvt_utf8<wchar_t>;
+	std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+	return converterX.to_bytes(wstr);
 }

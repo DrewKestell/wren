@@ -1,5 +1,4 @@
-#ifndef DIRECTXMANAGER_H
-#define DIRECTXMANAGER_H
+#pragma once
 
 #include <d3d11.h>
 #include <d2d1_3.h>
@@ -29,10 +28,10 @@ struct ShaderBuffer
     int size;
 };
 
-class DirectXManager : public Observer, public Publisher
+class DirectXManager : public Observer
 {
+	Layer activeLayer = Login;
 	const std::string* currentlySelectedCharacterName;
-	EventHandler& eventHandler;
 	ObjectManager& objectManager;
 	std::vector<Observer*>* observers;
     ID3D11Buffer* buffer;
@@ -132,17 +131,18 @@ class DirectXManager : public Observer, public Publisher
     void InitializeButtons();
     void InitializeLabels();
     void InitializePanels();
-    void RecreateCharacterListings(const std::vector<std::string>* characterNames);
+    void RecreateCharacterListings(const std::vector<std::string*>* characterNames);
     void InitializeGameWorld();
     ShaderBuffer LoadShader(std::wstring filename);
 public:
-    DirectXManager(GameTimer& timer, SocketManager& socketManager, EventHandler& eventHandler, ObjectManager& objectManager);
+	DirectXManager(GameTimer& timer, SocketManager& socketManager, ObjectManager& objectManager)
+		: objectManager{ objectManager },
+		timer{ timer },
+		socketManager{ socketManager }
+	{
+	};
     void Initialize(HWND hWnd);
     void DrawScene();
-	virtual bool HandleEvent(const Event& event);
+	virtual bool HandleEvent(const Event* event);
 	void SetActiveLayer(const Layer layer);
-	void QueueEvent(const Event& event) { Publisher::QueueEvent(event); }
-	void PublishEvents() { Publisher::PublishEvents(); }
 };
-
-#endif

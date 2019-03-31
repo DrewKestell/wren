@@ -6,10 +6,11 @@
 class LoginFailedEvent : public Event
 {
 public:
-	LoginFailedEvent(const std::string& error)
+	LoginFailedEvent(const std::string* error)
 		: Event(EventType::LoginFailed),
 		  error{ error }
 	{
 	}
-	const std::string& error;
+	~LoginFailedEvent() { delete error; }
+	const std::string* error;
 };

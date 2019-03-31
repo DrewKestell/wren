@@ -1,5 +1,4 @@
-#ifndef GAMETIMER_H
-#define GAMETIMER_H
+#pragma once
 
 class GameTimer
 {
@@ -21,5 +20,3 @@ private:
     __int64 mCurrTime;
     bool mStopped;
 };
-
-#endif

@@ -5,9 +5,8 @@
 #include <sstream>
 #include "UIComponent.h"
 #include "../EventHandling/Observer.h"
-#include "../EventHandling/Publisher.h"
 
-class UICharacterListing : public UIComponent, public Observer, public Publisher
+class UICharacterListing : public UIComponent, public Observer
 {
     std::string characterName;
     bool selected;
@@ -25,7 +24,6 @@ public:
         const DirectX::XMFLOAT3 position,
 		ObjectManager& objectManager,
 		const Layer uiLayer,
-		EventHandler& eventHandler,
         const float width,
         const float height,
         ID2D1SolidColorBrush* brush,
@@ -38,8 +36,6 @@ public:
         IDWriteTextFormat* textFormat,
         ID2D1Factory2* d2dFactory) :
         UIComponent{ objectManager, position, uiLayer },
-		Observer(eventHandler),
-		Publisher(eventHandler),
         width{ width },
         height{ height },
         brush{ brush },
@@ -59,7 +55,7 @@ public:
 
     }
     virtual void Draw();
-	virtual bool HandleEvent(const Event& event);
+	virtual bool HandleEvent(const Event* event);
 	~UICharacterListing()
 	{
 		textLayout->Release();

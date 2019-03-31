@@ -24,10 +24,9 @@
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
-    <ClCompile Include="Source\EventHandling\Publisher.cpp" />
     <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
-    <ClCompile Include="Source\Math.cpp" />
+    <ClCompile Include="Source\Utility.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
@@ -42,7 +41,6 @@
   <ItemGroup>
     <ClInclude Include="Source\DirectXManager.h" />
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
-    <ClInclude Include="Source\EventHandling\Events\ButtonPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateAccountFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterFailedEvent.h" />
@@ -60,12 +58,11 @@
     <ClInclude Include="Source\EventHandling\Events\SelectCharacterListing.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
-    <ClInclude Include="Source\EventHandling\Publisher.h" />
     <ClInclude Include="Source\GameObject.h" />
     <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\Layer.h" />
     <ClInclude Include="Source\LoginState.h" />
-    <ClInclude Include="Source\Math.h" />
+    <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
     <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\UI\UIInputGroup.h" />
