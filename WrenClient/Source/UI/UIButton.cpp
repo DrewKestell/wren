@@ -8,6 +8,8 @@ void UIButton::Draw()
 {
 	if (!isVisible) return;
 
+	const auto position = GetWorldPosition();
+
     // Draw Input
     const float borderWeight = pressed ? 2.0f : 1.0f;
     ID2D1SolidColorBrush* buttonColor;
@@ -17,11 +19,13 @@ void UIButton::Draw()
         buttonColor = disabledBrush;
     else
         buttonColor = buttonBrush;
+	if (buttonGeometry != nullptr)
+		buttonGeometry->Release();
+	d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), &buttonGeometry);
     d2dDeviceContext->FillGeometry(buttonGeometry, buttonColor);
     d2dDeviceContext->DrawGeometry(buttonGeometry, buttonBorderBrush, borderWeight);
     
-    // Draw Input Text
-    const auto position = GetWorldPosition();
+    // Draw Input Text    
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y + 1), buttonTextLayout, buttonTextBrush); // (location + 1) looks better
 }
 
@@ -59,7 +63,7 @@ bool UIButton::HandleEvent(const Event* event)
 		{
 			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
-			if (derivedEvent->layer == uiLayer)
+			if (derivedEvent->layer == uiLayer && GetParent() == nullptr)
 				isVisible = true;
 			else
 				isVisible = false;

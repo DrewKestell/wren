@@ -19,5 +19,6 @@ enum class EventType
 	CreateCharacterSuccess,
 	EnterWorldSuccess,
 	WrongChecksum,
-	OpcodeNotImplemented
+	OpcodeNotImplemented,
+	DeleteCharacterSuccess
 };

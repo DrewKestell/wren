@@ -294,6 +294,13 @@ void SocketManager::TryRecieveMessage()
 
             EnterWorld(token, characterName);
         }
+		else if (MessagePartsEqual(opcodeArr, OPCODE_DELETE_CHARACTER, opcodeArrLen))
+		{
+			const auto token = args[0];
+			const auto characterName = args[1];
+
+			DeleteCharacter(token, characterName);
+		}
     }
 }
 
@@ -311,4 +318,11 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
     const auto it = GetPlayer(token);
     (*it)->SetLastHeartbeat(GetTickCount());
     SendPacket(OPCODE_ENTER_WORLD_SUCCESSFUL, 0);
+}
+
+void SocketManager::DeleteCharacter(const std::string& token, const std::string& characterName)
+{
+	const auto it = GetPlayer(token);
+	repository.DeleteCharacter(characterName);
+	SendPacket(OPCODE_DELETE_CHARACTER_SUCCESSFUL, 1, ListCharacters((*it)->GetAccountId()));
 }

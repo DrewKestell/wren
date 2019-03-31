@@ -30,6 +30,8 @@ void UIInput::Draw()
     }
     if (active)
         outInputValue << "|";
+	if (inputValueTextLayout != nullptr)
+		inputValueTextLayout->Release();
     if (FAILED(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), inputValueTextFormat, inputWidth, height - 2, &inputValueTextLayout))) // (height - 2) takes the border into account, and looks more natural
         throw std::exception("Critical error: Failed to create the text layout for FPS information!");
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + labelWidth + 14, position.y), inputValueTextLayout, inputValueBrush);

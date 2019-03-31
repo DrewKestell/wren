@@ -45,6 +45,7 @@
     <ClInclude Include="Source\EventHandling\Events\CreateAccountFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterSuccessEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\DeleteCharacterSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\Event.h" />
     <ClInclude Include="Source\EventHandling\Events\KeyDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\KeyPressEvent.h" />

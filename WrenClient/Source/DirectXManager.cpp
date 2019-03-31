@@ -13,6 +13,7 @@
 #include "EventHandling/Events/LoginFailedEvent.h"
 #include "EventHandling/Events/CreateCharacterFailedEvent.h"
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
+#include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 
 extern EventHandler* g_eventHandler;
 
@@ -409,6 +410,19 @@ void DirectXManager::InitializeButtons()
 		}
 	};
 
+	const auto onClickCharacterSelectDeleteCharacterButton = [this]()
+	{
+		characterSelect_successMessageLabel->SetText("");
+		characterSelect_errorMessageLabel->SetText("");
+
+		if (currentlySelectedCharacterName == nullptr)
+			characterSelect_errorMessageLabel->SetText("You must select a character to delete.");
+		else
+		{
+			socketManager.SendPacket(OPCODE_DELETE_CHARACTER, 2, token, currentlySelectedCharacterName);
+		}
+	};
+
 	const auto onClickCharacterSelectLogoutButton = [this]()
 	{
 		token = "";
@@ -418,7 +432,8 @@ void DirectXManager::InitializeButtons()
     // CharacterSelect
     characterSelect_newCharacterButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 20.0f, 0.0f }, objectManager, CharacterSelect, 140.0f, 24.0f, onClickCharacterSelectNewCharacterButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "NEW CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
     characterSelect_enterWorldButton = new UIButton(DirectX::XMFLOAT3{ 170.0f, 20.0f, 0.0f }, objectManager, CharacterSelect, 120.0f, 24.0f, onClickCharacterSelectEnterWorldButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "ENTER WORLD", writeFactory, textFormatButtonText, d2dFactory);
-    characterSelect_logoutButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, CharacterSelect, 80.0f, 24.0f, onClickCharacterSelectLogoutButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
+	characterSelect_deleteCharacterButton = new UIButton(DirectX::XMFLOAT3{ 345.0f, 20.0f, 0.0f }, objectManager, CharacterSelect, 160.0f, 24.0f, onClickCharacterSelectDeleteCharacterButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "DELETE CHARACTER", writeFactory, textFormatButtonText, d2dFactory);
+	characterSelect_logoutButton = new UIButton(DirectX::XMFLOAT3{ 15.0f, 522.0f, 0.0f }, objectManager, CharacterSelect, 80.0f, 24.0f, onClickCharacterSelectLogoutButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
     
 	const auto onClickCreateCharacterCreateCharacterButton = [this]()
 	{
@@ -473,8 +488,16 @@ void DirectXManager::InitializePanels()
     const auto gameSettingsPanelY = (clientHeight - 200.0f) / 2.0f;
     auto gameSettingsPanelHeader = new UILabel{DirectX::XMFLOAT3{2.0f, 2.0f, 0.0f}, objectManager, InGame, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory};
     gameSettingsPanelHeader->SetText("Game Settings");
+	const auto onClickGameSettingsLogoutButton = [this]()
+	{
+		socketManager.SendPacket(OPCODE_DISCONNECT, 1, token);
+		token = "";
+		SetActiveLayer(Login);
+	};
+	auto gameSettings_logoutButton = new UIButton(DirectX::XMFLOAT3{ 10.0f, 26.0f, 0.0f }, objectManager, InGame, 80.0f, 24.0f, onClickGameSettingsLogoutButton, blueBrush, darkBlueBrush, grayBrush, blackBrush, d2dDeviceContext, "LOGOUT", writeFactory, textFormatButtonText, d2dFactory);
     gameSettingsPanel = new UIPanel(DirectX::XMFLOAT3{gameSettingsPanelX, gameSettingsPanelY, 0.0f}, objectManager, InGame, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
     gameSettingsPanel->AddChildComponent(*gameSettingsPanelHeader);
+	gameSettingsPanel->AddChildComponent(*gameSettings_logoutButton);
 
     const auto gameEditorPanelX = 580.0f;
     const auto gameEditorPanelY = 5.0f;
@@ -712,6 +735,16 @@ bool DirectXManager::HandleEvent(const Event* event)
 			createCharacter_errorMessageLabel->SetText("");
 			characterSelect_successMessageLabel->SetText("Character created successfully.");
 			SetActiveLayer(CharacterSelect);
+
+			break;
+		}
+		case EventType::DeleteCharacterSuccess:
+		{
+			const auto derivedEvent = (DeleteCharacterSuccessEvent*)event;
+
+			RecreateCharacterListings(derivedEvent->characterList);
+			createCharacter_errorMessageLabel->SetText("");
+			characterSelect_successMessageLabel->SetText("Character deleted successfully.");
 
 			break;
 		}

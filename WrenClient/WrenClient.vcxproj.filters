@@ -55,6 +55,7 @@
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterSuccessEvent.h" />
     <ClInclude Include="Source\Utility.h" />
+    <ClInclude Include="Source\EventHandling\Events\DeleteCharacterSuccessEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

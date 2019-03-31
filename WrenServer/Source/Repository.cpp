@@ -15,6 +15,7 @@ constexpr auto CREATE_ACCOUNT_QUERY = "INSERT INTO Accounts (account_name, hashe
 constexpr auto CREATE_CHARACTER_QUERY = "INSERT INTO Characters (character_name, account_id) VALUES('%s', '%d');";
 constexpr auto GET_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
 constexpr auto LIST_CHARACTERS_QUERY = "SELECT * FROM Characters WHERE account_id = '%d';";
+constexpr auto DELETE_CHARACTER_QUERY = "DELETE FROM Characters WHERE character_name = '%s';";
 
 bool Repository::AccountExists(const std::string& accountName)
 {
@@ -183,4 +184,24 @@ std::vector<std::string>* Repository::ListCharacters(const int accountId)
         sqlite3_finalize(statement);
         throw std::exception(FAILED_TO_EXECUTE);
     }
+}
+
+void Repository::DeleteCharacter(const std::string& characterName)
+{
+	auto dbConnection = GetConnection();
+
+	char query[100];
+	sprintf_s(query, DELETE_CHARACTER_QUERY, characterName.c_str());
+
+	auto statement = PrepareStatement(dbConnection, query);
+	if (sqlite3_step(statement) == SQLITE_DONE)
+	{
+		sqlite3_finalize(statement);
+		return;
+	}
+	else
+	{
+		sqlite3_finalize(statement);
+		throw std::exception(FAILED_TO_EXECUTE);
+	}
 }

@@ -12,13 +12,13 @@ class UICharacterListing : public UIComponent, public Observer
     bool selected;
     float width;
     float height;
-    ID2D1SolidColorBrush* brush;
-    ID2D1SolidColorBrush* selectedBrush;
-    ID2D1SolidColorBrush* borderBrush;
-    ID2D1SolidColorBrush* textBrush;
-    ID2D1DeviceContext1* d2dDeviceContext;
-    IDWriteTextLayout* textLayout;
-    ID2D1RoundedRectangleGeometry* geometry;
+    ID2D1SolidColorBrush* brush = nullptr;
+    ID2D1SolidColorBrush* selectedBrush = nullptr;
+    ID2D1SolidColorBrush* borderBrush = nullptr;
+    ID2D1SolidColorBrush* textBrush = nullptr;
+    ID2D1DeviceContext1* d2dDeviceContext = nullptr;
+    IDWriteTextLayout* textLayout = nullptr;
+    ID2D1RoundedRectangleGeometry* geometry = nullptr;
 public:
     UICharacterListing(
         const DirectX::XMFLOAT3 position,

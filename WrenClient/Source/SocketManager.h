@@ -21,6 +21,8 @@ constexpr char OPCODE_CREATE_CHARACTER_UNSUCCESSFUL[2] = { '0', '9' };
 constexpr char OPCODE_HEARTBEAT[2] = { '1', '0' };
 constexpr char OPCODE_ENTER_WORLD[2] = { '1', '1' };
 constexpr char OPCODE_ENTER_WORLD_SUCCESSFUL[2] = { '1', '2' };
+constexpr char OPCODE_DELETE_CHARACTER[2] = { '1', '3' };
+constexpr char OPCODE_DELETE_CHARACTER_SUCCESSFUL[2] = { '1', '4' };
 
 class SocketManager
 {

@@ -7,6 +7,8 @@ void UILabel::Draw()
 
     std::wostringstream outInputValue;
     outInputValue << text;
+	if (textLayout != nullptr)
+		textLayout->Release();
     if (FAILED(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormat, width, 24.0f, &textLayout)))
         throw std::exception("Critical error: Failed to create the text layout for UILabel.");
     const auto position = GetWorldPosition();
@@ -29,7 +31,7 @@ bool UILabel::HandleEvent(const Event* event)
 
 		isVisible = false;
 
-		if (derivedEvent->layer == uiLayer)
+		if (derivedEvent->layer == uiLayer && GetParent() == nullptr)
 			isVisible = true;
 		else
 			isVisible = false;

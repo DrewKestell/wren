@@ -14,5 +14,7 @@ public:
 		uiLayer{ uiLayer }
 	{
 	}
+	bool IsVisible() { return isVisible; }
+	void SetVisible(bool isVisible) { this->isVisible = isVisible; }
 	virtual ~UIComponent() = 0;
 };

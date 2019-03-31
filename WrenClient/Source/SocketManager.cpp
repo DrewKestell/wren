@@ -9,6 +9,7 @@
 #include "EventHandling/Events/LoginFailedEvent.h"
 #include "EventHandling/Events/CreateCharacterFailedEvent.h"
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
+#include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 
 constexpr auto CLIENT_PORT_NUMBER = 27015;
 constexpr auto SERVER_PORT_NUMBER = 27016;
@@ -162,7 +163,7 @@ bool SocketManager::TryRecieveMessage()
             const auto characterString = args[0];
             const auto characterList = BuildCharacterVector(characterString);
 
-            std::cout << "Character creation succesful.";
+            std::cout << "Character creation successful.";
 			g_eventHandler->QueueEvent(new CreateCharacterSuccessEvent{ characterList });
 			return true;
         }
@@ -179,6 +180,15 @@ bool SocketManager::TryRecieveMessage()
 			g_eventHandler->QueueEvent(new Event{ EventType::EnterWorldSuccess });
 			return true;
         }
+		else if (MessagePartsEqual(opcodeArr, OPCODE_DELETE_CHARACTER_SUCCESSFUL, opcodeArrLen))
+		{
+			const auto characterString = args[0];
+			const auto characterList = BuildCharacterVector(characterString);
+
+			std::cout << "Delete character successful.";
+			g_eventHandler->QueueEvent(new DeleteCharacterSuccessEvent{ characterList });
+			return true;
+		}
 		else
 		{
 			std::cout << "Opcode not implemented.\n";

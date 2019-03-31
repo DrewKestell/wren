@@ -1,5 +1,4 @@
-#ifndef SOCKETMANAGER_H
-#define SOCKETMANAGER_H
+#pragma once
 
 #include <winsock2.h>
 #include <Ws2tcpip.h>
@@ -22,6 +21,8 @@ constexpr char OPCODE_CREATE_CHARACTER_UNSUCCESSFUL[2] = { '0', '9' };
 constexpr char OPCODE_HEARTBEAT[2] = { '1', '0' };
 constexpr char OPCODE_ENTER_WORLD[2] = { '1', '1' };
 constexpr char OPCODE_ENTER_WORLD_SUCCESSFUL[2] = { '1', '2' };
+constexpr char OPCODE_DELETE_CHARACTER[2] = { '1', '3' };
+constexpr char OPCODE_DELETE_CHARACTER_SUCCESSFUL[2] = { '1', '4' };
 
 class SocketManager
 {
@@ -45,11 +46,10 @@ private:
     void UpdateLastHeartbeat(const std::string& token);
     std::string ListCharacters(const int accountId);
     void EnterWorld(const std::string& token, const std::string& characterName);
+	void DeleteCharacter(const std::string& token, const std::string& characterName);
 public:
     SocketManager(Repository& repository);
     void TryRecieveMessage();
     void CloseSockets();
     void HandleTimeout();
 };
-
-#endif

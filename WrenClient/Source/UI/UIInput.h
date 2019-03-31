@@ -15,16 +15,16 @@ class UIInput : public UIComponent, public Observer
     float labelWidth;
     float inputWidth;
     float height;
-    ID2D1SolidColorBrush* labelBrush;
-    ID2D1SolidColorBrush* inputBrush;
-    ID2D1SolidColorBrush* inputBorderBrush;
-    ID2D1SolidColorBrush* inputValueBrush;
-    IDWriteTextFormat* inputValueTextFormat;
-    IDWriteFactory2* writeFactory;
-    ID2D1RoundedRectangleGeometry* inputGeometry;
-    ID2D1DeviceContext1* d2dDeviceContext;
-    IDWriteTextLayout* labelTextLayout;
-    IDWriteTextLayout* inputValueTextLayout;
+    ID2D1SolidColorBrush* labelBrush = nullptr;
+    ID2D1SolidColorBrush* inputBrush = nullptr;
+    ID2D1SolidColorBrush* inputBorderBrush = nullptr;
+    ID2D1SolidColorBrush* inputValueBrush = nullptr;
+    IDWriteTextFormat* inputValueTextFormat = nullptr;
+    IDWriteFactory2* writeFactory = nullptr;
+    ID2D1RoundedRectangleGeometry* inputGeometry = nullptr;
+    ID2D1DeviceContext1* d2dDeviceContext = nullptr;
+    IDWriteTextLayout* labelTextLayout = nullptr;
+    IDWriteTextLayout* inputValueTextLayout = nullptr;
 public:
     UIInput(
         const DirectX::XMFLOAT3 position,

@@ -70,6 +70,10 @@ bool UIPanel::HandleEvent(const Event* event)
 				lastDragY = mouseMoveEvent->mousePosY;
 
 				const auto currentPosition = GetWorldPosition();
+				if (headerGeometry != nullptr)
+					headerGeometry->Release();
+				if (bodyGeometry != nullptr)
+					bodyGeometry->Release();
 				d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT), 3.0f, 3.0f), &headerGeometry);
 				d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y + HEADER_HEIGHT, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT + height), 3.0f, 3.0f), &bodyGeometry);
 			}
@@ -96,7 +100,16 @@ bool UIPanel::HandleEvent(const Event* event)
 				const auto keyDownEvent = (SystemKeyDownEvent*)event;
 
 				if (keyDownEvent->keyCode == showKey)
+				{
 					isVisible = !isVisible;
+
+					auto children = GetChildren();
+					for (auto i = 0; i < children.size(); i++)
+					{
+						auto uiComponent = (UIComponent*)children.at(i);
+						uiComponent->SetVisible(!uiComponent->IsVisible());
+					}
+				}
 			}
 
 			break;

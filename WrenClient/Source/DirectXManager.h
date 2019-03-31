@@ -105,10 +105,12 @@ class DirectXManager : public Observer
     UIButton* createAccount_createAccountButton;
     UIButton* createAccount_cancelButton;
     UIButton* characterSelect_newCharacterButton;
-    UIButton* characterSelect_enterWorldButton;
+	UIButton* characterSelect_enterWorldButton;
+	UIButton* characterSelect_deleteCharacterButton;
     UIButton* characterSelect_logoutButton;
     UIButton* createCharacter_createCharacterButton;
     UIButton* createCharacter_backButton;
+	UIButton* gameSettings_logoutButton;
 
     // Labels
     UILabel* loginScreen_successMessageLabel;

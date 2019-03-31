@@ -19,13 +19,13 @@ class UIPanel : public UIComponent, public Observer
     float width;
     float height;
 	WPARAM showKey;
-    ID2D1SolidColorBrush* headerBrush;
-    ID2D1SolidColorBrush* bodyBrush;
-    ID2D1SolidColorBrush* borderBrush;
-    ID2D1DeviceContext1* d2dDeviceContext;
-    ID2D1Factory2* d2dFactory;
-    ID2D1RoundedRectangleGeometry* headerGeometry;
-    ID2D1RoundedRectangleGeometry* bodyGeometry;
+    ID2D1SolidColorBrush* headerBrush = nullptr;
+    ID2D1SolidColorBrush* bodyBrush = nullptr;
+    ID2D1SolidColorBrush* borderBrush = nullptr;
+    ID2D1DeviceContext1* d2dDeviceContext = nullptr;
+    ID2D1Factory2* d2dFactory = nullptr;
+    ID2D1RoundedRectangleGeometry* headerGeometry = nullptr;
+    ID2D1RoundedRectangleGeometry* bodyGeometry = nullptr;
 public:
     UIPanel(
         const DirectX::XMFLOAT3 position,
