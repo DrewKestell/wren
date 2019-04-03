@@ -18,9 +18,15 @@
 #include "UI/UIButton.h"
 #include "GameMap/GameMap.h"
 
+struct CBChangesEveryFrame
+{
+	DirectX::XMFLOAT4X4 mWorldViewProj;
+};
+
 struct VERTEX
 {
-    float X, Y, Z;
+	DirectX::XMFLOAT3 Pos;
+	DirectX::XMFLOAT4 Color;
 };
 
 struct ShaderBuffer
@@ -31,12 +37,17 @@ struct ShaderBuffer
 
 class DirectXManager : public Observer
 {
+	DirectX::XMMATRIX worldTransform;
+	DirectX::XMMATRIX viewTransform;
+	DirectX::XMMATRIX projectionTransform;
+
 	Layer activeLayer = Login;
 	std::string characterNamePendingDeletion;
 	ObjectManager& objectManager;
 	GameMap& gameMap;
 	std::vector<Observer*>* observers;
     ID3D11Buffer* buffer;
+	ID3D11Buffer* constantBuffer;
     std::vector<UICharacterListing*>* characterList = new std::vector<UICharacterListing*>;
     std::string token = "";
     UINT clientWidth;
@@ -131,6 +142,10 @@ class DirectXManager : public Observer
     // Panels
     UIPanel* gameSettingsPanel;
     UIPanel* gameEditorPanel;
+
+	// Shaders
+	ID3D11VertexShader* vertexShader;
+	ID3D11PixelShader* pixelShader;
 
     void InitializeBrushes();
     void InitializeTextFormats();

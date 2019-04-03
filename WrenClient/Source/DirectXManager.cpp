@@ -134,7 +134,7 @@ void DirectXManager::Initialize(HWND hWnd)
     if (FAILED(hr))
         throw std::exception("Failed to create texture depth stencil view.");
 
-    CD3D11_RASTERIZER_DESC rasterDesc(D3D11_FILL_WIREFRAME, D3D11_CULL_NONE, FALSE,
+	CD3D11_RASTERIZER_DESC rasterDesc(D3D11_FILL_SOLID, D3D11_CULL_NONE, FALSE,
         D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
         D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE);
 
@@ -549,9 +549,9 @@ void DirectXManager::DrawScene()
     color[3] = 1.0f;
     if (activeLayer == InGame)
     {
-        color[0] = 0.5f;
-        color[1] = 0.5f;
-        color[2] = 0.5f;
+        color[0] = 0.9f;
+        color[1] = 0.9f;
+        color[2] = 0.9f;
     }
     else
     {
@@ -612,9 +612,27 @@ void DirectXManager::DrawScene()
 	// draw test triangle - TODO: move this into GameObjects
 	if (activeLayer == InGame)
 	{
+		// Update constant buffer that changes once per frame
+		DirectX::XMMATRIX worldViewProjection = worldTransform * viewTransform * projectionTransform;
+
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+
+		immediateContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+
+		auto pCB = reinterpret_cast<CBChangesEveryFrame*>(mappedResource.pData);
+
+		XMStoreFloat4x4(&pCB->mWorldViewProj, DirectX::XMMatrixTranspose(worldViewProjection));
+
+		immediateContext->Unmap(constantBuffer, 0);
+
+		immediateContext->VSSetShader(vertexShader, nullptr, 0);
+		immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+		immediateContext->PSSetShader(pixelShader, nullptr, 0);
+		immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+
 		immediateContext->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
 		immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		immediateContext->Draw(6, 0);
+		immediateContext->Draw(3, 0);
 	}
 	
     d2dDeviceContext->EndDraw();
@@ -638,45 +656,59 @@ void DirectXManager::RecreateCharacterListings(const std::vector<std::string*>* 
 }
 void DirectXManager::InitializeGameWorld()
 {
+	// Create vertex buffer
     VERTEX OurVertices[] =
     {
-        { -1.0f, -1.0f, 0.5f }, { -1.0f, -0.8f, 0.5f }, { -0.8f, -1.0f, 0.5f },
-		{ -0.8f, -1.0f, 0.5f }, { -0.8f, -0.8f, 0.5f }, { -1.0f, -0.8f, 0.5f },
+		{ DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.5f }, DirectX::XMFLOAT4{ 0.2f, 0.6f, 0.8f, 1.0f } },
+		{ DirectX::XMFLOAT3{ 0.5f, 0.0f, -0.5f }, DirectX::XMFLOAT4{ 0.0f, 0.9f, 0.3f, 1.0f } },
+		{ DirectX::XMFLOAT3{ -0.5f, 0.0f, -0.5f }, DirectX::XMFLOAT4{ 0.5f, 0.1f, 0.5f, 1.0f } },
     };
 
-    D3D11_BUFFER_DESC bufferDesc;
+	D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.Usage = D3D11_USAGE_DEFAULT;
     bufferDesc.ByteWidth = sizeof(OurVertices) * ARRAYSIZE(OurVertices);
     bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bufferDesc.CPUAccessFlags = 0;
-    bufferDesc.MiscFlags = 0;
 
     D3D11_SUBRESOURCE_DATA InitData;
     InitData.pSysMem = OurVertices;
-    InitData.SysMemPitch = 0;
-    InitData.SysMemSlicePitch = 0;
 
     device->CreateBuffer(&bufferDesc, &InitData, &buffer);
 
+	// Create constant buffer
+	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	bufferDesc.ByteWidth = sizeof(CBChangesEveryFrame);
+
+	device->CreateBuffer(&bufferDesc, nullptr, &constantBuffer);
+
     ShaderBuffer vertexShaderBytes = LoadShader(L"VertexShader.cso");
-    ID3D11VertexShader* vertexShader;
     device->CreateVertexShader(vertexShaderBytes.buffer, vertexShaderBytes.size, nullptr, &vertexShader);
 
     ShaderBuffer pixelShaderBytes = LoadShader(L"PixelShader.cso");
-    ID3D11PixelShader* pixelShader;
     device->CreatePixelShader(pixelShaderBytes.buffer, pixelShaderBytes.size, nullptr, &pixelShader);
-
-    immediateContext->VSSetShader(vertexShader, nullptr, 0);
-    immediateContext->PSSetShader(pixelShader, nullptr, 0);
-
+	
     D3D11_INPUT_ELEMENT_DESC ied[] =
     {
-        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0}
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,   D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12,  D3D11_INPUT_PER_VERTEX_DATA, 0}
     };
 
     ID3D11InputLayout* inputLayout;
     device->CreateInputLayout(ied, ARRAYSIZE(ied), vertexShaderBytes.buffer, vertexShaderBytes.size, &inputLayout);
     immediateContext->IASetInputLayout(inputLayout);
+
+	// matrix stuff
+	worldTransform = DirectX::XMMatrixScaling(300.0f, 300.0f, 300.0f);
+
+	//viewTransform = DirectX::XMMatrixIdentity();
+	static const DirectX::XMVECTORF32 s_Eye = { 0.0f, 10.0f, -10.0f, 0.f };
+	static const DirectX::XMVECTORF32 s_At = { 0.0f, 0.0f, 0.0f, 0.f };
+	static const DirectX::XMVECTORF32 s_Up = { 0.0f, 1.0f, 0.0f, 0.f };
+	viewTransform = DirectX::XMMatrixLookAtLH(s_Eye, s_At, s_Up);
+
+	projectionTransform = DirectX::XMMatrixOrthographicLH((float)clientWidth, (float)clientHeight, 0.1f, 1000.0f);
 }
 
 ShaderBuffer DirectXManager::LoadShader(std::wstring filename)

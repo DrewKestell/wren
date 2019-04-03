@@ -1,5 +1,10 @@
-[numthreads(1, 1, 1)]
-float4 main() : SV_TARGET
+struct PixelInput
 {
-    return float4(1.0f, 1.0f, 1.0f, 1.0f);
+	float4 Pos : SV_POSITION;
+	float4 Color : COLOR;
+};
+
+float4 main(PixelInput pin) : SV_TARGET
+{
+    return pin.Color;
 }
