@@ -1,3 +1,4 @@
+#include "Model.h"
 #include "SocketManager.h"
 #include <d3d11.h>
 #include <d2d1_3.h>
@@ -14,6 +15,7 @@
 #include "EventHandling/Events/CreateCharacterFailedEvent.h"
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
+#include "EventHandling/Events/KeyDownEvent.h"
 
 extern EventHandler* g_eventHandler;
 
@@ -199,6 +201,10 @@ void DirectXManager::Initialize(HWND hWnd)
     // set the newly created bitmap as render target
     d2dDeviceContext->SetTarget(targetBitmap);
 
+	// model import test
+	std::string path = "../../WrenClient/Models/sphere.blend";
+	sphereModel = new Model(path);
+
     InitializeBrushes();
     InitializeTextFormats();
     InitializeInputs();
@@ -208,6 +214,11 @@ void DirectXManager::Initialize(HWND hWnd)
     InitializeGameWorld();
 
 	SetActiveLayer(InGame);
+
+	wchar_t result[MAX_PATH];
+	auto foo = std::wstring(result, GetModuleFileName(NULL, result, MAX_PATH));
+
+	
 }
 
 void DirectXManager::InitializeBrushes()
@@ -603,7 +614,7 @@ void DirectXManager::DrawScene()
     writeFactory->CreateTextLayout(outMousePos.str().c_str(), (UINT32)outMousePos.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutMousePos);
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
 
-    UINT stride = sizeof(VERTEX);
+    UINT stride = sizeof(Vertex);
     UINT offset = 0;
 
 	// draw all GameObjects
@@ -612,6 +623,14 @@ void DirectXManager::DrawScene()
 	// draw test triangle - TODO: move this into GameObjects
 	if (activeLayer == InGame)
 	{
+
+		immediateContext->IASetInputLayout(inputLayout);
+
+		DirectX::XMVECTORF32 s_Eye = { camX, camY, camZ, 0.f };
+		DirectX::XMVECTORF32 s_At = { camX, camY, camZ + 1.0f, 0.f };
+		DirectX::XMVECTORF32 s_Up = { 0.0f, 1.0f, 0.0f, 0.f };
+		viewTransform = DirectX::XMMatrixLookAtLH(s_Eye, s_At, s_Up);
+
 		// Update constant buffer that changes once per frame
 		DirectX::XMMATRIX worldViewProjection = worldTransform * viewTransform * projectionTransform;
 
@@ -628,11 +647,11 @@ void DirectXManager::DrawScene()
 		immediateContext->VSSetShader(vertexShader, nullptr, 0);
 		immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 		immediateContext->PSSetShader(pixelShader, nullptr, 0);
-		immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 
 		immediateContext->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
+		immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		immediateContext->Draw(3, 0);
+		immediateContext->DrawIndexed(sphereModel->GetMesh().indices.size(), 0, 0);
 	}
 	
     d2dDeviceContext->EndDraw();
@@ -656,32 +675,54 @@ void DirectXManager::RecreateCharacterListings(const std::vector<std::string*>* 
 }
 void DirectXManager::InitializeGameWorld()
 {
-	// Create vertex buffer
-    VERTEX OurVertices[] =
-    {
-		{ DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.5f }, DirectX::XMFLOAT4{ 0.2f, 0.6f, 0.8f, 1.0f } },
-		{ DirectX::XMFLOAT3{ 0.5f, 0.0f, -0.5f }, DirectX::XMFLOAT4{ 0.0f, 0.9f, 0.3f, 1.0f } },
-		{ DirectX::XMFLOAT3{ -0.5f, 0.0f, -0.5f }, DirectX::XMFLOAT4{ 0.5f, 0.1f, 0.5f, 1.0f } },
-    };
+	std::vector<Vertex> vertices = 
+	{
+		Vertex{XMFLOAT3{-1.0f, 1.0f, 0.0f}}, Vertex{XMFLOAT3{-1.0f, -1.0f, 0.0f}},
+		Vertex{XMFLOAT3{1.0f, 1.0f, 0.0f}}, Vertex{XMFLOAT3{1.0f, -1.0f, 0.0f}}
+	};
 
-	D3D11_BUFFER_DESC bufferDesc = {};
+	std::vector<unsigned int> indices =
+	{
+		0u, 1u, 3u,
+		0u, 2u, 3u
+	};
+
+	D3D11_BUFFER_DESC bufferDesc;
+	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
     bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    bufferDesc.ByteWidth = sizeof(OurVertices) * ARRAYSIZE(OurVertices);
+	bufferDesc.ByteWidth = sizeof(Vertex) * sphereModel->GetMesh().vertices.size();
+    //bufferDesc.ByteWidth = sizeof(Vertex) * vertices.size();
     bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bufferDesc.CPUAccessFlags = 0;
+	bufferDesc.MiscFlags = 0;
 
-    D3D11_SUBRESOURCE_DATA InitData;
-    InitData.pSysMem = OurVertices;
+    D3D11_SUBRESOURCE_DATA vertexData;
+	vertexData.pSysMem = sphereModel->GetMesh().vertices.data();
+	//vertexData.pSysMem = vertices.data();
 
-    device->CreateBuffer(&bufferDesc, &InitData, &buffer);
+    device->CreateBuffer(&bufferDesc, &vertexData, &buffer);
+
+	// Create index buffer
+	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bufferDesc.ByteWidth = sizeof(unsigned int) * sphereModel->GetMesh().indices.size();
+	//bufferDesc.ByteWidth = sizeof(unsigned int) * indices.size();
+
+	D3D11_SUBRESOURCE_DATA indexData;
+	indexData.pSysMem = sphereModel->GetMesh().indices.data();
+	//indexData.pSysMem = indices.data();
+
+	device->CreateBuffer(&bufferDesc, &indexData, &indexBuffer);
 
 	// Create constant buffer
-	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	bufferDesc.ByteWidth = sizeof(CBChangesEveryFrame);
+	D3D11_BUFFER_DESC constBufferDesc;
+	ZeroMemory(&constBufferDesc, sizeof(constBufferDesc));
+	constBufferDesc.MiscFlags = 0;
+	constBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constBufferDesc.ByteWidth = sizeof(CBChangesEveryFrame);
 
-	device->CreateBuffer(&bufferDesc, nullptr, &constantBuffer);
+	device->CreateBuffer(&constBufferDesc, nullptr, &constantBuffer);
 
     ShaderBuffer vertexShaderBytes = LoadShader(L"VertexShader.cso");
     device->CreateVertexShader(vertexShaderBytes.buffer, vertexShaderBytes.size, nullptr, &vertexShader);
@@ -691,24 +732,31 @@ void DirectXManager::InitializeGameWorld()
 	
     D3D11_INPUT_ELEMENT_DESC ied[] =
     {
-        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,   D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12,  D3D11_INPUT_PER_VERTEX_DATA, 0}
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,   D3D11_INPUT_PER_VERTEX_DATA, 0}
+		//{"COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12,  D3D11_INPUT_PER_VERTEX_DATA, 0}
     };
 
-    ID3D11InputLayout* inputLayout;
+    
     device->CreateInputLayout(ied, ARRAYSIZE(ied), vertexShaderBytes.buffer, vertexShaderBytes.size, &inputLayout);
-    immediateContext->IASetInputLayout(inputLayout);
+    
 
 	// matrix stuff
-	worldTransform = DirectX::XMMatrixScaling(300.0f, 300.0f, 300.0f);
+	worldTransform = DirectX::XMMatrixScaling(200.0f, 200.0f, 200.0f);
 
 	//viewTransform = DirectX::XMMatrixIdentity();
-	static const DirectX::XMVECTORF32 s_Eye = { 0.0f, 10.0f, -10.0f, 0.f };
-	static const DirectX::XMVECTORF32 s_At = { 0.0f, 0.0f, 0.0f, 0.f };
-	static const DirectX::XMVECTORF32 s_Up = { 0.0f, 1.0f, 0.0f, 0.f };
-	viewTransform = DirectX::XMMatrixLookAtLH(s_Eye, s_At, s_Up);
+	/*auto spherePt = sphereModel->GetMesh().vertices.at(0);
+	auto x = spherePt.Position.x * 100.0f;
+	auto y = spherePt.Position.y * 100.0f;
+	auto z = spherePt.Position.z * 100.0f;*/
+	
 
 	projectionTransform = DirectX::XMMatrixOrthographicLH((float)clientWidth, (float)clientHeight, 0.1f, 1000.0f);
+	// Setup the projection matrix.
+	//auto fieldOfView = 3.141592654f / 4.0f;
+	//auto screenAspect = (float)clientWidth / (float)clientHeight;
+
+	//// Create the projection matrix for 3D rendering.
+	//projectionTransform = DirectX::XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, 0.1f, 100.0f);
 }
 
 ShaderBuffer DirectXManager::LoadShader(std::wstring filename)
@@ -743,6 +791,31 @@ bool DirectXManager::HandleEvent(const Event* event)
 	const auto type = event->type;
 	switch (type)
 	{
+		case EventType::KeyDownEvent:
+		{
+			const auto derivedEvent = (KeyDownEvent*)event;
+
+			if (derivedEvent->charCode == 'w')
+				camZ += 0.5f;
+			if (derivedEvent->charCode == 'q')
+				camX -= 0.5f;
+
+			if (derivedEvent->charCode == 's')
+				camZ -= 0.5f;
+			if (derivedEvent->charCode == 'e')
+				camX += 0.5f;
+
+			if (derivedEvent->charCode == 'r')
+				camY += 0.5f;
+			if (derivedEvent->charCode == 'f')
+				camY -= 0.5f;
+
+			std::cout << "CamX: " << camX << "\n";
+			std::cout << "CamY: " << camY << "\n";
+			std::cout << "CamZ: " << camZ << "\n\n";
+			
+			break;
+		}
 		case EventType::MouseMoveEvent:
 		{
 			const auto derivedEvent = (MouseMoveEvent*)event;

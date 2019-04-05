@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Model.h"
 #include <d3d11.h>
 #include <d2d1_3.h>
 #include <dwrite_3.h>
@@ -18,15 +19,11 @@
 #include "UI/UIButton.h"
 #include "GameMap/GameMap.h"
 
+using namespace DirectX;
+
 struct CBChangesEveryFrame
 {
 	DirectX::XMFLOAT4X4 mWorldViewProj;
-};
-
-struct VERTEX
-{
-	DirectX::XMFLOAT3 Pos;
-	DirectX::XMFLOAT4 Color;
 };
 
 struct ShaderBuffer
@@ -37,17 +34,24 @@ struct ShaderBuffer
 
 class DirectXManager : public Observer
 {
+	float camX = 0.1f;
+	float camY = 0.1f;
+	float camZ = -10.1f;
+
 	DirectX::XMMATRIX worldTransform;
 	DirectX::XMMATRIX viewTransform;
 	DirectX::XMMATRIX projectionTransform;
+
+	Model* sphereModel;
 
 	Layer activeLayer = Login;
 	std::string characterNamePendingDeletion;
 	ObjectManager& objectManager;
 	GameMap& gameMap;
 	std::vector<Observer*>* observers;
-    ID3D11Buffer* buffer;
-	ID3D11Buffer* constantBuffer;
+	ID3D11Buffer* buffer = nullptr;
+	ID3D11Buffer* indexBuffer = nullptr;
+	ID3D11Buffer* constantBuffer = nullptr;
     std::vector<UICharacterListing*>* characterList = new std::vector<UICharacterListing*>;
     std::string token = "";
     UINT clientWidth;
@@ -146,6 +150,8 @@ class DirectXManager : public Observer
 	// Shaders
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
+
+	ID3D11InputLayout* inputLayout;
 
     void InitializeBrushes();
     void InitializeTextFormats();

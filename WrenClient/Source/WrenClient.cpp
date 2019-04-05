@@ -1,4 +1,9 @@
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include "SocketManager.h"
+#include "Model.h"
+#include "DirectXManager.h"
 #include <stdio.h>
 #include <io.h>
 #include <fcntl.h>
@@ -9,7 +14,6 @@
 #include <iostream>
 #include <exception>
 #include <tuple>
-#include "DirectXManager.h"
 #include "GameTimer.h"
 #include "GameMap/GameMap.h"
 #include "Layer.h"

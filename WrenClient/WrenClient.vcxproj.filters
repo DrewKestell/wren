@@ -59,9 +59,116 @@
     <ClInclude Include="Source\GameMap\GameMap.h" />
     <ClInclude Include="Source\GameMap\GameMapTile.h" />
     <ClInclude Include="Source\GameMap\TerrainType.h" />
+    <ClInclude Include="Include\assimp\ai_assert.h" />
+    <ClInclude Include="Include\assimp\anim.h" />
+    <ClInclude Include="Include\assimp\BaseImporter.h" />
+    <ClInclude Include="Include\assimp\Bitmap.h" />
+    <ClInclude Include="Include\assimp\BlobIOSystem.h" />
+    <ClInclude Include="Include\assimp\ByteSwapper.h" />
+    <ClInclude Include="Include\assimp\camera.h" />
+    <ClInclude Include="Include\assimp\cexport.h" />
+    <ClInclude Include="Include\assimp\cfileio.h" />
+    <ClInclude Include="Include\assimp\cimport.h" />
+    <ClInclude Include="Include\assimp\color4.h" />
+    <ClInclude Include="Include\assimp\config.h" />
+    <ClInclude Include="Include\assimp\CreateAnimMesh.h" />
+    <ClInclude Include="Include\assimp\DefaultIOStream.h" />
+    <ClInclude Include="Include\assimp\DefaultIOSystem.h" />
+    <ClInclude Include="Include\assimp\DefaultLogger.hpp" />
+    <ClInclude Include="Include\assimp\Defines.h" />
+    <ClInclude Include="Include\assimp\defs.h" />
+    <ClInclude Include="Include\assimp\Exceptional.h" />
+    <ClInclude Include="Include\assimp\Exporter.hpp" />
+    <ClInclude Include="Include\assimp\fast_atof.h" />
+    <ClInclude Include="Include\assimp\GenericProperty.h" />
+    <ClInclude Include="Include\assimp\Hash.h" />
+    <ClInclude Include="Include\assimp\Importer.hpp" />
+    <ClInclude Include="Include\assimp\importerdesc.h" />
+    <ClInclude Include="Include\assimp\IOStream.hpp" />
+    <ClInclude Include="Include\assimp\IOStreamBuffer.h" />
+    <ClInclude Include="Include\assimp\IOSystem.hpp" />
+    <ClInclude Include="Include\assimp\irrXMLWrapper.h" />
+    <ClInclude Include="Include\assimp\light.h" />
+    <ClInclude Include="Include\assimp\LineSplitter.h" />
+    <ClInclude Include="Include\assimp\LogAux.h" />
+    <ClInclude Include="Include\assimp\Logger.hpp" />
+    <ClInclude Include="Include\assimp\LogStream.hpp" />
+    <ClInclude Include="Include\assimp\Macros.h" />
+    <ClInclude Include="Include\assimp\material.h" />
+    <ClInclude Include="Include\assimp\MathFunctions.h" />
+    <ClInclude Include="Include\assimp\matrix3x3.h" />
+    <ClInclude Include="Include\assimp\matrix4x4.h" />
+    <ClInclude Include="Include\assimp\MemoryIOWrapper.h" />
+    <ClInclude Include="Include\assimp\mesh.h" />
+    <ClInclude Include="Include\assimp\metadata.h" />
+    <ClInclude Include="Include\assimp\NullLogger.hpp" />
+    <ClInclude Include="Include\assimp\ParsingUtils.h" />
+    <ClInclude Include="Include\assimp\pbrmaterial.h" />
+    <ClInclude Include="Include\assimp\postprocess.h" />
+    <ClInclude Include="Include\assimp\Profiler.h" />
+    <ClInclude Include="Include\assimp\ProgressHandler.hpp" />
+    <ClInclude Include="Include\assimp\qnan.h" />
+    <ClInclude Include="Include\assimp\quaternion.h" />
+    <ClInclude Include="Include\assimp\RemoveComments.h" />
+    <ClInclude Include="Include\assimp\scene.h" />
+    <ClInclude Include="Include\assimp\SceneCombiner.h" />
+    <ClInclude Include="Include\assimp\SGSpatialSort.h" />
+    <ClInclude Include="Include\assimp\SkeletonMeshBuilder.h" />
+    <ClInclude Include="Include\assimp\SmoothingGroups.h" />
+    <ClInclude Include="Include\assimp\SpatialSort.h" />
+    <ClInclude Include="Include\assimp\StandardShapes.h" />
+    <ClInclude Include="Include\assimp\StreamReader.h" />
+    <ClInclude Include="Include\assimp\StreamWriter.h" />
+    <ClInclude Include="Include\assimp\StringComparison.h" />
+    <ClInclude Include="Include\assimp\StringUtils.h" />
+    <ClInclude Include="Include\assimp\Subdivision.h" />
+    <ClInclude Include="Include\assimp\texture.h" />
+    <ClInclude Include="Include\assimp\TinyFormatter.h" />
+    <ClInclude Include="Include\assimp\types.h" />
+    <ClInclude Include="Include\assimp\vector2.h" />
+    <ClInclude Include="Include\assimp\vector3.h" />
+    <ClInclude Include="Include\assimp\version.h" />
+    <ClInclude Include="Include\assimp\Vertex.h" />
+    <ClInclude Include="Include\assimp\XMLTools.h" />
+    <ClInclude Include="Source\Model.h" />
+    <ClInclude Include="Source\Mesh.h" />
+    <ClInclude Include="Include\assimp\port\AndroidJNI\AndroidJNIIOSystem.h" />
+    <ClInclude Include="Include\assimp\Compiler\poppack1.h" />
+    <ClInclude Include="Include\assimp\Compiler\pstdint.h" />
+    <ClInclude Include="Include\assimp\Compiler\pushpack1.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />
     <FxCompile Include="Source\Shaders\VertexShader.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Models\sphere.blend" />
+    <None Include="Include\assimp\color4.inl" />
+    <None Include="Include\assimp\config.h.in" />
+    <None Include="Include\assimp\material.inl" />
+    <None Include="Include\assimp\matrix3x3.inl" />
+    <None Include="Include\assimp\matrix4x4.inl" />
+    <None Include="Include\assimp\quaternion.inl" />
+    <None Include="Include\assimp\SmoothingGroups.inl" />
+    <None Include="Include\assimp\vector2.inl" />
+    <None Include="Include\assimp\vector3.inl" />
+    <None Include="Include\assimp\AssimpDelphi\aiColor4D.pas" />
+    <None Include="Include\assimp\AssimpDelphi\aiMaterial.pas" />
+    <None Include="Include\assimp\AssimpDelphi\aiMatrix3x3.pas" />
+    <None Include="Include\assimp\AssimpDelphi\aiMatrix4x4.pas" />
+    <None Include="Include\assimp\AssimpDelphi\aiMesh.pas" />
+    <None Include="Include\assimp\AssimpDelphi\aiQuaternion.pas" />
+    <None Include="Include\assimp\AssimpDelphi\aiScene.pas" />
+    <None Include="Include\assimp\AssimpDelphi\aiTexture.pas" />
+    <None Include="Include\assimp\AssimpDelphi\aiTypes.pas" />
+    <None Include="Include\assimp\AssimpDelphi\aiVector2D.pas" />
+    <None Include="Include\assimp\AssimpDelphi\aiVector3D.pas" />
+    <None Include="Include\assimp\AssimpDelphi\assimp.pas" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Lib\assimp-vc140-mt.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Include\assimp\AssimpDelphi\Readme.txt" />
   </ItemGroup>
 </Project>
