@@ -98,13 +98,12 @@ void DirectXManager::Initialize(HWND hWnd)
         throw std::exception("Failed to create swap chain.");
 
     // Get pointer to back buffer
-    ID3D11Texture2D* backBuffer;
     hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
     if (FAILED(hr))
         throw std::exception("Failed to get pointer to back buffer.");
 
     // Create a render-target view 
-    device->CreateRenderTargetView(backBuffer, NULL, &renderTargetView);
+    device->CreateRenderTargetView(backBuffer, NULL, &backBufferRenderTargetView);
 
     // Create Depth/Stencil Buffer and View
     D3D11_TEXTURE2D_DESC depthStencilDesc;
@@ -113,8 +112,8 @@ void DirectXManager::Initialize(HWND hWnd)
     depthStencilDesc.MipLevels = 1;
     depthStencilDesc.ArraySize = 1;
     depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    depthStencilDesc.SampleDesc.Count = 1;
-    depthStencilDesc.SampleDesc.Quality = 0;
+    depthStencilDesc.SampleDesc.Count = msaaCount;
+    depthStencilDesc.SampleDesc.Quality = m4xMsaaQuality - 1;
     depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
     depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
     depthStencilDesc.CPUAccessFlags = 0;
@@ -186,6 +185,28 @@ void DirectXManager::Initialize(HWND hWnd)
 
     // set the newly created bitmap as render target
     d2dDeviceContext->SetTarget(targetBitmap);
+
+	// create offscreen render target
+	D3D11_TEXTURE2D_DESC offScreenSurfaceDesc;
+	ZeroMemory(&offScreenSurfaceDesc, sizeof(D3D11_TEXTURE2D_DESC));
+
+	offScreenSurfaceDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	offScreenSurfaceDesc.Width = static_cast<unsigned int>(clientWidth);
+	offScreenSurfaceDesc.Height = static_cast<unsigned int>(clientHeight);
+	offScreenSurfaceDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
+	offScreenSurfaceDesc.MipLevels = 1;
+	offScreenSurfaceDesc.ArraySize = 1;
+	offScreenSurfaceDesc.SampleDesc.Count = msaaCount;;
+	offScreenSurfaceDesc.SampleDesc.Quality = m4xMsaaQuality - 1;
+
+	hr = device->CreateTexture2D(&offScreenSurfaceDesc, nullptr, &offscreenRenderTarget);
+	if (FAILED(hr))
+		throw std::exception("Failed to create offscreen render target.");
+
+	CD3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc(D3D11_RTV_DIMENSION_TEXTURE2DMS);
+	hr = device->CreateRenderTargetView(offscreenRenderTarget, &renderTargetViewDesc, &offscreenRenderTargetView);
+	if (FAILED(hr))
+		throw std::exception("Failed to create offscreen render target view.");
 
     InitializeBrushes();
     InitializeTextFormats();
@@ -523,51 +544,10 @@ void DirectXManager::DrawScene()
         color[1] = 0.5f;
         color[2] = 0.3f;
     }
-    immediateContext->ClearRenderTargetView(renderTargetView, color);
+    immediateContext->ClearRenderTargetView(offscreenRenderTargetView, color);
     immediateContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	immediateContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
-
-    d2dDeviceContext->BeginDraw();
-
-    // draw FPS
-    static int frameCnt = 0;
-    static float timeElapsed = 0.0f;
-    frameCnt++;
-
-    if (timer.TotalTime() - timeElapsed >= 1)
-    {
-        float fps = (float)frameCnt;
-
-        std::wostringstream outFPS;
-        outFPS.precision(6);
-        outFPS << "FPS: " << fps;
-
-		if (textLayoutFPS != nullptr)
-			textLayoutFPS->Release();
-		writeFactory->CreateTextLayout(outFPS.str().c_str(), (unsigned int)outFPS.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutFPS);
-
-        frameCnt = 0;
-        timeElapsed += 1.0f;
-
-        if (token != "")
-            socketManager.SendPacket(OPCODE_HEARTBEAT, 1, token);
-    }
-
-    if (textLayoutFPS != nullptr)
-        d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 540.0f), textLayoutFPS, blackBrush);
-
-    // draw MousePos
-    std::wostringstream outMousePos;
-    outMousePos.precision(6);
-    outMousePos << "MousePosX: " << mousePosX << ", MousePosY: " << mousePosY;
-	if (textLayoutMousePos != nullptr)
-		textLayoutMousePos->Release();
-    writeFactory->CreateTextLayout(outMousePos.str().c_str(), (unsigned int)outMousePos.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutMousePos);
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
-
-	// draw all GameObjects
-	objectManager.Draw();
+	immediateContext->OMSetRenderTargets(1, &offscreenRenderTargetView, depthStencilView);
 
 	if (activeLayer == InGame)
 	{
@@ -584,7 +564,52 @@ void DirectXManager::DrawScene()
 		treeModel->Draw(immediateContext, viewTransform, projectionTransform);
 	}
 	
-    d2dDeviceContext->EndDraw();
+	immediateContext->ResolveSubresource(backBuffer, 0, offscreenRenderTarget, 0, DXGI_FORMAT_B8G8R8A8_UNORM);
+
+	immediateContext->OMSetRenderTargets(1, &backBufferRenderTargetView, depthStencilView);
+
+	d2dDeviceContext->BeginDraw();
+
+	// draw FPS
+	static int frameCnt = 0;
+	static float timeElapsed = 0.0f;
+	frameCnt++;
+
+	if (timer.TotalTime() - timeElapsed >= 1)
+	{
+		float fps = (float)frameCnt;
+
+		std::wostringstream outFPS;
+		outFPS.precision(6);
+		outFPS << "FPS: " << fps;
+
+		if (textLayoutFPS != nullptr)
+			textLayoutFPS->Release();
+		writeFactory->CreateTextLayout(outFPS.str().c_str(), (unsigned int)outFPS.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutFPS);
+
+		frameCnt = 0;
+		timeElapsed += 1.0f;
+
+		if (token != "")
+			socketManager.SendPacket(OPCODE_HEARTBEAT, 1, token);
+	}
+
+	if (textLayoutFPS != nullptr)
+		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 540.0f), textLayoutFPS, blackBrush);
+
+	// draw MousePos
+	std::wostringstream outMousePos;
+	outMousePos.precision(6);
+	outMousePos << "MousePosX: " << mousePosX << ", MousePosY: " << mousePosY;
+	if (textLayoutMousePos != nullptr)
+		textLayoutMousePos->Release();
+	writeFactory->CreateTextLayout(outMousePos.str().c_str(), (unsigned int)outMousePos.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutMousePos);
+	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
+
+	// draw all GameObjects
+	objectManager.Draw();
+
+	d2dDeviceContext->EndDraw();
     
     hr = swapChain->Present(0, 0);
     if (FAILED(hr))

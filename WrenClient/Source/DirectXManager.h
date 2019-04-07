@@ -54,8 +54,11 @@ class DirectXManager : public Observer
     // D3D
     ID3D11Device* device = nullptr;
     ID3D11DeviceContext* immediateContext = nullptr;
-    ID3D11RenderTargetView* renderTargetView = nullptr;
+    ID3D11RenderTargetView* backBufferRenderTargetView = nullptr;
+	ID3D11RenderTargetView* offscreenRenderTargetView = nullptr;
     ID3D11DepthStencilView* depthStencilView = nullptr;
+	ID3D11Texture2D* backBuffer = nullptr;
+	ID3D11Texture2D* offscreenRenderTarget = nullptr;
 
     // D2D
     ID2D1Factory2* d2dFactory = nullptr;
