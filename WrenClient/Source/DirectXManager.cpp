@@ -577,11 +577,11 @@ void DirectXManager::DrawScene()
 
 	if (timer.TotalTime() - timeElapsed >= 1)
 	{
-		float fps = (float)frameCnt;
+		float mspf = (float)1000 / frameCnt;
 
 		std::wostringstream outFPS;
 		outFPS.precision(6);
-		outFPS << "FPS: " << fps;
+		outFPS << "FPS: " << frameCnt << ", MSPF: " << mspf;
 
 		if (textLayoutFPS != nullptr)
 			textLayoutFPS->Release();
@@ -666,12 +666,12 @@ void DirectXManager::InitializeBuffers()
 
 void DirectXManager::InitializeRasterStates()
 {
-	CD3D11_RASTERIZER_DESC wireframeRasterStateDesc(D3D11_FILL_WIREFRAME, D3D11_CULL_NONE, FALSE,
+	CD3D11_RASTERIZER_DESC wireframeRasterStateDesc(D3D11_FILL_WIREFRAME, D3D11_CULL_BACK, FALSE,
 		D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
 		D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE);
 	device->CreateRasterizerState(&wireframeRasterStateDesc, &wireframeRasterState);
 
-	CD3D11_RASTERIZER_DESC solidRasterStateDesc(D3D11_FILL_SOLID, D3D11_CULL_NONE, FALSE,
+	CD3D11_RASTERIZER_DESC solidRasterStateDesc(D3D11_FILL_SOLID, D3D11_CULL_BACK, FALSE,
 		D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
 		D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE);
 	device->CreateRasterizerState(&solidRasterStateDesc, &solidRasterState);
