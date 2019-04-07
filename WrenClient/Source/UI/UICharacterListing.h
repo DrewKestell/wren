@@ -1,10 +1,8 @@
 #pragma once
 
-#include <d2d1_3.h>
-#include <dwrite_3.h>
-#include <sstream>
 #include "UIComponent.h"
 #include "../EventHandling/Observer.h"
+#include "../EventHandling/Events/Event.h"
 
 class UICharacterListing : public UIComponent, public Observer
 {
@@ -21,7 +19,7 @@ class UICharacterListing : public UIComponent, public Observer
     ID2D1RoundedRectangleGeometry* geometry = nullptr;
 public:
     UICharacterListing(
-        const DirectX::XMFLOAT3 position,
+        const XMFLOAT3 position,
 		ObjectManager& objectManager,
 		const Layer uiLayer,
         const float width,

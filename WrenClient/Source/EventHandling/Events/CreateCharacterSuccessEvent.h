@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-#include <vector>
 #include "Event.h"
 
 class CreateCharacterSuccessEvent : public Event

@@ -1,4 +1,6 @@
+#include "stdafx.h"
 #include "GameMap.h"
+#include "../ConstantBufferPerObject.h"
 
 const unsigned int TILE_WIDTH = 60;
 const unsigned int TILE_HEIGHT = 60;

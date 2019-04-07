@@ -1,10 +1,14 @@
+#include "stdafx.h"
 #include "UIInput.h"
-#include <wchar.h>
+#include "UIComponent.h"
+#include "../EventHandling/Observer.h"
 #include "../EventHandling/Events/MouseDownEvent.h"
 #include "../EventHandling/Events/KeyDownEvent.h"
 #include "../EventHandling/Events/SystemKeyDownEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "../GameObject.h"
 #include "../Utility.h"
+#include "../Layer.h"
 
 void UIInput::Draw()
 {

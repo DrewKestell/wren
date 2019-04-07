@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include "Event.h"
 
 class LoginSuccessEvent : public Event

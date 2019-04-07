@@ -14,7 +14,6 @@
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
-    <ClCompile Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
@@ -24,6 +23,7 @@
     <ClCompile Include="Source\Model.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
+    <ClCompile Include="Source\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DirectXManager.h" />
@@ -142,8 +142,11 @@
     <ClInclude Include="Include\assimp\Compiler\pushpack1.h" />
     <ClInclude Include="Source\ConstantBufferPerObject.h" />
     <ClInclude Include="Source\DDSTextureLoader.h" />
-    <ClInclude Include="Source\ConstantBufferPerFrame.h" />
     <ClInclude Include="Source\Vertex.h" />
+    <ClInclude Include="Source\stdafx.h" />
+    <ClInclude Include="Source\targetver.h" />
+    <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
+    <ClInclude Include="Source\ConstantBufferOnce.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

@@ -1,6 +1,10 @@
+#include "stdafx.h"
 #include "UIInputGroup.h"
+#include "UIInput.h"
+#include "../EventHandling/Observer.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../EventHandling/Events/SystemKeyDownEvent.h"
+#include "../Layer.h"
 
 bool UIInputGroup::HandleEvent(const Event* event)
 {

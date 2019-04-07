@@ -1,5 +1,10 @@
+#include "stdafx.h"
 #include "UILabel.h"
+#include "UIComponent.h"
+#include "../EventHandling/Observer.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "../GameObject.h"
+#include "../Layer.h"
 
 void UILabel::Draw()
 {

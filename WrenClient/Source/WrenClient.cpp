@@ -1,23 +1,5 @@
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include "SocketManager.h"
-#include "Model.h"
+#include "stdafx.h"
 #include "DirectXManager.h"
-#include <stdio.h>
-#include <io.h>
-#include <fcntl.h>
-#include <windows.h>
-#include <windowsx.h>
-#include <tchar.h>
-#include <string>
-#include <iostream>
-#include <exception>
-#include <tuple>
-#include "GameTimer.h"
-#include "GameMap/GameMap.h"
-#include "Layer.h"
-#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/SystemKeyUpEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
@@ -25,8 +7,8 @@
 #include "EventHandling/Events/MouseDownEvent.h"
 #include "EventHandling/Events/MouseUpEvent.h"
 
-static TCHAR szWindowClass[] = _T("win32app");
-static TCHAR szTitle[] = _T("Wren Client");
+static wchar_t szWindowClass[] = L"win32app";
+static wchar_t szTitle[] = L"Wren Client";
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 

@@ -1,9 +1,15 @@
+#include "stdafx.h"
 #include "UIPanel.h"
+#include "UIComponent.h"
+#include "../EventHandling/Observer.h"
 #include "../EventHandling/Events/MouseDownEvent.h"
 #include "../EventHandling/Events/MouseUpEvent.h"
 #include "../EventHandling/Events/MouseMoveEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../EventHandling/Events/SystemKeyDownEvent.h"
+#include "../GameObject.h"
+#include "../Utility.h"
+#include "../Layer.h"
 
 void UIPanel::Draw()
 {
@@ -64,7 +70,7 @@ bool UIPanel::HandleEvent(const Event* event)
 				const auto deltaX = mouseMoveEvent->mousePosX - lastDragX;
 				const auto deltaY = mouseMoveEvent->mousePosY - lastDragY;
 
-				Translate(DirectX::XMFLOAT3(deltaX, deltaY, 0.0f));
+				Translate(XMFLOAT3(deltaX, deltaY, 0.0f));
 
 				lastDragX = mouseMoveEvent->mousePosX;
 				lastDragY = mouseMoveEvent->mousePosY;

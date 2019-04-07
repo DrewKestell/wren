@@ -1,5 +1,5 @@
+#include "stdafx.h"
 #include "Mesh.h"
-#include "Vertex.h"
 
 Mesh::Mesh(ID3D11Device* device, std::vector<Vertex> vertices, std::vector<unsigned int> indices)
 	: indexCount{ (int)indices.size() }

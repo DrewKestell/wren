@@ -1,6 +1,7 @@
+#include "stdafx.h"
 #include "GameObject.h"
 
-DirectX::XMFLOAT3 GameObject::GetWorldPosition()
+XMFLOAT3 GameObject::GetWorldPosition()
 {
     auto worldPosition = localPosition;
     auto parentPtr = parent;

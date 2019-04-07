@@ -1,11 +1,8 @@
 #pragma once
 
-#include <d2d1_3.h>
-#include <dwrite_3.h>
-#include <sstream>
-#include <functional>
 #include "UIComponent.h"
 #include "../EventHandling/Observer.h"
+#include "../EventHandling/Events/Event.h"
 
 class UIButton : public UIComponent, public Observer
 {
@@ -25,7 +22,7 @@ class UIButton : public UIComponent, public Observer
     IDWriteTextLayout* buttonTextLayout = nullptr;
 public:
     UIButton(
-        const DirectX::XMFLOAT3 position,
+        const XMFLOAT3 position,
 		ObjectManager& objectManager,
 		const Layer uiLayer,
         const float width,

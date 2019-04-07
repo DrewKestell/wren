@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Event.h"
-#include <Windows.h>
 
 class SystemKeyPressEvent : public Event
 {

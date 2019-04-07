@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include "UIInput.h"
+#include "../EventHandling/Observer.h"
 
 class UIInputGroup : public Observer
 {

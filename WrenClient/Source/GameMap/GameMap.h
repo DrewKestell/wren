@@ -1,18 +1,12 @@
 #pragma once
 
-#include <d3d11.h>
-#include <vector>
-#include <DirectXMath.h>
 #include "GameMapTile.h"
-#include "../ConstantBufferPerObject.h"
 #include "../Vertex.h"
 
 const unsigned int MAP_WIDTH = 100;
 const unsigned int MAP_HEIGHT = 100;
 constexpr unsigned int MAP_SIZE = MAP_WIDTH * MAP_HEIGHT;
 constexpr unsigned int INDEX_COUNT = MAP_SIZE * 6;
-
-using namespace DirectX;
 
 class GameMap
 {

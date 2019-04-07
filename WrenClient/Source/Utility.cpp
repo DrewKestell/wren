@@ -1,9 +1,9 @@
-#include <codecvt>
+#include "stdafx.h"
 #include "Utility.h"
 
-DirectX::XMFLOAT3 XMFLOAT3Sum(DirectX::XMFLOAT3 l, DirectX::XMFLOAT3 r)
+XMFLOAT3 XMFLOAT3Sum(XMFLOAT3 l, XMFLOAT3 r)
 {
-    return DirectX::XMFLOAT3(l.x + r.x, l.y + r.y, l.z + r.z);
+    return XMFLOAT3(l.x + r.x, l.y + r.y, l.z + r.z);
 }
 
 bool DetectClick(float topLeftX, float topLeftY, float bottomRightX, float bottomRightY, float mousePosX, float mousePosY)

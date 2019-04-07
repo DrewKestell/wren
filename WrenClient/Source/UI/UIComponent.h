@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../ObjectManager.h"
 #include "../GameObject.h"
 #include "../Layer.h"
 
@@ -9,7 +10,7 @@ protected:
 	bool isVisible = false;
 	const Layer uiLayer;	
 public:
-	UIComponent(ObjectManager& objectManager, const DirectX::XMFLOAT3 localPosition, const Layer uiLayer)
+	UIComponent(ObjectManager& objectManager, const XMFLOAT3 localPosition, const Layer uiLayer)
 		: GameObject{ objectManager, localPosition },
 		uiLayer{ uiLayer }
 	{

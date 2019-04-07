@@ -1,7 +1,5 @@
 #pragma once
 
-#include <forward_list>
-
 class GameObject;
 
 class ObjectManager

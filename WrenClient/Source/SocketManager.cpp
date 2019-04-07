@@ -1,12 +1,6 @@
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <winsock2.h>
-#include <Ws2tcpip.h>
-#include <iostream>
-#include <vector>
-#include <algorithm>
+#include "stdafx.h"
 #include "SocketManager.h"
+#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
 #include "EventHandling/Events/LoginFailedEvent.h"

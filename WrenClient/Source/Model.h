@@ -1,17 +1,6 @@
 #pragma once
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include "Mesh.h"
-#include <iostream>
-#include <vector>
-#include <string>
-#include <d3d11.h>
-#include <DirectXMath.h>
-#include "ConstantBufferPerObject.h"
-
-using namespace DirectX;
+class Mesh;
 
 class Model
 {

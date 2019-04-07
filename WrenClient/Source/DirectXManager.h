@@ -1,30 +1,16 @@
 #pragma once
 
 #include "Model.h"
-#include <d3d11.h>
-#include <d2d1_3.h>
-#include <dwrite_3.h>
-#include <string>
-#include <vector>
-#include "GameTimer.h"
 #include "Layer.h"
-#include "UI/UIInput.h"
-#include "UI/UILabel.h"
-#include "UI/UIPanel.h"
-#include "UI/UICharacterListing.h"
-#include "UI/UIInputGroup.h"
+#include "GameTimer.h"
 #include "SocketManager.h"
-#include "EventHandling/EventHandler.h"
-#include "EventHandling/Observer.h"
-#include "UI/UIButton.h"
 #include "GameMap/GameMap.h"
-
-using namespace DirectX;
-
-struct CBChangesEveryFrame
-{
-	DirectX::XMFLOAT4X4 mWorldViewProj;
-};
+#include "UI/UICharacterListing.h"
+#include "UI/UIInput.h"
+#include "UI/UIInputGroup.h"
+#include "UI/UIButton.h"
+#include "UI/UIPanel.h"
+#include "UI/UILabel.h"
 
 struct ShaderBuffer
 {
@@ -41,12 +27,12 @@ class DirectXManager : public Observer
 	float camY = 550.0f;
 	float camZ = -500.0f;
 
-	DirectX::XMMATRIX worldTransform;
-	DirectX::XMMATRIX viewTransform;
-	DirectX::XMMATRIX projectionTransform;
+	XMMATRIX worldTransform;
+	XMMATRIX viewTransform;
+	XMMATRIX projectionTransform;
 
-	Model* sphereModel;
-	Model* treeModel;
+	Model* sphereModel = nullptr;
+	Model* treeModel = nullptr;
 
 	Layer activeLayer = Login;
 	std::string characterNamePendingDeletion;
@@ -55,28 +41,28 @@ class DirectXManager : public Observer
 	std::vector<Observer*>* observers;
     std::vector<UICharacterListing*>* characterList = new std::vector<UICharacterListing*>;
     std::string token = "";
-    UINT clientWidth;
-    UINT clientHeight;
+    unsigned int clientWidth;
+    unsigned int clientHeight;
     GameTimer& timer;
     SocketManager& socketManager;
 	float mousePosX;
 	float mousePosY;
 
     // DXGI
-    IDXGISwapChain* swapChain;
+    IDXGISwapChain* swapChain = nullptr;
 
     // D3D
-    ID3D11Device* device;
-    ID3D11DeviceContext* immediateContext;
-    ID3D11RenderTargetView* renderTargetView;
-    ID3D11DepthStencilView* depthStencilView;
+    ID3D11Device* device = nullptr;
+    ID3D11DeviceContext* immediateContext = nullptr;
+    ID3D11RenderTargetView* renderTargetView = nullptr;
+    ID3D11DepthStencilView* depthStencilView = nullptr;
 
     // D2D
-    ID2D1Factory2* d2dFactory;
-    ID2D1DeviceContext1* d2dDeviceContext;
+    ID2D1Factory2* d2dFactory = nullptr;
+    ID2D1DeviceContext1* d2dDeviceContext = nullptr;
 
     // DirectWrite
-    IDWriteFactory2* writeFactory;
+    IDWriteFactory2* writeFactory = nullptr;
 
     // TextFormats
     IDWriteTextFormat* textFormatFPS = nullptr;
@@ -94,79 +80,76 @@ class DirectXManager : public Observer
     IDWriteTextLayout* textLayoutErrorMessage = nullptr;
 
     // Brushes
-    ID2D1SolidColorBrush* grayBrush;
-    ID2D1SolidColorBrush* blackBrush;
-    ID2D1SolidColorBrush* whiteBrush;
-    ID2D1SolidColorBrush* blueBrush;
-    ID2D1SolidColorBrush* darkBlueBrush;
-    ID2D1SolidColorBrush* successMessageBrush;
-    ID2D1SolidColorBrush* errorMessageBrush;
-    ID2D1SolidColorBrush* selectedCharacterBrush;
+    ID2D1SolidColorBrush* grayBrush = nullptr;
+    ID2D1SolidColorBrush* blackBrush = nullptr;
+    ID2D1SolidColorBrush* whiteBrush = nullptr;
+    ID2D1SolidColorBrush* blueBrush = nullptr;
+    ID2D1SolidColorBrush* darkBlueBrush = nullptr;
+    ID2D1SolidColorBrush* successMessageBrush = nullptr;
+    ID2D1SolidColorBrush* errorMessageBrush = nullptr;
+    ID2D1SolidColorBrush* selectedCharacterBrush = nullptr;
 
     // Inputs
-    UIInput* loginScreen_accountNameInput;
-    UIInput* loginScreen_passwordInput;
-    UIInput* loginScreen_newAccountAccountNameInput;
-    UIInput* loginScreen_newAccountPasswordInput;
-    UIInput* createAccount_accountNameInput;
-    UIInput* createAccount_passwordInput;
-    UIInput* createCharacter_characterNameInput;
+    UIInput* loginScreen_accountNameInput = nullptr;
+    UIInput* loginScreen_passwordInput = nullptr;
+    UIInput* loginScreen_newAccountAccountNameInput = nullptr;
+    UIInput* loginScreen_newAccountPasswordInput = nullptr;
+    UIInput* createAccount_accountNameInput = nullptr;
+    UIInput* createAccount_passwordInput = nullptr;
+    UIInput* createCharacter_characterNameInput = nullptr;
 
 	// InputGroups
-	UIInputGroup* loginScreen_inputGroup;
-	UIInputGroup* createAccount_inputGroup;
-	UIInputGroup* createCharacter_inputGroup;
+	UIInputGroup* loginScreen_inputGroup = nullptr;
+	UIInputGroup* createAccount_inputGroup = nullptr;
+	UIInputGroup* createCharacter_inputGroup = nullptr;
 
     // Buttons
-    UIButton* loginScreen_loginButton;
-    UIButton* loginScreen_createAccountButton;
-    UIButton* createAccount_createAccountButton;
-    UIButton* createAccount_cancelButton;
-    UIButton* characterSelect_newCharacterButton;
-	UIButton* characterSelect_enterWorldButton;
-	UIButton* characterSelect_deleteCharacterButton;
-    UIButton* characterSelect_logoutButton;
-    UIButton* createCharacter_createCharacterButton;
-    UIButton* createCharacter_backButton;
-	UIButton* deleteCharacter_confirmButton;
-	UIButton* deleteCharacter_cancelButton;
-	UIButton* gameSettings_logoutButton;
+    UIButton* loginScreen_loginButton = nullptr;
+    UIButton* loginScreen_createAccountButton = nullptr;
+    UIButton* createAccount_createAccountButton = nullptr;
+    UIButton* createAccount_cancelButton = nullptr;
+    UIButton* characterSelect_newCharacterButton = nullptr;
+	UIButton* characterSelect_enterWorldButton = nullptr;
+	UIButton* characterSelect_deleteCharacterButton = nullptr;
+    UIButton* characterSelect_logoutButton = nullptr;
+    UIButton* createCharacter_createCharacterButton = nullptr;
+    UIButton* createCharacter_backButton = nullptr;
+	UIButton* deleteCharacter_confirmButton = nullptr;
+	UIButton* deleteCharacter_cancelButton = nullptr;
+	UIButton* gameSettings_logoutButton = nullptr;
 
     // Labels
-    UILabel* loginScreen_successMessageLabel;
-    UILabel* loginScreen_errorMessageLabel;
-    UILabel* createAccount_errorMessageLabel;
-    UILabel* connecting_statusLabel;
-    UILabel* characterSelect_successMessageLabel;
-	UILabel* characterSelect_errorMessageLabel;
-    UILabel* characterSelect_headerLabel;
-    UILabel* createCharacter_errorMessageLabel;
-	UILabel* deleteCharacter_headerLabel;
-    UILabel* enteringWorld_statusLabel;
+    UILabel* loginScreen_successMessageLabel = nullptr;
+    UILabel* loginScreen_errorMessageLabel = nullptr;
+    UILabel* createAccount_errorMessageLabel = nullptr;
+    UILabel* connecting_statusLabel = nullptr;
+    UILabel* characterSelect_successMessageLabel = nullptr;
+	UILabel* characterSelect_errorMessageLabel = nullptr;
+    UILabel* characterSelect_headerLabel = nullptr;
+    UILabel* createCharacter_errorMessageLabel = nullptr;
+	UILabel* deleteCharacter_headerLabel = nullptr;
+    UILabel* enteringWorld_statusLabel = nullptr;
 
     // Panels
-    UIPanel* gameSettingsPanel;
-    UIPanel* gameEditorPanel;
+    UIPanel* gameSettingsPanel = nullptr;
+    UIPanel* gameEditorPanel = nullptr;
 
 	// Shaders
 	ShaderBuffer vertexShaderBuffer;
-	ID3D11VertexShader* vertexShader;
+	ID3D11VertexShader* vertexShader = nullptr;
 	ShaderBuffer pixelShaderBuffer;
-	ID3D11PixelShader* pixelShader;
+	ID3D11PixelShader* pixelShader = nullptr;
 
 	// InputLayouts
-	ID3D11InputLayout* inputLayout;
+	ID3D11InputLayout* inputLayout = nullptr;
 
 	// Textures
-	ID3D11ShaderResourceView* color01SRV;
-	ID3D11ShaderResourceView* color02SRV;
+	ID3D11ShaderResourceView* color01SRV = nullptr;
+	ID3D11ShaderResourceView* color02SRV = nullptr;
 
 	// Raster States
-	ID3D11RasterizerState* wireframeRasterState;
-	ID3D11RasterizerState* solidRasterState;
-	
-	// Buffers
-	ID3D11Buffer* constantBufferPerFrame = nullptr;
+	ID3D11RasterizerState* wireframeRasterState = nullptr;
+	ID3D11RasterizerState* solidRasterState = nullptr;
 
     void InitializeBrushes();
     void InitializeTextFormats();
@@ -174,16 +157,18 @@ class DirectXManager : public Observer
     void InitializeButtons();
     void InitializeLabels();
     void InitializePanels();
-    void RecreateCharacterListings(const std::vector<std::string*>* characterNames);
-    void InitializeGameWorld();
+    void InitializeShaders();
+	void InitializeBuffers();
 	void InitializeTextures();
+	void InitializeRasterStates();
+	void RecreateCharacterListings(const std::vector<std::string*>* characterNames);
     ShaderBuffer LoadShader(std::wstring filename);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();
 public:
 	DirectXManager(GameTimer& timer, SocketManager& socketManager, ObjectManager& objectManager)
 		: objectManager{ objectManager },
-		timer{ timer },
-		socketManager{ socketManager }
+		  timer{ timer },
+		  socketManager{ socketManager }
 	{
 	};
     void Initialize(HWND hWnd);

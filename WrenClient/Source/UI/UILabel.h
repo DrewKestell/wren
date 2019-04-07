@@ -1,10 +1,8 @@
 #pragma once
 
-#include <d2d1_3.h>
-#include <dwrite_3.h>
-#include <sstream>
 #include "UIComponent.h"
 #include "../EventHandling/Observer.h"
+#include "../EventHandling/Events/Event.h"
 
 class UILabel : public UIComponent, public Observer
 {
@@ -17,7 +15,7 @@ class UILabel : public UIComponent, public Observer
     IDWriteTextLayout* textLayout = nullptr;
 public:
     UILabel(
-        const DirectX::XMFLOAT3 position,
+        const XMFLOAT3 position,
 		ObjectManager& objectManager,
 		const Layer uiLayer,
         const float width,

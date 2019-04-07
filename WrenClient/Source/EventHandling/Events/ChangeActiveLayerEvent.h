@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Event.h"
+#include "../../Layer.h"
 
 class ChangeActiveLayerEvent : public Event
 {

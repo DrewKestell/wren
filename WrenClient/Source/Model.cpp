@@ -1,5 +1,7 @@
+#include "stdafx.h"
 #include "Model.h"
-#include "Vertex.h"
+#include "Mesh.h"
+#include "ConstantBufferPerObject.h"
 
 Model::Model(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture, std::string& path)
 	: device{ device },

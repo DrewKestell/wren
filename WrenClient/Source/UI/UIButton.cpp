@@ -1,8 +1,13 @@
+#include "stdafx.h"
 #include "UIButton.h"
+#include "UIComponent.h"
 #include "../EventHandling/Events/MouseDownEvent.h"
 #include "../EventHandling/Events/MouseUpEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "../EventHandling/Observer.h"
 #include "../Utility.h"
+#include "../GameObject.h"
+#include "../Layer.h"
 
 void UIButton::Draw()
 {

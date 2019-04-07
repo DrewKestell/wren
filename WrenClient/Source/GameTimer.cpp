@@ -1,5 +1,5 @@
+#include "stdafx.h"
 #include "GameTimer.h"
-#include <Windows.h>
 
 GameTimer::GameTimer() :
     mSecondsPerCount(0.0),
