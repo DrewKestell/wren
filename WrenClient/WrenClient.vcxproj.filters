@@ -24,6 +24,8 @@
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
     <ClCompile Include="Source\stdafx.cpp" />
+    <ClCompile Include="Source\PlayerController.cpp" />
+    <ClCompile Include="Source\Camera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DirectXManager.h" />
@@ -38,7 +40,6 @@
     <ClInclude Include="Source\UI\UIPanel.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
     <ClInclude Include="Source\EventHandling\Events\Event.h" />
-    <ClInclude Include="Source\EventHandling\Events\MouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\EventType.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
@@ -147,6 +148,13 @@
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
     <ClInclude Include="Source\ConstantBufferOnce.h" />
+    <ClInclude Include="Source\PlayerController.h" />
+    <ClInclude Include="Source\CardinalDirection.h" />
+    <ClInclude Include="Source\EventHandling\Events\LeftMouseDownEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\LeftMouseUpEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\RightMouseDownEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\RigthMouseUpEvent.h" />
+    <ClInclude Include="Source\Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />
@@ -186,5 +194,6 @@
   <ItemGroup>
     <Image Include="Textures\texture01.dds" />
     <Image Include="Textures\texture02.dds" />
+    <Image Include="Textures\grass01.DDS" />
   </ItemGroup>
 </Project>

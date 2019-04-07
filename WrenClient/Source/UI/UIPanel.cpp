@@ -2,9 +2,7 @@
 #include "UIPanel.h"
 #include "UIComponent.h"
 #include "../EventHandling/Observer.h"
-#include "../EventHandling/Events/MouseDownEvent.h"
-#include "../EventHandling/Events/MouseUpEvent.h"
-#include "../EventHandling/Events/MouseMoveEvent.h"
+#include "../EventHandling/Events/MouseEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../EventHandling/Events/SystemKeyDownEvent.h"
 #include "../GameObject.h"
@@ -36,9 +34,9 @@ bool UIPanel::HandleEvent(const Event* event)
 	const auto type = event->type;
 	switch (type)
 	{
-		case EventType::MouseDownEvent:
+		case EventType::LeftMouseDownEvent:
 		{
-			const auto mouseDownEvent = (MouseDownEvent*)event;
+			const auto mouseDownEvent = (MouseEvent*)event;
 
 			if (isVisible)
 			{
@@ -53,9 +51,9 @@ bool UIPanel::HandleEvent(const Event* event)
 			
 			break;
 		}
-		case EventType::MouseUpEvent:
+		case EventType::LeftMouseUpEvent:
 		{
-			const auto mouseUpEvent = (MouseUpEvent*)event;
+			const auto mouseUpEvent = (MouseEvent*)event;
 
 			isDragging = false;
 
@@ -63,7 +61,7 @@ bool UIPanel::HandleEvent(const Event* event)
 		}
 		case EventType::MouseMoveEvent:
 		{
-			const auto mouseMoveEvent = (MouseMoveEvent*)event;
+			const auto mouseMoveEvent = (MouseEvent*)event;
 
 			if (isDragging)
 			{

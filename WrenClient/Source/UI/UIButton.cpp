@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "UIButton.h"
 #include "UIComponent.h"
-#include "../EventHandling/Events/MouseDownEvent.h"
-#include "../EventHandling/Events/MouseUpEvent.h"
+#include "../EventHandling/Events/MouseEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../EventHandling/Observer.h"
 #include "../Utility.h"
@@ -39,9 +38,9 @@ bool UIButton::HandleEvent(const Event* event)
 	const auto type = event->type;
 	switch (type)
 	{
-		case EventType::MouseDownEvent:
+		case EventType::LeftMouseDownEvent:
 		{
-			const auto mouseDownEvent = (MouseDownEvent*)event;
+			const auto mouseDownEvent = (MouseEvent*)event;
 
 			if (isVisible)
 			{
@@ -55,9 +54,9 @@ bool UIButton::HandleEvent(const Event* event)
 
 			break;
 		}
-		case EventType::MouseUpEvent:
+		case EventType::LeftMouseUpEvent:
 		{
-			const auto mouseUpEvent = (MouseUpEvent*)event;
+			const auto mouseUpEvent = (MouseEvent*)event;
 
 			pressed = false;
 

@@ -1,14 +1,15 @@
 #include "stdafx.h"
 #include "DirectXManager.h"
+#include "PlayerController.h"
 #include "EventHandling/Events/SystemKeyUpEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
-#include "EventHandling/Events/MouseMoveEvent.h"
-#include "EventHandling/Events/MouseDownEvent.h"
-#include "EventHandling/Events/MouseUpEvent.h"
+#include "EventHandling/Events/MouseEvent.h"
 
 static wchar_t szWindowClass[] = L"win32app";
 static wchar_t szTitle[] = L"Wren Client";
+static unsigned int clientWidth;
+static unsigned int clientHeight;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -17,6 +18,10 @@ DirectXManager* dxManager;
 EventHandler* g_eventHandler;
 SocketManager* socketManager;
 ObjectManager* objectManager;
+PlayerController* playerController;
+
+unsigned int GetClientWidth() { return clientWidth; }
+unsigned int GetClientHeight() { return clientHeight; }
 
 int CALLBACK WinMain(
     _In_ HINSTANCE hInstance,
@@ -72,12 +77,18 @@ int CALLBACK WinMain(
         ShowWindow(hWnd, nCmdShow);
         UpdateWindow(hWnd);
 
+		RECT rect;
+		GetClientRect(hWnd, &rect);
+		clientWidth = rect.right - rect.left;
+		clientHeight = rect.bottom - rect.top;
+
         timer = new GameTimer;
 		g_eventHandler = new EventHandler;
 		objectManager = new ObjectManager;
 		socketManager = new SocketManager;
         dxManager = new DirectXManager{ *timer, *socketManager, *objectManager };
         dxManager->Initialize(hWnd);
+		playerController = new PlayerController;
 
         // Main game loop:
         MSG msg = { 0 };
@@ -97,6 +108,7 @@ int CALLBACK WinMain(
             // Tick game engine
             else
             {
+				playerController->Update(*timer);
                 timer->Tick();
 				g_eventHandler->PublishEvents();
                 dxManager->DrawScene();
@@ -155,17 +167,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
 		break;
     case WM_LBUTTONDOWN:
+		g_eventHandler->QueueEvent(new MouseEvent{ EventType::LeftMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		break;
     case WM_MBUTTONDOWN:
+		g_eventHandler->QueueEvent(new MouseEvent{ EventType::MiddleMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		break;
     case WM_RBUTTONDOWN:
-		g_eventHandler->QueueEvent(new MouseDownEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler->QueueEvent(new MouseEvent{ EventType::RightMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_LBUTTONUP:
+		g_eventHandler->QueueEvent(new MouseEvent{ EventType::LeftMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		break;
     case WM_MBUTTONUP:
+		g_eventHandler->QueueEvent(new MouseEvent{ EventType::MiddleMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		break;
     case WM_RBUTTONUP:
-		g_eventHandler->QueueEvent(new MouseUpEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler->QueueEvent(new MouseEvent{ EventType::RightMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_MOUSEMOVE:
-		g_eventHandler->QueueEvent(new MouseMoveEvent{ (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler->QueueEvent(new MouseEvent{ EventType::MouseMoveEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
         break;
 
 	case WM_SYSKEYDOWN:

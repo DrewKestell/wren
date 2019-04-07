@@ -7,7 +7,7 @@
 #include "../GameObject.h"
 #include "../EventHandling/Observer.h"
 #include "../EventHandling/EventHandler.h"
-#include "../EventHandling/Events/MouseDownEvent.h"
+#include "../EventHandling/Events/MouseEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 
 extern EventHandler* g_eventHandler;
@@ -32,11 +32,11 @@ bool UICharacterListing::HandleEvent(const Event* event)
 	const auto type = event->type;
 	switch (type)
 	{
-		case EventType::MouseDownEvent:
+		case EventType::LeftMouseDownEvent:
 		{
 			selected = false;
 
-			const auto mouseDownEvent = (MouseDownEvent*)event;
+			const auto mouseDownEvent = (MouseEvent*)event;
 
 			if (isVisible)
 			{

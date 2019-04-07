@@ -2,8 +2,12 @@
 
 enum class EventType
 {
-	MouseDownEvent,
-	MouseUpEvent,
+	LeftMouseDownEvent,
+	LeftMouseUpEvent,
+	RightMouseDownEvent,
+	RightMouseUpEvent,
+	MiddleMouseDownEvent,
+	MiddleMouseUpEvent,
 	MouseMoveEvent,
 	KeyDownEvent,
 	SystemKeyDownEvent,

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "DirectXManager.h"
 #include "ConstantBufferOnce.h"
-#include "EventHandling/Events/MouseMoveEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -10,8 +9,11 @@
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
+#include "EventHandling/Events/MouseEvent.h"
 
 extern EventHandler* g_eventHandler;
+extern unsigned int GetClientWidth();
+extern unsigned int GetClientHeight();
 
 void DirectXManager::Initialize(HWND hWnd)
 {
@@ -69,11 +71,6 @@ void DirectXManager::Initialize(HWND hWnd)
 	sd.Flags = 0;
 	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
-    RECT rect;
-    GetClientRect(hWnd, &rect);
-    clientWidth = rect.right - rect.left;
-    clientHeight = rect.bottom - rect.top;
-
     // Get the dxgi device
     IDXGIDevice* dxgiDevice;
     hr = device->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
@@ -107,8 +104,8 @@ void DirectXManager::Initialize(HWND hWnd)
 
     // Create Depth/Stencil Buffer and View
     D3D11_TEXTURE2D_DESC depthStencilDesc;
-    depthStencilDesc.Width = clientWidth;
-    depthStencilDesc.Height = clientHeight;
+    depthStencilDesc.Width = GetClientWidth();
+    depthStencilDesc.Height = GetClientHeight();
     depthStencilDesc.MipLevels = 1;
     depthStencilDesc.ArraySize = 1;
     depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -119,20 +116,32 @@ void DirectXManager::Initialize(HWND hWnd)
     depthStencilDesc.CPUAccessFlags = 0;
     depthStencilDesc.MiscFlags = 0;
 
-    ID3D11Texture2D* depthStencilBuffer;   
-    hr = device->CreateTexture2D(&depthStencilDesc, 0, &depthStencilBuffer);
+    ID3D11Texture2D* multisamplesDepthStencilBuffer;   
+    hr = device->CreateTexture2D(&depthStencilDesc, 0, &multisamplesDepthStencilBuffer);
     if (FAILED(hr))
         throw std::exception("Failed to create texture 2d.");
 
     CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2DMS);
-    hr = device->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDesc, &depthStencilView);
+    hr = device->CreateDepthStencilView(multisamplesDepthStencilBuffer, &depthStencilViewDesc, &multisampledDepthStencilView);
     if (FAILED(hr))
         throw std::exception("Failed to create texture depth stencil view.");
 
+	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.SampleDesc.Quality = 0;
+
+	ID3D11Texture2D* depthStencilBuffer;
+	hr = device->CreateTexture2D(&depthStencilDesc, 0, &depthStencilBuffer);
+	if (FAILED(hr))
+		throw std::exception("Failed to create texture 2d.");
+
+	hr = device->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDesc, &depthStencilView);
+	if (FAILED(hr))
+		throw std::exception("Failed to create texture depth stencil view.");
+
     // Setup the viewport
     D3D11_VIEWPORT vp;
-    vp.Width = (float)clientWidth;
-    vp.Height = (float)clientHeight;
+    vp.Width = (float)GetClientWidth();
+    vp.Height = (float)GetClientHeight();
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     vp.TopLeftX = 0.0f;
@@ -191,8 +200,8 @@ void DirectXManager::Initialize(HWND hWnd)
 	ZeroMemory(&offScreenSurfaceDesc, sizeof(D3D11_TEXTURE2D_DESC));
 
 	offScreenSurfaceDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	offScreenSurfaceDesc.Width = static_cast<unsigned int>(clientWidth);
-	offScreenSurfaceDesc.Height = static_cast<unsigned int>(clientHeight);
+	offScreenSurfaceDesc.Width = static_cast<unsigned int>(GetClientWidth());
+	offScreenSurfaceDesc.Height = static_cast<unsigned int>(GetClientHeight());
 	offScreenSurfaceDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
 	offScreenSurfaceDesc.MipLevels = 1;
 	offScreenSurfaceDesc.ArraySize = 1;
@@ -493,8 +502,8 @@ void DirectXManager::InitializeLabels()
 
 void DirectXManager::InitializePanels()
 {
-    const auto gameSettingsPanelX = (clientWidth - 400.0f) / 2.0f;
-    const auto gameSettingsPanelY = (clientHeight - 200.0f) / 2.0f;
+    const auto gameSettingsPanelX = (GetClientWidth() - 400.0f) / 2.0f;
+    const auto gameSettingsPanelY = (GetClientHeight() - 200.0f) / 2.0f;
     auto gameSettingsPanelHeader = new UILabel{XMFLOAT3{2.0f, 2.0f, 0.0f}, objectManager, InGame, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory};
     gameSettingsPanelHeader->SetText("Game Settings");
 	const auto onClickGameSettingsLogoutButton = [this]()
@@ -545,9 +554,10 @@ void DirectXManager::DrawScene()
         color[2] = 0.3f;
     }
     immediateContext->ClearRenderTargetView(offscreenRenderTargetView, color);
-    immediateContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    immediateContext->ClearDepthStencilView(multisampledDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	immediateContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	immediateContext->OMSetRenderTargets(1, &offscreenRenderTargetView, depthStencilView);
+	immediateContext->OMSetRenderTargets(1, &offscreenRenderTargetView, multisampledDepthStencilView);
 
 	if (activeLayer == InGame)
 	{
@@ -586,7 +596,7 @@ void DirectXManager::DrawScene()
 
 		if (textLayoutFPS != nullptr)
 			textLayoutFPS->Release();
-		writeFactory->CreateTextLayout(outFPS.str().c_str(), (unsigned int)outFPS.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutFPS);
+		writeFactory->CreateTextLayout(outFPS.str().c_str(), (unsigned int)outFPS.str().size(), textFormatFPS, (float)GetClientWidth(), (float)GetClientHeight(), &textLayoutFPS);
 
 		frameCnt = 0;
 		timeElapsed += 1.0f;
@@ -604,7 +614,7 @@ void DirectXManager::DrawScene()
 	outMousePos << "MousePosX: " << mousePosX << ", MousePosY: " << mousePosY;
 	if (textLayoutMousePos != nullptr)
 		textLayoutMousePos->Release();
-	writeFactory->CreateTextLayout(outMousePos.str().c_str(), (unsigned int)outMousePos.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutMousePos);
+	writeFactory->CreateTextLayout(outMousePos.str().c_str(), (unsigned int)outMousePos.str().size(), textFormatFPS, (float)GetClientWidth(), (float)GetClientHeight(), &textLayoutMousePos);
 	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
 
 	// draw all GameObjects
@@ -638,7 +648,7 @@ void DirectXManager::InitializeShaders()
     pixelShaderBuffer = LoadShader(L"PixelShader.cso");
     device->CreatePixelShader(pixelShaderBuffer.buffer, pixelShaderBuffer.size, nullptr, &pixelShader);
 
-	projectionTransform = XMMatrixOrthographicLH((float)clientWidth, (float)clientHeight, 0.1f, 5000.0f);
+	projectionTransform = XMMatrixOrthographicLH((float)GetClientWidth(), (float)GetClientHeight(), 0.1f, 5000.0f);
 }
 
 void DirectXManager::InitializeBuffers()
@@ -776,7 +786,7 @@ bool DirectXManager::HandleEvent(const Event* event)
 		}
 		case EventType::MouseMoveEvent:
 		{
-			const auto derivedEvent = (MouseMoveEvent*)event;
+			const auto derivedEvent = (MouseEvent*)event;
 
 			mousePosX = derivedEvent->mousePosX;
 			mousePosY = derivedEvent->mousePosY;

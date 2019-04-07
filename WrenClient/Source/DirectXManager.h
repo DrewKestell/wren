@@ -41,8 +41,6 @@ class DirectXManager : public Observer
 	std::vector<Observer*>* observers;
     std::vector<UICharacterListing*>* characterList = new std::vector<UICharacterListing*>;
     std::string token = "";
-    unsigned int clientWidth;
-    unsigned int clientHeight;
     GameTimer& timer;
     SocketManager& socketManager;
 	float mousePosX;
@@ -56,7 +54,8 @@ class DirectXManager : public Observer
     ID3D11DeviceContext* immediateContext = nullptr;
     ID3D11RenderTargetView* backBufferRenderTargetView = nullptr;
 	ID3D11RenderTargetView* offscreenRenderTargetView = nullptr;
-    ID3D11DepthStencilView* depthStencilView = nullptr;
+    ID3D11DepthStencilView* multisampledDepthStencilView = nullptr;
+	ID3D11DepthStencilView* depthStencilView = nullptr;
 	ID3D11Texture2D* backBuffer = nullptr;
 	ID3D11Texture2D* offscreenRenderTarget = nullptr;
 

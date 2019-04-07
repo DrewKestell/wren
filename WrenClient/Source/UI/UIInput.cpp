@@ -2,7 +2,7 @@
 #include "UIInput.h"
 #include "UIComponent.h"
 #include "../EventHandling/Observer.h"
-#include "../EventHandling/Events/MouseDownEvent.h"
+#include "../EventHandling/Events/MouseEvent.h"
 #include "../EventHandling/Events/KeyDownEvent.h"
 #include "../EventHandling/Events/SystemKeyDownEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
@@ -51,11 +51,11 @@ bool UIInput::HandleEvent(const Event* event)
 	const auto type = event->type;
 	switch (type)
 	{
-		case EventType::MouseDownEvent:
+		case EventType::LeftMouseDownEvent:
 		{
 			active = false;
 
-			const auto mouseDownEvent = (MouseDownEvent*)event;
+			const auto mouseDownEvent = (MouseEvent*)event;
 
 			if (isVisible)
 			{

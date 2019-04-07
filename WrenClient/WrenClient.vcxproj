@@ -19,11 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
     <ClCompile Include="Source\DirectXManager.cpp" />
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
+    <ClInclude Include="Source\Camera.h" />
+    <ClInclude Include="Source\CardinalDirection.h" />
+    <ClInclude Include="Source\EventHandling\Events\LeftMouseUpEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\RightMouseDownEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\RigthMouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
     <ClCompile Include="Source\GameMap\GameMap.cpp" />
     <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
@@ -31,6 +37,7 @@
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\Model.cpp" />
+    <ClCompile Include="Source\PlayerController.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -138,7 +145,7 @@
     <ClInclude Include="Source\EventHandling\Events\KeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\LoginFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\MouseDownEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\LeftMouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\EventType.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseMoveEvent.h" />
@@ -154,6 +161,7 @@
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Source\Model.h" />
+    <ClInclude Include="Source\PlayerController.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\Utility.h" />
@@ -223,6 +231,7 @@
     <Text Include="Include\assimp\AssimpDelphi\Readme.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Textures\grass01.DDS" />
     <Image Include="Textures\texture01.dds" />
     <Image Include="Textures\texture02.dds" />
   </ItemGroup>
