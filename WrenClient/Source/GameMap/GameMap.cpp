@@ -6,9 +6,10 @@ const unsigned int TILE_WIDTH = 60;
 const unsigned int TILE_HEIGHT = 60;
 
 // this can be optimized. there are more shared vertices here (between tiles).
-GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader)
+GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
 	: vertexShader{ vertexShader },
-	  pixelShader{ pixelShader }
+	  pixelShader{ pixelShader }, 
+	  texture{ texture }
 {
 	std::vector<Vertex> vertices = std::vector<Vertex>(MAP_SIZE * 4);
 	std::vector<unsigned int> indices = std::vector<unsigned int>(MAP_SIZE * 6, 0);
@@ -27,9 +28,9 @@ GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShade
 		const auto bottomRight = (i * 4) + 3;
 
 		vertices[bottomLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{0.0f, 0.0f} };
-		vertices[topLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z + TILE_HEIGHT }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{0.0f, 0.0f} };
-		vertices[topRight] = Vertex{ XMFLOAT3{ x + TILE_WIDTH, 0.0f, z + TILE_HEIGHT }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{0.0f, 0.0f} };
-		vertices[bottomRight] = Vertex{ XMFLOAT3{ x + TILE_WIDTH, 0.0f, z }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{0.0f, 0.0f} };
+		vertices[topLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z + TILE_HEIGHT }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{1.0f, 0.0f} };
+		vertices[topRight] = Vertex{ XMFLOAT3{ x + TILE_WIDTH, 0.0f, z + TILE_HEIGHT }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{1.0f, 1.0f} };
+		vertices[bottomRight] = Vertex{ XMFLOAT3{ x + TILE_WIDTH, 0.0f, z }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{0.0f, 1.0f} };
 
 		indices[i * 6] = bottomLeft;
 		indices[(i * 6) + 1] = topLeft;
@@ -105,6 +106,7 @@ void GameMap::Draw(ID3D11DeviceContext* immediateContext, XMMATRIX viewTransform
 
 	// setup PixelShader
 	immediateContext->PSSetShader(pixelShader, nullptr, 0);
+	immediateContext->PSSetShaderResources(0, 1, &texture);
 
 	// set VertexBuffer and IndexBuffer then Draw
 	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);

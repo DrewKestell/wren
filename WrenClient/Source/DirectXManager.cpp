@@ -219,7 +219,7 @@ void DirectXManager::Initialize(HWND hWnd)
 	InitializeRasterStates();
 	InitializeTextures();
 
-	gameMap = new GameMap(device, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader, pixelShader);
+	gameMap = new GameMap(device, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader, pixelShader, grass01SRV);
 
 	std::string path = "../../WrenClient/Models/sphere.blend";
 	sphereModel = new Model(device, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader, pixelShader, color02SRV, path);
@@ -556,10 +556,11 @@ void DirectXManager::DrawScene()
 		XMVECTORF32 s_Up = { 0.0f, 1.0f, 0.0f, 0.0f };
 		viewTransform = XMMatrixLookAtLH(s_Eye, s_At, s_Up);
 
-		immediateContext->RSSetState(wireframeRasterState);
+		immediateContext->RSSetState(solidRasterState);
+
+		//immediateContext->RSSetState(wireframeRasterState);
 		gameMap->Draw(immediateContext, viewTransform, projectionTransform);
 
-		immediateContext->RSSetState(solidRasterState);
 		sphereModel->Draw(immediateContext, viewTransform, projectionTransform);
 		treeModel->Draw(immediateContext, viewTransform, projectionTransform);
 	}
@@ -681,6 +682,7 @@ void DirectXManager::InitializeTextures()
 {
 	CreateDDSTextureFromFile(device, L"../../WrenClient/Textures/texture01.dds", nullptr, &color01SRV);
 	CreateDDSTextureFromFile(device, L"../../WrenClient/Textures/texture02.dds", nullptr, &color02SRV);
+	CreateDDSTextureFromFile(device, L"../../WrenClient/Textures/grass01.dds", nullptr, &grass01SRV);
 }
 
 ShaderBuffer DirectXManager::LoadShader(std::wstring filename)

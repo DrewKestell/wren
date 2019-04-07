@@ -24,7 +24,7 @@ class DirectXManager : public Observer
 	int currentZ = 0;
 
 	float camX = 500.0f;
-	float camY = 550.0f;
+	float camY = 650.0f;
 	float camZ = -500.0f;
 
 	XMMATRIX worldTransform;
@@ -149,6 +149,7 @@ class DirectXManager : public Observer
 	// Textures
 	ID3D11ShaderResourceView* color01SRV = nullptr;
 	ID3D11ShaderResourceView* color02SRV = nullptr;
+	ID3D11ShaderResourceView* grass01SRV = nullptr;
 
 	// Raster States
 	ID3D11RasterizerState* wireframeRasterState = nullptr;
