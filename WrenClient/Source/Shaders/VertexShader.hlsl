@@ -6,13 +6,15 @@ cbuffer cbPerObject : register(b0)
 struct VertexIn
 {
 	float3 Pos : POSITION;
-	//float4 Color : COLOR;
+	float3 Normal : NORMAL;
+	float2 TexCoords : TEXCOORDS;
 };
 
 struct VertexOut
 {
 	float4 Pos : SV_POSITION;
-	float4 Color : COLOR;
+	float4 Normal : NORMAL;
+	float2 TexCoords : TEXCOORDS;
 };
 
 VertexOut main(VertexIn vin)
@@ -22,9 +24,11 @@ VertexOut main(VertexIn vin)
 	// Transform to homogenous clip space
 	vout.Pos = mul(float4(vin.Pos, 1.0f), gWorldViewProj);
 
-	// Pass the color through without modification
-	//vout.Color = vin.Color;
-	vout.Color = float4(0.26f, 0.8f, 0.976f, 1.0f);
+	// Pass normal vector through
+	vout.Normal = normalize(float4(vin.Normal, 0.0f));
+
+	// Pass texture coords through
+	vout.TexCoords = vin.TexCoords;
 
 	return vout;
 }

@@ -19,14 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\DDSTextureLoader.cpp" />
     <ClCompile Include="Source\DirectXManager.cpp" />
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
+    <ClCompile Include="Source\GameMap\GameMap.cpp" />
     <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
     <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
+    <ClCompile Include="Source\Mesh.cpp" />
+    <ClCompile Include="Source\Model.cpp" />
     <ClCompile Include="Source\Utility.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
@@ -115,6 +119,9 @@
     <ClInclude Include="Include\assimp\version.h" />
     <ClInclude Include="Include\assimp\Vertex.h" />
     <ClInclude Include="Include\assimp\XMLTools.h" />
+    <ClInclude Include="Source\ConstantBufferPerFrame.h" />
+    <ClInclude Include="Source\ConstantBufferPerObject.h" />
+    <ClInclude Include="Source\DDSTextureLoader.h" />
     <ClInclude Include="Source\DirectXManager.h" />
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
     <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
@@ -154,6 +161,7 @@
     <ClInclude Include="Source\UI\UICharacterListing.h" />
     <ClInclude Include="Source\UI\UIInput.h" />
     <ClInclude Include="Source\UI\UILabel.h" />
+    <ClInclude Include="Source\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl">
@@ -199,6 +207,7 @@
     <None Include="Include\assimp\SmoothingGroups.inl" />
     <None Include="Include\assimp\vector2.inl" />
     <None Include="Include\assimp\vector3.inl" />
+    <None Include="Lib\assimp-vc140-mt.dll" />
     <None Include="Models\sphere.blend" />
   </ItemGroup>
   <ItemGroup>
@@ -206,6 +215,10 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Include\assimp\AssimpDelphi\Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Textures\texture01.dds" />
+    <Image Include="Textures\texture02.dds" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

@@ -35,7 +35,6 @@ DirectXManager* dxManager;
 EventHandler* g_eventHandler;
 SocketManager* socketManager;
 ObjectManager* objectManager;
-GameMap* gameMap;
 
 int CALLBACK WinMain(
     _In_ HINSTANCE hInstance,
@@ -95,8 +94,7 @@ int CALLBACK WinMain(
 		g_eventHandler = new EventHandler;
 		objectManager = new ObjectManager;
 		socketManager = new SocketManager;
-		gameMap = new GameMap{ *objectManager };
-        dxManager = new DirectXManager{ *timer, *socketManager, *objectManager, *gameMap };
+        dxManager = new DirectXManager{ *timer, *socketManager, *objectManager };
         dxManager->Initialize(hWnd);
 
         // Main game loop:

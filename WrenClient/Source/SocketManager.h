@@ -1,5 +1,8 @@
 #pragma once
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 #include <string>

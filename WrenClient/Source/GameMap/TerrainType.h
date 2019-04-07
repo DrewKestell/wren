@@ -2,6 +2,6 @@
 
 enum class TerrainType
 {
-	Dirt,
-	Grass
+	Dirt = 0,
+	Grass = 1
 };

@@ -34,24 +34,25 @@ struct ShaderBuffer
 
 class DirectXManager : public Observer
 {
-	float camX = 0.1f;
-	float camY = 0.1f;
-	float camZ = -10.1f;
+	int currentX = 0;
+	int currentZ = 0;
+
+	float camX = 500.0f;
+	float camY = 550.0f;
+	float camZ = -500.0f;
 
 	DirectX::XMMATRIX worldTransform;
 	DirectX::XMMATRIX viewTransform;
 	DirectX::XMMATRIX projectionTransform;
 
 	Model* sphereModel;
+	Model* treeModel;
 
 	Layer activeLayer = Login;
 	std::string characterNamePendingDeletion;
 	ObjectManager& objectManager;
-	GameMap& gameMap;
+	GameMap* gameMap;
 	std::vector<Observer*>* observers;
-	ID3D11Buffer* buffer = nullptr;
-	ID3D11Buffer* indexBuffer = nullptr;
-	ID3D11Buffer* constantBuffer = nullptr;
     std::vector<UICharacterListing*>* characterList = new std::vector<UICharacterListing*>;
     std::string token = "";
     UINT clientWidth;
@@ -148,10 +149,24 @@ class DirectXManager : public Observer
     UIPanel* gameEditorPanel;
 
 	// Shaders
+	ShaderBuffer vertexShaderBuffer;
 	ID3D11VertexShader* vertexShader;
+	ShaderBuffer pixelShaderBuffer;
 	ID3D11PixelShader* pixelShader;
 
+	// InputLayouts
 	ID3D11InputLayout* inputLayout;
+
+	// Textures
+	ID3D11ShaderResourceView* color01SRV;
+	ID3D11ShaderResourceView* color02SRV;
+
+	// Raster States
+	ID3D11RasterizerState* wireframeRasterState;
+	ID3D11RasterizerState* solidRasterState;
+	
+	// Buffers
+	ID3D11Buffer* constantBufferPerFrame = nullptr;
 
     void InitializeBrushes();
     void InitializeTextFormats();
@@ -161,14 +176,14 @@ class DirectXManager : public Observer
     void InitializePanels();
     void RecreateCharacterListings(const std::vector<std::string*>* characterNames);
     void InitializeGameWorld();
+	void InitializeTextures();
     ShaderBuffer LoadShader(std::wstring filename);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();
 public:
-	DirectXManager(GameTimer& timer, SocketManager& socketManager, ObjectManager& objectManager, GameMap& gameMap)
+	DirectXManager(GameTimer& timer, SocketManager& socketManager, ObjectManager& objectManager)
 		: objectManager{ objectManager },
 		timer{ timer },
-		socketManager{ socketManager },
-		gameMap{ gameMap }
+		socketManager{ socketManager }
 	{
 	};
     void Initialize(HWND hWnd);

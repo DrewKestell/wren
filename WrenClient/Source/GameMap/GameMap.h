@@ -1,16 +1,33 @@
 #pragma once
 
+#include <d3d11.h>
 #include <vector>
-#include "../ObjectManager.h"
+#include <DirectXMath.h>
 #include "GameMapTile.h"
+#include "../ConstantBufferPerObject.h"
+#include "../Vertex.h"
+
+const unsigned int MAP_WIDTH = 100;
+const unsigned int MAP_HEIGHT = 100;
+constexpr unsigned int MAP_SIZE = MAP_WIDTH * MAP_HEIGHT;
+constexpr unsigned int INDEX_COUNT = MAP_SIZE * 6;
+
+using namespace DirectX;
 
 class GameMap
 {
-	std::vector<std::vector<GameMapTile>> mapTiles;
+	XMMATRIX worldTransform = XMMatrixIdentity();
+	unsigned int stride = sizeof(Vertex);
+	unsigned int offset = 0;
+	ID3D11VertexShader* vertexShader = nullptr;
+	ID3D11PixelShader* pixelShader = nullptr;
+	ID3D11InputLayout* inputLayout;
+	ID3D11Buffer* vertexBuffer;
+	ID3D11Buffer* indexBuffer;
+	ID3D11Buffer* constantBuffer;
+	std::vector<GameMapTile> mapTiles = std::vector<GameMapTile>(MAP_SIZE, GameMapTile{TerrainType::Dirt});
 public:
-	GameMap(ObjectManager& objectManager)
-	{
-		const auto row = std::vector<GameMapTile>(10, GameMapTile{ DirectX::XMFLOAT3{0, 0, 0}, objectManager, TerrainType::Dirt });
-		mapTiles = std::vector<std::vector<GameMapTile>>(10, row);
-	}
+	GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader);
+	GameMapTile& GetTile(int row, int col);
+	void Draw(ID3D11DeviceContext* immediateContext, XMMATRIX viewTransform, XMMATRIX projectionTransform);
 };

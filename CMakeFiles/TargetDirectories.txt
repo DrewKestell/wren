@@ -1,2 +1,0 @@
-C:/Repos/wren/CMakeFiles/ALL_BUILD.dir
-C:/Repos/wren/CMakeFiles/ZERO_CHECK.dir

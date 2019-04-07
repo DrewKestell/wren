@@ -20,6 +20,10 @@
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
     <ClCompile Include="Source\Utility.cpp" />
     <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
+    <ClCompile Include="Source\GameMap\GameMap.cpp" />
+    <ClCompile Include="Source\Model.cpp" />
+    <ClCompile Include="Source\Mesh.cpp" />
+    <ClCompile Include="Source\DDSTextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DirectXManager.h" />
@@ -136,6 +140,10 @@
     <ClInclude Include="Include\assimp\Compiler\poppack1.h" />
     <ClInclude Include="Include\assimp\Compiler\pstdint.h" />
     <ClInclude Include="Include\assimp\Compiler\pushpack1.h" />
+    <ClInclude Include="Source\ConstantBufferPerObject.h" />
+    <ClInclude Include="Source\DDSTextureLoader.h" />
+    <ClInclude Include="Source\ConstantBufferPerFrame.h" />
+    <ClInclude Include="Source\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />
@@ -164,11 +172,16 @@
     <None Include="Include\assimp\AssimpDelphi\aiVector2D.pas" />
     <None Include="Include\assimp\AssimpDelphi\aiVector3D.pas" />
     <None Include="Include\assimp\AssimpDelphi\assimp.pas" />
+    <None Include="Lib\assimp-vc140-mt.dll" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Lib\assimp-vc140-mt.lib" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Include\assimp\AssimpDelphi\Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Textures\texture01.dds" />
+    <Image Include="Textures\texture02.dds" />
   </ItemGroup>
 </Project>

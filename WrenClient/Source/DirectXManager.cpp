@@ -1,12 +1,12 @@
-#include "Model.h"
 #include "SocketManager.h"
+#include "Model.h"
+#include "DirectXManager.h"
 #include <d3d11.h>
 #include <d2d1_3.h>
 #include <dwrite_3.h>
-#include "DirectXManager.h"
-#include "Windows.h"
 #include "Layer.h"
 #include <fstream>  
+#include "Windows.h"
 #include "EventHandling/Events/MouseMoveEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
@@ -16,6 +16,10 @@
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
+#include "DDSTextureLoader.h"
+#include "ConstantBufferPerFrame.h"
+
+using namespace DirectX;
 
 extern EventHandler* g_eventHandler;
 
@@ -136,13 +140,15 @@ void DirectXManager::Initialize(HWND hWnd)
     if (FAILED(hr))
         throw std::exception("Failed to create texture depth stencil view.");
 
-	CD3D11_RASTERIZER_DESC rasterDesc(D3D11_FILL_SOLID, D3D11_CULL_NONE, FALSE,
+	CD3D11_RASTERIZER_DESC wireframeRasterStateDesc(D3D11_FILL_WIREFRAME, D3D11_CULL_NONE, FALSE,
         D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
         D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE);
+	device->CreateRasterizerState(&wireframeRasterStateDesc, &wireframeRasterState);
 
-    ID3D11RasterizerState* rasterState;
-    device->CreateRasterizerState(&rasterDesc, &rasterState);
-    immediateContext->RSSetState(rasterState);
+	CD3D11_RASTERIZER_DESC solidRasterStateDesc(D3D11_FILL_SOLID, D3D11_CULL_NONE, FALSE,
+		D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
+		D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE);
+    device->CreateRasterizerState(&solidRasterStateDesc, &solidRasterState);
 
     // Setup the viewport
     D3D11_VIEWPORT vp;
@@ -201,10 +207,6 @@ void DirectXManager::Initialize(HWND hWnd)
     // set the newly created bitmap as render target
     d2dDeviceContext->SetTarget(targetBitmap);
 
-	// model import test
-	std::string path = "../../WrenClient/Models/sphere.blend";
-	sphereModel = new Model(path);
-
     InitializeBrushes();
     InitializeTextFormats();
     InitializeInputs();
@@ -212,13 +214,22 @@ void DirectXManager::Initialize(HWND hWnd)
     InitializeLabels();
     InitializePanels();
     InitializeGameWorld();
+	InitializeTextures();
+
+	gameMap = new GameMap(device, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader, pixelShader);
+
+	// model import test
+	std::string path = "../../WrenClient/Models/sphere.blend";
+	sphereModel = new Model(device, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader, pixelShader, color02SRV, path);
+
+	path = "../../WrenClient/Models/tree.blend";
+	treeModel = new Model(device, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader, pixelShader, color01SRV, path);
+	treeModel->SetPosition(3, 3);
 
 	SetActiveLayer(InGame);
 
 	wchar_t result[MAX_PATH];
 	auto foo = std::wstring(result, GetModuleFileName(NULL, result, MAX_PATH));
-
-	
 }
 
 void DirectXManager::InitializeBrushes()
@@ -614,8 +625,14 @@ void DirectXManager::DrawScene()
     writeFactory->CreateTextLayout(outMousePos.str().c_str(), (UINT32)outMousePos.str().size(), textFormatFPS, (float)clientWidth, (float)clientHeight, &textLayoutMousePos);
     d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
 
-    UINT stride = sizeof(Vertex);
-    UINT offset = 0;
+	// map ConstantBuffer
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	immediateContext->Map(constantBufferPerFrame, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	auto pCB = reinterpret_cast<ConstantBufferPerFrame*>(mappedResource.pData);
+	XMStoreFloat4(&pCB->directionalLight, XMVECTOR{ 0.0f, -1.0f, 0.5f, 0.0f });
+	immediateContext->Unmap(constantBufferPerFrame, 0);
+
+	immediateContext->PSSetConstantBuffers(1, 1, &constantBufferPerFrame);
 
 	// draw all GameObjects
 	objectManager.Draw();
@@ -623,35 +640,17 @@ void DirectXManager::DrawScene()
 	// draw test triangle - TODO: move this into GameObjects
 	if (activeLayer == InGame)
 	{
-
-		immediateContext->IASetInputLayout(inputLayout);
-
-		DirectX::XMVECTORF32 s_Eye = { camX, camY, camZ, 0.f };
-		DirectX::XMVECTORF32 s_At = { camX, camY, camZ + 1.0f, 0.f };
-		DirectX::XMVECTORF32 s_Up = { 0.0f, 1.0f, 0.0f, 0.f };
+		DirectX::XMVECTORF32 s_Eye = { camX, camY, camZ, 0.0f };
+		DirectX::XMVECTORF32 s_At = { camX - 500.0f, 0.0f, camZ + 500.0f, 0.0f };
+		DirectX::XMVECTORF32 s_Up = { 0.0f, 1.0f, 0.0f, 0.0f };
 		viewTransform = DirectX::XMMatrixLookAtLH(s_Eye, s_At, s_Up);
 
-		// Update constant buffer that changes once per frame
-		DirectX::XMMATRIX worldViewProjection = worldTransform * viewTransform * projectionTransform;
+		immediateContext->RSSetState(wireframeRasterState);
+		gameMap->Draw(immediateContext, viewTransform, projectionTransform);
 
-		D3D11_MAPPED_SUBRESOURCE mappedResource;
-
-		immediateContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-
-		auto pCB = reinterpret_cast<CBChangesEveryFrame*>(mappedResource.pData);
-
-		XMStoreFloat4x4(&pCB->mWorldViewProj, DirectX::XMMatrixTranspose(worldViewProjection));
-
-		immediateContext->Unmap(constantBuffer, 0);
-
-		immediateContext->VSSetShader(vertexShader, nullptr, 0);
-		immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
-		immediateContext->PSSetShader(pixelShader, nullptr, 0);
-
-		immediateContext->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
-		immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		immediateContext->DrawIndexed(sphereModel->GetMesh().indices.size(), 0, 0);
+		immediateContext->RSSetState(solidRasterState);
+		sphereModel->Draw(immediateContext, viewTransform, projectionTransform);
+		treeModel->Draw(immediateContext, viewTransform, projectionTransform);
 	}
 	
     d2dDeviceContext->EndDraw();
@@ -675,88 +674,30 @@ void DirectXManager::RecreateCharacterListings(const std::vector<std::string*>* 
 }
 void DirectXManager::InitializeGameWorld()
 {
-	std::vector<Vertex> vertices = 
-	{
-		Vertex{XMFLOAT3{-1.0f, 1.0f, 0.0f}}, Vertex{XMFLOAT3{-1.0f, -1.0f, 0.0f}},
-		Vertex{XMFLOAT3{1.0f, 1.0f, 0.0f}}, Vertex{XMFLOAT3{1.0f, -1.0f, 0.0f}}
-	};
+    vertexShaderBuffer = LoadShader(L"VertexShader.cso");
+    device->CreateVertexShader(vertexShaderBuffer.buffer, vertexShaderBuffer.size, nullptr, &vertexShader);
 
-	std::vector<unsigned int> indices =
-	{
-		0u, 1u, 3u,
-		0u, 2u, 3u
-	};
+    pixelShaderBuffer = LoadShader(L"PixelShader.cso");
+    device->CreatePixelShader(pixelShaderBuffer.buffer, pixelShaderBuffer.size, nullptr, &pixelShader);
 
+	projectionTransform = DirectX::XMMatrixOrthographicLH((float)clientWidth, (float)clientHeight, 0.1f, 5000.0f);
+
+	// create constant buffer
 	D3D11_BUFFER_DESC bufferDesc;
 	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
-    bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = sizeof(Vertex) * sphereModel->GetMesh().vertices.size();
-    //bufferDesc.ByteWidth = sizeof(Vertex) * vertices.size();
-    bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
 	bufferDesc.MiscFlags = 0;
+	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	bufferDesc.ByteWidth = sizeof(ConstantBufferPerFrame);
 
-    D3D11_SUBRESOURCE_DATA vertexData;
-	vertexData.pSysMem = sphereModel->GetMesh().vertices.data();
-	//vertexData.pSysMem = vertices.data();
+	device->CreateBuffer(&bufferDesc, nullptr, &constantBufferPerFrame);
+}
 
-    device->CreateBuffer(&bufferDesc, &vertexData, &buffer);
-
-	// Create index buffer
-	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bufferDesc.ByteWidth = sizeof(unsigned int) * sphereModel->GetMesh().indices.size();
-	//bufferDesc.ByteWidth = sizeof(unsigned int) * indices.size();
-
-	D3D11_SUBRESOURCE_DATA indexData;
-	indexData.pSysMem = sphereModel->GetMesh().indices.data();
-	//indexData.pSysMem = indices.data();
-
-	device->CreateBuffer(&bufferDesc, &indexData, &indexBuffer);
-
-	// Create constant buffer
-	D3D11_BUFFER_DESC constBufferDesc;
-	ZeroMemory(&constBufferDesc, sizeof(constBufferDesc));
-	constBufferDesc.MiscFlags = 0;
-	constBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	constBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	constBufferDesc.ByteWidth = sizeof(CBChangesEveryFrame);
-
-	device->CreateBuffer(&constBufferDesc, nullptr, &constantBuffer);
-
-    ShaderBuffer vertexShaderBytes = LoadShader(L"VertexShader.cso");
-    device->CreateVertexShader(vertexShaderBytes.buffer, vertexShaderBytes.size, nullptr, &vertexShader);
-
-    ShaderBuffer pixelShaderBytes = LoadShader(L"PixelShader.cso");
-    device->CreatePixelShader(pixelShaderBytes.buffer, pixelShaderBytes.size, nullptr, &pixelShader);
-	
-    D3D11_INPUT_ELEMENT_DESC ied[] =
-    {
-        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,   D3D11_INPUT_PER_VERTEX_DATA, 0}
-		//{"COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12,  D3D11_INPUT_PER_VERTEX_DATA, 0}
-    };
-
-    
-    device->CreateInputLayout(ied, ARRAYSIZE(ied), vertexShaderBytes.buffer, vertexShaderBytes.size, &inputLayout);
-    
-
-	// matrix stuff
-	worldTransform = DirectX::XMMatrixScaling(200.0f, 200.0f, 200.0f);
-
-	//viewTransform = DirectX::XMMatrixIdentity();
-	/*auto spherePt = sphereModel->GetMesh().vertices.at(0);
-	auto x = spherePt.Position.x * 100.0f;
-	auto y = spherePt.Position.y * 100.0f;
-	auto z = spherePt.Position.z * 100.0f;*/
-	
-
-	projectionTransform = DirectX::XMMatrixOrthographicLH((float)clientWidth, (float)clientHeight, 0.1f, 1000.0f);
-	// Setup the projection matrix.
-	//auto fieldOfView = 3.141592654f / 4.0f;
-	//auto screenAspect = (float)clientWidth / (float)clientHeight;
-
-	//// Create the projection matrix for 3D rendering.
-	//projectionTransform = DirectX::XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, 0.1f, 100.0f);
+void DirectXManager::InitializeTextures()
+{
+	CreateDDSTextureFromFile(device, L"../../WrenClient/Textures/texture01.dds", nullptr, &color01SRV);
+	CreateDDSTextureFromFile(device, L"../../WrenClient/Textures/texture02.dds", nullptr, &color02SRV);
 }
 
 ShaderBuffer DirectXManager::LoadShader(std::wstring filename)
@@ -795,24 +736,56 @@ bool DirectXManager::HandleEvent(const Event* event)
 		{
 			const auto derivedEvent = (KeyDownEvent*)event;
 
-			if (derivedEvent->charCode == 'w')
-				camZ += 0.5f;
-			if (derivedEvent->charCode == 'q')
-				camX -= 0.5f;
+			if (derivedEvent->charCode == '7' && currentX > 0)
+			{
+				currentX--;
+				camX -= 60.0f;
+			}
+			if (derivedEvent->charCode == '8' && currentX > 0 && currentZ < 100)
+			{
+				currentX--;
+				currentZ++;
+				camX -= 60.0f;
+				camZ += 60.0f;
+			}
+			if (derivedEvent->charCode == '9' && currentZ < 100)
+			{
+				currentZ++;
+				camZ += 60.0f;
+			}
+			if (derivedEvent->charCode == '6' && currentX < 100 && currentZ < 100)
+			{
+				currentX++;
+				currentZ++;
+				camX += 60.0f;
+				camZ += 60.0f;
+			}
+			if (derivedEvent->charCode == '3' && currentX < 100)
+			{
+				currentX++;
+				camX += 60.0f;
+			}
+			if (derivedEvent->charCode == '2' && currentX < 100 && currentZ > 0)
+			{
+				currentX++;
+				currentZ--;
+				camX += 60.0f;
+				camZ -= 60.0f;
+			}
+			if (derivedEvent->charCode == '1' && currentZ > 0)
+			{
+				currentZ--;
+				camZ -= 60.0f;
+			}
+			if (derivedEvent->charCode == '4' && currentX > 0 && currentZ > 0)
+			{
+				currentX--;
+				currentZ--;
+				camX -= 60.0f;
+				camZ -= 60.0f;
+			}
 
-			if (derivedEvent->charCode == 's')
-				camZ -= 0.5f;
-			if (derivedEvent->charCode == 'e')
-				camX += 0.5f;
-
-			if (derivedEvent->charCode == 'r')
-				camY += 0.5f;
-			if (derivedEvent->charCode == 'f')
-				camY -= 0.5f;
-
-			std::cout << "CamX: " << camX << "\n";
-			std::cout << "CamY: " << camY << "\n";
-			std::cout << "CamZ: " << camZ << "\n\n";
+			sphereModel->SetPosition(currentZ, currentX);
 			
 			break;
 		}

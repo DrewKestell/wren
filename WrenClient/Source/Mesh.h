@@ -1,25 +1,20 @@
 #pragma once
 
+#include <d3d11.h>
 #include <DirectXMath.h>
 #include <vector>
+#include "Vertex.h"
 
 using namespace DirectX;
 
-struct Vertex
-{
-	XMFLOAT3 Position;
-	//XMFLOAT4 Color;
-	//XMFLOAT3 Normal;
-};
-
 class Mesh
 {
+	unsigned int stride = sizeof(Vertex);
+	unsigned int offset = 0;
+	int indexCount = 0;
+	ID3D11Buffer* vertexBuffer = nullptr;
+	ID3D11Buffer* indexBuffer = nullptr;
 public:
-	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
-		: vertices{ vertices },
-		  indices{ indices }
-	{
-	}
-	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
+	Mesh(ID3D11Device* device, std::vector<Vertex> vertices, std::vector<unsigned int> indices);
+	void Draw(ID3D11DeviceContext* immediateContext, XMMATRIX viewTransform, XMMATRIX projectionTransform);
 };

@@ -3,17 +3,12 @@
 #include "../GameObject.h"
 #include "TerrainType.h"
 
-class GameMapTile : public GameObject
+class GameMapTile
 {
 	TerrainType terrainType;
 public:
-	GameMapTile(
-		const DirectX::XMFLOAT3 position,
-		ObjectManager& objectManager,
-		const TerrainType terrainType)
-		: GameObject(objectManager, position),
-		  terrainType{ terrainType }
+	GameMapTile(TerrainType terrainType)
+		: terrainType{ terrainType }
 	{
 	}
-	virtual void Draw();
 };
