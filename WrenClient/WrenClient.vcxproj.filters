@@ -184,6 +184,8 @@
     <None Include="Include\assimp\AssimpDelphi\aiVector3D.pas" />
     <None Include="Include\assimp\AssimpDelphi\assimp.pas" />
     <None Include="Lib\assimp-vc140-mt.dll" />
+    <None Include="Models\cube.blend" />
+    <None Include="Models\tree.blend" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Lib\assimp-vc140-mt.lib" />

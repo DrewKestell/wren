@@ -3,22 +3,27 @@
 #include "EventHandling/Observer.h"
 #include "CardinalDirection.h"
 #include "GameTimer.h"
+#include "Model.h"
+#include "Camera.h"
 
 // 60 pixels (1 tile) per second, 0.06 pixels per ms
-const float MOVE_SPEED = 0.06;
+const float MOVE_SPEED = 100.0f;
 
 class PlayerController : public Observer
 {
-	float clientWidth;
-	float clientHeight;
+	GameTimer& gameTimer;
+	Model& player;
+	Camera& camera;
+	float clientWidth = 0.0f;
+	float clientHeight = 0.0f;
 	CardinalDirection currentMouseDirection;
-	bool isRightClickHeld;
-	bool isMoving;
+	bool isRightClickHeld = false;
+	bool isMoving = false;
 	CardinalDirection currentMovementDirection;
 
 	void UpdateCurrentMouseDirection(float mousePosX, float mousePosY);
 public:
-	PlayerController();
+	PlayerController(GameTimer& gameTimer, Model& player, Camera& camera);
 	virtual bool HandleEvent(const Event* event);
-	void Update(GameTimer& gameTimer);
+	void Update();
 };

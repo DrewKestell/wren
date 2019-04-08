@@ -10,7 +10,7 @@ Model::Model(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSiz
 	  texture{ texture }
 {
 	LoadModel(path);
-	SetPosition(0, 0);
+	Translate(XMMatrixScaling(20.0f, 20.0f, 20.0f) * XMMatrixTranslation(30.0f, 15.0f, 30.0f));
 
 	// create SamplerState
 	D3D11_SAMPLER_DESC samplerDesc;
@@ -162,9 +162,15 @@ void Model::Draw(ID3D11DeviceContext* immediateContext, XMMATRIX viewTransform, 
 		meshes.at(i).Draw(immediateContext, viewTransform, projectionTransform);
 }
 
-void Model::SetPosition(int row, int col)
+void Model::Translate(XMMATRIX matrix)
 {
-	auto x = (col * 60.0f) + 30.0f;
-	auto z = (row * 60.0f) + 30.0f;
-	worldTransform = XMMatrixScaling(25.0f, 25.0f, 25.0f) * XMMatrixTranslation(x, 15.0f, z);
+	worldTransform = worldTransform * matrix;
+}
+
+XMFLOAT3 Model::GetPosition()
+{
+	XMFLOAT4X4 flt;
+	XMStoreFloat4x4(&flt, worldTransform);
+
+	return XMFLOAT3{ flt._41, flt._42, flt._43 };
 }

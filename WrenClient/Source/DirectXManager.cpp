@@ -235,7 +235,7 @@ void DirectXManager::Initialize(HWND hWnd)
 
 	path = "../../WrenClient/Models/tree.blend";
 	treeModel = new Model(device, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader, pixelShader, color01SRV, path);
-	treeModel->SetPosition(3, 3);
+	treeModel->Translate(XMMatrixTranslation(90.0f, 0.0f, 90.0f));
 
 	SetActiveLayer(InGame);
 }
@@ -538,6 +538,8 @@ UICharacterListing* DirectXManager::GetCurrentlySelectedCharacterListing()
 
 void DirectXManager::DrawScene()
 {
+	playerController.Update(timer, *sphereModel, camera);
+
     HRESULT hr;
     float color[4];
     color[3] = 1.0f;
@@ -561,8 +563,9 @@ void DirectXManager::DrawScene()
 
 	if (activeLayer == InGame)
 	{
-		XMVECTORF32 s_Eye = { camX, camY, camZ, 0.0f };
-		XMVECTORF32 s_At = { camX - 500.0f, 0.0f, camZ + 500.0f, 0.0f };
+		auto camPos = camera.GetPosition();
+		XMVECTORF32 s_Eye = { camPos.x, camPos.y, camPos.z, 0.0f };
+		XMVECTORF32 s_At = { camPos.x - 500.0f, 0.0f, camPos.z + 500.0f, 0.0f };
 		XMVECTORF32 s_Up = { 0.0f, 1.0f, 0.0f, 0.0f };
 		viewTransform = XMMatrixLookAtLH(s_Eye, s_At, s_Up);
 
@@ -730,57 +733,6 @@ bool DirectXManager::HandleEvent(const Event* event)
 		case EventType::KeyDownEvent:
 		{
 			const auto derivedEvent = (KeyDownEvent*)event;
-
-			if (derivedEvent->charCode == '7' && currentX > 0)
-			{
-				currentX--;
-				camX -= 60.0f;
-			}
-			if (derivedEvent->charCode == '8' && currentX > 0 && currentZ < 100)
-			{
-				currentX--;
-				currentZ++;
-				camX -= 60.0f;
-				camZ += 60.0f;
-			}
-			if (derivedEvent->charCode == '9' && currentZ < 100)
-			{
-				currentZ++;
-				camZ += 60.0f;
-			}
-			if (derivedEvent->charCode == '6' && currentX < 100 && currentZ < 100)
-			{
-				currentX++;
-				currentZ++;
-				camX += 60.0f;
-				camZ += 60.0f;
-			}
-			if (derivedEvent->charCode == '3' && currentX < 100)
-			{
-				currentX++;
-				camX += 60.0f;
-			}
-			if (derivedEvent->charCode == '2' && currentX < 100 && currentZ > 0)
-			{
-				currentX++;
-				currentZ--;
-				camX += 60.0f;
-				camZ -= 60.0f;
-			}
-			if (derivedEvent->charCode == '1' && currentZ > 0)
-			{
-				currentZ--;
-				camZ -= 60.0f;
-			}
-			if (derivedEvent->charCode == '4' && currentX > 0 && currentZ > 0)
-			{
-				currentX--;
-				currentZ--;
-				camX -= 60.0f;
-				camZ -= 60.0f;
-			}
-
-			sphereModel->SetPosition(currentZ, currentX);
 			
 			break;
 		}

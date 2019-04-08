@@ -18,6 +18,7 @@ DirectXManager* dxManager;
 EventHandler* g_eventHandler;
 SocketManager* socketManager;
 ObjectManager* objectManager;
+Camera* camera;
 PlayerController* playerController;
 
 unsigned int GetClientWidth() { return clientWidth; }
@@ -86,10 +87,11 @@ int CALLBACK WinMain(
 		g_eventHandler = new EventHandler;
 		objectManager = new ObjectManager;
 		socketManager = new SocketManager;
-        dxManager = new DirectXManager{ *timer, *socketManager, *objectManager };
-        dxManager->Initialize(hWnd);
+		camera = new Camera;
 		playerController = new PlayerController;
-
+        dxManager = new DirectXManager{ *timer, *socketManager, *objectManager, *playerController, *camera };
+        dxManager->Initialize(hWnd);
+	
         // Main game loop:
         MSG msg = { 0 };
         timer->Reset();
@@ -108,7 +110,6 @@ int CALLBACK WinMain(
             // Tick game engine
             else
             {
-				playerController->Update(*timer);
                 timer->Tick();
 				g_eventHandler->PublishEvents();
                 dxManager->DrawScene();

@@ -4,7 +4,7 @@ class Mesh;
 
 class Model
 {
-	XMMATRIX worldTransform;
+	XMMATRIX worldTransform = XMMatrixIdentity();
 	ID3D11Device* device = nullptr;
 	ID3D11VertexShader* vertexShader = nullptr;
 	ID3D11PixelShader* pixelShader = nullptr;
@@ -20,5 +20,6 @@ class Model
 public:
 	Model(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture, std::string& path);
 	void Draw(ID3D11DeviceContext* immediateContext, XMMATRIX viewTransform, XMMATRIX projectionTransform);
-	void SetPosition(int row, int col);
+	void Translate(XMMATRIX matrix);
+	XMFLOAT3 GetPosition();
 };

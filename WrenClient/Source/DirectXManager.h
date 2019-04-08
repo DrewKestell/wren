@@ -5,6 +5,8 @@
 #include "GameTimer.h"
 #include "SocketManager.h"
 #include "GameMap/GameMap.h"
+#include "PlayerController.h"
+#include "Camera.h"
 #include "UI/UICharacterListing.h"
 #include "UI/UIInput.h"
 #include "UI/UIInputGroup.h"
@@ -22,11 +24,7 @@ class DirectXManager : public Observer
 {
 	int currentX = 0;
 	int currentZ = 0;
-
-	float camX = 500.0f;
-	float camY = 650.0f;
-	float camZ = -500.0f;
-
+	
 	XMMATRIX worldTransform;
 	XMMATRIX viewTransform;
 	XMMATRIX projectionTransform;
@@ -43,6 +41,8 @@ class DirectXManager : public Observer
     std::string token = "";
     GameTimer& timer;
     SocketManager& socketManager;
+	Camera& camera;
+	PlayerController& playerController;
 	float mousePosX;
 	float mousePosY;
 
@@ -168,10 +168,12 @@ class DirectXManager : public Observer
     ShaderBuffer LoadShader(std::wstring filename);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();
 public:
-	DirectXManager(GameTimer& timer, SocketManager& socketManager, ObjectManager& objectManager)
+	DirectXManager(GameTimer& timer, SocketManager& socketManager, ObjectManager& objectManager, PlayerController& playerController, Camera& camera)
 		: objectManager{ objectManager },
 		  timer{ timer },
-		  socketManager{ socketManager }
+		  socketManager{ socketManager },
+		  playerController{ playerController },
+		  camera{ camera }
 	{
 	};
     void Initialize(HWND hWnd);
