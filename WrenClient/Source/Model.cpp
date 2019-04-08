@@ -174,3 +174,8 @@ XMFLOAT3 Model::GetPosition()
 
 	return XMFLOAT3{ flt._41, flt._42, flt._43 };
 }
+
+void Model::SetPosition(XMFLOAT3 pos)
+{
+	worldTransform = XMMatrixScaling(20.0f, 20.0f, 20.0f) * XMMatrixTranslation(pos.x, pos.y, pos.z);
+}

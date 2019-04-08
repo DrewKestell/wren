@@ -11,6 +11,8 @@ const float MOVE_SPEED = 100.0f;
 
 class PlayerController : public Observer
 {
+	float destinationX = 0.0f;
+	float destinationZ = 0.0f;
 	GameTimer& gameTimer;
 	Model& player;
 	Camera& camera;

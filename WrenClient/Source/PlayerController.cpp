@@ -55,6 +55,8 @@ bool PlayerController::HandleEvent(const Event* event)
 // probably want a state machine here (moveState, etc)
 void PlayerController::Update()
 {
+	auto playerPos = player.GetPosition();
+
 	if (isMoving)
 	{
 		auto pixelsToMove = MOVE_SPEED * gameTimer.DeltaTime();
@@ -64,37 +66,37 @@ void PlayerController::Update()
 		if (currentMovementDirection == CardinalDirection::SouthWest)
 		{
 			if (playerPos.x >= 35.0f && playerPos.z >= 35.0f)
-				vec = XMFLOAT3{ (float)-pixelsToMove / 2, 0.0f, (float)-pixelsToMove / 2 };
+				vec = XMFLOAT3{ -pixelsToMove, 0.0f, -pixelsToMove };
 		}
 		else if (currentMovementDirection == CardinalDirection::South)
 		{
 			if (playerPos.z >= 35.0f)
-				vec = XMFLOAT3{ 0.0f, 0.0f, (float)-pixelsToMove };
+				vec = XMFLOAT3{ 0.0f, 0.0f, -pixelsToMove };
 		}
 		else if (currentMovementDirection == CardinalDirection::SouthEast)
 		{
 			if (playerPos.x <= 2965.0f && playerPos.z >= 35.0f)
-				vec = XMFLOAT3{ (float)pixelsToMove / 2, 0.0f, (float)-pixelsToMove / 2 };
+				vec = XMFLOAT3{ pixelsToMove, 0.0f, -pixelsToMove };
 		}
 		else if (currentMovementDirection == CardinalDirection::East)
 		{
 			if (playerPos.x <= 2965.0f)
-				vec = XMFLOAT3{ (float)pixelsToMove, 0.0f, 0.0f };
+				vec = XMFLOAT3{ pixelsToMove, 0.0f, 0.0f };
 		}
 		else if (currentMovementDirection == CardinalDirection::NorthEast)
 		{
 			if (playerPos.x <= 2965.0f && playerPos.z <= 2965.0f)
-				vec = XMFLOAT3{ (float)pixelsToMove / 2, 0.0f, (float)pixelsToMove / 2 };
+				vec = XMFLOAT3{ pixelsToMove, 0.0f, pixelsToMove };
 		}
 		else if (currentMovementDirection == CardinalDirection::North)
 		{
 			if (playerPos.z <= 2965.0f)
-				vec = XMFLOAT3{ 0.0f, 0.0f, (float)pixelsToMove };
+				vec = XMFLOAT3{ 0.0f, 0.0f, pixelsToMove };
 		}
 		else if (currentMovementDirection == CardinalDirection::NorthWest)
 		{
 			if (playerPos.x >= 35.0f && playerPos.z <= 2965.0f)
-				vec = XMFLOAT3{ (float)-pixelsToMove / 2, 0.0f, (float)pixelsToMove / 2 };
+				vec = XMFLOAT3{ -pixelsToMove, 0.0f, pixelsToMove };
 		}
 		else
 		{
@@ -102,20 +104,70 @@ void PlayerController::Update()
 				vec = XMFLOAT3{ -pixelsToMove, 0.0f, 0.0f };
 		}
 
-		if (vec.x == 0.0f)
+		if (vec.x == 0.0f && vec.y == 0.0f && vec.z == 0.0f)
+		{
+			isMoving = false;
 			return;
+		}
 
 		player.Translate(XMMatrixTranslation(vec.x, vec.y, vec.z));
 		camera.Translate(vec);
 
 		// if target is reached
-		if (false)
+		auto deltaX = std::abs(playerPos.x - destinationX);
+		auto deltaZ = std::abs(playerPos.z - destinationZ);
+
+		if (deltaX < 1.0f && deltaZ < 1.0f)
+		{
+			player.SetPosition(XMFLOAT3{ destinationX, 15.0f, destinationZ });
 			isMoving = false;
+		}
 	}
 	if (!isMoving && isRightClickHeld)
 	{
 		isMoving = true;
 		currentMovementDirection = currentMouseDirection;
+
+		if (currentMovementDirection == CardinalDirection::SouthWest)
+		{
+			destinationX = playerPos.x - 60.0f;
+			destinationZ = playerPos.z - 60.0f;
+		}
+		else if (currentMovementDirection == CardinalDirection::South)
+		{
+			destinationX = playerPos.x;
+			destinationZ = playerPos.z - 60.0f;
+		}
+		else if (currentMovementDirection == CardinalDirection::SouthEast)
+		{
+			destinationX = playerPos.x + 60.0f;
+			destinationZ = playerPos.z - 60.0f;
+		}
+		else if (currentMovementDirection == CardinalDirection::East)
+		{
+			destinationX = playerPos.x + 60.0f;
+			destinationZ = playerPos.z;
+		}
+		else if (currentMovementDirection == CardinalDirection::NorthEast)
+		{
+			destinationX = playerPos.x + 60.0f;
+			destinationZ = playerPos.z + 60.0f;
+		}
+		else if (currentMovementDirection == CardinalDirection::North)
+		{
+			destinationX = playerPos.x;
+			destinationZ = playerPos.z + 60.0f;
+		}
+		else if (currentMovementDirection == CardinalDirection::NorthWest)
+		{
+			destinationX = playerPos.x - 60.0f;
+			destinationZ = playerPos.z + 60.0f;
+		}
+		else
+		{
+			destinationX = playerPos.x - 60.0f;
+			destinationZ = playerPos.z;
+		}
 	}
 }
 
@@ -136,21 +188,34 @@ void PlayerController::UpdateCurrentMouseDirection(float mousePosX, float mouseP
 
 	if (z >= 337.5 || z <= 22.5)
 	{
-		if (playerPos.x >= 35.0f && playerPos.z >= 35.0f)
-	}
 		currentMouseDirection = CardinalDirection::SouthWest;
+	}
 	else if (z > 22.5 && z < 67.5)
+	{
 		currentMouseDirection = CardinalDirection::South;
+	}
 	else if (z > 67.5 && z < 112.5)
+	{
 		currentMouseDirection = CardinalDirection::SouthEast;
+	}
 	else if (z > 112.5 && z < 157.5)
+	{
 		currentMouseDirection = CardinalDirection::East;
+	}
 	else if (z > 157.5 && z < 202.5)
+	{
 		currentMouseDirection = CardinalDirection::NorthEast;
+	}
 	else if (z > 202.5 && z < 247.5)
+	{
 		currentMouseDirection = CardinalDirection::North;
+	}
 	else if (z > 247.5 && z < 292.5)
+	{
 		currentMouseDirection = CardinalDirection::NorthWest;
+	}
 	else
+	{
 		currentMouseDirection = CardinalDirection::West;
+	}
 }

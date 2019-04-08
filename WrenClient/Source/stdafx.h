@@ -35,5 +35,6 @@
 #include <dwrite_3.h>
 #include <DirectXMath.h>
 #include "DDSTextureLoader.h"
+#include <cmath>
 
 using namespace DirectX;

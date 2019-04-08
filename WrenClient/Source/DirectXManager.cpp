@@ -237,6 +237,8 @@ void DirectXManager::Initialize(HWND hWnd)
 	treeModel = new Model(device, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader, pixelShader, color01SRV, path);
 	treeModel->Translate(XMMatrixTranslation(90.0f, 0.0f, 90.0f));
 
+	playerController = new PlayerController{ timer, *sphereModel, camera };
+
 	SetActiveLayer(InGame);
 }
 
@@ -538,7 +540,7 @@ UICharacterListing* DirectXManager::GetCurrentlySelectedCharacterListing()
 
 void DirectXManager::DrawScene()
 {
-	playerController.Update(timer, *sphereModel, camera);
+	playerController->Update();
 
     HRESULT hr;
     float color[4];

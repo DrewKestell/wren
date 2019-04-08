@@ -13,13 +13,12 @@ static unsigned int clientHeight;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-GameTimer* timer;
-DirectXManager* dxManager;
-EventHandler* g_eventHandler;
-SocketManager* socketManager;
-ObjectManager* objectManager;
-Camera* camera;
-PlayerController* playerController;
+GameTimer* timer = nullptr;
+DirectXManager* dxManager = nullptr;
+EventHandler* g_eventHandler = nullptr;
+SocketManager* socketManager = nullptr;
+ObjectManager* objectManager = nullptr;
+Camera* camera = nullptr;
 
 unsigned int GetClientWidth() { return clientWidth; }
 unsigned int GetClientHeight() { return clientHeight; }
@@ -88,8 +87,8 @@ int CALLBACK WinMain(
 		objectManager = new ObjectManager;
 		socketManager = new SocketManager;
 		camera = new Camera;
-		playerController = new PlayerController;
-        dxManager = new DirectXManager{ *timer, *socketManager, *objectManager, *playerController, *camera };
+		
+        dxManager = new DirectXManager{ *timer, *socketManager, *objectManager, *camera };
         dxManager->Initialize(hWnd);
 	
         // Main game loop:

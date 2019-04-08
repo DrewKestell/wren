@@ -4,6 +4,8 @@ class Mesh;
 
 class Model
 {
+	float targetX = 0.0f;
+	float targetZ = 0.0f;
 	XMMATRIX worldTransform = XMMatrixIdentity();
 	ID3D11Device* device = nullptr;
 	ID3D11VertexShader* vertexShader = nullptr;
@@ -22,4 +24,5 @@ public:
 	void Draw(ID3D11DeviceContext* immediateContext, XMMATRIX viewTransform, XMMATRIX projectionTransform);
 	void Translate(XMMATRIX matrix);
 	XMFLOAT3 GetPosition();
+	void SetPosition(XMFLOAT3 pos);
 };

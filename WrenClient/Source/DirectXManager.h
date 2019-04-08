@@ -42,7 +42,7 @@ class DirectXManager : public Observer
     GameTimer& timer;
     SocketManager& socketManager;
 	Camera& camera;
-	PlayerController& playerController;
+	PlayerController* playerController;
 	float mousePosX;
 	float mousePosY;
 
@@ -168,11 +168,10 @@ class DirectXManager : public Observer
     ShaderBuffer LoadShader(std::wstring filename);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();
 public:
-	DirectXManager(GameTimer& timer, SocketManager& socketManager, ObjectManager& objectManager, PlayerController& playerController, Camera& camera)
+	DirectXManager(GameTimer& timer, SocketManager& socketManager, ObjectManager& objectManager, Camera& camera)
 		: objectManager{ objectManager },
 		  timer{ timer },
 		  socketManager{ socketManager },
-		  playerController{ playerController },
 		  camera{ camera }
 	{
 	};
