@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Camera.h"
-
+#include "Utility.h"
 #include "EventHandling/Events/MouseEvent.h"
 
 bool Camera::HandleEvent(const Event* event)
@@ -38,17 +38,27 @@ bool Camera::HandleEvent(const Event* event)
 }
 
 // probably want a state machine here (moveState, etc)
-void Camera::Update(XMFLOAT3 vec)
+void Camera::Update(XMFLOAT3 player)
 {
-	if (currentSpeed < MAX_SPEED)
-		currentSpeed += ACCELERATION;
+	auto deltaX = std::abs(player.x - camX);
+	auto deltaZ = std::abs(player.z - camZ);
+	if (deltaX < 0.0005f && deltaZ < 0.0005f)
+	{
+		camX = player.x;
+		camZ = player.z;
+	}
+	if (player.x == camX && player.z == camZ)
+	{
+		if (currentSpeed > MIN_SPEED)
+			currentSpeed -= ACCELERATION;
+	}
+	else
+	{
+		if (currentSpeed < MAX_SPEED)
+			currentSpeed += ACCELERATION;
 
-	XMFLOAT3 cameraVec = XMFLOAT3{ vec.x * currentSpeed, vec.y * currentSpeed, vec.z * currentSpeed };
-	Translate(cameraVec);
-}
-
-void Camera::Reset()
-{
-	currentSpeed = 0.0f;
-	isMoving = false;
+		auto delta = XMFLOAT3{ player.x - camX, player.y - camY, player.z - camZ };
+		auto vec = XMFLOAT3{ delta.x * currentSpeed, delta.y * currentSpeed, delta.z * currentSpeed };
+		Translate(vec);
+	}
 }

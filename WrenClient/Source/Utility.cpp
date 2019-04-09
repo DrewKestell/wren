@@ -18,3 +18,8 @@ std::string ws2s(const std::wstring& wstr)
 
 	return converterX.to_bytes(wstr);
 }
+
+void PrintXMFLOAT3(XMFLOAT3 vec)
+{
+	std::cout << vec.x << ", " << vec.y << ", " << vec.z << "\n";
+}

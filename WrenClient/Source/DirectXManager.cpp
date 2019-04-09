@@ -547,9 +547,9 @@ void DirectXManager::DrawScene()
     color[3] = 1.0f;
     if (activeLayer == InGame)
     {
-        color[0] = 0.9f;
-        color[1] = 0.9f;
-        color[2] = 0.9f;
+        color[0] = 0.6f;
+        color[1] = 0.6f;
+        color[2] = 0.6f;
     }
     else
     {
@@ -611,7 +611,7 @@ void DirectXManager::DrawScene()
 	}
 
 	if (textLayoutFPS != nullptr)
-		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 540.0f), textLayoutFPS, blackBrush);
+		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 540.0f), textLayoutFPS, whiteBrush);
 
 	// draw MousePos
 	std::wostringstream outMousePos;
@@ -620,7 +620,7 @@ void DirectXManager::DrawScene()
 	if (textLayoutMousePos != nullptr)
 		textLayoutMousePos->Release();
 	writeFactory->CreateTextLayout(outMousePos.str().c_str(), (unsigned int)outMousePos.str().size(), textFormatFPS, (float)GetClientWidth(), (float)GetClientHeight(), &textLayoutMousePos);
-	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, blackBrush);
+	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, whiteBrush);
 
 	// draw all GameObjects
 	objectManager.Draw();

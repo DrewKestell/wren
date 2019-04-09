@@ -23,6 +23,7 @@ class PlayerController : public Observer
 	bool isMoving = false;
 	CardinalDirection currentMovementDirection;
 
+	void SetDestination(XMFLOAT3 playerPos);
 	void UpdateCurrentMouseDirection(float mousePosX, float mousePosY);
 public:
 	PlayerController(GameTimer& gameTimer, Model& player, Camera& camera);
