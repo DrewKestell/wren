@@ -65,42 +65,42 @@ void PlayerController::Update()
 
 		if (currentMovementDirection == CardinalDirection::SouthWest)
 		{
-			if (playerPos.x >= 35.0f && playerPos.z >= 35.0f)
+			if (playerPos.x >= 5.0f && playerPos.z >= 5.0f)
 				vec = XMFLOAT3{ -pixelsToMove, 0.0f, -pixelsToMove };
 		}
 		else if (currentMovementDirection == CardinalDirection::South)
 		{
-			if (playerPos.z >= 35.0f)
+			if (playerPos.z >= 5.0f)
 				vec = XMFLOAT3{ 0.0f, 0.0f, -pixelsToMove };
 		}
 		else if (currentMovementDirection == CardinalDirection::SouthEast)
 		{
-			if (playerPos.x <= 2965.0f && playerPos.z >= 35.0f)
+			if (playerPos.x <= 2935.0f && playerPos.z >= 5.0f)
 				vec = XMFLOAT3{ pixelsToMove, 0.0f, -pixelsToMove };
 		}
 		else if (currentMovementDirection == CardinalDirection::East)
 		{
-			if (playerPos.x <= 2965.0f)
+			if (playerPos.x <= 2935.0f)
 				vec = XMFLOAT3{ pixelsToMove, 0.0f, 0.0f };
 		}
 		else if (currentMovementDirection == CardinalDirection::NorthEast)
 		{
-			if (playerPos.x <= 2965.0f && playerPos.z <= 2965.0f)
+			if (playerPos.x <= 2935.0f && playerPos.z <= 2935.0f)
 				vec = XMFLOAT3{ pixelsToMove, 0.0f, pixelsToMove };
 		}
 		else if (currentMovementDirection == CardinalDirection::North)
 		{
-			if (playerPos.z <= 2965.0f)
+			if (playerPos.z <= 2935.0f)
 				vec = XMFLOAT3{ 0.0f, 0.0f, pixelsToMove };
 		}
 		else if (currentMovementDirection == CardinalDirection::NorthWest)
 		{
-			if (playerPos.x >= 35.0f && playerPos.z <= 2965.0f)
+			if (playerPos.x >= 5.0f && playerPos.z <= 2935.0f)
 				vec = XMFLOAT3{ -pixelsToMove, 0.0f, pixelsToMove };
 		}
 		else
 		{
-			if (playerPos.x >= 35.0f)
+			if (playerPos.x >= 5.0f)
 				vec = XMFLOAT3{ -pixelsToMove, 0.0f, 0.0f };
 		}
 
@@ -111,7 +111,7 @@ void PlayerController::Update()
 		}
 
 		player.Translate(XMMatrixTranslation(vec.x, vec.y, vec.z));
-		camera.Translate(vec);
+		camera.Update(vec);
 
 		// if target is reached
 		auto deltaX = std::abs(playerPos.x - destinationX);
@@ -120,7 +120,11 @@ void PlayerController::Update()
 		if (deltaX < 1.0f && deltaZ < 1.0f)
 		{
 			player.SetPosition(XMFLOAT3{ destinationX, 15.0f, destinationZ });
-			isMoving = false;
+			if (!isRightClickHeld)
+			{
+				isMoving = false;
+				camera.Reset();
+			}
 		}
 	}
 	if (!isMoving && isRightClickHeld)
@@ -168,6 +172,8 @@ void PlayerController::Update()
 			destinationX = playerPos.x - 60.0f;
 			destinationZ = playerPos.z;
 		}
+
+		std::cout << "Movement initiated. Destination: " << destinationX << ", " << destinationZ << std::endl;
 	}
 }
 

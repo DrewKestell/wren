@@ -38,13 +38,17 @@ bool Camera::HandleEvent(const Event* event)
 }
 
 // probably want a state machine here (moveState, etc)
-void Camera::Update(GameTimer& gameTimer)
+void Camera::Update(XMFLOAT3 vec)
 {
-	if (isMoving)
-	{
-	}
-	else
-	{
+	if (currentSpeed < MAX_SPEED)
+		currentSpeed += ACCELERATION;
 
-	}
+	XMFLOAT3 cameraVec = XMFLOAT3{ vec.x * currentSpeed, vec.y * currentSpeed, vec.z * currentSpeed };
+	Translate(cameraVec);
+}
+
+void Camera::Reset()
+{
+	currentSpeed = 0.0f;
+	isMoving = false;
 }

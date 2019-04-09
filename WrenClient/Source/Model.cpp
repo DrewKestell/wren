@@ -10,7 +10,7 @@ Model::Model(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSiz
 	  texture{ texture }
 {
 	LoadModel(path);
-	Translate(XMMatrixScaling(20.0f, 20.0f, 20.0f) * XMMatrixTranslation(30.0f, 15.0f, 30.0f));
+	Translate(XMMatrixScaling(20.0f, 20.0f, 20.0f) * XMMatrixTranslation(0.0f, 15.0f, 0.0f));
 
 	// create SamplerState
 	D3D11_SAMPLER_DESC samplerDesc;

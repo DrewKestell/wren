@@ -19,8 +19,8 @@ GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShade
 		const auto row = i / MAP_HEIGHT;
 		const auto col = i % MAP_WIDTH;
 
-		const float x = col * TILE_WIDTH;
-		const float z = row * TILE_HEIGHT;
+		const float x = (col * TILE_WIDTH) - 30.0f;;
+		const float z = (row * TILE_HEIGHT) - 30.0f;
 
 		const auto bottomLeft = i * 4;
 		const auto topLeft = (i * 4) + 1;
