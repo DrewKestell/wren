@@ -6,7 +6,6 @@
 #include "Model.h"
 #include "Camera.h"
 
-// 60 pixels (1 tile) per second, 0.06 pixels per ms
 const float MOVE_SPEED = 100.0f;
 
 class PlayerController : public Observer
