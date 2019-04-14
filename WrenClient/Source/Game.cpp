@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Game.h"
+#include "EventHandling/Events/ChangeActiveLayerEvent.h"
 
 extern EventHandler g_eventHandler;
 
@@ -9,7 +10,9 @@ Game::Game() noexcept(false)
 	m_deviceResources->RegisterDeviceNotify(this);
 }
 
-// Initialize the Direct3D resources required to run.
+// General initialization that would likely be shared between any D3D application
+//   should go in DeviceResources.cpp
+// Game-specific initialization should go in Game.cpp
 void Game::Initialize(HWND window, int width, int height)
 {
 	m_deviceResources->SetWindow(window, width, height);
@@ -26,6 +29,8 @@ void Game::Initialize(HWND window, int width, int height)
 	m_timer.SetFixedTimeStep(true);
 	m_timer.SetTargetElapsedSeconds(1.0 / 60);
 	*/
+
+	g_eventHandler.QueueEvent(new ChangeActiveLayerEvent{ Layer::Login });
 }
 
 #pragma region Frame Update
@@ -50,7 +55,6 @@ void Game::Update()
 #pragma endregion
 
 #pragma region Frame Render
-// Draws the scene.
 void Game::Render()
 {
 	// Don't try to render anything before the first Update.
@@ -63,9 +67,12 @@ void Game::Render()
 
 	//m_deviceResources->PIXBeginEvent(L"Render");
 	auto context = m_deviceResources->GetD3DDeviceContext();
+	auto d2dContext = m_deviceResources->GetD2DDeviceContext();
 
 	// TODO: Add your rendering code here.
-	context;
+	d2dContext->BeginDraw();
+	testLabel->Draw();
+	d2dContext->EndDraw();
 
 	//m_deviceResources->PIXEndEvent();
 
@@ -73,7 +80,6 @@ void Game::Render()
 	m_deviceResources->Present();
 }
 
-// Helper method to clear the back buffers.
 void Game::Clear()
 {
 	//m_deviceResources->PIXBeginEvent(L"Clear");
@@ -96,7 +102,6 @@ void Game::Clear()
 #pragma endregion
 
 #pragma region Message Handlers
-// Message handlers
 void Game::OnActivated()
 {
 	// TODO: Game is becoming active window.
@@ -140,10 +145,21 @@ void Game::OnWindowSizeChanged(int width, int height)
 // These are the resources that depend on the device.
 void Game::CreateDeviceDependentResources()
 {
-	auto device = m_deviceResources->GetD3DDevice();
+	auto d3dDevice = m_deviceResources->GetD3DDevice();
+	auto d2dDeviceContext = m_deviceResources->GetD2DDeviceContext();
+	auto writeFactory = m_deviceResources->GetWriteFactory();
+	auto d2dFactory = m_deviceResources->GetD2DFactory();
+	
+	d2dDeviceContext->CreateSolidColorBrush(D2D1::ColorF(0.35f, 0.35f, 0.35f, 1.0f), grayBrush.GetAddressOf());
 
-	// TODO: Initialize device dependent objects here (independent of window size).
-	device;
+	auto arialFontFamily = L"Arial";
+	auto locale = L"en-US";
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatHeaders.GetAddressOf());
+	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	testLabel = new UILabel(XMFLOAT3{ 30.0f, 30.0f, 0.0f }, m_objectManager, Login, 400.0f, grayBrush.Get(), textFormatHeaders.Get(), d2dDeviceContext, writeFactory, d2dFactory);
+	testLabel->SetText("TEST!");
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.

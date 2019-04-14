@@ -3,6 +3,8 @@
 #include "DeviceResources.h"
 #include "GameTimer.h"
 #include "SocketManager.h"
+#include "ObjectManager.h"
+#include "UI/UILabel.h"
 #include "EventHandling/EventHandler.h"
 
 class Game : public DX::IDeviceNotify
@@ -40,4 +42,10 @@ private:
 	std::unique_ptr<DX::DeviceResources> m_deviceResources;
 	GameTimer m_timer{};
 	SocketManager m_socketManager{};
+	ObjectManager m_objectManager{};
+
+	ComPtr<ID2D1SolidColorBrush> grayBrush;
+	ComPtr<IDWriteTextFormat> textFormatHeaders;
+
+	UILabel* testLabel = nullptr;
 };

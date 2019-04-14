@@ -4,8 +4,6 @@
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "Game.h"
-#include "DirectXManager.h"
-#include "PlayerController.h"
 
 static wchar_t szWindowClass[] = L"win32app";
 static wchar_t szTitle[] = L"Wren Client";
@@ -62,7 +60,6 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 	g_game->GetDefaultSize(w, h);
 
 	RECT rc = { 0, 0, static_cast<long>(w), static_cast<long>(h) };
-
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 	// TODO: Change to CreateWindowExW(WS_EX_TOPMOST, L"Direct3D_Win32_Game1WindowClass", L"Direct3D Win32 Game1", WS_POPUP,
@@ -86,12 +83,11 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 
 	// TODO: Change nCmdShow to SW_SHOWMAXIMIZED to default to fullscreen.
 	ShowWindow(hWnd, nCmdShow);
-	//UpdateWindow(hWnd);
 
+	// Wrap the WindowPtr in our Game
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_game.get()));
 
 	GetClientRect(hWnd, &rc);
-
 	g_game->Initialize(hWnd, rc.right - rc.left, rc.bottom - rc.top);
 
 	// Main message loop
@@ -103,7 +99,6 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		// Tick game engine
 		else
 		{
 			g_game->Tick();
@@ -387,6 +382,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			g_eventHandler.QueueEvent(new KeyDownEvent{ ch });
             break;
         }
+
+	case WM_MENUCHAR:
+		// A menu is active and the user presses a key that does not correspond
+		// to any mnemonic or accelerator key. Ignore so we don't produce an error beep.
+		// Primarily useful for avoiding the beep on ALT + ENTER.
+		return MAKELRESULT(0, MNC_CLOSE);
+		break;
+	
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;

@@ -4,11 +4,11 @@
 using namespace DX;
 
 DeviceResources::DeviceResources() noexcept
-	: m_deviceNotify(nullptr)
 {
 }
 
-// Configures the Direct3D device, and stores handles to it and the device context.
+// Create and configure D3DDevice and D2DDevice, and all associated
+//   resources that aren't dependent on the size of the window.
 void DeviceResources::CreateDeviceResources()
 {
 	UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
@@ -73,6 +73,48 @@ void DeviceResources::CreateDeviceResources()
 	ThrowIfFailed(device.As(&m_d3dDevice));
 	ThrowIfFailed(context.As(&m_d3dContext));
 	//ThrowIfFailed(context.As(&m_d3dAnnotation));
+
+	// WriteFactory is used for Text related tasks, such as CreateTextLayout.
+	// Text rendering happens through the D2DContext, for example:
+	//   writeFactory->CreateTextLayout...
+	//   d2dContext->DrawTextLayout...
+	ComPtr<IDWriteFactory> writeFactory;
+	ThrowIfFailed(DWriteCreateFactory(
+		DWRITE_FACTORY_TYPE_SHARED,
+		__uuidof(IDWriteFactory),
+		&writeFactory
+	));
+	ThrowIfFailed(writeFactory.As(&m_writeFactory));
+
+	// D2DFactory is used to create 2D geometry, for example:
+	//   d2dFactory->CreateRoundedRectangleGeometry...
+	//   d2dContext->DrawGeometry...
+	D2D1_FACTORY_OPTIONS options;
+#ifdef _DEBUG
+	options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+#endif
+	ComPtr<ID2D1Factory> d2dFactory;
+	ThrowIfFailed(D2D1CreateFactory(
+		D2D1_FACTORY_TYPE_MULTI_THREADED,
+		__uuidof(ID2D1Factory),
+		&options,
+		&d2dFactory
+	));
+	ThrowIfFailed(d2dFactory.As(&m_d2dFactory));
+
+	// Get a reference to the DXGIDevice to use in creation of the D2DDevice
+	ComPtr<IDXGIDevice> dxgiDevice;
+	ThrowIfFailed(device.As(&dxgiDevice));
+
+	// Create D2DDevice
+	ComPtr<ID2D1Device> d2dDevice;
+	ThrowIfFailed(m_d2dFactory->CreateDevice(dxgiDevice.Get(), d2dDevice.GetAddressOf()));
+	ThrowIfFailed(d2dDevice.As(&m_d2dDevice));
+
+	// Create D2DContext
+	ComPtr<ID2D1DeviceContext1> d2dDeviceContext;
+	ThrowIfFailed(m_d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &d2dDeviceContext));
+	ThrowIfFailed(d2dDeviceContext.As(&m_d2dContext));
 }
 
 void DeviceResources::CreateFactory()
@@ -112,11 +154,13 @@ void DeviceResources::CreateWindowSizeDependentResources()
 	// Clear the previous window size specific context.
 	ID3D11RenderTargetView* nullViews[] = { nullptr };
 	m_d3dContext->OMSetRenderTargets(_countof(nullViews), nullViews, nullptr);
+	m_d2dContext->SetTarget(nullptr);
 	m_d3dRenderTargetView.Reset();
 	m_d3dDepthStencilView.Reset();
 	m_renderTarget.Reset();
 	m_depthStencil.Reset();
 	m_d3dContext->Flush();
+	//m_d2dContext->Flush();
 
 	// Determine the render target size in pixels.
 	UINT backBufferWidth = std::max<UINT>(m_outputSize.right - m_outputSize.left, 1);
@@ -196,7 +240,7 @@ void DeviceResources::CreateWindowSizeDependentResources()
 		m_d3dRenderTargetView.ReleaseAndGetAddressOf()
 	));
 
-	// Create a depth stencil view for use with 3D rendering if needed.
+	// Create a depth stencil view for use with 3D rendering.
 	CD3D11_TEXTURE2D_DESC depthStencilDesc(
 		m_depthBufferFormat,
 		backBufferWidth,
@@ -219,6 +263,24 @@ void DeviceResources::CreateWindowSizeDependentResources()
 		m_d3dDepthStencilView.ReleaseAndGetAddressOf()
 	));
 
+	// Get reference to DXGISurface and create a bitmap from that surface
+	// to use as a rendering target for our D2DContext.
+	D2D1_BITMAP_PROPERTIES1 bp;
+	bp.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	bp.pixelFormat.alphaMode = D2D1_ALPHA_MODE_IGNORE;
+	bp.dpiX = 96.0f;
+	bp.dpiY = 96.0f;
+	bp.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
+	bp.colorContext = nullptr;
+
+	ComPtr<IDXGISurface1> dxgiBuffer;
+	ThrowIfFailed(m_swapChain->GetBuffer(0, __uuidof(IDXGISurface), &dxgiBuffer));
+
+	ComPtr<ID2D1Bitmap1> targetBitmap;
+	ThrowIfFailed(m_d2dContext->CreateBitmapFromDxgiSurface(dxgiBuffer.Get(), &bp, &targetBitmap));
+
+	m_d2dContext->SetTarget(targetBitmap.Get());
+
 	// Set the 3D rendering viewport to target the entire window.
 	m_screenViewport = CD3D11_VIEWPORT(
 		0.0f,
@@ -236,12 +298,16 @@ void DeviceResources::HandleDeviceLost()
 		m_deviceNotify->OnDeviceLost();
 	}
 
+	m_d2dContext.Reset();
+	m_d2dDevice.Reset();
+	m_d2dFactory.Reset();
+	m_writeFactory.Reset();
 	m_d3dDepthStencilView.Reset();
 	m_d3dRenderTargetView.Reset();
 	m_renderTarget.Reset();
 	m_depthStencil.Reset();
 	m_swapChain.Reset();
-	m_d3dContext.Reset();
+	m_d3dContext.Reset();	
 	//m_d3dAnnotation.Reset();
 
 #ifdef _DEBUG
@@ -318,7 +384,8 @@ void DeviceResources::Present()
 bool DeviceResources::WindowSizeChanged(int width, int height)
 {
 	RECT newRc;
-	newRc.left = newRc.top = 0;
+	newRc.left = 0;
+	newRc.top = 0;
 	newRc.right = width;
 	newRc.bottom = height;
 	if (newRc == m_outputSize)
