@@ -131,10 +131,13 @@ class DirectXManager : public Observer
     UILabel* createCharacter_errorMessageLabel = nullptr;
 	UILabel* deleteCharacter_headerLabel = nullptr;
     UILabel* enteringWorld_statusLabel = nullptr;
+	UILabel* fpsTextLabel = nullptr;
+	UILabel* mousePosLabel = nullptr;
 
     // Panels
     UIPanel* gameSettingsPanel = nullptr;
     UIPanel* gameEditorPanel = nullptr;
+	UIPanel* diagnosticsPanel = nullptr;
 
 	// Shaders
 	ShaderBuffer vertexShaderBuffer;

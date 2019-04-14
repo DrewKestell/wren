@@ -2,9 +2,6 @@
 #include "PlayerController.h"
 #include "EventHandling/Events/MouseEvent.h"
 
-extern unsigned int GetClientWidth();
-extern unsigned int GetClientHeight();
-
 // once you get the aspect ratio stuff figured out, you only need to calculate
 // the centerPoint once (until the window gets resized)
 PlayerController::PlayerController(GameTimer& gameTimer, Model& player, Camera& camera)
@@ -12,8 +9,8 @@ PlayerController::PlayerController(GameTimer& gameTimer, Model& player, Camera& 
 	  player{ player },
 	  camera{ camera }
 {
-	clientWidth = GetClientWidth();
-	clientHeight = GetClientHeight();
+	clientWidth = 800;
+	clientHeight = 600;
 }
 
 bool PlayerController::HandleEvent(const Event* event)
@@ -56,7 +53,8 @@ bool PlayerController::HandleEvent(const Event* event)
 void PlayerController::Update()
 {
 	auto playerPos = player.GetPosition();
-	camera.Update(player.GetPosition());
+	//std::cout << "Player position: " << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << std::endl;
+	camera.Update(player.GetPosition(), gameTimer);
 
 	if (isMoving)
 	{
@@ -117,7 +115,10 @@ void PlayerController::Update()
 		auto deltaX = std::abs(playerPos.x - destinationX);
 		auto deltaZ = std::abs(playerPos.z - destinationZ);
 
-		if (deltaX < 1.0f && deltaZ < 1.0f)
+		/*std::cout << "deltaX: " << deltaX << std::endl;
+		std::cout << "deltaZ: " << deltaZ << std::endl;*/
+
+		if (deltaX < 0.2f && deltaZ < 0.2f)
 		{
 			player.SetPosition(XMFLOAT3{ destinationX, 0.0f, destinationZ });
 			if (!isRightClickHeld)

@@ -11,7 +11,7 @@
 constexpr auto CLIENT_PORT_NUMBER = 27015;
 constexpr auto SERVER_PORT_NUMBER = 27016;
 
-extern EventHandler* g_eventHandler;
+extern EventHandler g_eventHandler;
 
 // CONSTRUCTOR
 SocketManager::SocketManager()
@@ -95,7 +95,7 @@ bool SocketManager::TryRecieveMessage()
         if (!MessagePartsEqual(checksumArr, CHECKSUM.c_str(), checksumArrLen))
         {
             std::cout << "Wrong checksum. Ignoring packet.\n";
-			g_eventHandler->QueueEvent(new Event{ EventType::WrongChecksum });
+			g_eventHandler.QueueEvent(new Event{ EventType::WrongChecksum });
 			return true;
         }
 
@@ -129,13 +129,13 @@ bool SocketManager::TryRecieveMessage()
         {
             const auto error = args[0];
             std::cout << "Failed to create account. Reason: " + *error + "\n";
-			g_eventHandler->QueueEvent(new CreateAccountFailedEvent{ error });
+			g_eventHandler.QueueEvent(new CreateAccountFailedEvent{ error });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT_SUCCESSFUL, opcodeArrLen))
         {
             std::cout << "Successfully created account.\n";
-			g_eventHandler->QueueEvent(new Event{EventType::CreateAccountSuccess});
+			g_eventHandler.QueueEvent(new Event{EventType::CreateAccountSuccess});
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_LOGIN_SUCCESSFUL, opcodeArrLen))
@@ -145,14 +145,14 @@ bool SocketManager::TryRecieveMessage()
             const auto characterList = BuildCharacterVector(characterString);
 
             std::cout << "Login successful. Token received: " + *token + "\n";
-			g_eventHandler->QueueEvent(new LoginSuccessEvent{ token, characterList });
+			g_eventHandler.QueueEvent(new LoginSuccessEvent{ token, characterList });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_LOGIN_UNSUCCESSFUL, opcodeArrLen))
         {
             const auto error = args[0];
             std::cout << "Login failed. Reason: " + *error + "\n";
-			g_eventHandler->QueueEvent(new LoginFailedEvent{ error });
+			g_eventHandler.QueueEvent(new LoginFailedEvent{ error });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER_SUCCESSFUL, opcodeArrLen))
@@ -161,20 +161,20 @@ bool SocketManager::TryRecieveMessage()
             const auto characterList = BuildCharacterVector(characterString);
 
             std::cout << "Character creation successful.";
-			g_eventHandler->QueueEvent(new CreateCharacterSuccessEvent{ characterList });
+			g_eventHandler.QueueEvent(new CreateCharacterSuccessEvent{ characterList });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER_UNSUCCESSFUL, opcodeArrLen))
         {
             const auto error = args[0];
             std::cout << "Character creation failed. Reason: " + *error + "\n";
-			g_eventHandler->QueueEvent(new CreateCharacterFailedEvent{ error });
+			g_eventHandler.QueueEvent(new CreateCharacterFailedEvent{ error });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_ENTER_WORLD_SUCCESSFUL, opcodeArrLen))
         {
             std::cout << "Connected to game world!\n";
-			g_eventHandler->QueueEvent(new Event{ EventType::EnterWorldSuccess });
+			g_eventHandler.QueueEvent(new Event{ EventType::EnterWorldSuccess });
 			return true;
         }
 		else if (MessagePartsEqual(opcodeArr, OPCODE_DELETE_CHARACTER_SUCCESSFUL, opcodeArrLen))
@@ -183,13 +183,13 @@ bool SocketManager::TryRecieveMessage()
 			const auto characterList = BuildCharacterVector(characterString);
 
 			std::cout << "Delete character successful.";
-			g_eventHandler->QueueEvent(new DeleteCharacterSuccessEvent{ characterList });
+			g_eventHandler.QueueEvent(new DeleteCharacterSuccessEvent{ characterList });
 			return true;
 		}
 		else
 		{
 			std::cout << "Opcode not implemented.\n";
-			g_eventHandler->QueueEvent(new Event{ EventType::OpcodeNotImplemented });
+			g_eventHandler.QueueEvent(new Event{ EventType::OpcodeNotImplemented });
 			return true;
 		}
     }

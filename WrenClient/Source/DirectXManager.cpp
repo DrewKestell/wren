@@ -11,9 +11,10 @@
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
 
-extern EventHandler* g_eventHandler;
-extern unsigned int GetClientWidth();
-extern unsigned int GetClientHeight();
+extern EventHandler g_eventHandler;
+
+float g_clientWidth = 800;
+float g_clientHeight = 600;
 
 void DirectXManager::Initialize(HWND hWnd)
 {
@@ -63,12 +64,14 @@ void DirectXManager::Initialize(HWND hWnd)
     sd.BufferDesc.RefreshRate.Denominator = 1;
     sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
     sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	sd.BufferDesc.Width = g_clientWidth;
+	sd.BufferDesc.Height = g_clientHeight;
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     sd.OutputWindow = hWnd;
     sd.SampleDesc.Count = 1;
     sd.SampleDesc.Quality = 0;
     sd.Windowed = TRUE;
-	sd.Flags = 0;
+	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
     // Get the dxgi device
@@ -102,10 +105,12 @@ void DirectXManager::Initialize(HWND hWnd)
     // Create a render-target view 
     device->CreateRenderTargetView(backBuffer, NULL, &backBufferRenderTargetView);
 
+	backBuffer->Release();
+
     // Create Depth/Stencil Buffer and View
     D3D11_TEXTURE2D_DESC depthStencilDesc;
-    depthStencilDesc.Width = GetClientWidth();
-    depthStencilDesc.Height = GetClientHeight();
+	depthStencilDesc.Width = g_clientWidth;
+	depthStencilDesc.Height = g_clientHeight;
     depthStencilDesc.MipLevels = 1;
     depthStencilDesc.ArraySize = 1;
     depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -140,8 +145,8 @@ void DirectXManager::Initialize(HWND hWnd)
 
     // Setup the viewport
     D3D11_VIEWPORT vp;
-    vp.Width = (float)GetClientWidth();
-    vp.Height = (float)GetClientHeight();
+	vp.Width = g_clientWidth;
+	vp.Height = g_clientHeight;
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     vp.TopLeftX = 0.0f;
@@ -192,16 +197,20 @@ void DirectXManager::Initialize(HWND hWnd)
     if (FAILED(hr))
         throw std::exception("Failed to create the Direct2D bitmap from the DXGI surface.");
 
+	dxgiBuffer->Release();
+
     // set the newly created bitmap as render target
     d2dDeviceContext->SetTarget(targetBitmap);
+
+	targetBitmap->Release();
 
 	// create offscreen render target
 	D3D11_TEXTURE2D_DESC offScreenSurfaceDesc;
 	ZeroMemory(&offScreenSurfaceDesc, sizeof(D3D11_TEXTURE2D_DESC));
 
 	offScreenSurfaceDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	offScreenSurfaceDesc.Width = static_cast<unsigned int>(GetClientWidth());
-	offScreenSurfaceDesc.Height = static_cast<unsigned int>(GetClientHeight());
+	offScreenSurfaceDesc.Width = static_cast<unsigned int>(g_clientWidth);
+	offScreenSurfaceDesc.Height = static_cast<unsigned int>(g_clientHeight);
 	offScreenSurfaceDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
 	offScreenSurfaceDesc.MipLevels = 1;
 	offScreenSurfaceDesc.ArraySize = 1;
@@ -260,7 +269,7 @@ void DirectXManager::InitializeTextFormats()
     auto locale = L"en-US";
 
     // FPS / MousePos
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, &textFormatFPS);
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 10.0f, locale, &textFormatFPS);
 	textFormatFPS->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatFPS->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
@@ -504,8 +513,9 @@ void DirectXManager::InitializeLabels()
 
 void DirectXManager::InitializePanels()
 {
-    const auto gameSettingsPanelX = (GetClientWidth() - 400.0f) / 2.0f;
-    const auto gameSettingsPanelY = (GetClientHeight() - 200.0f) / 2.0f;
+	// Game Settings
+    const auto gameSettingsPanelX = (g_clientWidth - 400.0f) / 2.0f;
+    const auto gameSettingsPanelY = (g_clientHeight - 200.0f) / 2.0f;
     auto gameSettingsPanelHeader = new UILabel{XMFLOAT3{2.0f, 2.0f, 0.0f}, objectManager, InGame, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory};
     gameSettingsPanelHeader->SetText("Game Settings");
 	const auto onClickGameSettingsLogoutButton = [this]()
@@ -519,12 +529,28 @@ void DirectXManager::InitializePanels()
     gameSettingsPanel->AddChildComponent(*gameSettingsPanelHeader);
 	gameSettingsPanel->AddChildComponent(*gameSettings_logoutButton);
 
+	// Game Editor
     const auto gameEditorPanelX = 580.0f;
     const auto gameEditorPanelY = 5.0f;
     auto gameEditorPanelHeader = new UILabel(XMFLOAT3{2.0f, 2.0f, 0.0f}, objectManager, InGame, 200.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory);
     gameEditorPanelHeader->SetText("Game Editor");
     gameEditorPanel = new UIPanel(XMFLOAT3{gameEditorPanelX, gameEditorPanelY, 0.0f}, objectManager, InGame, true, 200.0f, 400.0f, VK_F1, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
     gameEditorPanel->AddChildComponent(*gameEditorPanelHeader);
+
+	// Diagnostics
+	const auto diagnosticsPanelX = 580.0f;
+	const auto diagnosticsPanelY = 336.0f;
+	diagnosticsPanel = new UIPanel(XMFLOAT3{ diagnosticsPanelX, diagnosticsPanelY, 0.0f }, objectManager, InGame, true, 200.0f, 200.0f, VK_F2, darkBlueBrush, whiteBrush, grayBrush, d2dDeviceContext, d2dFactory);
+
+	auto diagnosticsPanelHeader = new UILabel(XMFLOAT3{ 2.0f, 2.0f, 0.0f }, objectManager, InGame, 280.0f, blackBrush, textFormatHeaders, d2dDeviceContext, writeFactory, d2dFactory);
+	diagnosticsPanelHeader->SetText("Diagnostics");	
+	diagnosticsPanel->AddChildComponent(*diagnosticsPanelHeader);
+
+	mousePosLabel = new UILabel(XMFLOAT3{ 2.0f, 22.0f, 0.0f }, objectManager, InGame, 280.0f, blackBrush, textFormatFPS, d2dDeviceContext, writeFactory, d2dFactory);
+	diagnosticsPanel->AddChildComponent(*mousePosLabel);
+
+	fpsTextLabel = new UILabel(XMFLOAT3{ 2.0f, 36.0f, 0.0f }, objectManager, InGame, 280.0f, blackBrush, textFormatFPS, d2dDeviceContext, writeFactory, d2dFactory);
+	diagnosticsPanel->AddChildComponent(*fpsTextLabel);
 }
 
 UICharacterListing* DirectXManager::GetCurrentlySelectedCharacterListing()
@@ -586,22 +612,17 @@ void DirectXManager::DrawScene()
 
 	d2dDeviceContext->BeginDraw();
 
-	// draw FPS
+	// used for FPS text
 	static int frameCnt = 0;
 	static float timeElapsed = 0.0f;
 	frameCnt++;
 
+	// update FPS text
 	if (timer.TotalTime() - timeElapsed >= 1)
 	{
 		float mspf = (float)1000 / frameCnt;
-
-		std::wostringstream outFPS;
-		outFPS.precision(6);
-		outFPS << "FPS: " << frameCnt << ", MSPF: " << mspf;
-
-		if (textLayoutFPS != nullptr)
-			textLayoutFPS->Release();
-		writeFactory->CreateTextLayout(outFPS.str().c_str(), (unsigned int)outFPS.str().size(), textFormatFPS, (float)GetClientWidth(), (float)GetClientHeight(), &textLayoutFPS);
+		const auto fpsText = "FPS: " + std::to_string(frameCnt) + ", MSPF: " + std::to_string(mspf);
+		fpsTextLabel->SetText(fpsText.c_str());
 
 		frameCnt = 0;
 		timeElapsed += 1.0f;
@@ -610,17 +631,9 @@ void DirectXManager::DrawScene()
 			socketManager.SendPacket(OPCODE_HEARTBEAT, 1, token);
 	}
 
-	if (textLayoutFPS != nullptr)
-		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 540.0f), textLayoutFPS, whiteBrush);
-
-	// draw MousePos
-	std::wostringstream outMousePos;
-	outMousePos.precision(6);
-	outMousePos << "MousePosX: " << mousePosX << ", MousePosY: " << mousePosY;
-	if (textLayoutMousePos != nullptr)
-		textLayoutMousePos->Release();
-	writeFactory->CreateTextLayout(outMousePos.str().c_str(), (unsigned int)outMousePos.str().size(), textFormatFPS, (float)GetClientWidth(), (float)GetClientHeight(), &textLayoutMousePos);
-	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(540.0f, 520.0f), textLayoutMousePos, whiteBrush);
+	// update MousePos text
+	const auto mousePosText = "MousePosX: " + std::to_string((int)mousePosX) + ", MousePosY: " + std::to_string((int)mousePosY);
+	mousePosLabel->SetText(mousePosText.c_str());
 
 	// draw all GameObjects
 	objectManager.Draw();
@@ -653,7 +666,7 @@ void DirectXManager::InitializeShaders()
     pixelShaderBuffer = LoadShader(L"PixelShader.cso");
     device->CreatePixelShader(pixelShaderBuffer.buffer, pixelShaderBuffer.size, nullptr, &pixelShader);
 
-	projectionTransform = XMMatrixOrthographicLH((float)GetClientWidth(), (float)GetClientHeight(), 0.1f, 5000.0f);
+	projectionTransform = XMMatrixOrthographicLH(g_clientWidth, g_clientHeight, 0.1f, 5000.0f);
 }
 
 void DirectXManager::InitializeBuffers()
@@ -827,5 +840,5 @@ bool DirectXManager::HandleEvent(const Event* event)
 void DirectXManager::SetActiveLayer(const Layer layer)
 {
 	activeLayer = layer;
-	g_eventHandler->QueueEvent(new ChangeActiveLayerEvent{ layer });
+	g_eventHandler.QueueEvent(new ChangeActiveLayerEvent{ layer });
 }

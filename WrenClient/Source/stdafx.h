@@ -5,6 +5,8 @@
 
 #pragma once
 
+#define NOMINMAX
+
 #include "targetver.h"
 
 #include <assimp/Importer.hpp>
@@ -17,6 +19,7 @@
 // Windows Header Files
 #include <windows.h>
 #include <windowsx.h>
+#include <wrl/client.h>
 
 #include <string>
 #include <iostream>
@@ -34,6 +37,7 @@
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 #include <DirectXMath.h>
+#include <DirectXColors.h>
 #include "DDSTextureLoader.h"
 #include <cmath>
 

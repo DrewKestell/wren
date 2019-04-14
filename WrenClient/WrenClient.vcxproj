@@ -21,16 +21,19 @@
   <ItemGroup>
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
+    <ClCompile Include="Source\DeviceResources.cpp" />
     <ClCompile Include="Source\DirectXManager.cpp" />
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
     <ClInclude Include="Source\Camera.h" />
     <ClInclude Include="Source\CardinalDirection.h" />
+    <ClInclude Include="Source\DeviceResources.h" />
     <ClInclude Include="Source\EventHandling\Events\LeftMouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RightMouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RigthMouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
+    <ClCompile Include="Source\Game.cpp" />
     <ClCompile Include="Source\GameMap\GameMap.cpp" />
     <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
     <ClCompile Include="Source\GameObject.cpp" />
@@ -152,11 +155,13 @@
     <ClInclude Include="Source\EventHandling\Events\MouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
+    <ClInclude Include="Source\Game.h" />
     <ClInclude Include="Source\GameMap\GameMap.h" />
     <ClInclude Include="Source\GameMap\GameMapTile.h" />
     <ClInclude Include="Source\GameMap\TerrainType.h" />
     <ClInclude Include="Source\GameObject.h" />
     <ClInclude Include="Source\GameTimer.h" />
+    <ClInclude Include="Source\Globals.h" />
     <ClInclude Include="Source\Layer.h" />
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\Mesh.h" />

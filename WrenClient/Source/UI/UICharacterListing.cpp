@@ -10,8 +10,6 @@
 #include "../EventHandling/Events/MouseEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 
-extern EventHandler* g_eventHandler;
-
 void UICharacterListing::Draw()
 {
 	if (!isVisible) return;

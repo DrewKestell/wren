@@ -26,6 +26,8 @@
     <ClCompile Include="Source\stdafx.cpp" />
     <ClCompile Include="Source\PlayerController.cpp" />
     <ClCompile Include="Source\Camera.cpp" />
+    <ClCompile Include="Source\Game.cpp" />
+    <ClCompile Include="Source\DeviceResources.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DirectXManager.h" />
@@ -155,6 +157,9 @@
     <ClInclude Include="Source\EventHandling\Events\RightMouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RigthMouseUpEvent.h" />
     <ClInclude Include="Source\Camera.h" />
+    <ClInclude Include="Source\Globals.h" />
+    <ClInclude Include="Source\Game.h" />
+    <ClInclude Include="Source\DeviceResources.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

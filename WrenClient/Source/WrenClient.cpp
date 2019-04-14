@@ -1,128 +1,120 @@
 #include "stdafx.h"
-#include "DirectXManager.h"
-#include "PlayerController.h"
 #include "EventHandling/Events/SystemKeyUpEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
+#include "Game.h"
+#include "DirectXManager.h"
+#include "PlayerController.h"
 
 static wchar_t szWindowClass[] = L"win32app";
 static wchar_t szTitle[] = L"Wren Client";
-static unsigned int clientWidth;
-static unsigned int clientHeight;
+
+EventHandler g_eventHandler;
+
+namespace
+{
+	std::unique_ptr<Game> g_game;
+};
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-GameTimer* timer = nullptr;
-DirectXManager* dxManager = nullptr;
-EventHandler* g_eventHandler = nullptr;
-SocketManager* socketManager = nullptr;
-ObjectManager* objectManager = nullptr;
-Camera* camera = nullptr;
-
-unsigned int GetClientWidth() { return clientWidth; }
-unsigned int GetClientHeight() { return clientHeight; }
-
-int CALLBACK WinMain(
-    _In_ HINSTANCE hInstance,
-    _In_ HINSTANCE hPrevInstance,
-    _In_ LPSTR     lpCmdLine,
-    _In_ int       nCmdShow
-)
+int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
-    try
-    {
-        // Allocate Console
-#ifdef _DEBUG
-        AllocConsole();
-        freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
-        HWND consoleWindow = GetConsoleWindow();
-        MoveWindow(consoleWindow, 0, 600, 800, 400, TRUE);
-        std::cout << "WrenClient initialized.\n";
-#endif
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
 
-        WNDCLASSEX wcex;
-        wcex.cbSize = sizeof(WNDCLASSEX);
-        wcex.style = CS_HREDRAW | CS_VREDRAW;
-        wcex.lpfnWndProc = WndProc;
-        wcex.cbClsExtra = 0;
-        wcex.cbWndExtra = 0;
-        wcex.hInstance = hInstance;
-        wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
-        wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-        wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-        wcex.lpszMenuName = NULL;
-        wcex.lpszClassName = szWindowClass;
-        wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
+	if (!XMVerifyCPUSupport())
+		return 1;
 
-        if (!RegisterClassEx(&wcex))
-            throw std::exception("RegisterClassEx failed.");
+	HRESULT hr = CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
+	if (FAILED(hr))
+		return 1;
 
-        HWND hWnd = CreateWindow(
-            szWindowClass,
-            szTitle,
-            WS_OVERLAPPEDWINDOW,
-            0,
-            0,
-            800,
-            600,
-            NULL,
-            NULL,
-            hInstance,
-            NULL
-        );
-        if (!hWnd)
-            throw std::exception("CreateWindow failed.");
+	g_game = std::make_unique<Game>();
 
-        ShowWindow(hWnd, nCmdShow);
-        UpdateWindow(hWnd);
+	// Allocate Console
+//#ifdef _DEBUG
+//	AllocConsole();
+//	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+//	HWND consoleWindow = GetConsoleWindow();
+//	MoveWindow(consoleWindow, 0, 600, 800, 400, TRUE);
+//	std::cout << "WrenClient initialized.\n";
+//#endif
 
-		RECT rect;
-		GetClientRect(hWnd, &rect);
-		clientWidth = rect.right - rect.left;
-		clientHeight = rect.bottom - rect.top;
+	// Register class
+	WNDCLASSEX wcex = {};
+	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = WndProc;
+	wcex.hInstance = hInstance;
+	wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
+	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.lpszClassName = szWindowClass;
+	wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
+	if (!RegisterClassEx(&wcex))
+		return 1;
 
-        timer = new GameTimer;
-		g_eventHandler = new EventHandler;
-		objectManager = new ObjectManager;
-		socketManager = new SocketManager;
-		camera = new Camera;
-		
-        dxManager = new DirectXManager{ *timer, *socketManager, *objectManager, *camera };
-        dxManager->Initialize(hWnd);
-	
-        // Main game loop:
-        MSG msg = { 0 };
-        timer->Reset();
-        while (msg.message != WM_QUIT)
-        {
-            // Process packets from server.
-			// This method will return false when the socket buffer is empty.
-			while (socketManager->TryRecieveMessage()) {}
+	// Create window
+	int w;
+	int h;
+	g_game->GetDefaultSize(w, h);
 
-            // Process window messages.
-            if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-            {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
-            }
-            // Tick game engine
-            else
-            {
-                timer->Tick();
-				g_eventHandler->PublishEvents();
-                dxManager->DrawScene();
-            }
-        }
+	RECT rc = { 0, 0, static_cast<long>(w), static_cast<long>(h) };
 
-		socketManager->CloseSockets();
-        return (int)msg.wParam;
-    }
-    catch (std::exception &e)
-    {
-        std::cout << e.what();
-        return -1;
-    }
+	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+
+	// TODO: Change to CreateWindowExW(WS_EX_TOPMOST, L"Direct3D_Win32_Game1WindowClass", L"Direct3D Win32 Game1", WS_POPUP,
+	// to default to fullscreen.
+	HWND hWnd = CreateWindowExW(
+		0,
+		szWindowClass,
+		szTitle,
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		rc.right - rc.left, 
+		rc.bottom - rc.top,
+		nullptr,
+		nullptr,
+		hInstance,
+		nullptr
+	);
+	if (!hWnd)
+		return 1;
+
+	// TODO: Change nCmdShow to SW_SHOWMAXIMIZED to default to fullscreen.
+	ShowWindow(hWnd, nCmdShow);
+	//UpdateWindow(hWnd);
+
+	SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_game.get()));
+
+	GetClientRect(hWnd, &rc);
+
+	g_game->Initialize(hWnd, rc.right - rc.left, rc.bottom - rc.top);
+
+	// Main message loop
+	MSG msg = { 0 };
+	while (msg.message != WM_QUIT)
+	{
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		// Tick game engine
+		else
+		{
+			g_game->Tick();
+		}
+	}
+
+	g_game.reset();
+
+	CoUninitialize();
+
+	return (int)msg.wParam;
 }
 
 WPARAM MapLeftRightKeys(WPARAM vk, LPARAM lParam)
@@ -157,45 +149,186 @@ WPARAM MapLeftRightKeys(WPARAM vk, LPARAM lParam)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	PAINTSTRUCT ps;
+	HDC hdc;
+
+	static bool s_in_sizemove = false;
+	static bool s_in_suspend = false;
+	static bool s_minimized = false;
+	static bool s_fullscreen = false;
+
+	auto game = reinterpret_cast<Game*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
 	WPARAM keyCode;
     switch (message)
     {
-    case WM_CLOSE:
-        DestroyWindow(hWnd);
+	case WM_PAINT:
+		if (s_in_sizemove && game)
+		{
+			game->Tick();
+		}
+		else
+		{
+			hdc = BeginPaint(hWnd, &ps);
+			EndPaint(hWnd, &ps);
+		}
 		break;
+
+	case WM_MOVE:
+		if (game)
+		{
+			game->OnWindowMoved();
+		}
+		break;
+
+	case WM_SIZE:
+		if (wParam == SIZE_MINIMIZED)
+		{
+			if (!s_minimized)
+			{
+				s_minimized = true;
+				if (!s_in_suspend && game)
+					game->OnSuspending();
+				s_in_suspend = true;
+			}
+		}
+		else if (s_minimized)
+		{
+			s_minimized = false;
+			if (s_in_suspend && game)
+				game->OnResuming();
+			s_in_suspend = false;
+		}
+		else if (!s_in_sizemove && game)
+		{
+			game->OnWindowSizeChanged(LOWORD(lParam), HIWORD(lParam));
+		}
+		break;
+
+	case WM_ENTERSIZEMOVE:
+		s_in_sizemove = true;
+		break;
+
+	case WM_EXITSIZEMOVE:
+		s_in_sizemove = false;
+		if (game)
+		{
+			RECT rc;
+			GetClientRect(hWnd, &rc);
+
+			game->OnWindowSizeChanged(rc.right - rc.left, rc.bottom - rc.top);
+		}
+		break;
+
+	case WM_GETMINMAXINFO:
+		{
+			auto info = reinterpret_cast<MINMAXINFO*>(lParam);
+			info->ptMinTrackSize.x = 320;
+			info->ptMinTrackSize.y = 200;
+		}
+		break;
+
+	case WM_ACTIVATEAPP:
+		if (game)
+		{
+			if (wParam)
+			{
+				game->OnActivated();
+			}
+			else
+			{
+				game->OnDeactivated();
+			}
+		}
+		break;
+
+	case WM_POWERBROADCAST:
+		switch (wParam)
+		{
+		case PBT_APMQUERYSUSPEND:
+			if (!s_in_suspend && game)
+				game->OnSuspending();
+			s_in_suspend = true;
+			return TRUE;
+
+		case PBT_APMRESUMESUSPEND:
+			if (!s_minimized)
+			{
+				if (s_in_suspend && game)
+					game->OnResuming();
+				s_in_suspend = false;
+			}
+			return TRUE;
+		}
+		break;
+
     case WM_DESTROY:
         PostQuitMessage(0);
 		break;
+
     case WM_LBUTTONDOWN:
-		g_eventHandler->QueueEvent(new MouseEvent{ EventType::LeftMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::LeftMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_MBUTTONDOWN:
-		g_eventHandler->QueueEvent(new MouseEvent{ EventType::MiddleMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MiddleMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_RBUTTONDOWN:
-		g_eventHandler->QueueEvent(new MouseEvent{ EventType::RightMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::RightMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_LBUTTONUP:
-		g_eventHandler->QueueEvent(new MouseEvent{ EventType::LeftMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::LeftMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_MBUTTONUP:
-		g_eventHandler->QueueEvent(new MouseEvent{ EventType::MiddleMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MiddleMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_RBUTTONUP:
-		g_eventHandler->QueueEvent(new MouseEvent{ EventType::RightMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::RightMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
     case WM_MOUSEMOVE:
-		g_eventHandler->QueueEvent(new MouseEvent{ EventType::MouseMoveEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MouseMoveEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
         break;
 
 	case WM_SYSKEYDOWN:
-		switch (wParam)
+		if (wParam == VK_RETURN && (lParam & 0x60000000) == 0x20000000)
 		{
-		case VK_MENU:
-			const auto keyCode = MapLeftRightKeys(wParam, lParam);
-			g_eventHandler->QueueEvent(new SystemKeyDownEvent{ keyCode });
-			break;
+			// Implements the classic ALT+ENTER fullscreen toggle
+			if (s_fullscreen)
+			{
+				SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+				SetWindowLongPtr(hWnd, GWL_EXSTYLE, 0);
+
+				int width = 800;
+				int height = 600;
+				if (game)
+					game->GetDefaultSize(width, height);
+
+				ShowWindow(hWnd, SW_SHOWNORMAL);
+
+				SetWindowPos(hWnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+			}
+			else
+			{
+				SetWindowLongPtr(hWnd, GWL_STYLE, 0);
+				SetWindowLongPtr(hWnd, GWL_EXSTYLE, WS_EX_TOPMOST);
+
+				SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+
+				ShowWindow(hWnd, SW_SHOWMAXIMIZED);
+			}
+
+			s_fullscreen = !s_fullscreen;
 		}
+		else
+		{
+			switch (wParam)
+			{
+			case VK_MENU:
+				const auto keyCode = MapLeftRightKeys(wParam, lParam);
+				g_eventHandler.QueueEvent(new SystemKeyDownEvent{ keyCode });
+				break;
+			}
+		}
+		
 		break;
 
 	case WM_SYSKEYUP:
@@ -203,7 +336,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_MENU:
 			const auto keyCode = MapLeftRightKeys(wParam, lParam);
-			g_eventHandler->QueueEvent(new SystemKeyUpEvent{ keyCode });
+			g_eventHandler.QueueEvent(new SystemKeyUpEvent{ keyCode });
 			break;
 		}
 		break;
@@ -219,7 +352,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			keyCode = wParam;
 			break;
 		}
-		g_eventHandler->QueueEvent(new SystemKeyDownEvent{ keyCode });
+		g_eventHandler.QueueEvent(new SystemKeyDownEvent{ keyCode });
 		break;
 
 	case WM_KEYUP:
@@ -233,7 +366,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			keyCode = wParam;
 			break;
 		}
-		g_eventHandler->QueueEvent(new SystemKeyUpEvent{ keyCode });
+		g_eventHandler.QueueEvent(new SystemKeyUpEvent{ keyCode });
 		break;
 
     case WM_CHAR:
@@ -251,7 +384,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
         default:   // Process a normal character press.            
             auto ch = (wchar_t)wParam;
-			g_eventHandler->QueueEvent(new KeyDownEvent{ ch });
+			g_eventHandler.QueueEvent(new KeyDownEvent{ ch });
             break;
         }
     default:
