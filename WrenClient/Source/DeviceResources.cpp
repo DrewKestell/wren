@@ -184,48 +184,48 @@ void DeviceResources::CreateWindowSizeDependentResources()
 
 		// This class does not support exclusive full-screen mode and prevents DXGI from responding to the ALT+ENTER shortcut
 		ThrowIfFailed(m_dxgiFactory->MakeWindowAssociation(m_window, DXGI_MWA_NO_ALT_ENTER));
-
-		// Create a render target view of the swap chain back buffer.
-		ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(m_renderTarget.ReleaseAndGetAddressOf())));
-
-		CD3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc(D3D11_RTV_DIMENSION_TEXTURE2D, m_backBufferFormat);
-		ThrowIfFailed(m_d3dDevice->CreateRenderTargetView(
-			m_renderTarget.Get(),
-			&renderTargetViewDesc,
-			m_d3dRenderTargetView.ReleaseAndGetAddressOf()
-		));
-
-		// Create a depth stencil view for use with 3D rendering if needed.
-		CD3D11_TEXTURE2D_DESC depthStencilDesc(
-			m_depthBufferFormat,
-			backBufferWidth,
-			backBufferHeight,
-			1, // This depth stencil view has only one texture.
-			1, // Use a single mipmap level.
-			D3D11_BIND_DEPTH_STENCIL
-		);
-
-		ThrowIfFailed(m_d3dDevice->CreateTexture2D(
-			&depthStencilDesc,
-			nullptr,
-			m_depthStencil.ReleaseAndGetAddressOf()
-		));
-
-		CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
-		ThrowIfFailed(m_d3dDevice->CreateDepthStencilView(
-			m_depthStencil.Get(),
-			&depthStencilViewDesc,
-			m_d3dDepthStencilView.ReleaseAndGetAddressOf()
-		));
-
-		// Set the 3D rendering viewport to target the entire window.
-		m_screenViewport = CD3D11_VIEWPORT(
-			0.0f,
-			0.0f,
-			static_cast<float>(backBufferWidth),
-			static_cast<float>(backBufferHeight)
-		);
 	}
+
+	// Create a render target view of the swap chain back buffer.
+	ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(m_renderTarget.ReleaseAndGetAddressOf())));
+
+	CD3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc(D3D11_RTV_DIMENSION_TEXTURE2D, m_backBufferFormat);
+	ThrowIfFailed(m_d3dDevice->CreateRenderTargetView(
+		m_renderTarget.Get(),
+		&renderTargetViewDesc,
+		m_d3dRenderTargetView.ReleaseAndGetAddressOf()
+	));
+
+	// Create a depth stencil view for use with 3D rendering if needed.
+	CD3D11_TEXTURE2D_DESC depthStencilDesc(
+		m_depthBufferFormat,
+		backBufferWidth,
+		backBufferHeight,
+		1, // This depth stencil view has only one texture.
+		1, // Use a single mipmap level.
+		D3D11_BIND_DEPTH_STENCIL
+	);
+
+	ThrowIfFailed(m_d3dDevice->CreateTexture2D(
+		&depthStencilDesc,
+		nullptr,
+		m_depthStencil.ReleaseAndGetAddressOf()
+	));
+
+	CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
+	ThrowIfFailed(m_d3dDevice->CreateDepthStencilView(
+		m_depthStencil.Get(),
+		&depthStencilViewDesc,
+		m_d3dDepthStencilView.ReleaseAndGetAddressOf()
+	));
+
+	// Set the 3D rendering viewport to target the entire window.
+	m_screenViewport = CD3D11_VIEWPORT(
+		0.0f,
+		0.0f,
+		static_cast<float>(backBufferWidth),
+		static_cast<float>(backBufferHeight)
+	);
 }
 
 // Recreate all device resources and set them back to the current state.
