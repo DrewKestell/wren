@@ -115,6 +115,9 @@ void DeviceResources::CreateDeviceResources()
 	ComPtr<ID2D1DeviceContext1> d2dDeviceContext;
 	ThrowIfFailed(m_d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &d2dDeviceContext));
 	ThrowIfFailed(d2dDeviceContext.As(&m_d2dContext));
+
+	// Get MSAA settings
+	ThrowIfFailed(device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, msaaCount, &msaaQuality));
 }
 
 void DeviceResources::CreateFactory()
@@ -241,14 +244,13 @@ void DeviceResources::CreateWindowSizeDependentResources()
 	));
 
 	// Create a depth stencil view for use with 3D rendering.
-	CD3D11_TEXTURE2D_DESC depthStencilDesc(
-		m_depthBufferFormat,
-		backBufferWidth,
-		backBufferHeight,
-		1, // This depth stencil view has only one texture.
-		1, // Use a single mipmap level.
-		D3D11_BIND_DEPTH_STENCIL
-	);
+	CD3D11_TEXTURE2D_DESC depthStencilDesc;
+	depthStencilDesc.Format = m_depthBufferFormat;
+	depthStencilDesc.Width = backBufferWidth;
+	depthStencilDesc.Height = backBufferHeight;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
 	ThrowIfFailed(m_d3dDevice->CreateTexture2D(
 		&depthStencilDesc,
@@ -278,6 +280,8 @@ void DeviceResources::CreateWindowSizeDependentResources()
 
 	ComPtr<ID2D1Bitmap1> targetBitmap;
 	ThrowIfFailed(m_d2dContext->CreateBitmapFromDxgiSurface(dxgiBuffer.Get(), &bp, &targetBitmap));
+
+	
 
 	m_d2dContext->SetTarget(targetBitmap.Get());
 

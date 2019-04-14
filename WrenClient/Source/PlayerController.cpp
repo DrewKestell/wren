@@ -118,7 +118,7 @@ void PlayerController::Update()
 		/*std::cout << "deltaX: " << deltaX << std::endl;
 		std::cout << "deltaZ: " << deltaZ << std::endl;*/
 
-		if (deltaX < 0.2f && deltaZ < 0.2f)
+		if (deltaX < 1.0f && deltaZ < 1.0f)
 		{
 			player.SetPosition(XMFLOAT3{ destinationX, 0.0f, destinationZ });
 			if (!isRightClickHeld)

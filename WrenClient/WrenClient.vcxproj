@@ -22,7 +22,6 @@
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
     <ClCompile Include="Source\DeviceResources.cpp" />
-    <ClCompile Include="Source\DirectXManager.cpp" />
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
@@ -136,7 +135,6 @@
     <ClInclude Include="Source\ConstantBufferOnce.h" />
     <ClInclude Include="Source\ConstantBufferPerObject.h" />
     <ClInclude Include="Source\DDSTextureLoader.h" />
-    <ClInclude Include="Source\DirectXManager.h" />
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
     <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateAccountFailedEvent.h" />
@@ -167,6 +165,7 @@
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Source\Model.h" />
     <ClInclude Include="Source\PlayerController.h" />
+    <ClInclude Include="Source\ShaderBuffer.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\Utility.h" />

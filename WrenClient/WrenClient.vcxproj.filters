@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Source\DirectXManager.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\WrenClient.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
@@ -30,7 +29,6 @@
     <ClCompile Include="Source\DeviceResources.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\DirectXManager.h" />
     <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\SocketManager.h" />
@@ -160,6 +158,7 @@
     <ClInclude Include="Source\Globals.h" />
     <ClInclude Include="Source\Game.h" />
     <ClInclude Include="Source\DeviceResources.h" />
+    <ClInclude Include="Source\ShaderBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

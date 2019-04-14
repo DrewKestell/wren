@@ -3,9 +3,9 @@
 #include "GameTimer.h"
 #include "EventHandling/Observer.h"
 
-const float ACCELERATION = 0.0005f;
-const float MIN_SPEED = 0.0005f;
-const float MAX_SPEED = 0.00001f;
+const float ACCELERATION = 0.02f;
+const float MIN_SPEED = 0.02f;
+const float MAX_SPEED = 0.00005f;
 const float OFFSET_X = 500.0f;
 const float OFFSET_Y = 700.0f;
 const float OFFSET_Z = -500.0f;

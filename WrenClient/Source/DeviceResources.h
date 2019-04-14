@@ -61,6 +61,8 @@ namespace DX
 		DXGI_FORMAT m_backBufferFormat{ DXGI_FORMAT_B8G8R8A8_UNORM };
 		DXGI_FORMAT m_depthBufferFormat{ DXGI_FORMAT_D32_FLOAT };
 		UINT m_backBufferCount{ 2 };
+		UINT msaaCount{ 1 };
+		UINT msaaQuality{ 0 };
 
 		// Cached device properties.
 		HWND m_window{ nullptr };

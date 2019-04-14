@@ -10,7 +10,7 @@
 int main()
 {
     HWND consoleWindow = GetConsoleWindow();
-    MoveWindow(consoleWindow, 800, 0, 800, 800, TRUE);
+    MoveWindow(consoleWindow, 810, 0, 800, 800, TRUE);
     std::cout << "WrenServer initialized.\n";
 
     Repository repository;

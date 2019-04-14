@@ -13,7 +13,6 @@ constexpr auto SERVER_PORT_NUMBER = 27016;
 
 extern EventHandler g_eventHandler;
 
-// CONSTRUCTOR
 SocketManager::SocketManager()
 {
     WSADATA wsaData;
