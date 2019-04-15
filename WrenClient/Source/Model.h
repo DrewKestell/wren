@@ -1,6 +1,6 @@
 #pragma once
 
-class Mesh;
+#include "Mesh.h"
 
 class Model
 {

@@ -57,6 +57,7 @@ public:
         writeFactory{ writeFactory },
         d2dDeviceContext{ d2dDeviceContext }
     {
+		std::cout << "UIInput constructor called.\n";
         ZeroMemory(inputValue, sizeof(inputValue));
 
         std::wostringstream outLabelText;
@@ -71,4 +72,5 @@ public:
     const wchar_t* GetInputValue();
 	bool IsActive() { return active; }
 	void SetActive(bool active) { this->active = active; }
+	~UIInput() { std::cout << "UIInput destrucor called.\n"; }
 };

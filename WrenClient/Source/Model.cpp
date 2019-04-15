@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Model.h"
-#include "Mesh.h"
 #include "ConstantBufferPerObject.h"
 
 Model::Model(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture, std::string& path)
@@ -10,7 +9,7 @@ Model::Model(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSiz
 	  texture{ texture }
 {
 	LoadModel(path);
-	Translate(XMMatrixScaling(20.0f, 20.0f, 20.0f) * XMMatrixTranslation(0.0f, 0.0f, 0.0f));
+	Translate(XMMatrixScaling(14.0f, 14.0f, 14.0f) * XMMatrixTranslation(0.0f, 0.0f, 0.0f));
 
 	// create SamplerState
 	D3D11_SAMPLER_DESC samplerDesc;
@@ -177,5 +176,5 @@ XMFLOAT3 Model::GetPosition()
 
 void Model::SetPosition(XMFLOAT3 pos)
 {
-	worldTransform = XMMatrixScaling(20.0f, 20.0f, 20.0f) * XMMatrixTranslation(pos.x, pos.y, pos.z);
+	worldTransform = XMMatrixScaling(14.0f, 14.0f, 14.0f) * XMMatrixTranslation(pos.x, pos.y, pos.z);
 }

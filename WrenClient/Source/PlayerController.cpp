@@ -142,44 +142,46 @@ void PlayerController::Update()
 
 void PlayerController::SetDestination(XMFLOAT3 playerPos)
 {
+	auto tileSize = 30.0f;
+
 	if (currentMovementDirection == CardinalDirection::SouthWest)
 	{
-		destinationX = playerPos.x - 60.0f;
-		destinationZ = playerPos.z - 60.0f;
+		destinationX = playerPos.x - tileSize;
+		destinationZ = playerPos.z - tileSize;
 	}
 	else if (currentMovementDirection == CardinalDirection::South)
 	{
 		destinationX = playerPos.x;
-		destinationZ = playerPos.z - 60.0f;
+		destinationZ = playerPos.z - tileSize;
 	}
 	else if (currentMovementDirection == CardinalDirection::SouthEast)
 	{
-		destinationX = playerPos.x + 60.0f;
-		destinationZ = playerPos.z - 60.0f;
+		destinationX = playerPos.x + tileSize;
+		destinationZ = playerPos.z - tileSize;
 	}
 	else if (currentMovementDirection == CardinalDirection::East)
 	{
-		destinationX = playerPos.x + 60.0f;
+		destinationX = playerPos.x + tileSize;
 		destinationZ = playerPos.z;
 	}
 	else if (currentMovementDirection == CardinalDirection::NorthEast)
 	{
-		destinationX = playerPos.x + 60.0f;
-		destinationZ = playerPos.z + 60.0f;
+		destinationX = playerPos.x + tileSize;
+		destinationZ = playerPos.z + tileSize;
 	}
 	else if (currentMovementDirection == CardinalDirection::North)
 	{
 		destinationX = playerPos.x;
-		destinationZ = playerPos.z + 60.0f;
+		destinationZ = playerPos.z + tileSize;
 	}
 	else if (currentMovementDirection == CardinalDirection::NorthWest)
 	{
-		destinationX = playerPos.x - 60.0f;
-		destinationZ = playerPos.z + 60.0f;
+		destinationX = playerPos.x - tileSize;
+		destinationZ = playerPos.z + tileSize;
 	}
 	else
 	{
-		destinationX = playerPos.x - 60.0f;
+		destinationX = playerPos.x - tileSize;
 		destinationZ = playerPos.z;
 	}
 }

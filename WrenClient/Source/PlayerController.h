@@ -6,7 +6,7 @@
 #include "Model.h"
 #include "Camera.h"
 
-const float MOVE_SPEED = 100.0f;
+const float MOVE_SPEED = 80.0f;
 
 class PlayerController : public Observer
 {
@@ -28,4 +28,5 @@ public:
 	PlayerController(GameTimer& gameTimer, Model& player, Camera& camera);
 	virtual bool HandleEvent(const Event* event);
 	void Update();
+	void SetClientDimensions(int width, int height) { clientWidth = width; clientHeight = height; }
 };

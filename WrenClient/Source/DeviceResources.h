@@ -32,8 +32,10 @@ namespace DX
 		ID2D1DeviceContext1* GetD2DDeviceContext() const { return m_d2dContext.Get(); }
 		IDWriteFactory2* GetWriteFactory() const { return m_writeFactory.Get(); }
 		ID2D1Factory2* GetD2DFactory() const { return m_d2dFactory.Get(); }
-		ID3D11RenderTargetView*	GetRenderTargetView() const { return m_d3dRenderTargetView.Get(); }
-		ID3D11DepthStencilView* GetDepthStencilView() const { return m_d3dDepthStencilView.Get(); }
+		ID3D11Texture2D* GetBackBufferRenderTarget() const { return m_backBufferRenderTarget.Get(); };
+		ID3D11Texture2D* GetOffscreenRenderTarget() const { return m_offscreenRenderTarget.Get(); };
+		ID3D11RenderTargetView*	GetOffscreenRenderTargetView() const { return m_offscreenRenderTargetView.Get(); }
+		ID3D11DepthStencilView* GetDepthStencilView() const { return m_depthStencilView.Get(); }
 		D3D11_VIEWPORT GetScreenViewport() const { return m_screenViewport; }
 	private:
 		void CreateFactory();
@@ -51,17 +53,19 @@ namespace DX
 		ComPtr<IDXGISwapChain1> m_swapChain;
 
 		// Direct3D rendering objects. Required for 3D.
-		ComPtr<ID3D11Texture2D> m_renderTarget;
+		ComPtr<ID3D11Texture2D> m_backBufferRenderTarget;
+		ComPtr<ID3D11Texture2D> m_offscreenRenderTarget;
 		ComPtr<ID3D11Texture2D> m_depthStencil;
-		ComPtr<ID3D11RenderTargetView> m_d3dRenderTargetView;
-		ComPtr<ID3D11DepthStencilView> m_d3dDepthStencilView;
+		ComPtr<ID3D11RenderTargetView> m_backBufferRenderTargetView;
+		ComPtr<ID3D11RenderTargetView> m_offscreenRenderTargetView;
+		ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 		D3D11_VIEWPORT m_screenViewport{};
 
 		// Direct3D Properties.
 		DXGI_FORMAT m_backBufferFormat{ DXGI_FORMAT_B8G8R8A8_UNORM };
 		DXGI_FORMAT m_depthBufferFormat{ DXGI_FORMAT_D32_FLOAT };
 		UINT m_backBufferCount{ 2 };
-		UINT msaaCount{ 1 };
+		UINT msaaCount{ 8 };
 		UINT msaaQuality{ 0 };
 
 		// Cached device properties.

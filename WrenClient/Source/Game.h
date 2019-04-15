@@ -45,7 +45,7 @@ private:
 	float m_mousePosY = 0.0f;
 	int m_clientWidth = 800;
 	int m_clientHeight = 600;
-	std::vector<UICharacterListing*>* m_characterList = new std::vector<UICharacterListing*>;
+	std::vector<std::unique_ptr<UICharacterListing>> m_characterList{};
 	std::string m_token = "";
 	std::string m_characterNamePendingDeletion = "";
 	XMMATRIX m_worldTransform{ XMMatrixIdentity() };
@@ -57,10 +57,10 @@ private:
 	Camera m_camera{};
 	SocketManager m_socketManager{};
 	ObjectManager m_objectManager{};
-	GameMap* m_gameMap = nullptr;
-	PlayerController* m_playerController = nullptr;
-	Model* m_sphereModel = nullptr;
-	Model* m_treeModel = nullptr;
+	std::unique_ptr<GameMap> m_gameMap;
+	std::unique_ptr<PlayerController> m_playerController;
+	std::unique_ptr<Model> m_sphereModel;
+	std::unique_ptr<Model> m_treeModel;
 
 	void Update();
 	void Render();
@@ -94,12 +94,6 @@ private:
 	ComPtr<IDWriteTextFormat> textFormatSuccessMessage;
 	ComPtr<IDWriteTextFormat> textFormatErrorMessage;
 
-	// TextLayouts
-	ComPtr<IDWriteTextLayout> textLayoutFPS;
-	ComPtr<IDWriteTextLayout> textLayoutMousePos;
-	ComPtr<IDWriteTextLayout> textLayoutSuccessMessage;
-	ComPtr<IDWriteTextLayout> textLayoutErrorMessage;
-
 	// Brushes
 	ComPtr<ID2D1SolidColorBrush> grayBrush;
 	ComPtr<ID2D1SolidColorBrush> blackBrush;
@@ -116,9 +110,6 @@ private:
 	ShaderBuffer pixelShaderBuffer{};
 	ComPtr<ID3D11PixelShader> pixelShader;
 
-	// InputLayouts
-	ComPtr<ID3D11InputLayout> inputLayout;
-
 	// Textures
 	ComPtr<ID3D11ShaderResourceView> color01SRV;
 	ComPtr<ID3D11ShaderResourceView> color02SRV;
@@ -129,53 +120,53 @@ private:
 	ComPtr<ID3D11RasterizerState> solidRasterState;
 
 	// Inputs
-	UIInput* loginScreen_accountNameInput = nullptr;
-	UIInput* loginScreen_passwordInput = nullptr;
-	UIInput* loginScreen_newAccountAccountNameInput = nullptr;
-	UIInput* loginScreen_newAccountPasswordInput = nullptr;
-	UIInput* createAccount_accountNameInput = nullptr;
-	UIInput* createAccount_passwordInput = nullptr;
-	UIInput* createCharacter_characterNameInput = nullptr;
+	std::unique_ptr<UIInput> loginScreen_accountNameInput;
+	std::unique_ptr<UIInput> loginScreen_passwordInput;
+	std::unique_ptr<UIInput> loginScreen_newAccountAccountNameInput;
+	std::unique_ptr<UIInput> loginScreen_newAccountPasswordInput;
+	std::unique_ptr<UIInput> createAccount_accountNameInput;
+	std::unique_ptr<UIInput> createAccount_passwordInput;
+	std::unique_ptr<UIInput> createCharacter_characterNameInput;
 
 	// InputGroups
-	UIInputGroup* loginScreen_inputGroup = nullptr;
-	UIInputGroup* createAccount_inputGroup = nullptr;
-	UIInputGroup* createCharacter_inputGroup = nullptr;
+	std::unique_ptr<UIInputGroup> loginScreen_inputGroup;
+	std::unique_ptr<UIInputGroup> createAccount_inputGroup;
+	std::unique_ptr<UIInputGroup> createCharacter_inputGroup;
 
 	// Buttons
-	UIButton* loginScreen_loginButton = nullptr;
-	UIButton* loginScreen_createAccountButton = nullptr;
-	UIButton* createAccount_createAccountButton = nullptr;
-	UIButton* createAccount_cancelButton = nullptr;
-	UIButton* characterSelect_newCharacterButton = nullptr;
-	UIButton* characterSelect_enterWorldButton = nullptr;
-	UIButton* characterSelect_deleteCharacterButton = nullptr;
-	UIButton* characterSelect_logoutButton = nullptr;
-	UIButton* createCharacter_createCharacterButton = nullptr;
-	UIButton* createCharacter_backButton = nullptr;
-	UIButton* deleteCharacter_confirmButton = nullptr;
-	UIButton* deleteCharacter_cancelButton = nullptr;
-	UIButton* gameSettings_logoutButton = nullptr;
+	std::unique_ptr<UIButton> loginScreen_loginButton;
+	std::unique_ptr<UIButton> loginScreen_createAccountButton;
+	std::unique_ptr<UIButton> createAccount_createAccountButton;
+	std::unique_ptr<UIButton> createAccount_cancelButton;
+	std::unique_ptr<UIButton> characterSelect_newCharacterButton;
+	std::unique_ptr<UIButton> characterSelect_enterWorldButton;
+	std::unique_ptr<UIButton> characterSelect_deleteCharacterButton;
+	std::unique_ptr<UIButton> characterSelect_logoutButton;
+	std::unique_ptr<UIButton> createCharacter_createCharacterButton;
+	std::unique_ptr<UIButton> createCharacter_backButton;
+	std::unique_ptr<UIButton> deleteCharacter_confirmButton;
+	std::unique_ptr<UIButton> deleteCharacter_cancelButton;
+	std::unique_ptr<UIButton> gameSettings_logoutButton;
 
 	// Labels
-	UILabel* loginScreen_successMessageLabel = nullptr;
-	UILabel* loginScreen_errorMessageLabel = nullptr;
-	UILabel* createAccount_errorMessageLabel = nullptr;
-	UILabel* connecting_statusLabel = nullptr;
-	UILabel* characterSelect_successMessageLabel = nullptr;
-	UILabel* characterSelect_errorMessageLabel = nullptr;
-	UILabel* characterSelect_headerLabel = nullptr;
-	UILabel* createCharacter_errorMessageLabel = nullptr;
-	UILabel* deleteCharacter_headerLabel = nullptr;
-	UILabel* enteringWorld_statusLabel = nullptr;
-	UILabel* fpsTextLabel = nullptr;
-	UILabel* mousePosLabel = nullptr;
-	UILabel* gameSettingsPanelHeader = nullptr;
-	UILabel* gameEditorPanelHeader = nullptr;
-	UILabel* diagnosticsPanelHeader = nullptr;
+	std::unique_ptr<UILabel> loginScreen_successMessageLabel;
+	std::unique_ptr<UILabel> loginScreen_errorMessageLabel;
+	std::unique_ptr<UILabel> createAccount_errorMessageLabel;
+	std::unique_ptr<UILabel> connecting_statusLabel;
+	std::unique_ptr<UILabel> characterSelect_successMessageLabel;
+	std::unique_ptr<UILabel> characterSelect_errorMessageLabel;
+	std::unique_ptr<UILabel> characterSelect_headerLabel;
+	std::unique_ptr<UILabel> createCharacter_errorMessageLabel;
+	std::unique_ptr<UILabel> deleteCharacter_headerLabel;
+	std::unique_ptr<UILabel> enteringWorld_statusLabel;
+	std::unique_ptr<UILabel> fpsTextLabel;
+	std::unique_ptr<UILabel> mousePosLabel;
+	std::unique_ptr<UILabel> gameSettingsPanelHeader;
+	std::unique_ptr<UILabel> gameEditorPanelHeader;
+	std::unique_ptr<UILabel> diagnosticsPanelHeader;
 
 	// Panels
-	UIPanel* gameSettingsPanel;
-	UIPanel* gameEditorPanel;
-	UIPanel* diagnosticsPanel;
+	std::unique_ptr<UIPanel> gameSettingsPanel;
+	std::unique_ptr<UIPanel> gameEditorPanel;
+	std::unique_ptr<UIPanel> diagnosticsPanel;
 };

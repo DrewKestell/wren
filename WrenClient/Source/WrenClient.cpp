@@ -32,13 +32,13 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 	g_game = std::make_unique<Game>();
 
 	// Allocate Console
-//#ifdef _DEBUG
-//	AllocConsole();
-//	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
-//	HWND consoleWindow = GetConsoleWindow();
-//	MoveWindow(consoleWindow, 0, 600, 800, 400, TRUE);
-//	std::cout << "WrenClient initialized.\n";
-//#endif
+#ifdef _DEBUG
+	AllocConsole();
+	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+	HWND consoleWindow = GetConsoleWindow();
+	MoveWindow(consoleWindow, 0, 640, 800, 400, TRUE);
+	std::cout << "WrenClient initialized.\n";
+#endif
 
 	// Register class
 	WNDCLASSEX wcex = {};

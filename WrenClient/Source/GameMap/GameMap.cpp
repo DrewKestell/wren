@@ -2,8 +2,8 @@
 #include "GameMap.h"
 #include "../ConstantBufferPerObject.h"
 
-const unsigned int TILE_WIDTH = 60;
-const unsigned int TILE_HEIGHT = 60;
+const unsigned int TILE_WIDTH = 30;
+const unsigned int TILE_HEIGHT = 30;
 
 // this can be optimized. there are more shared vertices here (between tiles).
 GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
@@ -19,8 +19,8 @@ GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShade
 		const auto row = i / MAP_HEIGHT;
 		const auto col = i % MAP_WIDTH;
 
-		const float x = (col * TILE_WIDTH) - 30.0f;;
-		const float z = (row * TILE_HEIGHT) - 30.0f;
+		const float x = (col * TILE_WIDTH) - (float)TILE_WIDTH / 2;
+		const float z = (row * TILE_HEIGHT) - (float)TILE_HEIGHT / 2;
 
 		const auto bottomLeft = i * 4;
 		const auto topLeft = (i * 4) + 1;

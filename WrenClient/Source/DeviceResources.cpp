@@ -158,16 +158,18 @@ void DeviceResources::CreateWindowSizeDependentResources()
 	ID3D11RenderTargetView* nullViews[] = { nullptr };
 	m_d3dContext->OMSetRenderTargets(_countof(nullViews), nullViews, nullptr);
 	m_d2dContext->SetTarget(nullptr);
-	m_d3dRenderTargetView.Reset();
-	m_d3dDepthStencilView.Reset();
-	m_renderTarget.Reset();
+	m_backBufferRenderTargetView.Reset();
+	m_offscreenRenderTargetView.Reset();
+	m_depthStencilView.Reset();
+	m_backBufferRenderTarget.Reset();
+	m_offscreenRenderTarget.Reset();
 	m_depthStencil.Reset();
 	m_d3dContext->Flush();
 	//m_d2dContext->Flush();
 
 	// Determine the render target size in pixels.
-	UINT backBufferWidth = std::max<UINT>(m_outputSize.right - m_outputSize.left, 1);
-	UINT backBufferHeight = std::max<UINT>(m_outputSize.bottom - m_outputSize.top, 1);
+	UINT renderTargetWidth = std::max<UINT>(m_outputSize.right - m_outputSize.left, 1);
+	UINT renderTargetHeight = std::max<UINT>(m_outputSize.bottom - m_outputSize.top, 1);
 	DXGI_FORMAT backBufferFormat = m_backBufferFormat;
 
 	if (m_swapChain)
@@ -175,8 +177,8 @@ void DeviceResources::CreateWindowSizeDependentResources()
 		// If the swap chain already exists, resize it.
 		HRESULT hr = m_swapChain->ResizeBuffers(
 			m_backBufferCount,
-			backBufferWidth,
-			backBufferHeight,
+			renderTargetWidth,
+			renderTargetHeight,
 			backBufferFormat,
 			0
 		);
@@ -204,8 +206,8 @@ void DeviceResources::CreateWindowSizeDependentResources()
 	{
 		// Create a descriptor for the swap chain.
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-		swapChainDesc.Width = backBufferWidth;
-		swapChainDesc.Height = backBufferHeight;
+		swapChainDesc.Width = renderTargetWidth;
+		swapChainDesc.Height = renderTargetHeight;
 		swapChainDesc.Format = backBufferFormat;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		swapChainDesc.BufferCount = m_backBufferCount;
@@ -233,24 +235,22 @@ void DeviceResources::CreateWindowSizeDependentResources()
 		ThrowIfFailed(m_dxgiFactory->MakeWindowAssociation(m_window, DXGI_MWA_NO_ALT_ENTER));
 	}
 
-	// Create a render target view of the swap chain back buffer.
-	ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(m_renderTarget.ReleaseAndGetAddressOf())));
-
-	CD3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc(D3D11_RTV_DIMENSION_TEXTURE2D, m_backBufferFormat);
-	ThrowIfFailed(m_d3dDevice->CreateRenderTargetView(
-		m_renderTarget.Get(),
-		&renderTargetViewDesc,
-		m_d3dRenderTargetView.ReleaseAndGetAddressOf()
-	));
+	ThrowIfFailed(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&m_backBufferRenderTarget));
+	ThrowIfFailed(m_d3dDevice->CreateRenderTargetView(m_backBufferRenderTarget.Get(), NULL, &m_backBufferRenderTargetView));
 
 	// Create a depth stencil view for use with 3D rendering.
 	CD3D11_TEXTURE2D_DESC depthStencilDesc;
 	depthStencilDesc.Format = m_depthBufferFormat;
-	depthStencilDesc.Width = backBufferWidth;
-	depthStencilDesc.Height = backBufferHeight;
+	depthStencilDesc.Width = renderTargetWidth;
+	depthStencilDesc.Height = renderTargetHeight;
+	depthStencilDesc.SampleDesc.Count = msaaCount;
+	depthStencilDesc.SampleDesc.Quality = msaaQuality - 1;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
 	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
 
 	ThrowIfFailed(m_d3dDevice->CreateTexture2D(
 		&depthStencilDesc,
@@ -258,12 +258,31 @@ void DeviceResources::CreateWindowSizeDependentResources()
 		m_depthStencil.ReleaseAndGetAddressOf()
 	));
 
-	CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
+	CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2DMS);
 	ThrowIfFailed(m_d3dDevice->CreateDepthStencilView(
 		m_depthStencil.Get(),
 		&depthStencilViewDesc,
-		m_d3dDepthStencilView.ReleaseAndGetAddressOf()
+		m_depthStencilView.ReleaseAndGetAddressOf()
 	));
+
+	// Create offscreen render target
+	D3D11_TEXTURE2D_DESC surfaceDesc;
+	surfaceDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	surfaceDesc.Width = renderTargetWidth;
+	surfaceDesc.Height = renderTargetHeight;
+	surfaceDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
+	surfaceDesc.MipLevels = 1;
+	surfaceDesc.ArraySize = 1;
+	surfaceDesc.SampleDesc.Count = msaaCount;
+	surfaceDesc.SampleDesc.Quality = msaaQuality - 1;
+	surfaceDesc.CPUAccessFlags = 0;
+	surfaceDesc.MiscFlags = 0;
+	surfaceDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	ThrowIfFailed(m_d3dDevice->CreateTexture2D(&surfaceDesc, nullptr, &m_offscreenRenderTarget));
+
+	CD3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc(D3D11_RTV_DIMENSION_TEXTURE2DMS);
+	ThrowIfFailed(m_d3dDevice->CreateRenderTargetView(m_offscreenRenderTarget.Get(), &renderTargetViewDesc, &m_offscreenRenderTargetView));
 
 	// Get reference to DXGISurface and create a bitmap from that surface
 	// to use as a rendering target for our D2DContext.
@@ -275,13 +294,11 @@ void DeviceResources::CreateWindowSizeDependentResources()
 	bp.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW;
 	bp.colorContext = nullptr;
 
-	ComPtr<IDXGISurface1> dxgiBuffer;
-	ThrowIfFailed(m_swapChain->GetBuffer(0, __uuidof(IDXGISurface), &dxgiBuffer));
+	ComPtr<IDXGISurface> dxgiSurface;
+	ThrowIfFailed(m_offscreenRenderTarget.As(&dxgiSurface));
 
 	ComPtr<ID2D1Bitmap1> targetBitmap;
-	ThrowIfFailed(m_d2dContext->CreateBitmapFromDxgiSurface(dxgiBuffer.Get(), &bp, &targetBitmap));
-
-	
+	ThrowIfFailed(m_d2dContext->CreateBitmapFromDxgiSurface(dxgiSurface.Get(), &bp, &targetBitmap));
 
 	m_d2dContext->SetTarget(targetBitmap.Get());
 
@@ -289,8 +306,8 @@ void DeviceResources::CreateWindowSizeDependentResources()
 	m_screenViewport = CD3D11_VIEWPORT(
 		0.0f,
 		0.0f,
-		static_cast<float>(backBufferWidth),
-		static_cast<float>(backBufferHeight)
+		static_cast<float>(renderTargetWidth),
+		static_cast<float>(renderTargetHeight)
 	);
 }
 
@@ -306,9 +323,11 @@ void DeviceResources::HandleDeviceLost()
 	m_d2dDevice.Reset();
 	m_d2dFactory.Reset();
 	m_writeFactory.Reset();
-	m_d3dDepthStencilView.Reset();
-	m_d3dRenderTargetView.Reset();
-	m_renderTarget.Reset();
+	m_depthStencilView.Reset();
+	m_backBufferRenderTargetView.Reset();
+	m_offscreenRenderTargetView.Reset();
+	m_backBufferRenderTarget.Reset();
+	m_offscreenRenderTarget.Reset();
 	m_depthStencil.Reset();
 	m_swapChain.Reset();
 	m_d3dContext.Reset();	
@@ -359,8 +378,9 @@ void DeviceResources::Present()
 	// Discard the contents of the render target.
 	// This is a valid operation only when the existing contents will be entirely
 	// overwritten. If dirty or scroll rects are used, this call should be removed.
-	m_d3dContext->DiscardView(m_d3dRenderTargetView.Get());
-	m_d3dContext->DiscardView(m_d3dDepthStencilView.Get());
+	m_d3dContext->DiscardView(m_backBufferRenderTargetView.Get());
+	m_d3dContext->DiscardView(m_offscreenRenderTargetView.Get());
+	m_d3dContext->DiscardView(m_depthStencilView.Get());
 
 	// If the device was removed either by a disconnection or a driver upgrade, we 
 	// must recreate all device resources.
