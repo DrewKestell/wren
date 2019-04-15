@@ -41,22 +41,22 @@ public:
 	void GetDefaultSize(int& width, int& height) const;
 
 private:
-	float m_mousePosX = 0.0f;
-	float m_mousePosY = 0.0f;
-	int m_clientWidth = 800;
-	int m_clientHeight = 600;
-	std::vector<std::unique_ptr<UICharacterListing>> m_characterList{};
-	std::string m_token = "";
-	std::string m_characterNamePendingDeletion = "";
+	float m_mousePosX{ 0.0f };
+	float m_mousePosY{ 0.0f };
+	int m_clientWidth{ 800 };
+	int m_clientHeight{ 600 };
+	std::vector<std::unique_ptr<UICharacterListing>> m_characterList;
+	std::string m_token;
+	std::string m_characterNamePendingDeletion{};
 	XMMATRIX m_worldTransform{ XMMatrixIdentity() };
 	XMMATRIX m_viewTransform{ XMMatrixIdentity() };
 	XMMATRIX m_projectionTransform{ XMMatrixIdentity() };
-	Layer m_activeLayer = Login;
+	Layer m_activeLayer{ Login };
 	std::unique_ptr<DX::DeviceResources> m_deviceResources;
-	GameTimer m_timer{};
-	Camera m_camera{};
-	SocketManager m_socketManager{};
-	ObjectManager m_objectManager{};
+	GameTimer m_timer;
+	Camera m_camera;
+	SocketManager m_socketManager;
+	ObjectManager m_objectManager;
 	std::unique_ptr<GameMap> m_gameMap;
 	std::unique_ptr<PlayerController> m_playerController;
 	std::unique_ptr<Model> m_sphereModel;
@@ -68,8 +68,8 @@ private:
 	void CreateDeviceDependentResources();
 	void CreateWindowSizeDependentResources();
 
-	ShaderBuffer LoadShader(std::wstring filename);
-	virtual bool HandleEvent(const Event* event);
+	ShaderBuffer LoadShader(const std::wstring filename);
+	virtual const bool HandleEvent(const Event* const event);
 	void SetActiveLayer(const Layer layer);
 
 	void InitializeBrushes();

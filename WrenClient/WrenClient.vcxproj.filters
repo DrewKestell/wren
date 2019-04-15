@@ -155,7 +155,6 @@
     <ClInclude Include="Source\EventHandling\Events\RightMouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RigthMouseUpEvent.h" />
     <ClInclude Include="Source\Camera.h" />
-    <ClInclude Include="Source\Globals.h" />
     <ClInclude Include="Source\Game.h" />
     <ClInclude Include="Source\DeviceResources.h" />
     <ClInclude Include="Source\ShaderBuffer.h" />

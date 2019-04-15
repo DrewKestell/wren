@@ -12,14 +12,14 @@ const float OFFSET_Z = -500.0f;
 
 class Camera : public Observer
 {
-	float camX = 0.0f;
-	float camY = 0.0f;
-	float camZ = 0.0f;
-	float currentSpeed = MIN_SPEED;
+	float camX{ 0.0f };
+	float camY{ 0.0f };
+	float camZ{ 0.0f };
+	float currentSpeed{ MIN_SPEED };
 public:
-	virtual bool HandleEvent(const Event* event);
-	void Update(XMFLOAT3 vec, GameTimer& gameTimer);
-	void Translate(XMFLOAT3 pos) { camX += pos.x; camY += pos.y; camZ += pos.z; }
-	XMFLOAT3 GetPosition() { return XMFLOAT3{ camX + OFFSET_X, camY + OFFSET_Y, camZ + OFFSET_Z }; }
-	XMFLOAT3 GetPositionFromOrigin() { return XMFLOAT3{ camX, camY, camZ }; }
+	virtual const bool HandleEvent(const Event* const event);
+	void Update(const XMFLOAT3 vec, GameTimer& gameTimer);
+	void Translate(const XMFLOAT3 pos) { camX += pos.x; camY += pos.y; camZ += pos.z; }
+	XMFLOAT3 GetPosition() const { return XMFLOAT3{ camX + OFFSET_X, camY + OFFSET_Y, camZ + OFFSET_Z }; }
+	XMFLOAT3 GetPositionFromOrigin() const { return XMFLOAT3{ camX, camY, camZ }; }
 };

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GameObject.h"
 
-XMFLOAT3 GameObject::GetWorldPosition()
+XMFLOAT3 GameObject::GetWorldPosition() const
 {
     auto worldPosition = localPosition;
     auto parentPtr = parent;

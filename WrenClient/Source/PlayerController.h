@@ -10,23 +10,23 @@ const float MOVE_SPEED = 80.0f;
 
 class PlayerController : public Observer
 {
-	float destinationX = 0.0f;
-	float destinationZ = 0.0f;
+	float destinationX{ 0.0f };
+	float destinationZ{ 0.0f };
+	float clientWidth{ 0.0f };
+	float clientHeight{ 0.0f };
+	bool isRightClickHeld{ false };
+	bool isMoving{ false };
+	CardinalDirection currentMouseDirection{ CardinalDirection::North };
+	CardinalDirection currentMovementDirection{ CardinalDirection::North };
 	GameTimer& gameTimer;
 	Model& player;
 	Camera& camera;
-	float clientWidth = 0.0f;
-	float clientHeight = 0.0f;
-	CardinalDirection currentMouseDirection;
-	bool isRightClickHeld = false;
-	bool isMoving = false;
-	CardinalDirection currentMovementDirection;
 
-	void SetDestination(XMFLOAT3 playerPos);
-	void UpdateCurrentMouseDirection(float mousePosX, float mousePosY);
+	void SetDestination(const XMFLOAT3 playerPos);
+	void UpdateCurrentMouseDirection(const float mousePosX, const float mousePosY);
 public:
 	PlayerController(GameTimer& gameTimer, Model& player, Camera& camera);
-	virtual bool HandleEvent(const Event* event);
+	virtual const bool HandleEvent(const Event* const event);
 	void Update();
-	void SetClientDimensions(int width, int height) { clientWidth = width; clientHeight = height; }
+	void SetClientDimensions(const int width, const int height) { clientWidth = (float)width; clientHeight = (float)height; }
 };

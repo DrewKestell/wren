@@ -13,7 +13,7 @@ PlayerController::PlayerController(GameTimer& gameTimer, Model& player, Camera& 
 	clientHeight = 600;
 }
 
-bool PlayerController::HandleEvent(const Event* event)
+const bool PlayerController::HandleEvent(const Event* const event)
 {
 	const auto type = event->type;
 	switch (type)
@@ -140,7 +140,7 @@ void PlayerController::Update()
 	}
 }
 
-void PlayerController::SetDestination(XMFLOAT3 playerPos)
+void PlayerController::SetDestination(const XMFLOAT3 playerPos)
 {
 	auto tileSize = 30.0f;
 
@@ -186,7 +186,7 @@ void PlayerController::SetDestination(XMFLOAT3 playerPos)
 	}
 }
 
-void PlayerController::UpdateCurrentMouseDirection(float mousePosX, float mousePosY)
+void PlayerController::UpdateCurrentMouseDirection(const float mousePosX, const float mousePosY)
 {
 	auto centerPoint = XMVECTOR{ clientWidth / 2, clientHeight / 2, 0.0f, 0.0f };
 	auto clickPoint = XMVECTOR{ mousePosX, mousePosY, 0.0f, 0.0f };

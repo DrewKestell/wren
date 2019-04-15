@@ -6,7 +6,7 @@ const unsigned int TILE_WIDTH = 30;
 const unsigned int TILE_HEIGHT = 30;
 
 // this can be optimized. there are more shared vertices here (between tiles).
-GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
+GameMap::GameMap(ID3D11Device* device, const BYTE* vertexShaderBuffer, const int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
 	: vertexShader{ vertexShader },
 	  pixelShader{ pixelShader }, 
 	  texture{ texture }
@@ -44,7 +44,7 @@ GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShade
 	D3D11_BUFFER_DESC bufferDesc;
 	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = sizeof(Vertex) * vertices.size();
+	bufferDesc.ByteWidth = (UINT)(sizeof(Vertex) * vertices.size());
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bufferDesc.CPUAccessFlags = 0;
 	bufferDesc.MiscFlags = 0;
@@ -52,16 +52,16 @@ GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShade
 	D3D11_SUBRESOURCE_DATA vertexData;
 	vertexData.pSysMem = vertices.data();
 
-	device->CreateBuffer(&bufferDesc, &vertexData, &vertexBuffer);
+	device->CreateBuffer(&bufferDesc, &vertexData, vertexBuffer.ReleaseAndGetAddressOf());
 
 	// create index buffer
 	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bufferDesc.ByteWidth = sizeof(unsigned int) * indices.size();
+	bufferDesc.ByteWidth = (UINT)(sizeof(unsigned int) * indices.size());
 
 	D3D11_SUBRESOURCE_DATA indexData;
 	indexData.pSysMem = indices.data();
 
-	device->CreateBuffer(&bufferDesc, &indexData, &indexBuffer);
+	device->CreateBuffer(&bufferDesc, &indexData, indexBuffer.ReleaseAndGetAddressOf());
 
 	// create constant buffer
 	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -69,7 +69,7 @@ GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShade
 	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bufferDesc.ByteWidth = sizeof(ConstantBufferPerObject);
 
-	device->CreateBuffer(&bufferDesc, nullptr, &constantBuffer);
+	device->CreateBuffer(&bufferDesc, nullptr, constantBuffer.ReleaseAndGetAddressOf());
 
 	// create SamplerState
 	D3D11_SAMPLER_DESC samplerDesc;
@@ -87,7 +87,7 @@ GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShade
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	device->CreateSamplerState(&samplerDesc, &samplerState);
+	device->CreateSamplerState(&samplerDesc, samplerState.ReleaseAndGetAddressOf());
 
 	// create InputLayout
 	D3D11_INPUT_ELEMENT_DESC ied[] =
@@ -97,7 +97,7 @@ GameMap::GameMap(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShade
 		{"TEXCOORDS", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
-	device->CreateInputLayout(ied, ARRAYSIZE(ied), vertexShaderBuffer, vertexShaderSize, &inputLayout);
+	device->CreateInputLayout(ied, ARRAYSIZE(ied), vertexShaderBuffer, vertexShaderSize, inputLayout.ReleaseAndGetAddressOf());
 }
 
 GameMapTile& GameMap::GetTile(int row, int col)
@@ -105,18 +105,18 @@ GameMapTile& GameMap::GetTile(int row, int col)
 	return mapTiles[(row * MAP_WIDTH) + col];
 }
 
-void GameMap::Draw(ID3D11DeviceContext* immediateContext, XMMATRIX viewTransform, XMMATRIX projectionTransform)
+void GameMap::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform)
 {
 	// set InputLayout
-	immediateContext->IASetInputLayout(inputLayout);
+	immediateContext->IASetInputLayout(inputLayout.Get());
 
 	// map ConstantBuffer
 	auto worldViewProjection = worldTransform * viewTransform * projectionTransform;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	immediateContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	immediateContext->Map(constantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	auto pCB = reinterpret_cast<ConstantBufferPerObject*>(mappedResource.pData);
 	XMStoreFloat4x4(&pCB->mWorldViewProj, XMMatrixTranspose(worldViewProjection));
-	immediateContext->Unmap(constantBuffer, 0);
+	immediateContext->Unmap(constantBuffer.Get(), 0);
 
 	// setup VertexShader
 	immediateContext->VSSetShader(vertexShader, nullptr, 0);
@@ -129,7 +129,7 @@ void GameMap::Draw(ID3D11DeviceContext* immediateContext, XMMATRIX viewTransform
 
 	// set VertexBuffer and IndexBuffer then Draw
 	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->DrawIndexed(INDEX_COUNT, 0, 0);
 }

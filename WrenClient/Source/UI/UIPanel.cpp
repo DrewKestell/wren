@@ -9,6 +9,39 @@
 #include "../Utility.h"
 #include "../Layer.h"
 
+UIPanel::UIPanel(
+	ObjectManager& objectManager,
+	const XMFLOAT3 position,
+	const Layer uiLayer,
+	const bool isDraggable,
+	const float width,
+	const float height,
+	const WPARAM showKey,
+	ID2D1SolidColorBrush* headerBrush,
+	ID2D1SolidColorBrush* bodyBrush,
+	ID2D1SolidColorBrush* borderBrush,
+	ID2D1DeviceContext1* d2dDeviceContext,
+	ID2D1Factory2* d2dFactory)
+	: UIComponent(objectManager, position, uiLayer),
+	  isDraggable{ isDraggable },
+	  width{ width },
+	  height{ height },
+	  showKey{ showKey },
+	  headerBrush{ headerBrush },
+	  bodyBrush{ bodyBrush },
+	  borderBrush{ borderBrush },
+	  d2dDeviceContext{ d2dDeviceContext },
+	  d2dFactory{ d2dFactory }
+{
+	float startHeight = position.y;
+	if (isDraggable)
+	{
+		d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT), 3.0f, 3.0f), headerGeometry.ReleaseAndGetAddressOf());
+		startHeight += HEADER_HEIGHT;
+	}
+	d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, startHeight, position.x + width, startHeight + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
+}
+
 void UIPanel::Draw()
 {
 	if (!isVisible) return;
@@ -17,11 +50,11 @@ void UIPanel::Draw()
 	const float borderWeight = 2.0f;
 	if (isDraggable)
 	{
-		d2dDeviceContext->FillGeometry(headerGeometry, headerBrush);
-		d2dDeviceContext->DrawGeometry(headerGeometry, borderBrush, borderWeight);
+		d2dDeviceContext->FillGeometry(headerGeometry.Get(), headerBrush);
+		d2dDeviceContext->DrawGeometry(headerGeometry.Get(), borderBrush, borderWeight);
 	}
-	d2dDeviceContext->FillGeometry(bodyGeometry, bodyBrush);
-	d2dDeviceContext->DrawGeometry(bodyGeometry, borderBrush, borderWeight);
+	d2dDeviceContext->FillGeometry(bodyGeometry.Get(), bodyBrush);
+	d2dDeviceContext->DrawGeometry(bodyGeometry.Get(), borderBrush, borderWeight);
 
 	// Draw Children
 	const auto children = GetChildren();
@@ -29,7 +62,7 @@ void UIPanel::Draw()
 		children.at(i)->Draw();
 }
 
-bool UIPanel::HandleEvent(const Event* event)
+const bool UIPanel::HandleEvent(const Event* const event)
 {
 	const auto type = event->type;
 	switch (type)
@@ -74,12 +107,9 @@ bool UIPanel::HandleEvent(const Event* event)
 				lastDragY = mouseMoveEvent->mousePosY;
 
 				const auto currentPosition = GetWorldPosition();
-				if (headerGeometry != nullptr)
-					headerGeometry->Release();
-				if (bodyGeometry != nullptr)
-					bodyGeometry->Release();
-				d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT), 3.0f, 3.0f), &headerGeometry);
-				d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y + HEADER_HEIGHT, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT + height), 3.0f, 3.0f), &bodyGeometry);
+
+				d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT), 3.0f, 3.0f), headerGeometry.ReleaseAndGetAddressOf());
+				d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y + HEADER_HEIGHT, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
 			}
 
 			break;

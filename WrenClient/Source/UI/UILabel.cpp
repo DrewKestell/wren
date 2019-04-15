@@ -1,10 +1,31 @@
 #include "stdafx.h"
 #include "UILabel.h"
 #include "UIComponent.h"
-#include "../EventHandling/Observer.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../GameObject.h"
 #include "../Layer.h"
+
+using namespace DX;
+
+UILabel::UILabel(
+	ObjectManager& objectManager,
+	const XMFLOAT3 position,
+	const Layer uiLayer,
+	const float width,
+	ID2D1SolidColorBrush* textBrush,
+	IDWriteTextFormat* textFormat,
+	ID2D1DeviceContext1* d2dDeviceContext,
+	IDWriteFactory2* writeFactory,
+	ID2D1Factory2* d2dFactory)
+	: UIComponent(objectManager, position, uiLayer),
+	  width{ width },
+	  textBrush{ textBrush },
+	  textFormat{ textFormat },	
+	  writeFactory{ writeFactory },
+	  d2dDeviceContext{ d2dDeviceContext }
+{
+	ZeroMemory(text, sizeof(text));
+}
 
 void UILabel::Draw()
 {
@@ -12,12 +33,11 @@ void UILabel::Draw()
 
     std::wostringstream outInputValue;
     outInputValue << text;
-	if (textLayout != nullptr)
-		textLayout->Release();
-    if (FAILED(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormat, width, 24.0f, &textLayout)))
-        throw std::exception("Critical error: Failed to create the text layout for UILabel.");
+
+	ThrowIfFailed(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormat, width, 24.0f, textLayout.ReleaseAndGetAddressOf()));
+
     const auto position = GetWorldPosition();
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y), textLayout, textBrush);
+    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y), textLayout.Get(), textBrush);
 }
 
 void UILabel::SetText(const char* arr)
@@ -25,7 +45,7 @@ void UILabel::SetText(const char* arr)
     memcpy(&text[0], &arr[0], strlen(arr) + 1);
 }
 
-bool UILabel::HandleEvent(const Event* event)
+const bool UILabel::HandleEvent(const Event* const event)
 {
 	const auto type = event->type;
 	switch (type)

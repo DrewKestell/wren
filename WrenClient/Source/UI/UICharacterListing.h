@@ -6,59 +6,36 @@
 
 class UICharacterListing : public UIComponent, public Observer
 {
-    std::string characterName;
-    bool selected;
-    float width;
-    float height;
+	ComPtr<IDWriteTextLayout> textLayout;
+	ComPtr<ID2D1RoundedRectangleGeometry> geometry;
+	std::string characterName{ "" };
+	bool selected{ false };
+	float width{ 0.0f };
+	float height{ 0.0f };
     ID2D1SolidColorBrush* brush = nullptr;
     ID2D1SolidColorBrush* selectedBrush = nullptr;
     ID2D1SolidColorBrush* borderBrush = nullptr;
     ID2D1SolidColorBrush* textBrush = nullptr;
     ID2D1DeviceContext1* d2dDeviceContext = nullptr;
-    IDWriteTextLayout* textLayout = nullptr;
-    ID2D1RoundedRectangleGeometry* geometry = nullptr;
+    
 public:
-    UICharacterListing(
-        const XMFLOAT3 position,
+	UICharacterListing(
 		ObjectManager& objectManager,
+		const XMFLOAT3 position,
 		const Layer uiLayer,
-        const float width,
-        const float height,
-        ID2D1SolidColorBrush* brush,
-        ID2D1SolidColorBrush* selectedBrush,
-        ID2D1SolidColorBrush* borderBrush,
-        ID2D1SolidColorBrush* textBrush,
-        ID2D1DeviceContext1* d2dDeviceContext,
-        const char* inText,
-        IDWriteFactory2* writeFactory,
-        IDWriteTextFormat* textFormat,
-        ID2D1Factory2* d2dFactory) :
-        UIComponent{ objectManager, position, uiLayer },
-        width{ width },
-        height{ height },
-        brush{ brush },
-        selectedBrush{ selectedBrush },
-        borderBrush{ borderBrush },
-        textBrush{ textBrush },
-        d2dDeviceContext{ d2dDeviceContext }
-    {
-        characterName = std::string(inText);
-
-        std::wostringstream outText;
-        outText << inText;
-        if (FAILED(writeFactory->CreateTextLayout(outText.str().c_str(), (UINT32)outText.str().size(), textFormat, width, height, &textLayout)))
-            throw std::exception("Failed to create text layout for UICharacterListing.");
-
-        d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), &geometry);
-
-    }
+		const float width,
+		const float height,
+		const char* inText,
+		ID2D1SolidColorBrush* brush,
+		ID2D1SolidColorBrush* selectedBrush,
+		ID2D1SolidColorBrush* borderBrush,
+		ID2D1SolidColorBrush* textBrush,
+		ID2D1DeviceContext1* d2dDeviceContext,
+		IDWriteFactory2* writeFactory,
+		IDWriteTextFormat* textFormat,
+		ID2D1Factory2* d2dFactory);
     virtual void Draw();
-	virtual bool HandleEvent(const Event* event);
-	std::string& GetName() { return characterName; }
-	bool IsSelected() { return selected; }
-	~UICharacterListing()
-	{
-		textLayout->Release();
-		geometry->Release();
-	}
+	virtual const bool HandleEvent(const Event* const event);
+	const std::string& GetName() const { return characterName; }
+	const bool IsSelected() const { return selected; }
 };

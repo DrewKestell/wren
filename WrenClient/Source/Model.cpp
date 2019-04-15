@@ -2,7 +2,7 @@
 #include "Model.h"
 #include "ConstantBufferPerObject.h"
 
-Model::Model(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture, std::string& path)
+Model::Model(ID3D11Device* device, const BYTE* vertexShaderBuffer, const int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture, const std::string& path)
 	: device{ device },
 	  vertexShader{ vertexShader },
 	  pixelShader{ pixelShader },
@@ -27,7 +27,7 @@ Model::Model(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSiz
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	device->CreateSamplerState(&samplerDesc, &samplerState);
+	device->CreateSamplerState(&samplerDesc, samplerState.ReleaseAndGetAddressOf());
 
 	// create constant buffer
 	D3D11_BUFFER_DESC bufferDesc;
@@ -38,7 +38,7 @@ Model::Model(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSiz
 	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bufferDesc.ByteWidth = sizeof(ConstantBufferPerObject);
 
-	device->CreateBuffer(&bufferDesc, nullptr, &constantBuffer);
+	device->CreateBuffer(&bufferDesc, nullptr, constantBuffer.ReleaseAndGetAddressOf());
 
 	// create InputLayout
 	D3D11_INPUT_ELEMENT_DESC ied[] =
@@ -48,10 +48,10 @@ Model::Model(ID3D11Device* device, BYTE* vertexShaderBuffer, int vertexShaderSiz
 		{"TEXCOORDS", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
-	device->CreateInputLayout(ied, ARRAYSIZE(ied), vertexShaderBuffer, vertexShaderSize, &inputLayout);
+	device->CreateInputLayout(ied, ARRAYSIZE(ied), vertexShaderBuffer, vertexShaderSize, inputLayout.ReleaseAndGetAddressOf());
 }
 
-void Model::LoadModel(std::string& path)
+void Model::LoadModel(const std::string& path)
 {
 	// read file via ASSIMP
 	Assimp::Importer importer;
@@ -135,26 +135,26 @@ Mesh Model::ProcessMesh(aiMesh *mesh, const aiScene *scene)
 	return Mesh(device, vertices, indices);
 }
 
-void Model::Draw(ID3D11DeviceContext* immediateContext, XMMATRIX viewTransform, XMMATRIX projectionTransform)
+void Model::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform)
 {
 	// set InputLayout
-	immediateContext->IASetInputLayout(inputLayout);
+	immediateContext->IASetInputLayout(inputLayout.Get());
 
 	// map ConstantBuffer
 	auto worldViewProjection = worldTransform * viewTransform * projectionTransform;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	immediateContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	immediateContext->Map(constantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	auto pCB = reinterpret_cast<ConstantBufferPerObject*>(mappedResource.pData);
 	XMStoreFloat4x4(&pCB->mWorldViewProj, XMMatrixTranspose(worldViewProjection));
-	immediateContext->Unmap(constantBuffer, 0);
+	immediateContext->Unmap(constantBuffer.Get(), 0);
 
 	// setup VertexShader
 	immediateContext->VSSetShader(vertexShader, nullptr, 0);
-	immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+	immediateContext->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
 	// setup PixelShader
 	immediateContext->PSSetShader(pixelShader, nullptr, 0);
-	immediateContext->PSSetSamplers(0, 1, &samplerState);
+	immediateContext->PSSetSamplers(0, 1, samplerState.GetAddressOf());
 	immediateContext->PSSetShaderResources(0, 1, &texture);
 
 	for (auto i = 0; i < meshes.size(); i++)
@@ -166,7 +166,7 @@ void Model::Translate(XMMATRIX matrix)
 	worldTransform = worldTransform * matrix;
 }
 
-XMFLOAT3 Model::GetPosition()
+XMFLOAT3 Model::GetPosition() const
 {
 	XMFLOAT4X4 flt;
 	XMStoreFloat4x4(&flt, worldTransform);
@@ -174,7 +174,7 @@ XMFLOAT3 Model::GetPosition()
 	return XMFLOAT3{ flt._41, flt._42, flt._43 };
 }
 
-void Model::SetPosition(XMFLOAT3 pos)
+void Model::SetPosition(const XMFLOAT3 pos)
 {
 	worldTransform = XMMatrixScaling(14.0f, 14.0f, 14.0f) * XMMatrixTranslation(pos.x, pos.y, pos.z);
 }

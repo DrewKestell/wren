@@ -3,7 +3,7 @@
 #include "Utility.h"
 #include "EventHandling/Events/MouseEvent.h"
 
-bool Camera::HandleEvent(const Event* event)
+const bool Camera::HandleEvent(const Event* const event)
 {
 	const auto type = event->type;
 	switch (type)

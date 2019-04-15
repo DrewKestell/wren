@@ -7,7 +7,7 @@ class CreateAccountFailedEvent : public Event
 public:
 	CreateAccountFailedEvent(const std::string* error)
 		: Event(EventType::CreateAccountFailed),
-		error{ error }
+		  error{ error }
 	{
 	}
 	~CreateAccountFailedEvent() { delete error; }

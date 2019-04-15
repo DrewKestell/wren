@@ -5,14 +5,14 @@
 
 class UIInputGroup : public Observer
 {
-	bool active = false;
-	Layer uiLayer;
+	bool active{ false };
+	const Layer uiLayer{ Login };
 	std::vector<UIInput*> inputs;
 public:
-	UIInputGroup(Layer uiLayer)
+	UIInputGroup(const Layer uiLayer)
 		: uiLayer{ uiLayer }
 	{
 	}
-	virtual bool HandleEvent(const Event* event);
+	virtual const bool HandleEvent(const Event* const event);
 	void AddInput(UIInput* input) { inputs.push_back(input); }
 };

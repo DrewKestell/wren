@@ -13,7 +13,7 @@ protected:
 		g_eventHandler.Subscribe(*this);
 	}
 public:	
-	virtual bool HandleEvent(const Event* event) = 0;
+	virtual const bool HandleEvent(const Event* const event) = 0;
 	~Observer()
 	{
 		g_eventHandler.Unsubscribe(*this);

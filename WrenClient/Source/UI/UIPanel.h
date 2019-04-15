@@ -9,55 +9,35 @@ const FLOAT HEADER_HEIGHT = 20.0f;
 
 class UIPanel : public UIComponent, public Observer
 {
-	bool isActive = false;
-    bool isDragging = false;
-    float lastDragX = 0.0f;
-    float lastDragY = 0.0f;
-    const bool isDraggable;
-    float width;
-    float height;
-	WPARAM showKey;
+	ComPtr<ID2D1RoundedRectangleGeometry> headerGeometry;
+	ComPtr<ID2D1RoundedRectangleGeometry> bodyGeometry;
+	bool isActive{ false };
+    bool isDragging{ false };
+	float lastDragX{ 0.0f };
+	float lastDragY{ 0.0f };
+	const bool isDraggable{ false };
+	float width{ 0.0f };
+	float height{ 0.0f };
+	WPARAM showKey{ 0 };
     ID2D1SolidColorBrush* headerBrush = nullptr;
     ID2D1SolidColorBrush* bodyBrush = nullptr;
     ID2D1SolidColorBrush* borderBrush = nullptr;
     ID2D1DeviceContext1* d2dDeviceContext = nullptr;
     ID2D1Factory2* d2dFactory = nullptr;
-    ID2D1RoundedRectangleGeometry* headerGeometry = nullptr;
-    ID2D1RoundedRectangleGeometry* bodyGeometry = nullptr;
 public:
-    UIPanel(
-        const XMFLOAT3 position,
+	UIPanel(
 		ObjectManager& objectManager,
+		const XMFLOAT3 position,
 		const Layer uiLayer,
-        const bool isDraggable,
-        const float width,
-        const float height,
+		const bool isDraggable,
+		const float width,
+		const float height,
 		const WPARAM showKey,
-        ID2D1SolidColorBrush* headerBrush,
-        ID2D1SolidColorBrush* bodyBrush,
-        ID2D1SolidColorBrush* borderBrush,
-        ID2D1DeviceContext1* d2dDeviceContext,
-        ID2D1Factory2* d2dFactory) :
-        UIComponent(objectManager, position, uiLayer),
-        isDraggable{ isDraggable },
-        width{ width },
-        height{ height },
-		showKey{ showKey },
-        headerBrush{ headerBrush },
-        bodyBrush{ bodyBrush },
-        borderBrush{ borderBrush },
-        d2dDeviceContext{ d2dDeviceContext },
-        d2dFactory{ d2dFactory }
-    {
-        float startHeight = position.y;
-        if (isDraggable)
-        {
-            d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT), 3.0f, 3.0f), &headerGeometry);
-            startHeight += HEADER_HEIGHT;
-        }
-        d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, startHeight, position.x + width, startHeight + height), 3.0f, 3.0f), &bodyGeometry);
-    }
-    
+		ID2D1SolidColorBrush* headerBrush,
+		ID2D1SolidColorBrush* bodyBrush,
+		ID2D1SolidColorBrush* borderBrush,
+		ID2D1DeviceContext1* d2dDeviceContext,
+		ID2D1Factory2* d2dFactory);
     virtual void Draw();
-	virtual bool HandleEvent(const Event* event);
+	virtual const bool HandleEvent(const Event* const event);
 };
