@@ -1,11 +1,5 @@
+#include "stdafx.h"
 #include "SocketManager.h"
-#include <iostream>
-#include <vector>
-#include <algorithm>
-#include "Account.h"
-#include "Player.h"
-#include "Repository.h"
-#include "windows.h"
 
 int main()
 {

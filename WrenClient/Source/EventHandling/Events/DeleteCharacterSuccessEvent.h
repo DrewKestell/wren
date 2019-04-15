@@ -7,7 +7,7 @@ class DeleteCharacterSuccessEvent : public Event
 public:
 	DeleteCharacterSuccessEvent(const std::vector<std::string*>* characterList)
 		: Event(EventType::DeleteCharacterSuccess),
-		characterList{ characterList }
+		  characterList{ characterList }
 	{
 	}
 	~DeleteCharacterSuccessEvent()

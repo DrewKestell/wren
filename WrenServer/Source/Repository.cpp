@@ -1,6 +1,4 @@
-#include <sqlite3.h>
-#include <string>
-#include "Account.h"
+#include "stdafx.h"
 #include "Repository.h"
 
 constexpr auto DB_NAME = "Wren.db";

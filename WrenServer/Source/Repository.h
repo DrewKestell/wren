@@ -1,9 +1,5 @@
-#ifndef REPOSITORY_H
-#define REPOSITORY_H
+#pragma once
 
-#include <string>
-#include <sqlite3.h>
-#include <vector>
 #include "Account.h"
 
 class Repository
@@ -19,5 +15,3 @@ public:
     std::vector<std::string>* ListCharacters(const int accountId);
 	void DeleteCharacter(const std::string& characterName);
 };
-
-#endif

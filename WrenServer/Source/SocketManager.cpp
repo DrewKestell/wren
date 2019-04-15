@@ -1,14 +1,5 @@
-#include <winsock2.h>
-#include <Ws2tcpip.h>
-#include <sodium.h>
-#include <vector>
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
-#include <string>
+#include "stdafx.h"
 #include "SocketManager.h"
-#include "Repository.h"
-#include "Player.h"
 
 constexpr auto PLAYER_NOT_FOUND = "Player not found.";
 constexpr auto SOCKET_INIT_FAILED = "Failed to initialize sockets.";
@@ -21,8 +12,8 @@ constexpr auto CHARACTER_ALREADY_EXISTS = "Character already exists.";
 constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
 constexpr auto PORT_NUMBER = 27016;
 
-// CONSTRUCTOR
-SocketManager::SocketManager(Repository& repository) : repository(repository)
+SocketManager::SocketManager(Repository& repository)
+	: repository(repository)
 {
     sodium_init();
 
@@ -46,7 +37,6 @@ SocketManager::SocketManager(Repository& repository) : repository(repository)
     ioctlsocket(socketS, FIONBIO, &nonBlocking);
 }
 
-// PRIVATE
 std::vector<Player*>::iterator SocketManager::GetPlayer(const std::string& token)
 {
 	const auto it = find_if(players.begin(), players.end(), [&token](Player* player) { return player->GetToken() == token; });
@@ -55,7 +45,7 @@ std::vector<Player*>::iterator SocketManager::GetPlayer(const std::string& token
 	return it;
 }
 
-bool SocketManager::MessagePartsEqual(const char* first, const char* second, int length)
+bool SocketManager::MessagePartsEqual(const char* first, const char* second, const int length)
 {
     for (auto i = 0; i < length; i++)
     {
@@ -65,17 +55,14 @@ bool SocketManager::MessagePartsEqual(const char* first, const char* second, int
     return true;
 }
 
-void SocketManager::Login(
-	const std::string& accountName,
-	const std::string& password,
-	const std::string& ipAndPort)
+void SocketManager::Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort)
 {
 	std::string error;
 	auto account = repository.GetAccount(accountName);
 	if (account)
 	{
 		auto passwordArr = password.c_str();
-		if (crypto_pwhash_str_verify(account->GetPassword().c_str(), passwordArr, strlen(passwordArr)) != 0) // TODO: fixme
+		if (crypto_pwhash_str_verify(account->GetPassword().c_str(), passwordArr, strlen(passwordArr)) != 0)
 			error = INCORRECT_PASSWORD;
 		else
 		{
