@@ -22,5 +22,6 @@ enum class EventType
 	EnterWorldSuccess,
 	WrongChecksum,
 	OpcodeNotImplemented,
-	DeleteCharacterSuccess
+	DeleteCharacterSuccess,
+	PlayerCorrection
 };

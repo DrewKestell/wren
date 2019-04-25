@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SocketManager.h"
+#include <OpCodes.h>
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -53,6 +54,9 @@ void SocketManager::SendPacket(const std::string& opcode, const int argCount, ..
 {
     std::string packet = std::string(CHECKSUM) + opcode;
 
+	if (m_token != "")
+		packet += m_token + "|";
+
     va_list args;
     va_start(args, argCount);
 
@@ -66,6 +70,18 @@ void SocketManager::SendPacket(const std::string& opcode, const int argCount, ..
     auto sentBytes = sendto(socketC, buffer, sizeof(buffer), 0, (sockaddr*)&to, sizeof(sockaddr_in));
     if (sentBytes != sizeof(buffer))
         throw std::exception("Failed to send packet.");
+	else
+	{
+		if (opcode == std::string(OPCODE_DISCONNECT))
+		{
+			m_token = "";
+		}
+	}
+}
+
+bool SocketManager::Connected()
+{
+	return m_token != "";
 }
 
 void SocketManager::CloseSockets()
@@ -143,8 +159,10 @@ bool SocketManager::TryRecieveMessage()
             const auto characterString = args[1];
             const auto characterList = BuildCharacterVector(characterString);
 
+			m_token = *token;
+
             std::cout << "Login successful. Token received: " + *token + "\n";
-			g_eventHandler.QueueEvent(new LoginSuccessEvent{ token, characterList });
+			g_eventHandler.QueueEvent(new LoginSuccessEvent{ characterList });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_LOGIN_UNSUCCESSFUL, opcodeArrLen))
@@ -184,6 +202,17 @@ bool SocketManager::TryRecieveMessage()
 			std::cout << "Delete character successful.";
 			g_eventHandler.QueueEvent(new DeleteCharacterSuccessEvent{ characterList });
 			return true;
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_PLAYER_CORRECTION, opcodeArrLen))
+		{
+			const auto idCounter = args[0];
+			const auto posX = args[1];
+			const auto posY = args[2];
+			const auto posZ = args[3];
+			const auto state = args[4];
+			const auto direction = args[5];
+
+			// publish event
 		}
 		else
 		{

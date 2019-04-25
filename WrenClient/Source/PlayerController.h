@@ -5,11 +5,15 @@
 #include "GameTimer.h"
 #include "Model.h"
 #include "Camera.h"
+#include "PlayerUpdate.h"
 
 const float MOVE_SPEED = 80.0f;
+const int BUFFER_SIZE = 120;
 
 class PlayerController : public Observer
 {
+	int idCounter{ 0 };
+	std::unique_ptr<PlayerUpdate> playerUpdates[BUFFER_SIZE];
 	float destinationX{ 0.0f };
 	float destinationZ{ 0.0f };
 	float clientWidth{ 0.0f };

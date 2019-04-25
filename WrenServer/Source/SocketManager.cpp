@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <OpCodes.h>
 #include "SocketManager.h"
 
 constexpr auto PLAYER_NOT_FOUND = "Player not found.";
@@ -199,7 +200,7 @@ void SocketManager::TryRecieveMessage()
     if (result != SOCKET_ERROR)
     {
         inet_ntop(AF_INET, &(from.sin_addr), str, INET_ADDRSTRLEN);
-        printf("Received message from %s:%i - %s\n", str, from.sin_port, buffer);
+        //printf("Received message from %s:%i - %s\n", str, from.sin_port, buffer);
 
         const auto checksumArrLen = 8;
         char checksumArr[checksumArrLen];
@@ -213,7 +214,7 @@ void SocketManager::TryRecieveMessage()
         const auto opcodeArrLen = 2;
         char opcodeArr[opcodeArrLen];
         memcpy(&opcodeArr[0], &buffer[8], opcodeArrLen * sizeof(char));
-        std::cout << "Opcode: " << opcodeArr[0] << opcodeArr[1] << "\n";
+        //std::cout << "Opcode: " << opcodeArr[0] << opcodeArr[1] << "\n";
 
         std::vector<std::string> args;
         auto bufferLength = strlen(buffer);
@@ -231,12 +232,11 @@ void SocketManager::TryRecieveMessage()
                     arg += buffer[i];
             }
 
-            std::cout << "Args:\n";
-            for_each(args.begin(), args.end(), [](std::string str) { std::cout << "  " << str << "\n";  });
-            std::cout << "\n";
+            //std::cout << "Args:\n";
+            //for_each(args.begin(), args.end(), [](std::string str) { std::cout << "  " << str << "\n";  });
+            //std::cout << "\n";
         }
 
-        // Login
         if (MessagePartsEqual(opcodeArr, OPCODE_CONNECT, opcodeArrLen))
         {
             const auto accountName = args[0];
@@ -245,14 +245,12 @@ void SocketManager::TryRecieveMessage()
 
             Login(accountName, password, ipAndPort);
         }
-        // Logout
         else if (MessagePartsEqual(opcodeArr, OPCODE_DISCONNECT, opcodeArrLen))
         {
 			const auto token = args[0];
 
 			Logout(token);
         }
-        // CreateAccount
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT, opcodeArrLen))
         {
             const auto accountName = args[0];
@@ -260,7 +258,6 @@ void SocketManager::TryRecieveMessage()
 
 			CreateAccount(accountName, password);
         }
-		// CreateCharacter
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER, opcodeArrLen))
         {
 			const auto token = args[0];
@@ -288,6 +285,19 @@ void SocketManager::TryRecieveMessage()
 
 			DeleteCharacter(token, characterName);
 		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_PLAYER_UPDATE, opcodeArrLen))
+		{
+			const auto token = args[0];
+			const auto idCounter = args[1];
+			const auto posX = args[2];
+			const auto posY = args[3];
+			const auto posZ = args[4];
+			const auto state = args[5];
+			const auto direction = args[6];
+			const auto deltaTime = args[7];
+
+			PlayerUpdate(token, idCounter, posX, posY, posZ, state, direction, deltaTime);
+		}
     }
 }
 
@@ -312,4 +322,24 @@ void SocketManager::DeleteCharacter(const std::string& token, const std::string&
 	const auto it = GetPlayer(token);
 	repository.DeleteCharacter(characterName);
 	SendPacket(OPCODE_DELETE_CHARACTER_SUCCESSFUL, 1, ListCharacters((*it)->GetAccountId()));
+}
+
+void SocketManager::PlayerUpdate(
+	const std::string& token,
+	const std::string& idCounter,
+	const std::string& posX,
+	const std::string& posY,
+	const std::string& posZ,
+	const std::string& state,
+	const std::string& direction,
+	const std::string& deltaTime)
+{
+	const auto it = GetPlayer(token);
+
+	const auto id = (*it)->GetUpdateCounter();
+
+	if (id != std::stoi(idCounter))
+		std::cout << "UpdateIds don't match! Id from client: " << idCounter << ", Id on server: " << id << std::endl;
+
+	(*it)->IncrementUpdateCounter();
 }

@@ -26,7 +26,7 @@
     <ClCompile Include="Source\WrenCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Socket.h" />
+    <ClInclude Include="Source\OpCodes.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
   </ItemGroup>

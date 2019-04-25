@@ -29,6 +29,7 @@
     <ClInclude Include="Source\CardinalDirection.h" />
     <ClInclude Include="Source\DeviceResources.h" />
     <ClInclude Include="Source\EventHandling\Events\LeftMouseUpEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RightMouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RigthMouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
@@ -40,6 +41,7 @@
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\Model.cpp" />
     <ClCompile Include="Source\PlayerController.cpp" />
+    <ClCompile Include="Source\PlayerUpdate.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -164,6 +166,7 @@
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Source\Model.h" />
     <ClInclude Include="Source\PlayerController.h" />
+    <ClInclude Include="Source\PlayerUpdate.h" />
     <ClInclude Include="Source\ShaderBuffer.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />

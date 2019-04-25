@@ -120,15 +120,15 @@ void GameMap::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTra
 
 	// setup VertexShader
 	immediateContext->VSSetShader(vertexShader, nullptr, 0);
-	immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+	immediateContext->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
 	// setup PixelShader
 	immediateContext->PSSetShader(pixelShader, nullptr, 0);
 	immediateContext->PSSetShaderResources(0, 1, &texture);
-	immediateContext->PSSetSamplers(0, 1, &samplerState);
+	immediateContext->PSSetSamplers(0, 1, samplerState.GetAddressOf());
 
 	// set VertexBuffer and IndexBuffer then Draw
-	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->DrawIndexed(INDEX_COUNT, 0, 0);

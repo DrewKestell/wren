@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "PlayerController.h"
 #include "EventHandling/Events/MouseEvent.h"
+#include "SocketManager.h"
+#include <OpCodes.h>
+
+extern SocketManager g_socketManager;
 
 // once you get the aspect ratio stuff figured out, you only need to calculate
 // the centerPoint once (until the window gets resized)
@@ -18,6 +22,10 @@ const bool PlayerController::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
+		case EventType::PlayerCorrection:
+		{
+			//todo
+		}
 		case EventType::RightMouseDownEvent:
 		{
 			const auto derivedEvent = (MouseEvent*)event;
@@ -52,13 +60,14 @@ const bool PlayerController::HandleEvent(const Event* const event)
 // probably want a state machine here (moveState, etc)
 void PlayerController::Update()
 {
-	auto playerPos = player.GetPosition();
-	//std::cout << "Player position: " << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << std::endl;
+	const auto playerPos = player.GetPosition();
+	const auto deltaTime = gameTimer.DeltaTime();
+
 	camera.Update(player.GetPosition(), gameTimer);
 
 	if (isMoving)
 	{
-		auto pixelsToMove = MOVE_SPEED * gameTimer.DeltaTime();
+		auto pixelsToMove = MOVE_SPEED * deltaTime;
 
 		XMFLOAT3 vec{ 0.0f, 0.0f, 0.0f };
 
@@ -115,9 +124,6 @@ void PlayerController::Update()
 		auto deltaX = std::abs(playerPos.x - destinationX);
 		auto deltaZ = std::abs(playerPos.z - destinationZ);
 
-		/*std::cout << "deltaX: " << deltaX << std::endl;
-		std::cout << "deltaZ: " << deltaZ << std::endl;*/
-
 		if (deltaX < 1.0f && deltaZ < 1.0f)
 		{
 			player.SetPosition(XMFLOAT3{ destinationX, 0.0f, destinationZ });
@@ -137,6 +143,63 @@ void PlayerController::Update()
 		isMoving = true;
 		currentMovementDirection = currentMouseDirection;
 		SetDestination(playerPos);
+	}
+
+	if (g_socketManager.Connected())
+	{
+		std::string state = "";
+
+		if (isMoving)
+			state = "Moving";
+		else
+			state = "Idle";
+
+		const auto position = player.GetPosition();
+
+		playerUpdates[idCounter % BUFFER_SIZE] = std::make_unique<PlayerUpdate>(idCounter, position, std::make_unique<std::string>(state), currentMovementDirection, deltaTime);
+
+		std::string dir = "";
+
+		switch (currentMovementDirection)
+		{
+		case CardinalDirection::East:
+			dir = "East";
+			break;
+		case CardinalDirection::North:
+			dir = "North";
+			break;
+		case CardinalDirection::NorthEast:
+			dir = "NorthEast";
+			break;
+		case CardinalDirection::NorthWest:
+			dir = "NorthWest";
+			break;
+		case CardinalDirection::South:
+			dir = "South";
+			break;
+		case CardinalDirection::SouthEast:
+			dir = "SouthEast";
+			break;
+		case CardinalDirection::SouthWest:
+			dir = "SouthWest";
+			break;
+		case CardinalDirection::West:
+			dir = "West";
+			break;
+		}
+
+		g_socketManager.SendPacket(
+			OPCODE_PLAYER_UPDATE,
+			7,
+			std::to_string(idCounter),
+			std::to_string(position.x),
+			std::to_string(position.y),
+			std::to_string(position.z),
+			state,
+			dir,
+			std::to_string(deltaTime));
+
+		idCounter++;
 	}
 }
 

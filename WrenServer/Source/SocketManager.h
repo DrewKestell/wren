@@ -2,7 +2,6 @@
 
 #include "Player.h"
 #include "Repository.h"
-#include <Socket.h>
 
 class SocketManager
 {
@@ -25,6 +24,7 @@ private:
     std::string ListCharacters(const int accountId);
     void EnterWorld(const std::string& token, const std::string& characterName);
 	void DeleteCharacter(const std::string& token, const std::string& characterName);
+	void PlayerUpdate(const std::string& token, const std::string& idCounter, const std::string& posX, const std::string& posY, const std::string& posZ, const std::string& state, const std::string& direction, const std::string& deltaTime);
 public:
     SocketManager(Repository& repository);
     void TryRecieveMessage();

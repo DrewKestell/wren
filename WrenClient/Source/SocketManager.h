@@ -1,10 +1,9 @@
 #pragma once
 
-#include <Socket.h>
-
 class SocketManager
 {
 private:
+	std::string m_token{ "" };
     sockaddr_in local;
     sockaddr_in to;
     int toLen;
@@ -16,4 +15,5 @@ public:
     bool TryRecieveMessage();
     void CloseSockets();
     void SendPacket(const std::string& opcode, const int argCount = 0, ...);
+	bool Connected();
 };

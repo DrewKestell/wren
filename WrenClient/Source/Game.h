@@ -2,12 +2,12 @@
 
 #include "DeviceResources.h"
 #include "GameTimer.h"
-#include "SocketManager.h"
 #include "ObjectManager.h"
 #include "Camera.h"
 #include "ShaderBuffer.h"
 #include "Model.h"
 #include "PlayerController.h"
+#include "SocketManager.h"
 #include "GameMap/GameMap.h"
 #include "UI/UICharacterListing.h"
 #include "UI/UIInput.h"
@@ -41,12 +41,12 @@ public:
 	void GetDefaultSize(int& width, int& height) const;
 
 private:
+	float updateTimer{ 0.0f };
 	float m_mousePosX{ 0.0f };
 	float m_mousePosY{ 0.0f };
 	int m_clientWidth{ 800 };
 	int m_clientHeight{ 600 };
 	std::vector<std::unique_ptr<UICharacterListing>> m_characterList;
-	std::string m_token;
 	std::string m_characterNamePendingDeletion{};
 	XMMATRIX m_worldTransform{ XMMatrixIdentity() };
 	XMMATRIX m_viewTransform{ XMMatrixIdentity() };
@@ -55,7 +55,6 @@ private:
 	std::unique_ptr<DX::DeviceResources> m_deviceResources;
 	GameTimer m_timer;
 	Camera m_camera;
-	SocketManager m_socketManager;
 	ObjectManager m_objectManager;
 	std::unique_ptr<GameMap> m_gameMap;
 	std::unique_ptr<PlayerController> m_playerController;
@@ -63,7 +62,7 @@ private:
 	std::unique_ptr<Model> m_treeModel;
 
 	void Update();
-	void Render();
+	void Render(const float updateTimer);
 	void Clear();
 	void CreateDeviceDependentResources();
 	void CreateWindowSizeDependentResources();

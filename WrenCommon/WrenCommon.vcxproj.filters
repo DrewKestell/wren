@@ -18,13 +18,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Socket.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\stdafx.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\targetver.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\OpCodes.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

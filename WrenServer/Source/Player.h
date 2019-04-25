@@ -11,6 +11,7 @@ class Player
     const std::string ipAndPort;
 	DWORD lastHeartbeat;
 	std::string characterName;
+	int updateCounter{ 0 };
     
 public:
     Player(
@@ -31,4 +32,6 @@ public:
     const std::string& GetIPAndPort() const { return ipAndPort; }
     const DWORD GetLastHeartbeat() const { return lastHeartbeat; }
     void SetLastHeartbeat(const DWORD heartbeat) { lastHeartbeat = heartbeat; }
+	void IncrementUpdateCounter() { updateCounter++; };
+	const int GetUpdateCounter() const { return updateCounter; }
 };

@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "ConstantBufferOnce.h"
 #include "Camera.h"
+#include <OpCodes.h>
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -11,6 +12,8 @@
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
+
+SocketManager g_socketManager;
 
 extern EventHandler g_eventHandler;
 
@@ -46,15 +49,22 @@ void Game::Initialize(HWND window, int width, int height)
 #pragma region Frame Update
 void Game::Tick()
 {
-	while (m_socketManager.TryRecieveMessage()) {}
+	while (g_socketManager.TryRecieveMessage()) {}
 
 	m_timer.Tick();
 
-	m_playerController->Update();
+	updateTimer += m_timer.DeltaTime();
+	//std::cout << m_timer.DeltaTime() << std::endl;
 
-	g_eventHandler.PublishEvents();
+	if (updateTimer >= 0.001666666666f)
+	{
+		m_playerController->Update();
+		g_eventHandler.PublishEvents();
 
-	Render();
+		updateTimer = 0.0f;
+	}
+	
+	Render(updateTimer);
 }
 
 void Game::Update()
@@ -67,8 +77,10 @@ void Game::Update()
 #pragma endregion
 
 #pragma region Frame Render
-void Game::Render()
+void Game::Render(const float updateTimer)
 {
+	// TODO: interpolate position based on updateTimer
+
 	// Don't try to render anything before the first Update.
 	if (m_timer.TotalTime() == 0)
 	{
@@ -98,8 +110,8 @@ void Game::Render()
 		frameCnt = 0;
 		timeElapsed += 1.0f;
 
-		if (m_token != "")
-			m_socketManager.SendPacket(OPCODE_HEARTBEAT, 1, m_token);
+		if (g_socketManager.Connected())
+			g_socketManager.SendPacket(OPCODE_HEARTBEAT);
 	}
 
 	// update MousePos text
@@ -394,7 +406,7 @@ void Game::InitializeButtons()
 			return;
 		}
 
-		m_socketManager.SendPacket(OPCODE_CONNECT, 2, accountName, password);
+		g_socketManager.SendPacket(OPCODE_CONNECT, 2, accountName, password);
 		SetActiveLayer(Connecting);
 	};
 
@@ -427,7 +439,7 @@ void Game::InitializeButtons()
 			return;
 		}
 
-		m_socketManager.SendPacket(OPCODE_CREATE_ACCOUNT, 2, accountName, password);
+		g_socketManager.SendPacket(OPCODE_CREATE_ACCOUNT, 2, accountName, password);
 	};
 
 	const auto onClickCreateAccountCancelButton = [this]()
@@ -460,7 +472,7 @@ void Game::InitializeButtons()
 			characterSelect_errorMessageLabel->SetText("You must select a character before entering the game.");
 		else
 		{
-			m_socketManager.SendPacket(OPCODE_ENTER_WORLD, 2, m_token, characterInput->GetName());
+			g_socketManager.SendPacket(OPCODE_ENTER_WORLD, 1, characterInput->GetName());
 			SetActiveLayer(EnteringWorld);
 		}
 	};
@@ -482,7 +494,6 @@ void Game::InitializeButtons()
 
 	const auto onClickCharacterSelectLogoutButton = [this]()
 	{
-		m_token = "";
 		SetActiveLayer(Login);
 	};
 
@@ -504,7 +515,7 @@ void Game::InitializeButtons()
 			return;
 		}
 
-		m_socketManager.SendPacket(OPCODE_CREATE_CHARACTER, 2, m_token, characterName);
+		g_socketManager.SendPacket(OPCODE_CREATE_CHARACTER, 1, characterName);
 	};
 
 	const auto onClickCreateCharacterBackButton = [this]()
@@ -521,7 +532,7 @@ void Game::InitializeButtons()
 
 	const auto onClickDeleteCharacterConfirm = [this]()
 	{
-		m_socketManager.SendPacket(OPCODE_DELETE_CHARACTER, 2, m_token, m_characterNamePendingDeletion);
+		g_socketManager.SendPacket(OPCODE_DELETE_CHARACTER, 1, m_characterNamePendingDeletion);
 	};
 
 	const auto onClickDeleteCharacterCancel = [this]()
@@ -575,8 +586,7 @@ void Game::InitializePanels()
 	gameSettingsPanelHeader->SetText("Game Settings");
 	const auto onClickGameSettingsLogoutButton = [this]()
 	{
-		m_socketManager.SendPacket(OPCODE_DISCONNECT, 1, m_token);
-		m_token = "";
+		g_socketManager.SendPacket(OPCODE_DISCONNECT);
 		SetActiveLayer(Login);
 	};
 	gameSettings_logoutButton = std::make_unique<UIButton>(m_objectManager, XMFLOAT3{ 10.0f, 26.0f, 0.0f }, InGame, 80.0f, 24.0f, "LOGOUT", onClickGameSettingsLogoutButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
@@ -747,7 +757,6 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (LoginSuccessEvent*)event;
 
-			m_token = *(derivedEvent->token);
 			RecreateCharacterListings(derivedEvent->characterList);
 			SetActiveLayer(CharacterSelect);
 

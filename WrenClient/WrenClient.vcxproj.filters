@@ -27,6 +27,7 @@
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\Game.cpp" />
     <ClCompile Include="Source\DeviceResources.cpp" />
+    <ClCompile Include="Source\PlayerUpdate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\GameTimer.h" />
@@ -158,6 +159,8 @@
     <ClInclude Include="Source\Game.h" />
     <ClInclude Include="Source\DeviceResources.h" />
     <ClInclude Include="Source\ShaderBuffer.h" />
+    <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
+    <ClInclude Include="Source\PlayerUpdate.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />
