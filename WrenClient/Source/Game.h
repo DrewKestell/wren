@@ -5,7 +5,7 @@
 #include "ObjectManager.h"
 #include "Camera.h"
 #include "ShaderBuffer.h"
-#include "Model.h"
+#include "Mesh.h"
 #include "PlayerController.h"
 #include "SocketManager.h"
 #include "GameMap/GameMap.h"
@@ -58,8 +58,10 @@ private:
 	ObjectManager m_objectManager;
 	std::unique_ptr<GameMap> m_gameMap;
 	std::unique_ptr<PlayerController> m_playerController;
-	std::unique_ptr<Model> m_sphereModel;
-	std::unique_ptr<Model> m_treeModel;
+	std::shared_ptr<Mesh> m_sphereMesh;
+	std::shared_ptr<Mesh> m_treeMesh;
+	std::unique_ptr<GameObject> player;
+	std::unique_ptr<GameObject> tree;
 
 	void Update();
 	void Render(const float updateTimer);

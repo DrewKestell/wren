@@ -13,3 +13,8 @@ XMFLOAT3 GameObject::GetWorldPosition() const
     
     return worldPosition;
 }
+
+XMFLOAT3 GameObject::GetScale() const { return scale; }
+void GameObject::SetScale(const XMFLOAT3 scale) { this->scale = scale; }
+void GameObject::SetPlayerController(PlayerController* playerController) { this->playerController = playerController; }
+void GameObject::SetRenderComponent(RenderComponent * renderComponent) { this->renderComponent = renderComponent; }

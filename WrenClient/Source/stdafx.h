@@ -41,6 +41,7 @@
 #include <DirectXColors.h>
 #include "DDSTextureLoader.h"
 #include <cmath>
+#include <memory>
 
 #ifdef _DEBUG
 #include <dxgidebug.h>

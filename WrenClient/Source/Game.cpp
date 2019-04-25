@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "ConstantBufferOnce.h"
 #include "Camera.h"
+#include "RenderComponent.h"
 #include <OpCodes.h>
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
@@ -134,8 +135,9 @@ void Game::Render(const float updateTimer)
 		//immediateContext->RSSetState(wireframeRasterState);
 		m_gameMap->Draw(d3dContext, m_viewTransform, m_projectionTransform);
 
-		m_sphereModel->Draw(d3dContext, m_viewTransform, m_projectionTransform);
-		m_treeModel->Draw(d3dContext, m_viewTransform, m_projectionTransform);
+		// foreach RenderComponent -> Draw
+		player->Draw(d3dContext, m_viewTransform, m_projectionTransform);
+		tree->Draw(d3dContext, m_viewTransform, m_projectionTransform);
 	}
 
 	d2dContext->EndDraw();
@@ -227,18 +229,23 @@ void Game::CreateDeviceDependentResources()
 	InitializeTextures();
 	InitializeRasterStates();
 
-	auto d2dDevice = m_deviceResources->GetD3DDevice();
+	auto d3dDevice = m_deviceResources->GetD3DDevice();
 	
-	m_gameMap = std::make_unique<GameMap>(d2dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), grass01SRV.Get());
+	m_gameMap = std::make_unique<GameMap>(d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), grass01SRV.Get());
 	
 	std::string path = "../../WrenClient/Models/sphere.blend";
-	m_sphereModel = std::make_unique<Model>(d2dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), color02SRV.Get(), path);
-	
+	m_sphereMesh = std::make_shared<Mesh>(path, d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size);
+	auto sphereRenderComponent = std::make_unique<RenderComponent>(m_sphereMesh, vertexShader.Get(), pixelShader.Get(), color01SRV.Get());
+	auto playerController = std::make_unique<PlayerController>(m_timer, m_camera);
+	player = std::make_unique<GameObject>(XMFLOAT3{ 0.0f, 0.0f, 0.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, m_objectManager);
+	player->SetPlayerController(playerController.get());
+	player->SetRenderComponent(sphereRenderComponent.get());
+
 	path = "../../WrenClient/Models/tree.blend";
-	m_treeModel = std::make_unique<Model>(d2dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), color01SRV.Get(), path);
-	m_treeModel->Translate(XMMatrixTranslation(90.0f, 0.0f, 90.0f));
-	
-	m_playerController = std::make_unique<PlayerController>(m_timer, *m_sphereModel, m_camera);
+	m_treeMesh = std::make_unique<Model>(d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, path);
+	auto treeRenderComponent = std::make_unique<RenderComponent>(m_treeMesh, vertexShader.Get(), pixelShader.Get(), color02SRV.Get());
+	tree = std::make_unique<GameObject>(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, m_objectManager);
+	tree->SetRenderComponent(treeRenderComponent.get());
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.

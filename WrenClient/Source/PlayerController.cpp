@@ -8,9 +8,8 @@ extern SocketManager g_socketManager;
 
 // once you get the aspect ratio stuff figured out, you only need to calculate
 // the centerPoint once (until the window gets resized)
-PlayerController::PlayerController(GameTimer& gameTimer, Model& player, Camera& camera)
+PlayerController::PlayerController(GameTimer& gameTimer, Camera& camera)
 	: gameTimer{ gameTimer },
-	  player{ player },
 	  camera{ camera }
 {
 	clientWidth = 800;

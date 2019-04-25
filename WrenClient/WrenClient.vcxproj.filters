@@ -28,6 +28,7 @@
     <ClCompile Include="Source\Game.cpp" />
     <ClCompile Include="Source\DeviceResources.cpp" />
     <ClCompile Include="Source\PlayerUpdate.cpp" />
+    <ClCompile Include="Source\RenderComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\GameTimer.h" />
@@ -161,6 +162,7 @@
     <ClInclude Include="Source\ShaderBuffer.h" />
     <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
     <ClInclude Include="Source\PlayerUpdate.h" />
+    <ClInclude Include="Source\RenderComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

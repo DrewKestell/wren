@@ -23,13 +23,12 @@ class PlayerController : public Observer
 	CardinalDirection currentMouseDirection{ CardinalDirection::North };
 	CardinalDirection currentMovementDirection{ CardinalDirection::North };
 	GameTimer& gameTimer;
-	Model& player;
 	Camera& camera;
 
 	void SetDestination(const XMFLOAT3 playerPos);
 	void UpdateCurrentMouseDirection(const float mousePosX, const float mousePosY);
 public:
-	PlayerController(GameTimer& gameTimer, Model& player, Camera& camera);
+	PlayerController(GameTimer& gameTimer, Camera& camera);
 	virtual const bool HandleEvent(const Event* const event);
 	void Update();
 	void SetClientDimensions(const int width, const int height) { clientWidth = (float)width; clientHeight = (float)height; }
