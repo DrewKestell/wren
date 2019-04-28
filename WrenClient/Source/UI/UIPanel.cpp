@@ -10,8 +10,8 @@
 #include "../Layer.h"
 
 UIPanel::UIPanel(
-	ObjectManager& objectManager,
 	const XMFLOAT3 position,
+	const XMFLOAT3 scale,
 	const Layer uiLayer,
 	const bool isDraggable,
 	const float width,
@@ -22,7 +22,7 @@ UIPanel::UIPanel(
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(objectManager, position, uiLayer),
+	: UIComponent(position, scale, uiLayer),
 	  isDraggable{ isDraggable },
 	  width{ width },
 	  height{ height },
@@ -55,11 +55,6 @@ void UIPanel::Draw()
 	}
 	d2dDeviceContext->FillGeometry(bodyGeometry.Get(), bodyBrush);
 	d2dDeviceContext->DrawGeometry(bodyGeometry.Get(), borderBrush, borderWeight);
-
-	// Draw Children
-	const auto children = GetChildren();
-	for (auto i = 0; i < children.size(); i++)
-		children.at(i)->Draw();
 }
 
 const bool UIPanel::HandleEvent(const Event* const event)

@@ -13,8 +13,8 @@
 using namespace DX;
 
 UIInput::UIInput(
-	ObjectManager& objectManager,
 	const XMFLOAT3 position,
+	const XMFLOAT3 scale,
 	const Layer uiLayer,
 	const bool secure,
 	const float labelWidth,
@@ -30,7 +30,7 @@ UIInput::UIInput(
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* labelTextFormat,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(objectManager, position, uiLayer),
+	: UIComponent(position, scale, uiLayer),
 	  Observer(),
 	  secure{ secure },
 	  labelWidth{ labelWidth },

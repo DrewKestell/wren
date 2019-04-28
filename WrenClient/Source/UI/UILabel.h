@@ -15,8 +15,8 @@ class UILabel : public UIComponent, public Observer
     ID2D1DeviceContext1* d2dDeviceContext = nullptr;
 public:
 	UILabel(
-		ObjectManager& objectManager,
 		const XMFLOAT3 position,
+		const XMFLOAT3 scale,
 		const Layer uiLayer,
 		const float width,
 		ID2D1SolidColorBrush* textBrush,

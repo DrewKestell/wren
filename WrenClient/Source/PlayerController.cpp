@@ -8,9 +8,10 @@ extern SocketManager g_socketManager;
 
 // once you get the aspect ratio stuff figured out, you only need to calculate
 // the centerPoint once (until the window gets resized)
-PlayerController::PlayerController(GameTimer& gameTimer, Camera& camera)
+PlayerController::PlayerController(GameTimer& gameTimer, Camera& camera, GameObject& player)
 	: gameTimer{ gameTimer },
-	  camera{ camera }
+	  camera{ camera },
+	  player{ player }
 {
 	clientWidth = 800;
 	clientHeight = 600;
@@ -59,10 +60,10 @@ const bool PlayerController::HandleEvent(const Event* const event)
 // probably want a state machine here (moveState, etc)
 void PlayerController::Update()
 {
-	const auto playerPos = player.GetPosition();
+	const auto playerPos = player.GetWorldPosition();
 	const auto deltaTime = gameTimer.DeltaTime();
 
-	camera.Update(player.GetPosition(), gameTimer);
+	camera.Update(player.GetWorldPosition(), gameTimer);
 
 	if (isMoving)
 	{
@@ -117,7 +118,7 @@ void PlayerController::Update()
 			return;
 		}
 
-		player.Translate(XMMatrixTranslation(vec.x, vec.y, vec.z));		
+		player.Translate(vec);		
 
 		// if target is reached
 		auto deltaX = std::abs(playerPos.x - destinationX);
@@ -153,7 +154,7 @@ void PlayerController::Update()
 		else
 			state = "Idle";
 
-		const auto position = player.GetPosition();
+		const auto position = player.GetWorldPosition();
 
 		playerUpdates[idCounter % BUFFER_SIZE] = std::make_unique<PlayerUpdate>(idCounter, position, std::make_unique<std::string>(state), currentMovementDirection, deltaTime);
 

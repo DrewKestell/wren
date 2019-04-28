@@ -3,7 +3,6 @@
 #include "UIComponent.h"
 #include "../EventHandling/Observer.h"
 #include "../EventHandling/Events/Event.h"
-#include "../ObjectManager.h"
 
 class UIInput : public UIComponent, public Observer
 {
@@ -27,8 +26,8 @@ class UIInput : public UIComponent, public Observer
    
 public:
 	UIInput(
-		ObjectManager& objectManager,
 		const XMFLOAT3 position,
+		const XMFLOAT3 scale,
 		const Layer uiLayer,
 		const bool secure,
 		const float labelWidth,

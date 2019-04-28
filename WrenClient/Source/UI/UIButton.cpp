@@ -9,8 +9,8 @@
 using namespace DX;
 
 UIButton::UIButton(
-	ObjectManager& objectManager,
 	const XMFLOAT3 position,
+	const XMFLOAT3 scale,
 	const Layer uiLayer,
 	const float width,
 	const float height,
@@ -24,7 +24,7 @@ UIButton::UIButton(
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* buttonTextFormat,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(objectManager, position, uiLayer),
+	: UIComponent(position, scale, uiLayer),
 	  width{ width },
 	  height{ height },
 	  onClick{ onClick },

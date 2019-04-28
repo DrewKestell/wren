@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "UICharacterListing.h"
 #include "UIComponent.h"
-#include "../ObjectManager.h"
 #include "../Layer.h"
 #include "../Utility.h"
 #include "../GameObject.h"
@@ -13,8 +12,8 @@
 using namespace DX;
 
 UICharacterListing::UICharacterListing(
-	ObjectManager& objectManager,
 	const XMFLOAT3 position,
+	const XMFLOAT3 scale,
 	const Layer uiLayer,
 	const float width,
 	const float height,
@@ -27,7 +26,7 @@ UICharacterListing::UICharacterListing(
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* textFormat,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent{ objectManager, position, uiLayer },
+	: UIComponent{ position, scale, uiLayer },
 	  width{ width },
 	  height{ height },
 	  brush{ brush },

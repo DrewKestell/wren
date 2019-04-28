@@ -2,12 +2,20 @@
 #include "RenderComponent.h"
 #include "ConstantBufferPerObject.h"
 
-RenderComponent::RenderComponent(std::shared_ptr<Mesh> mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
-	: mesh{ mesh },
-	  vertexShader{ vertexShader },
-	  pixelShader{ pixelShader },
-	  texture{ texture }
+void RenderComponent::Reset()
 {
+	mesh = nullptr;
+	vertexShader = nullptr;
+	pixelShader = nullptr;
+	texture = nullptr;
+}
+
+void RenderComponent::Initialize(std::shared_ptr<Mesh> mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
+{
+	this->mesh = mesh;
+	this->vertexShader = vertexShader;
+	this->pixelShader = pixelShader;
+	this->texture = texture;
 }
 
 void RenderComponent::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform, GameObject& gameObject, const float updateLag)

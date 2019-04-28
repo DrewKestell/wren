@@ -40,6 +40,7 @@
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\Model.cpp" />
+    <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\PlayerController.cpp" />
     <ClCompile Include="Source\PlayerUpdate.cpp" />
     <ClCompile Include="Source\RenderComponent.cpp" />
@@ -48,7 +49,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Source\Utility.cpp" />
-    <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
     <ClCompile Include="Source\UI\UIPanel.cpp" />
@@ -166,6 +166,7 @@
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Source\Model.h" />
+    <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\PlayerController.h" />
     <ClInclude Include="Source\PlayerUpdate.h" />
     <ClInclude Include="Source\RenderComponent.h" />
@@ -174,7 +175,6 @@
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
-    <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\UI\UIInputGroup.h" />
     <ClInclude Include="Source\UI\UIComponent.h" />
     <ClInclude Include="Source\UI\UIPanel.h" />

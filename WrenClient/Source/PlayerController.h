@@ -6,6 +6,7 @@
 #include "Model.h"
 #include "Camera.h"
 #include "PlayerUpdate.h"
+#include "GameObject.h"
 
 const float MOVE_SPEED = 80.0f;
 const int BUFFER_SIZE = 120;
@@ -24,11 +25,12 @@ class PlayerController : public Observer
 	CardinalDirection currentMovementDirection{ CardinalDirection::North };
 	GameTimer& gameTimer;
 	Camera& camera;
+	GameObject& player;
 
 	void SetDestination(const XMFLOAT3 playerPos);
 	void UpdateCurrentMouseDirection(const float mousePosX, const float mousePosY);
 public:
-	PlayerController(GameTimer& gameTimer, Camera& camera);
+	PlayerController(GameTimer& gameTimer, Camera& camera, GameObject& player);
 	virtual const bool HandleEvent(const Event* const event);
 	void Update();
 	void SetClientDimensions(const int width, const int height) { clientWidth = (float)width; clientHeight = (float)height; }

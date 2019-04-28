@@ -1,19 +1,36 @@
 #include "stdafx.h"
 #include "ObjectManager.h"
-#include "GameObject.h"
 
-GameObject* ObjectManager::FindGameObject(void* ptr) const
+GameObject& ObjectManager::CreateGameObject()
 {
-	for (auto it = gameObjects.begin(); it != gameObjects.end(); it++)
-	{
-		if ((*it) == ptr)
-			return (*it);
-	}
-	return nullptr;
+	if (gameObjectIndex == MAX_GAMEOBJECTS_SIZE)
+		throw std::exception("Max GameObjects exceeded!");
+
+	gameObjects[gameObjectIndex].Reset();
+	return gameObjects[gameObjectIndex++];
 }
 
-void ObjectManager::Draw() const
+RenderComponent& ObjectManager::CreateRenderComponent()
 {
-	for (auto it = gameObjects.begin(); it != gameObjects.end(); it++)
-		(*it)->Draw();
+	if (renderComponentIndex == MAX_RENDERCOMPONENTS_SIZE)
+		throw std::exception("Max RenderComponents exceeded!");
+
+	renderComponents[renderComponentIndex].Reset();
+	return renderComponents[renderComponentIndex++];
+}
+
+void ObjectManager::DeleteGameObject(const unsigned int gameObjectId)
+{
+	// first delete the render component by 
+	auto gameObject = gameObjects[gameObjectId];
+	auto renderComponentId = gameObject.GetRenderComponentId();
+	memcpy(&gameObjects[renderComponentId], &gameObjects[--renderComponentIndex], sizeof(RenderComponent));
+
+	// next delete the game object
+	
+}
+
+void ObjectManager::DeleteRenderComponent(const unsigned int renderComponentId)
+{
+
 }

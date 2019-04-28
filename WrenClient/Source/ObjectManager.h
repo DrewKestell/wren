@@ -1,13 +1,19 @@
 #pragma once
 
-class GameObject;
+#include "GameObject.h"
+
+static const unsigned int MAX_GAMEOBJECTS_SIZE = 100000;
+static const unsigned int MAX_RENDERCOMPONENTS_SIZE = 100000;
 
 class ObjectManager
 {
-	std::forward_list<GameObject*> gameObjects;
+	GameObject gameObjects[MAX_GAMEOBJECTS_SIZE];
+	RenderComponent renderComponents[MAX_RENDERCOMPONENTS_SIZE];
+	unsigned int gameObjectIndex{ 0 };
+	unsigned int renderComponentIndex{ 0 };
 public:
-	void RegisterGameObject(GameObject& gameObject) { gameObjects.push_front(&gameObject); }
-	void DeleteGameObject(GameObject& gameObject) { gameObjects.remove(&gameObject); };
-	GameObject* FindGameObject(void* ptr) const;
-	void Draw() const;
+	GameObject& CreateGameObject();
+	RenderComponent& CreateRenderComponent();
+	void DeleteGameObject(const unsigned int gameObjectId);
+	void DeleteRenderComponent(const unsigned int renderComponentId);
 };

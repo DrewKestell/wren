@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../ObjectManager.h"
 #include "../GameObject.h"
 #include "../Layer.h"
 
@@ -10,8 +9,8 @@ protected:
 	bool isVisible{ false };
 	const Layer uiLayer{ Login };
 public:
-	UIComponent(ObjectManager& objectManager, const XMFLOAT3 localPosition, const Layer uiLayer)
-		: GameObject{ objectManager, localPosition },
+	UIComponent(const XMFLOAT3 localPosition, const XMFLOAT3 scale, const Layer uiLayer)
+		: GameObject{ localPosition, scale },
 		  uiLayer{ uiLayer }
 	{
 	}

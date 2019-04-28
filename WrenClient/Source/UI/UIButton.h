@@ -23,8 +23,8 @@ class UIButton : public UIComponent, public Observer
     
 public:
 	UIButton(
-		ObjectManager& objectManager,
 		const XMFLOAT3 position,
+		const XMFLOAT3 scale,
 		const Layer uiLayer,
 		const float width,
 		const float height,

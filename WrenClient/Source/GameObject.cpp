@@ -1,6 +1,15 @@
 #include "stdafx.h"
 #include "GameObject.h"
 
+void GameObject::Reset()
+{
+	id = 0;
+	localPosition = XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+	scale = XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+	parent = nullptr;
+	children.clear();
+}
+
 XMFLOAT3 GameObject::GetWorldPosition() const
 {
     auto worldPosition = localPosition;
@@ -14,7 +23,11 @@ XMFLOAT3 GameObject::GetWorldPosition() const
     return worldPosition;
 }
 
+const unsigned int GameObject::GetId() const { return id; }
+void GameObject::SetId(const unsigned int id) { this->id = id; }
 XMFLOAT3 GameObject::GetScale() const { return scale; }
 void GameObject::SetScale(const XMFLOAT3 scale) { this->scale = scale; }
-void GameObject::SetPlayerController(PlayerController* playerController) { this->playerController = playerController; }
-void GameObject::SetRenderComponent(RenderComponent * renderComponent) { this->renderComponent = renderComponent; }
+XMFLOAT3 GameObject::GetLocalPosition() const { return localPosition; }
+void GameObject::SetLocalPosition(const XMFLOAT3 localPosition) { this->localPosition = localPosition; }
+unsigned int GameObject::GetRenderComponentId() const { return renderComponentId; }
+void GameObject::SetRenderComponentId(const unsigned int renderComponentId) { this->renderComponentId = renderComponentId; }

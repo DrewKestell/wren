@@ -2,7 +2,6 @@
 
 #include "DeviceResources.h"
 #include "GameTimer.h"
-#include "ObjectManager.h"
 #include "Camera.h"
 #include "ShaderBuffer.h"
 #include "Mesh.h"
@@ -55,7 +54,6 @@ private:
 	std::unique_ptr<DX::DeviceResources> m_deviceResources;
 	GameTimer m_timer;
 	Camera m_camera;
-	ObjectManager m_objectManager;
 	std::unique_ptr<GameMap> m_gameMap;
 	std::unique_ptr<PlayerController> m_playerController;
 	std::shared_ptr<Mesh> m_sphereMesh;

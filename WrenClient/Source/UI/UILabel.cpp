@@ -8,8 +8,8 @@
 using namespace DX;
 
 UILabel::UILabel(
-	ObjectManager& objectManager,
 	const XMFLOAT3 position,
+	const XMFLOAT3 scale,
 	const Layer uiLayer,
 	const float width,
 	ID2D1SolidColorBrush* textBrush,
@@ -17,7 +17,7 @@ UILabel::UILabel(
 	ID2D1DeviceContext1* d2dDeviceContext,
 	IDWriteFactory2* writeFactory,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(objectManager, position, uiLayer),
+	: UIComponent(position, scale, uiLayer),
 	  width{ width },
 	  textBrush{ textBrush },
 	  textFormat{ textFormat },	
