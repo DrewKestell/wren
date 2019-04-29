@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 const std::string CHECKSUM = { '6', '5', '8', '3', '6', '2', '1', '6' };
 
 constexpr char OPCODE_CONNECT[2] = { '0', '0' };

@@ -18,7 +18,7 @@ class Camera : public Observer
 	float currentSpeed{ MIN_SPEED };
 public:
 	virtual const bool HandleEvent(const Event* const event);
-	void Update(const XMFLOAT3 vec, GameTimer& gameTimer);
+	void Update(const XMFLOAT3 vec, const float deltaTime);
 	void Translate(const XMFLOAT3 pos) { camX += pos.x; camY += pos.y; camZ += pos.z; }
 	XMFLOAT3 GetPosition() const { return XMFLOAT3{ camX + OFFSET_X, camY + OFFSET_Y, camZ + OFFSET_Z }; }
 	XMFLOAT3 GetPositionFromOrigin() const { return XMFLOAT3{ camX, camY, camZ }; }

@@ -17,6 +17,8 @@
 #include "UI/UILabel.h"
 #include "EventHandling/EventHandler.h"
 
+static const int BUFFER_SIZE = 120;
+
 class Game : public DX::IDeviceNotify, public Observer
 {
 public:
@@ -41,6 +43,7 @@ public:
 	void GetDefaultSize(int& width, int& height) const;
 
 private:
+	int m_playerUpdateIdCounter{ 0 };
 	float updateTimer{ 0.0f };
 	float m_mousePosX{ 0.0f };
 	float m_mousePosY{ 0.0f };
@@ -60,9 +63,10 @@ private:
 	std::unique_ptr<PlayerController> m_playerController;
 	std::shared_ptr<Mesh> m_sphereMesh;
 	std::shared_ptr<Mesh> m_treeMesh;
-	std::unique_ptr<GameObject> player;
+	GameObject* m_player;
 	std::unique_ptr<GameObject> tree;
 	std::vector<UIComponent*> uiComponents;
+	std::unique_ptr<PlayerUpdate> playerUpdates[BUFFER_SIZE];
 
 	void Update();
 	void Render(const float updateTimer);
@@ -73,6 +77,7 @@ private:
 	ShaderBuffer LoadShader(const std::wstring filename);
 	virtual const bool HandleEvent(const Event* const event);
 	void SetActiveLayer(const Layer layer);
+	void SyncWithServer(const float deltaTime);
 
 	void InitializeBrushes();
 	void InitializeTextFormats();

@@ -292,11 +292,12 @@ void SocketManager::TryRecieveMessage()
 			const auto posX = args[2];
 			const auto posY = args[3];
 			const auto posZ = args[4];
-			const auto state = args[5];
-			const auto direction = args[6];
-			const auto deltaTime = args[7];
+			const auto movX = args[5];
+			const auto movY = args[6];
+			const auto movZ = args[7];
+			const auto deltaTime = args[8];
 
-			PlayerUpdate(token, idCounter, posX, posY, posZ, state, direction, deltaTime);
+			PlayerUpdate(token, idCounter, posX, posY, posZ, movX, movY, movZ, deltaTime);
 		}
     }
 }
@@ -330,8 +331,9 @@ void SocketManager::PlayerUpdate(
 	const std::string& posX,
 	const std::string& posY,
 	const std::string& posZ,
-	const std::string& state,
-	const std::string& direction,
+	const std::string& movX,
+	const std::string& movY,
+	const std::string& movZ,
 	const std::string& deltaTime)
 {
 	const auto it = GetPlayer(token);

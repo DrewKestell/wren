@@ -7,29 +7,20 @@
 #include "PlayerUpdate.h"
 #include "GameObject.h"
 
-const float MOVE_SPEED = 80.0f;
-const int BUFFER_SIZE = 120;
-
 class PlayerController : public Observer
 {
-	int idCounter{ 0 };
-	std::unique_ptr<PlayerUpdate> playerUpdates[BUFFER_SIZE];
-	float destinationX{ 0.0f };
-	float destinationZ{ 0.0f };
 	float clientWidth{ 0.0f };
 	float clientHeight{ 0.0f };
 	bool isRightClickHeld{ false };
 	bool isMoving{ false };
-	CardinalDirection currentMouseDirection{ CardinalDirection::North };
-	CardinalDirection currentMovementDirection{ CardinalDirection::North };
-	GameTimer& gameTimer;
-	Camera& camera;
+	XMFLOAT3 currentMouseDirection{ 0.0f, 0.0f, 0.0f };
+	XMFLOAT3 destination{ 0.0f, 0.0f, 0.0f };
 	GameObject& player;
 
 	void SetDestination(const XMFLOAT3 playerPos);
 	void UpdateCurrentMouseDirection(const float mousePosX, const float mousePosY);
 public:
-	PlayerController(GameTimer& gameTimer, Camera& camera, GameObject& player);
+	PlayerController(GameObject& player);
 	virtual const bool HandleEvent(const Event* const event);
 	void Update(const float deltaTime);
 	void SetClientDimensions(const int width, const int height) { clientWidth = (float)width; clientHeight = (float)height; }

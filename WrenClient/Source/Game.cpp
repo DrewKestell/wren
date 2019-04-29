@@ -58,8 +58,12 @@ void Game::Tick()
 	updateTimer += m_timer.DeltaTime();
 	if (updateTimer >= 0.001666666666f)
 	{
-		m_playerController->Update();
+		m_playerController->Update(updateTimer);
+		m_camera.Update(m_player->GetWorldPosition(), updateTimer);
+		m_objectManager.Update(updateTimer);
 		g_eventHandler.PublishEvents();
+
+		SyncWithServer(updateTimer);
 
 		updateTimer = 0.0f;
 	}
@@ -229,9 +233,10 @@ void Game::CreateDeviceDependentResources()
 
 	// initialize player
 	GameObject& player = m_objectManager.CreateGameObject(XMFLOAT3{ 0.0f, 0.0f, 0.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
+	m_player = &player;
 	auto sphereRenderComponent = m_objectManager.CreateRenderComponent(player.GetId(), m_sphereMesh, vertexShader.Get(), pixelShader.Get(), color01SRV.Get());
 	player.SetRenderComponentId(sphereRenderComponent.GetId());
-	m_playerController = std::make_unique<PlayerController>(m_timer, m_camera, player);
+	m_playerController = std::make_unique<PlayerController>(player);
 
 	// initialize tree (TODO: generalize)
 	GameObject& tree = m_objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
@@ -806,4 +811,29 @@ void Game::SetActiveLayer(const Layer layer)
 {
 	m_activeLayer = layer;
 	g_eventHandler.QueueEvent(new ChangeActiveLayerEvent{ layer });
+}
+
+void Game::SyncWithServer(const float deltaTime)
+{
+	if (g_socketManager.Connected())
+	{
+		const auto position = m_player->GetWorldPosition();
+		const auto movementVector = m_player->GetMovementVector();
+
+		playerUpdates[m_playerUpdateIdCounter % BUFFER_SIZE] = std::make_unique<PlayerUpdate>(m_playerUpdateIdCounter, position, movementVector, deltaTime);
+
+		g_socketManager.SendPacket(
+			OPCODE_PLAYER_UPDATE,
+			8,
+			std::to_string(m_playerUpdateIdCounter),
+			std::to_string(position.x),
+			std::to_string(position.y),
+			std::to_string(position.z),
+			std::to_string(movementVector.x),
+			std::to_string(movementVector.y),
+			std::to_string(movementVector.z),
+			std::to_string(deltaTime));
+
+		m_playerUpdateIdCounter++;
+	}
 }

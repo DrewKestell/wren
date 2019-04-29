@@ -14,7 +14,7 @@ class GameObject
 	XMFLOAT3 movementVector{ 0.0f, 0.0f, 0.0f };
 	float speed{ 80.0f };
 
-	// components. i think this should be a map or vector?
+	// components. i think this should be a map or vector? map<ComponentType, unsigned int>
 	unsigned int renderComponentId;
 
 	void Initialize(const unsigned int id, const XMFLOAT3 localPosition, const XMFLOAT3 scale);
@@ -36,4 +36,6 @@ public:
 	void SetLocalPosition(XMFLOAT3 localPosition);
 	unsigned int GetRenderComponentId() const;
 	void SetRenderComponentId(const unsigned int renderComponentId);
+	XMFLOAT3 GetMovementVector() const;
+	void SetMovementVector(const XMFLOAT3 movementVector);
 };

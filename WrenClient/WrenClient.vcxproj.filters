@@ -4,7 +4,6 @@
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\WrenClient.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
-    <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\UI\UIButton.cpp" />
     <ClCompile Include="Source\UI\UICharacterListing.cpp" />
     <ClCompile Include="Source\UI\UIInput.cpp" />
@@ -27,13 +26,13 @@
     <ClCompile Include="Source\DeviceResources.cpp" />
     <ClCompile Include="Source\PlayerUpdate.cpp" />
     <ClCompile Include="Source\RenderComponent.cpp" />
+    <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\SocketManager.h" />
-    <ClInclude Include="Source\GameObject.h" />
     <ClInclude Include="Source\UI\UIButton.h" />
     <ClInclude Include="Source\UI\UICharacterListing.h" />
     <ClInclude Include="Source\UI\UIInput.h" />
@@ -59,7 +58,6 @@
     <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterSuccessEvent.h" />
-    <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\EventHandling\Events\DeleteCharacterSuccessEvent.h" />
     <ClInclude Include="Source\GameMap\GameMap.h" />
     <ClInclude Include="Source\GameMap\GameMapTile.h" />
@@ -160,7 +158,9 @@
     <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
     <ClInclude Include="Source\PlayerUpdate.h" />
     <ClInclude Include="Source\RenderComponent.h" />
+    <ClInclude Include="Source\GameObject.h" />
     <ClInclude Include="Source\ObjectManager.h" />
+    <ClInclude Include="Source\Utility.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

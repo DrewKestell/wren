@@ -38,7 +38,7 @@ const bool Camera::HandleEvent(const Event* const event)
 }
 
 // probably want a state machine here (moveState, etc)
-void Camera::Update(XMFLOAT3 player, GameTimer& gameTimer)
+void Camera::Update(XMFLOAT3 player, const float deltaTime)
 {
 	//std::cout << gameTimer.DeltaTime() << std::endl;
 
@@ -57,7 +57,7 @@ void Camera::Update(XMFLOAT3 player, GameTimer& gameTimer)
 		camZ = player.z;
 	}
 
-	const auto deltaAccel = ACCELERATION * gameTimer.DeltaTime();
+	const auto deltaAccel = ACCELERATION * deltaTime;
 	if (player.x == camX && player.z == camZ)
 	{
 		if (currentSpeed > MIN_SPEED)

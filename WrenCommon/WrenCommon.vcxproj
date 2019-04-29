@@ -23,7 +23,6 @@
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Source\WrenCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\OpCodes.h" />

@@ -1,17 +1,9 @@
 #include "stdafx.h"
 #include "PlayerController.h"
 #include "EventHandling/Events/MouseEvent.h"
-#include "SocketManager.h"
-#include <OpCodes.h>
 
-extern SocketManager g_socketManager;
-
-// once you get the aspect ratio stuff figured out, you only need to calculate
-// the centerPoint once (until the window gets resized)
-PlayerController::PlayerController(GameTimer& gameTimer, Camera& camera, GameObject& player)
-	: gameTimer{ gameTimer },
-	  camera{ camera },
-	  player{ player }
+PlayerController::PlayerController(GameObject& player)
+	: player{ player }
 {
 	clientWidth = 800;
 	clientHeight = 600;
@@ -60,137 +52,45 @@ const bool PlayerController::HandleEvent(const Event* const event)
 // probably want a state machine here (moveState, etc)
 void PlayerController::Update(const float deltaTime)
 {
-	camera.Update(player.GetWorldPosition(), gameTimer);
+	const auto playerPos = player.GetWorldPosition();
 
 	if (isMoving)
 	{
 		// if target is reached
-		auto deltaX = std::abs(playerPos.x - destinationX);
-		auto deltaZ = std::abs(playerPos.z - destinationZ);
+		auto deltaX = std::abs(playerPos.x - destination.x);
+		auto deltaZ = std::abs(playerPos.z - destination.z);
 
 		if (deltaX < 1.0f && deltaZ < 1.0f)
 		{
-			player.SetLocalPosition(XMFLOAT3{ destinationX, 0.0f, destinationZ });
+			player.SetLocalPosition(XMFLOAT3{ destination.x, 0.0f, destination.z });
 			if (!isRightClickHeld)
 			{
 				isMoving = false;
+				player.SetMovementVector(XMFLOAT3{ 0.0f, 0.0f, 0.0f });
 			}
 			else
 			{
-				currentMovementDirection = currentMouseDirection;
+				player.SetMovementVector(currentMouseDirection);
 				SetDestination(playerPos);
 			}
+
+			//
 		}
 	}
 	if (!isMoving && isRightClickHeld)
 	{
 		isMoving = true;
-		currentMovementDirection = currentMouseDirection;
+		player.SetMovementVector(currentMouseDirection);
 		SetDestination(playerPos);
-	}
-
-	if (g_socketManager.Connected())
-	{
-		std::string state = "";
-
-		if (isMoving)
-			state = "Moving";
-		else
-			state = "Idle";
-
-		const auto position = player.GetWorldPosition();
-
-		playerUpdates[idCounter % BUFFER_SIZE] = std::make_unique<PlayerUpdate>(idCounter, position, std::make_unique<std::string>(state), currentMovementDirection, deltaTime);
-
-		std::string dir = "";
-
-		switch (currentMovementDirection)
-		{
-		case CardinalDirection::East:
-			dir = "East";
-			break;
-		case CardinalDirection::North:
-			dir = "North";
-			break;
-		case CardinalDirection::NorthEast:
-			dir = "NorthEast";
-			break;
-		case CardinalDirection::NorthWest:
-			dir = "NorthWest";
-			break;
-		case CardinalDirection::South:
-			dir = "South";
-			break;
-		case CardinalDirection::SouthEast:
-			dir = "SouthEast";
-			break;
-		case CardinalDirection::SouthWest:
-			dir = "SouthWest";
-			break;
-		case CardinalDirection::West:
-			dir = "West";
-			break;
-		}
-
-		g_socketManager.SendPacket(
-			OPCODE_PLAYER_UPDATE,
-			7,
-			std::to_string(idCounter),
-			std::to_string(position.x),
-			std::to_string(position.y),
-			std::to_string(position.z),
-			state,
-			dir,
-			std::to_string(deltaTime));
-
-		idCounter++;
 	}
 }
 
 void PlayerController::SetDestination(const XMFLOAT3 playerPos)
 {
-	auto tileSize = 30.0f;
-
-	if (currentMovementDirection == CardinalDirection::SouthWest)
-	{
-		destinationX = playerPos.x - tileSize;
-		destinationZ = playerPos.z - tileSize;
-	}
-	else if (currentMovementDirection == CardinalDirection::South)
-	{
-		destinationX = playerPos.x;
-		destinationZ = playerPos.z - tileSize;
-	}
-	else if (currentMovementDirection == CardinalDirection::SouthEast)
-	{
-		destinationX = playerPos.x + tileSize;
-		destinationZ = playerPos.z - tileSize;
-	}
-	else if (currentMovementDirection == CardinalDirection::East)
-	{
-		destinationX = playerPos.x + tileSize;
-		destinationZ = playerPos.z;
-	}
-	else if (currentMovementDirection == CardinalDirection::NorthEast)
-	{
-		destinationX = playerPos.x + tileSize;
-		destinationZ = playerPos.z + tileSize;
-	}
-	else if (currentMovementDirection == CardinalDirection::North)
-	{
-		destinationX = playerPos.x;
-		destinationZ = playerPos.z + tileSize;
-	}
-	else if (currentMovementDirection == CardinalDirection::NorthWest)
-	{
-		destinationX = playerPos.x - tileSize;
-		destinationZ = playerPos.z + tileSize;
-	}
-	else
-	{
-		destinationX = playerPos.x - tileSize;
-		destinationZ = playerPos.z;
-	}
+	const auto tileSize = 30.0f;
+	const auto vec = XMLoadFloat3(&currentMouseDirection);
+	const auto currentPos = XMLoadFloat3(&playerPos);
+	XMStoreFloat3(&destination, currentPos + (vec * tileSize));
 }
 
 void PlayerController::UpdateCurrentMouseDirection(const float mousePosX, const float mousePosY)
@@ -206,34 +106,34 @@ void PlayerController::UpdateCurrentMouseDirection(const float mousePosX, const 
 
 	if (z >= 337.5 || z <= 22.5)
 	{
-		currentMouseDirection = CardinalDirection::SouthWest;
+		currentMouseDirection = XMFLOAT3{ -1.0f, 0.0f, -1.0f };
 	}
 	else if (z > 22.5 && z < 67.5)
 	{
-		currentMouseDirection = CardinalDirection::South;
+		currentMouseDirection = XMFLOAT3{ 0.0f, 0.0f, -1.0f };
 	}
 	else if (z > 67.5 && z < 112.5)
 	{
-		currentMouseDirection = CardinalDirection::SouthEast;
+		currentMouseDirection = XMFLOAT3{ 1.0f, 0.0f, -1.0f };
 	}
 	else if (z > 112.5 && z < 157.5)
 	{
-		currentMouseDirection = CardinalDirection::East;
+		currentMouseDirection = XMFLOAT3{ 1.0f, 0.0f, 0.0f };
 	}
 	else if (z > 157.5 && z < 202.5)
 	{
-		currentMouseDirection = CardinalDirection::NorthEast;
+		currentMouseDirection = XMFLOAT3{ 1.0f, 0.0f, 1.0f };
 	}
 	else if (z > 202.5 && z < 247.5)
 	{
-		currentMouseDirection = CardinalDirection::North;
+		currentMouseDirection = XMFLOAT3{ 0.0f, 0.0f, 1.0f };
 	}
 	else if (z > 247.5 && z < 292.5)
 	{
-		currentMouseDirection = CardinalDirection::NorthWest;
+		currentMouseDirection = XMFLOAT3{ -1.0f, 0.0f, 1.0f };
 	}
 	else
 	{
-		currentMouseDirection = CardinalDirection::West;
+		currentMouseDirection = XMFLOAT3{ -1.0f, 0.0f, 0.0f };
 	}
 }

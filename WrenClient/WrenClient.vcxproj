@@ -171,7 +171,6 @@
     <ClInclude Include="Source\ShaderBuffer.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
-    <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
     <ClInclude Include="Source\UI\UIInputGroup.h" />
     <ClInclude Include="Source\UI\UIComponent.h" />
@@ -181,6 +180,7 @@
     <ClInclude Include="Source\UI\UICharacterListing.h" />
     <ClInclude Include="Source\UI\UIInput.h" />
     <ClInclude Include="Source\UI\UILabel.h" />
+    <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\Vertex.h" />
   </ItemGroup>
   <ItemGroup>

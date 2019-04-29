@@ -39,3 +39,5 @@ XMFLOAT3 GameObject::GetLocalPosition() const { return localPosition; }
 void GameObject::SetLocalPosition(const XMFLOAT3 localPosition) { this->localPosition = localPosition; }
 unsigned int GameObject::GetRenderComponentId() const { return renderComponentId; }
 void GameObject::SetRenderComponentId(const unsigned int renderComponentId) { this->renderComponentId = renderComponentId; }
+XMFLOAT3 GameObject::GetMovementVector() const { return movementVector; }
+void GameObject::SetMovementVector(const XMFLOAT3 movementVector) { this->movementVector = movementVector; }
