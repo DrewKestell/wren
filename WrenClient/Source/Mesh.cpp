@@ -16,12 +16,12 @@ Mesh::Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShad
 
 	const std::string directory = path.substr(0, path.find_last_of('\\'));
 
-	const auto mesh = scene->mMeshes[scene->mRootNode->mMeshes[0]];
+	const auto mesh = scene->mMeshes[scene->mRootNode->mChildren[0]->mMeshes[0]];
 
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 
-	for (auto i = 0; i < mesh->mNumVertices; i++)
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
 		XMFLOAT3 vector;
@@ -53,12 +53,12 @@ Mesh::Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShad
 
 		vertices.push_back(vertex);
 	}
-	for (auto i = 0; i < mesh->mNumFaces; i++) // retrieve indices
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++) // retrieve indices
 	{
 		auto face = mesh->mFaces[i];
 
 		// retrieve all indices of the face and store them in the indices vector
-		for (auto j = 0; j < face.mNumIndices; j++)
+		for (unsigned int j = 0; j < face.mNumIndices; j++)
 			indices.push_back(face.mIndices[j]);
 	}
 

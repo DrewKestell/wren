@@ -126,7 +126,7 @@ void PlayerController::Update()
 
 		if (deltaX < 1.0f && deltaZ < 1.0f)
 		{
-			player.SetPosition(XMFLOAT3{ destinationX, 0.0f, destinationZ });
+			player.SetLocalPosition(XMFLOAT3{ destinationX, 0.0f, destinationZ });
 			if (!isRightClickHeld)
 			{
 				isMoving = false;

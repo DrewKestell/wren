@@ -3,7 +3,6 @@
 #include "UIComponent.h"
 #include "../Layer.h"
 #include "../Utility.h"
-#include "../GameObject.h"
 #include "../EventHandling/Observer.h"
 #include "../EventHandling/EventHandler.h"
 #include "../EventHandling/Events/MouseEvent.h"
@@ -12,6 +11,7 @@
 using namespace DX;
 
 UICharacterListing::UICharacterListing(
+	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT3 position,
 	const XMFLOAT3 scale,
 	const Layer uiLayer,
@@ -26,7 +26,7 @@ UICharacterListing::UICharacterListing(
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* textFormat,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent{ position, scale, uiLayer },
+	: UIComponent(uiComponents, position, scale, uiLayer),
 	  width{ width },
 	  height{ height },
 	  brush{ brush },

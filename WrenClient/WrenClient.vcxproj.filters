@@ -18,7 +18,6 @@
     <ClCompile Include="Source\Utility.cpp" />
     <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
     <ClCompile Include="Source\GameMap\GameMap.cpp" />
-    <ClCompile Include="Source\Model.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
     <ClCompile Include="Source\stdafx.cpp" />
@@ -136,7 +135,6 @@
     <ClInclude Include="Include\assimp\version.h" />
     <ClInclude Include="Include\assimp\Vertex.h" />
     <ClInclude Include="Include\assimp\XMLTools.h" />
-    <ClInclude Include="Source\Model.h" />
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Include\assimp\port\AndroidJNI\AndroidJNIIOSystem.h" />
     <ClInclude Include="Include\assimp\Compiler\poppack1.h" />

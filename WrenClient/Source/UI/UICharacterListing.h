@@ -20,6 +20,7 @@ class UICharacterListing : public UIComponent, public Observer
     
 public:
 	UICharacterListing(
+		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT3 position,
 		const XMFLOAT3 scale,
 		const Layer uiLayer,

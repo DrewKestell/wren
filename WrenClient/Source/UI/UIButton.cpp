@@ -3,12 +3,12 @@
 #include "../EventHandling/Events/MouseEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../Utility.h"
-#include "../GameObject.h"
 #include "../Layer.h"
 
 using namespace DX;
 
 UIButton::UIButton(
+	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT3 position,
 	const XMFLOAT3 scale,
 	const Layer uiLayer,
@@ -24,7 +24,7 @@ UIButton::UIButton(
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* buttonTextFormat,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(position, scale, uiLayer),
+	: UIComponent(uiComponents, position, scale, uiLayer),
 	  width{ width },
 	  height{ height },
 	  onClick{ onClick },

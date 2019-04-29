@@ -3,7 +3,6 @@
 #include "EventHandling/Observer.h"
 #include "CardinalDirection.h"
 #include "GameTimer.h"
-#include "Model.h"
 #include "Camera.h"
 #include "PlayerUpdate.h"
 #include "GameObject.h"

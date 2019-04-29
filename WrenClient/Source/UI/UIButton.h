@@ -23,6 +23,7 @@ class UIButton : public UIComponent, public Observer
     
 public:
 	UIButton(
+		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT3 position,
 		const XMFLOAT3 scale,
 		const Layer uiLayer,

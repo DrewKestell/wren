@@ -5,11 +5,11 @@
 #include "../EventHandling/Events/MouseEvent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../EventHandling/Events/SystemKeyDownEvent.h"
-#include "../GameObject.h"
 #include "../Utility.h"
 #include "../Layer.h"
 
 UIPanel::UIPanel(
+	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT3 position,
 	const XMFLOAT3 scale,
 	const Layer uiLayer,
@@ -22,7 +22,7 @@ UIPanel::UIPanel(
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(position, scale, uiLayer),
+	: UIComponent(uiComponents, position, scale, uiLayer),
 	  isDraggable{ isDraggable },
 	  width{ width },
 	  height{ height },
@@ -55,6 +55,9 @@ void UIPanel::Draw()
 	}
 	d2dDeviceContext->FillGeometry(bodyGeometry.Get(), bodyBrush);
 	d2dDeviceContext->DrawGeometry(bodyGeometry.Get(), borderBrush, borderWeight);
+
+	for (auto i = 0; i < children.size(); i++)
+		children.at(i)->Draw();
 }
 
 const bool UIPanel::HandleEvent(const Event* const event)

@@ -1,13 +1,11 @@
 #include "stdafx.h"
 #include "GameObject.h"
 
-void GameObject::Reset()
+void GameObject::Initialize(const unsigned int id, const XMFLOAT3 localPosition, const XMFLOAT3 scale)
 {
-	id = 0;
-	localPosition = XMFLOAT3{ 0.0f, 0.0f, 0.0f };
-	scale = XMFLOAT3{ 0.0f, 0.0f, 0.0f };
-	parent = nullptr;
-	children.clear();
+	this->id = id;
+	this->localPosition = localPosition;
+	this->scale = scale;
 }
 
 XMFLOAT3 GameObject::GetWorldPosition() const

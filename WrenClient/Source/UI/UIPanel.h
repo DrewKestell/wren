@@ -25,6 +25,7 @@ class UIPanel : public UIComponent, public Observer
     ID2D1Factory2* d2dFactory = nullptr;
 public:
 	UIPanel(
+		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT3 position,
 		const XMFLOAT3 scale,
 		const Layer uiLayer,

@@ -26,6 +26,7 @@ class UIInput : public UIComponent, public Observer
    
 public:
 	UIInput(
+		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT3 position,
 		const XMFLOAT3 scale,
 		const Layer uiLayer,

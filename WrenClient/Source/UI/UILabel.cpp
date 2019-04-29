@@ -2,12 +2,12 @@
 #include "UILabel.h"
 #include "UIComponent.h"
 #include "../EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "../GameObject.h"
 #include "../Layer.h"
 
 using namespace DX;
 
 UILabel::UILabel(
+	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT3 position,
 	const XMFLOAT3 scale,
 	const Layer uiLayer,
@@ -17,7 +17,7 @@ UILabel::UILabel(
 	ID2D1DeviceContext1* d2dDeviceContext,
 	IDWriteFactory2* writeFactory,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(position, scale, uiLayer),
+	: UIComponent(uiComponents, position, scale, uiLayer),
 	  width{ width },
 	  textBrush{ textBrush },
 	  textFormat{ textFormat },	

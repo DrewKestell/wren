@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Utility.h"
-#include "PlayerController.h"
-#include "RenderComponent.h"
 
 class GameObject
 {
@@ -14,8 +12,11 @@ class GameObject
 
 	// components. i think this should be a map or vector?
 	unsigned int renderComponentId;
+
+	void Initialize(const unsigned int id, const XMFLOAT3 localPosition, const XMFLOAT3 scale);
+
+	friend class ObjectManager;
 public:
-	void Reset();
     void Translate(XMFLOAT3 vector) { localPosition = XMFLOAT3Sum(localPosition, vector); }
     GameObject* GetParent() const { return parent; }
     void SetParent(GameObject& parent) { /*delete(this->parent);*/ this->parent = &parent; } // TODO: i think parent should be a shared_pointer, because another gameobject could have a reference to it, and we can't delete it here.

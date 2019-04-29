@@ -2,23 +2,17 @@
 #include "RenderComponent.h"
 #include "ConstantBufferPerObject.h"
 
-void RenderComponent::Reset()
+void RenderComponent::Initialize(const unsigned int id, const unsigned int gameObjectId, std::shared_ptr<Mesh> mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
 {
-	mesh = nullptr;
-	vertexShader = nullptr;
-	pixelShader = nullptr;
-	texture = nullptr;
-}
-
-void RenderComponent::Initialize(std::shared_ptr<Mesh> mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
-{
+	this->id = id;
+	this->gameObjectId = gameObjectId;
 	this->mesh = mesh;
 	this->vertexShader = vertexShader;
 	this->pixelShader = pixelShader;
 	this->texture = texture;
 }
 
-void RenderComponent::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform, GameObject& gameObject, const float updateLag)
+void RenderComponent::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform, const float updateLag, GameObject& gameObject)
 {
 	// TODO: update GameObjects position based on state and updateLag
 	auto pos = gameObject.GetWorldPosition();
@@ -55,3 +49,8 @@ void RenderComponent::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX
 	immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->DrawIndexed(mesh->GetIndexCount(), 0, 0);
 }
+
+const unsigned int RenderComponent::GetId() const { return id; }
+void RenderComponent::SetId(const unsigned int id) { this->id = id; }
+const unsigned int RenderComponent::GetGameObjectId() const { return gameObjectId; }
+void RenderComponent::SetGameObjectId(const unsigned int id) { this->gameObjectId = gameObjectId; }

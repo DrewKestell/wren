@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "ShaderBuffer.h"
 #include "Mesh.h"
+#include "ObjectManager.h"
 #include "PlayerController.h"
 #include "SocketManager.h"
 #include "GameMap/GameMap.h"
@@ -52,6 +53,7 @@ private:
 	XMMATRIX m_projectionTransform{ XMMatrixIdentity() };
 	Layer m_activeLayer{ Login };
 	std::unique_ptr<DX::DeviceResources> m_deviceResources;
+	ObjectManager m_objectManager;
 	GameTimer m_timer;
 	Camera m_camera;
 	std::unique_ptr<GameMap> m_gameMap;
@@ -60,6 +62,7 @@ private:
 	std::shared_ptr<Mesh> m_treeMesh;
 	std::unique_ptr<GameObject> player;
 	std::unique_ptr<GameObject> tree;
+	std::vector<UIComponent*> uiComponents;
 
 	void Update();
 	void Render(const float updateTimer);
