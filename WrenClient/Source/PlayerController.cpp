@@ -58,68 +58,12 @@ const bool PlayerController::HandleEvent(const Event* const event)
 }
 
 // probably want a state machine here (moveState, etc)
-void PlayerController::Update()
+void PlayerController::Update(const float deltaTime)
 {
-	const auto playerPos = player.GetWorldPosition();
-	const auto deltaTime = gameTimer.DeltaTime();
-
 	camera.Update(player.GetWorldPosition(), gameTimer);
 
 	if (isMoving)
 	{
-		auto pixelsToMove = MOVE_SPEED * deltaTime;
-
-		XMFLOAT3 vec{ 0.0f, 0.0f, 0.0f };
-
-		if (currentMovementDirection == CardinalDirection::SouthWest)
-		{
-			if (playerPos.x > 0.0f && playerPos.z > 0.0f)
-				vec = XMFLOAT3{ -pixelsToMove, 0.0f, -pixelsToMove };
-		}
-		else if (currentMovementDirection == CardinalDirection::South)
-		{
-			if (playerPos.z > 0.0f)
-				vec = XMFLOAT3{ 0.0f, 0.0f, -pixelsToMove };
-		}
-		else if (currentMovementDirection == CardinalDirection::SouthEast)
-		{
-			if (playerPos.x < 2970.0f && playerPos.z > 0.0f)
-				vec = XMFLOAT3{ pixelsToMove, 0.0f, -pixelsToMove };
-		}
-		else if (currentMovementDirection == CardinalDirection::East)
-		{
-			if (playerPos.x < 2970.0f)
-				vec = XMFLOAT3{ pixelsToMove, 0.0f, 0.0f };
-		}
-		else if (currentMovementDirection == CardinalDirection::NorthEast)
-		{
-			if (playerPos.x < 2970.0f && playerPos.z < 2970.0f)
-				vec = XMFLOAT3{ pixelsToMove, 0.0f, pixelsToMove };
-		}
-		else if (currentMovementDirection == CardinalDirection::North)
-		{
-			if (playerPos.z < 2970.0f)
-				vec = XMFLOAT3{ 0.0f, 0.0f, pixelsToMove };
-		}
-		else if (currentMovementDirection == CardinalDirection::NorthWest)
-		{
-			if (playerPos.x > 0.0f && playerPos.z < 2970.0f)
-				vec = XMFLOAT3{ -pixelsToMove, 0.0f, pixelsToMove };
-		}
-		else
-		{
-			if (playerPos.x > 0.0f)
-				vec = XMFLOAT3{ -pixelsToMove, 0.0f, 0.0f };
-		}
-
-		if (vec.x == 0.0f && vec.y == 0.0f && vec.z == 0.0f)
-		{
-			isMoving = false;
-			return;
-		}
-
-		player.Translate(vec);		
-
 		// if target is reached
 		auto deltaX = std::abs(playerPos.x - destinationX);
 		auto deltaZ = std::abs(playerPos.z - destinationZ);

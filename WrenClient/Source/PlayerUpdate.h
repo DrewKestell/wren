@@ -6,14 +6,12 @@ class PlayerUpdate
 {
 	const int m_id;
 	const XMFLOAT3 m_position;
-	const std::unique_ptr<const std::string> m_state;
-	const CardinalDirection m_movementDirection;
+	const XMFLOAT3 m_movementVector;
 	const float m_deltaTime;
 public:
 	PlayerUpdate(
 		const int id,
 		const XMFLOAT3 position,
-		std::unique_ptr<std::string> state,
-		const CardinalDirection movementDirection,
+		const XMFLOAT3 m_movementVector,
 		const float deltaTime);
 };

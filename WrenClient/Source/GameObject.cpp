@@ -1,6 +1,16 @@
 #include "stdafx.h"
 #include "GameObject.h"
 
+void GameObject::Update(const float deltaTime)
+{
+	// TODO: map bounds checking
+	auto movementVec = XMLoadFloat3(&movementVector);
+	movementVec *= speed * deltaTime;
+	
+	auto positionVec = XMLoadFloat3(&localPosition);
+	XMStoreFloat3(&localPosition, movementVec + positionVec);
+}
+
 void GameObject::Initialize(const unsigned int id, const XMFLOAT3 localPosition, const XMFLOAT3 scale)
 {
 	this->id = id;

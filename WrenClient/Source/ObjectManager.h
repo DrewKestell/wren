@@ -13,6 +13,7 @@ class ObjectManager
 	unsigned int gameObjectIndex{ 0 };
 	unsigned int renderComponentIndex{ 0 };
 public:
+	void Update(const float deltaTime);
 	void Render(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform, const float updateLag);
 	GameObject& CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale);
 	RenderComponent& CreateRenderComponent(const unsigned int gameObjectId, std::shared_ptr<Mesh> mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture);

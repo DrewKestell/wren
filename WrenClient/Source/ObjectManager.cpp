@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "ObjectManager.h"
 
+void ObjectManager::Update(const float deltaTime)
+{
+	for (unsigned int i = 0; i < gameObjectIndex; i++)
+		gameObjects[i].Update(deltaTime);
+}
+
 void ObjectManager::Render(ID3D11DeviceContext* d3dContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform, const float updateLag)
 {
 	for (unsigned int i = 0; i < renderComponentIndex; i++)
