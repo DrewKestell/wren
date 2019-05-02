@@ -3,15 +3,15 @@
   <ItemGroup>
     <ClInclude Include="Include\sodium.h" />
     <ClInclude Include="Include\sqlite3.h" />
-    <ClInclude Include="Source\Account.h" />
     <ClInclude Include="Source\Player.h" />
     <ClInclude Include="Source\Repository.h" />
     <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\stdafx.h" />
+    <ClInclude Include="Source\Models\Account.h" />
+    <ClInclude Include="Source\Models\Character.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\ThirdParty\sqlite3.c" />
     <ClCompile Include="Source\Repository.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\WrenServer.cpp" />

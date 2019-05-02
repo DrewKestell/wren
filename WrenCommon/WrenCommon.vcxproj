@@ -20,14 +20,46 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\dllmain.cpp" />
+    <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
+    <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
+    <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
+    <ClCompile Include="Source\GameObject.cpp" />
+    <ClCompile Include="Source\ObjectManager.cpp" />
+    <ClCompile Include="Source\PlayerUpdate.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\EventHandling\EventHandler.h" />
+    <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\CreateAccountFailedEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\CreateCharacterFailedEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\CreateCharacterSuccessEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\DeleteCharacterSuccessEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\DeleteGameObjectEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\EnterWorldSuccessEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\Event.h" />
+    <ClInclude Include="Source\EventHandling\Events\EventType.h" />
+    <ClInclude Include="Source\EventHandling\Events\KeyDownEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\KeyPressEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\LoginFailedEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
+    <ClInclude Include="Source\EventHandling\Observer.h" />
+    <ClInclude Include="Source\GameObject.h" />
+    <ClInclude Include="Source\Layer.h" />
+    <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\OpCodes.h" />
+    <ClInclude Include="Source\PlayerUpdate.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
+    <ClInclude Include="Source\Utility.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -51,13 +83,13 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -84,6 +116,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(ProjectDir)Source;$(WindowsSDK_IncludePath);</IncludePath>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -94,6 +127,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(ProjectDir)Source;$(WindowsSDK_IncludePath);</IncludePath>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -103,6 +137,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;WRENCOMMON_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <OpCodes.h>
+#include <ObjectManager.h>
 #include "SocketManager.h"
 
 constexpr auto PLAYER_NOT_FOUND = "Player not found.";
@@ -12,6 +13,8 @@ constexpr auto CHARACTER_ALREADY_EXISTS = "Character already exists.";
 
 constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
 constexpr auto PORT_NUMBER = 27016;
+
+extern ObjectManager g_objectManager;
 
 SocketManager::SocketManager(Repository& repository)
 	: repository(repository)
@@ -315,7 +318,10 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
 {
     const auto it = GetPlayer(token);
     (*it)->SetLastHeartbeat(GetTickCount());
-    SendPacket(OPCODE_ENTER_WORLD_SUCCESSFUL, 0);
+
+	auto character = repository.GetCharacter(characterName);
+	const auto characterGameObject = g_objectManager.CreateGameObject(character->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)character->id);
+    SendPacket(OPCODE_ENTER_WORLD_SUCCESSFUL, 4, std::to_string(character->id), std::to_string(character->position.x), std::to_string(character->position.y), std::to_string(character->position.z));
 }
 
 void SocketManager::DeleteCharacter(const std::string& token, const std::string& characterName)

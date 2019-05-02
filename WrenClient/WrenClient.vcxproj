@@ -22,32 +22,24 @@
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
     <ClCompile Include="Source\DeviceResources.cpp" />
-    <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
-    <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
-    <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
     <ClInclude Include="Source\Camera.h" />
-    <ClInclude Include="Source\CardinalDirection.h" />
     <ClInclude Include="Source\DeviceResources.h" />
     <ClInclude Include="Source\EventHandling\Events\LeftMouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RightMouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RigthMouseUpEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
     <ClCompile Include="Source\Game.cpp" />
     <ClCompile Include="Source\GameMap\GameMap.cpp" />
     <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
-    <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
-    <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\PlayerController.cpp" />
-    <ClCompile Include="Source\PlayerUpdate.cpp" />
     <ClCompile Include="Source\RenderComponent.cpp" />
+    <ClCompile Include="Source\RenderComponentManager.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Source\Utility.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
     <ClCompile Include="Source\UI\UIPanel.cpp" />
@@ -140,7 +132,6 @@
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
     <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateAccountFailedEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\CreateCharacterFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\DeleteCharacterSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\Event.h" />
@@ -149,25 +140,20 @@
     <ClInclude Include="Source\EventHandling\Events\LoginFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\LeftMouseDownEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\EventType.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseMoveEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
     <ClInclude Include="Source\Game.h" />
     <ClInclude Include="Source\GameMap\GameMap.h" />
     <ClInclude Include="Source\GameMap\GameMapTile.h" />
     <ClInclude Include="Source\GameMap\TerrainType.h" />
-    <ClInclude Include="Source\GameObject.h" />
     <ClInclude Include="Source\GameTimer.h" />
-    <ClInclude Include="Source\Layer.h" />
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\Mesh.h" />
-    <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\PlayerController.h" />
-    <ClInclude Include="Source\PlayerUpdate.h" />
     <ClInclude Include="Source\RenderComponent.h" />
+    <ClInclude Include="Source\RenderComponentManager.h" />
     <ClInclude Include="Source\ShaderBuffer.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
@@ -180,7 +166,6 @@
     <ClInclude Include="Source\UI\UICharacterListing.h" />
     <ClInclude Include="Source\UI\UIInput.h" />
     <ClInclude Include="Source\UI\UILabel.h" />
-    <ClInclude Include="Source\Utility.h" />
     <ClInclude Include="Source\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
@@ -298,8 +283,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(ProjectDir)Include;$(SolutionDir)WrenCommon\Source;$(ProjectDir)Source;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)Lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)Lib;$(LibraryPath);$(SolutionDir)$(Platform)\$(Configuration)\</LibraryPath>
     <SourcePath>$(ProjectDir)ThirdParty;$(SourcePath)</SourcePath>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -312,6 +298,7 @@
     <IncludePath>$(ProjectDir)Include;$(SolutionDir)WrenCommon\Source;$(ProjectDir)Source;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)Lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(ProjectDir)ThirdParty;$(SourcePath)</SourcePath>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -326,7 +313,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;Dwrite.lib;d2d1.lib;wsock32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WrenCommon.lib;d3d11.lib;dxgi.lib;Dwrite.lib;d2d1.lib;wsock32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
@@ -377,7 +364,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

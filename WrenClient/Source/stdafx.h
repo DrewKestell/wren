@@ -27,6 +27,7 @@
 #include <sstream>
 #include <fstream>  
 #include <vector>
+#include <map>
 #include <algorithm>
 #include <functional>
 #include <codecvt>

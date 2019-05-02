@@ -1,5 +1,8 @@
 #include "stdafx.h"
+#include <ObjectManager.h>
 #include "SocketManager.h"
+
+ObjectManager g_objectManager;
 
 int main()
 {

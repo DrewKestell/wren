@@ -23,5 +23,6 @@ enum class EventType
 	WrongChecksum,
 	OpcodeNotImplemented,
 	DeleteCharacterSuccess,
-	PlayerCorrection
+	PlayerCorrection,
+	DeleteGameObjectEvent
 };

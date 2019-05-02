@@ -1,10 +1,10 @@
 #pragma once
 
 #include "UIComponent.h"
-#include "../EventHandling/Observer.h"
-#include "../EventHandling/Events/Event.h"
+#include "EventHandling/Observer.h"
+#include "EventHandling/Events/Event.h"
 
-class UIInput : public UIComponent, public Observer
+class UIInput : public UIComponent
 {
 	ComPtr<IDWriteTextLayout> labelTextLayout;
 	ComPtr<IDWriteTextLayout> inputValueTextLayout;

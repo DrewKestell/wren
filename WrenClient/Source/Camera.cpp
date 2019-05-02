@@ -1,41 +1,6 @@
 #include "stdafx.h"
 #include "Camera.h"
 #include "Utility.h"
-#include "EventHandling/Events/MouseEvent.h"
-
-const bool Camera::HandleEvent(const Event* const event)
-{
-	const auto type = event->type;
-	switch (type)
-	{
-		case EventType::RightMouseDownEvent:
-		{
-			const auto derivedEvent = (MouseEvent*)event;
-
-
-
-			break;
-		}
-		case EventType::RightMouseUpEvent:
-		{
-			const auto mouseUpEvent = (MouseEvent*)event;
-
-
-
-			break;
-		}
-		case EventType::MouseMoveEvent:
-		{
-			const auto derivedEvent = (MouseEvent*)event;
-
-
-
-			break;
-		}
-	}
-
-	return false;
-}
 
 // probably want a state machine here (moveState, etc)
 void Camera::Update(XMFLOAT3 player, const float deltaTime)

@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "UIButton.h"
-#include "../EventHandling/Events/MouseEvent.h"
-#include "../EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "../Utility.h"
-#include "../Layer.h"
+#include "EventHandling/EventHandler.h"
+#include "EventHandling/Events/MouseEvent.h"
+#include "EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "Utility.h"
+#include "Layer.h"
 
 using namespace DX;
 
@@ -83,7 +84,7 @@ const bool UIButton::HandleEvent(const Event* const event)
 			if (isVisible)
 			{
 				const auto position = GetWorldPosition();
-				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+				if (Utility::DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 				{
 					pressed = true;
 					onClick();

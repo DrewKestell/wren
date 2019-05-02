@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "UIPanel.h"
 #include "UIComponent.h"
-#include "../EventHandling/Observer.h"
-#include "../EventHandling/Events/MouseEvent.h"
-#include "../EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "../EventHandling/Events/SystemKeyDownEvent.h"
-#include "../Utility.h"
-#include "../Layer.h"
+#include "EventHandling/Observer.h"
+#include "EventHandling/Events/MouseEvent.h"
+#include "EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "EventHandling/Events/SystemKeyDownEvent.h"
+#include "Utility.h"
+#include "Layer.h"
 
 UIPanel::UIPanel(
 	std::vector<UIComponent*>& uiComponents,
@@ -72,7 +72,7 @@ const bool UIPanel::HandleEvent(const Event* const event)
 			if (isVisible)
 			{
 				const auto position = GetWorldPosition();
-				if (isVisible && isDraggable && DetectClick(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+				if (isVisible && isDraggable && Utility::DetectClick(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 				{
 					lastDragX = mouseDownEvent->mousePosX;
 					lastDragY = mouseDownEvent->mousePosY;

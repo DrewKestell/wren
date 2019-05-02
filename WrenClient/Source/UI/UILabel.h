@@ -1,10 +1,10 @@
 #pragma once
 
 #include "UIComponent.h"
-#include "../EventHandling/Observer.h"
-#include "../EventHandling/Events/Event.h"
+#include "EventHandling/Observer.h"
+#include "EventHandling/Events/Event.h"
 
-class UILabel : public UIComponent, public Observer
+class UILabel : public UIComponent
 {
 	ComPtr<IDWriteTextLayout> textLayout;
 	const float width{ 0.0f };

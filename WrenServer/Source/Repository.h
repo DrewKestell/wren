@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Account.h"
+#include "Models/Account.h"
+#include "Models/Character.h"
 
 class Repository
 {
@@ -14,4 +15,5 @@ public:
     Account* GetAccount(const std::string& accountName);
     std::vector<std::string>* ListCharacters(const int accountId);
 	void DeleteCharacter(const std::string& characterName);
+	Character* GetCharacter(const std::string& characterName);
 };

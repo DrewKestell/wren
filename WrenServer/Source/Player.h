@@ -1,9 +1,5 @@
 #pragma once
 
-#include <string>
-#include <algorithm>
-#include "windows.h"
-
 class Player
 {
 	const int accountId;

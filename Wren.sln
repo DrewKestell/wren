@@ -4,8 +4,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WrenServer", "WrenServer\WrenServer.vcxproj", "{3F223549-4B3E-4DA1-9C62-CD3571158450}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9B91CEC2-3797-40CF-8ABA-0480F445E0D4} = {9B91CEC2-3797-40CF-8ABA-0480F445E0D4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WrenClient", "WrenClient\WrenClient.vcxproj", "{2CF8663F-9AE1-48D9-8724-5C4E0980A5F0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9B91CEC2-3797-40CF-8ABA-0480F445E0D4} = {9B91CEC2-3797-40CF-8ABA-0480F445E0D4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WrenCommon", "WrenCommon\WrenCommon.vcxproj", "{9B91CEC2-3797-40CF-8ABA-0480F445E0D4}"
 EndProject

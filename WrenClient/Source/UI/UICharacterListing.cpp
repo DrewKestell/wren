@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "UICharacterListing.h"
 #include "UIComponent.h"
-#include "../Layer.h"
-#include "../Utility.h"
-#include "../EventHandling/Observer.h"
-#include "../EventHandling/EventHandler.h"
-#include "../EventHandling/Events/MouseEvent.h"
-#include "../EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "Layer.h"
+#include "Utility.h"
+#include "EventHandling/Observer.h"
+#include "EventHandling/EventHandler.h"
+#include "EventHandling/Events/MouseEvent.h"
+#include "EventHandling/Events/ChangeActiveLayerEvent.h"
 
 using namespace DX;
 
@@ -42,7 +42,6 @@ UICharacterListing::UICharacterListing(
 	ThrowIfFailed(writeFactory->CreateTextLayout(outText.str().c_str(), (UINT32)outText.str().size(), textFormat, width, height, textLayout.ReleaseAndGetAddressOf()));
 
 	d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), geometry.ReleaseAndGetAddressOf());
-
 }
 
 void UICharacterListing::Draw()
@@ -74,7 +73,7 @@ const bool UICharacterListing::HandleEvent(const Event* const event)
 			if (isVisible)
 			{
 				const auto position = GetWorldPosition();
-				if (DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+				if (Utility::DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 					selected = true;
 			}
 			

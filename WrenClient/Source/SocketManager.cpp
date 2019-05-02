@@ -8,6 +8,7 @@
 #include "EventHandling/Events/CreateCharacterFailedEvent.h"
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
+#include "EventHandling/Events/EnterWorldSuccessEvent.h"
 
 constexpr auto CLIENT_PORT_NUMBER = 27015;
 constexpr auto SERVER_PORT_NUMBER = 27016;
@@ -190,8 +191,13 @@ bool SocketManager::TryRecieveMessage()
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_ENTER_WORLD_SUCCESSFUL, opcodeArrLen))
         {
+			const auto id = args[0];
+			const auto positionX = args[1];
+			const auto positionY = args[2];
+			const auto positionZ = args[3];
+
             std::cout << "Connected to game world!\n";
-			g_eventHandler.QueueEvent(new Event{ EventType::EnterWorldSuccess });
+			g_eventHandler.QueueEvent(new EnterWorldSuccessEvent(std::stoi(*id), XMFLOAT3{ std::stof(*positionX), std::stof(*positionY), std::stof(*positionZ) }));
 			return true;
         }
 		else if (MessagePartsEqual(opcodeArr, OPCODE_DELETE_CHARACTER_SUCCESSFUL, opcodeArrLen))

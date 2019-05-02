@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../GameObject.h"
+#include "GameObject.h"
 #include "TerrainType.h"
 
 class GameMapTile

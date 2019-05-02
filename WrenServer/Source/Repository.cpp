@@ -1,19 +1,20 @@
 #include "stdafx.h"
 #include "Repository.h"
 
-constexpr auto DB_NAME = "Wren.db";
+const auto DB_NAME = "Wren.db";
 
-constexpr auto FAILED_TO_OPEN = "Failed to open database.";
-constexpr auto FAILED_TO_PREPARE = "Failed to prepare SQLite statement.";
-constexpr auto FAILED_TO_EXECUTE = "Failed to execute statement.";
+const auto FAILED_TO_OPEN = "Failed to open database.";
+const auto FAILED_TO_PREPARE = "Failed to prepare SQLite statement.";
+const auto FAILED_TO_EXECUTE = "Failed to execute statement.";
 
-constexpr auto ACCOUNT_EXISTS_QUERY = "SELECT id FROM Accounts WHERE account_name = '%s' LIMIT 1;";
-constexpr auto CHARACTER_EXISTS_QUERY = "SELECT id FROM Characters WHERE character_name = '%s' LIMIT 1;";
-constexpr auto CREATE_ACCOUNT_QUERY = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
-constexpr auto CREATE_CHARACTER_QUERY = "INSERT INTO Characters (character_name, account_id) VALUES('%s', '%d');";
-constexpr auto GET_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
-constexpr auto LIST_CHARACTERS_QUERY = "SELECT * FROM Characters WHERE account_id = '%d';";
-constexpr auto DELETE_CHARACTER_QUERY = "DELETE FROM Characters WHERE character_name = '%s';";
+const auto ACCOUNT_EXISTS_QUERY = "SELECT id FROM Accounts WHERE account_name = '%s' LIMIT 1;";
+const auto CHARACTER_EXISTS_QUERY = "SELECT id FROM Characters WHERE character_name = '%s' LIMIT 1;";
+const auto CREATE_ACCOUNT_QUERY = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
+const auto CREATE_CHARACTER_QUERY = "INSERT INTO Characters (character_name, account_id) VALUES('%s', '%d');";
+const auto GET_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
+const auto LIST_CHARACTERS_QUERY = "SELECT * FROM Characters WHERE account_id = '%d';";
+const auto DELETE_CHARACTER_QUERY = "DELETE FROM Characters WHERE character_name = '%s';";
+const auto GET_CHARACTER_QUERY = "SELECT * FROM Characters WHERE character_name = '%s' LIMIT 1;";
 
 bool Repository::AccountExists(const std::string& accountName)
 {
@@ -196,6 +197,34 @@ void Repository::DeleteCharacter(const std::string& characterName)
 	{
 		sqlite3_finalize(statement);
 		return;
+	}
+	else
+	{
+		sqlite3_finalize(statement);
+		throw std::exception(FAILED_TO_EXECUTE);
+	}
+}
+
+Character* Repository::GetCharacter(const std::string& characterName)
+{
+	auto dbConnection = GetConnection();
+
+	char query[100];
+	sprintf_s(query, GET_CHARACTER_QUERY, characterName.c_str());
+
+	auto statement = PrepareStatement(dbConnection, query);
+	if (sqlite3_step(statement) == SQLITE_ROW)
+	{
+		const int id = sqlite3_column_int(statement, 0);
+		const unsigned char *characterName = sqlite3_column_text(statement, 1);
+		const int accountId = sqlite3_column_int(statement, 2);
+		const double positionX = sqlite3_column_double(statement, 3);
+		const double positionY = sqlite3_column_double(statement, 4);
+		const double positionZ = sqlite3_column_double(statement, 5);
+		auto character = new Character(id, std::string(reinterpret_cast<const char*>(characterName)), accountId, XMFLOAT3{ (float)positionX, (float)positionY, (float)positionZ });
+
+		sqlite3_finalize(statement);
+		return character;
 	}
 	else
 	{

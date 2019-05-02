@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "Event.h"
 
 class CreateAccountFailedEvent : public Event

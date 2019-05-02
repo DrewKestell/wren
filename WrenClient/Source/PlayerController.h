@@ -1,7 +1,6 @@
 #pragma once
 
 #include "EventHandling/Observer.h"
-#include "CardinalDirection.h"
 #include "GameTimer.h"
 #include "Camera.h"
 #include "PlayerUpdate.h"
@@ -24,4 +23,5 @@ public:
 	virtual const bool HandleEvent(const Event* const event);
 	void Update(const float deltaTime);
 	void SetClientDimensions(const int width, const int height) { clientWidth = (float)width; clientHeight = (float)height; }
+	~PlayerController();
 };

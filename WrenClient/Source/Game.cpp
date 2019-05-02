@@ -13,6 +13,7 @@
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
+#include "EventHandling/Events/EnterWorldSuccessEvent.h"
 
 SocketManager g_socketManager;
 
@@ -23,6 +24,8 @@ Game::Game() noexcept(false)
 	m_deviceResources = std::make_unique<DX::DeviceResources>();
 	m_deviceResources->RegisterDeviceNotify(this);
 	m_timer.Reset();
+
+	g_eventHandler.Subscribe(*this);
 }
 
 // General initialization that would likely be shared between any D3D application
@@ -130,7 +133,7 @@ void Game::Render(const float updateTimer)
 
 		m_gameMap->Draw(d3dContext, m_viewTransform, m_projectionTransform);
 
-		m_objectManager.Render(d3dContext, m_viewTransform, m_projectionTransform, updateTimer);
+		m_renderComponentManager.Render(d3dContext, m_viewTransform, m_projectionTransform, updateTimer);
 	}
 
 	// foreach RenderComponent -> Draw
@@ -231,16 +234,9 @@ void Game::CreateDeviceDependentResources()
 	path = "../../WrenClient/Models/tree.blend";
 	m_treeMesh = std::make_unique<Mesh>(path, d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size);
 
-	// initialize player
-	GameObject& player = m_objectManager.CreateGameObject(XMFLOAT3{ 0.0f, 0.0f, 0.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
-	m_player = &player;
-	auto sphereRenderComponent = m_objectManager.CreateRenderComponent(player.GetId(), m_sphereMesh, vertexShader.Get(), pixelShader.Get(), color01SRV.Get());
-	player.SetRenderComponentId(sphereRenderComponent.GetId());
-	m_playerController = std::make_unique<PlayerController>(player);
-
 	// initialize tree (TODO: generalize)
 	GameObject& tree = m_objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
-	auto treeRenderComponent = m_objectManager.CreateRenderComponent(tree.GetId(), m_treeMesh, vertexShader.Get(), pixelShader.Get(), color02SRV.Get());
+	auto treeRenderComponent = m_renderComponentManager.CreateRenderComponent(tree.GetId(), m_treeMesh, vertexShader.Get(), pixelShader.Get(), color02SRV.Get());
 	tree.SetRenderComponentId(treeRenderComponent.GetId());
 }
 
@@ -395,8 +391,8 @@ void Game::InitializeButtons()
 		loginScreen_successMessageLabel->SetText("");
 		loginScreen_errorMessageLabel->SetText("");
 
-		const auto accountName = ws2s(std::wstring(loginScreen_accountNameInput->GetInputValue()));
-		const auto password = ws2s(std::wstring(loginScreen_passwordInput->GetInputValue()));
+		const auto accountName = Utility::ws2s(std::wstring(loginScreen_accountNameInput->GetInputValue()));
+		const auto password = Utility::ws2s(std::wstring(loginScreen_passwordInput->GetInputValue()));
 
 		if (accountName.length() == 0)
 		{
@@ -428,8 +424,8 @@ void Game::InitializeButtons()
 	{
 		createAccount_errorMessageLabel->SetText("");
 
-		const auto accountName = ws2s(std::wstring(createAccount_accountNameInput->GetInputValue()));
-		const auto password = ws2s(std::wstring(createAccount_passwordInput->GetInputValue()));
+		const auto accountName = Utility::ws2s(std::wstring(createAccount_accountNameInput->GetInputValue()));
+		const auto password = Utility::ws2s(std::wstring(createAccount_passwordInput->GetInputValue()));
 
 		if (accountName.length() == 0)
 		{
@@ -510,7 +506,7 @@ void Game::InitializeButtons()
 	{
 		createCharacter_errorMessageLabel->SetText("");
 
-		const auto characterName = ws2s(std::wstring(createCharacter_characterNameInput->GetInputValue()));
+		const auto characterName = Utility::ws2s(std::wstring(createCharacter_characterNameInput->GetInputValue()));
 
 		if (characterName.length() == 0)
 		{
@@ -798,6 +794,14 @@ const bool Game::HandleEvent(const Event* const event)
 		}
 		case EventType::EnterWorldSuccess:
 		{
+			const auto derivedEvent = (EnterWorldSuccessEvent*)event;
+
+			GameObject& player = m_objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)derivedEvent->characterId);
+			m_player = &player;
+			auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(player.GetId(), m_sphereMesh, vertexShader.Get(), pixelShader.Get(), color01SRV.Get());
+			player.SetRenderComponentId(sphereRenderComponent.GetId());
+			m_playerController = std::make_unique<PlayerController>(player);
+
 			SetActiveLayer(InGame);
 
 			break;
@@ -836,4 +840,9 @@ void Game::SyncWithServer(const float deltaTime)
 
 		m_playerUpdateIdCounter++;
 	}
+}
+
+Game::~Game()
+{
+	g_eventHandler.Unsubscribe(*this);
 }

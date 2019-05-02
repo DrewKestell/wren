@@ -1,12 +1,17 @@
 #include "stdafx.h"
 #include "PlayerController.h"
+#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/MouseEvent.h"
+
+extern EventHandler g_eventHandler;
 
 PlayerController::PlayerController(GameObject& player)
 	: player{ player }
 {
 	clientWidth = 800;
 	clientHeight = 600;
+
+	g_eventHandler.Subscribe(*this);
 }
 
 const bool PlayerController::HandleEvent(const Event* const event)
@@ -136,4 +141,9 @@ void PlayerController::UpdateCurrentMouseDirection(const float mousePosX, const 
 	{
 		currentMouseDirection = XMFLOAT3{ -1.0f, 0.0f, 0.0f };
 	}
+}
+
+PlayerController::~PlayerController()
+{
+	g_eventHandler.Unsubscribe(*this);
 }

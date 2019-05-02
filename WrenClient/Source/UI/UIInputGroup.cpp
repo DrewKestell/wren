@@ -1,9 +1,18 @@
 #include "stdafx.h"
 #include "UIInputGroup.h"
 #include "UIInput.h"
-#include "../EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "../EventHandling/Events/SystemKeyDownEvent.h"
-#include "../Layer.h"
+#include "EventHandling/EventHandler.h"
+#include "EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "EventHandling/Events/SystemKeyDownEvent.h"
+#include "Layer.h"
+
+extern EventHandler g_eventHandler;
+
+UIInputGroup::UIInputGroup(const Layer uiLayer)
+	: uiLayer{ uiLayer }
+{
+	g_eventHandler.Subscribe(*this);
+}
 
 const bool UIInputGroup::HandleEvent(const Event* const event)
 {
@@ -51,4 +60,9 @@ const bool UIInputGroup::HandleEvent(const Event* const event)
 	}
 
 	return false;
+}
+
+UIInputGroup::~UIInputGroup()
+{
+	g_eventHandler.Unsubscribe(*this);
 }

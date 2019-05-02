@@ -13,6 +13,27 @@
     <ClCompile Include="Source\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ObjectManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Utility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EventHandling\EventHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\PlayerUpdate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -24,5 +45,30 @@
     <ClInclude Include="Source\OpCodes.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\ObjectManager.h" />
+    <ClInclude Include="Source\GameObject.h" />
+    <ClInclude Include="Source\Utility.h" />
+    <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\CreateAccountFailedEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\CreateCharacterFailedEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\CreateCharacterSuccessEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\DeleteCharacterSuccessEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\DeleteGameObjectEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\Event.h" />
+    <ClInclude Include="Source\EventHandling\Events\EventType.h" />
+    <ClInclude Include="Source\EventHandling\Events\KeyDownEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\KeyPressEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\LoginFailedEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
+    <ClInclude Include="Source\EventHandling\EventHandler.h" />
+    <ClInclude Include="Source\EventHandling\Observer.h" />
+    <ClInclude Include="Source\Layer.h" />
+    <ClInclude Include="Source\PlayerUpdate.h" />
+    <ClInclude Include="Source\EventHandling\Events\EnterWorldSuccessEvent.h" />
   </ItemGroup>
 </Project>

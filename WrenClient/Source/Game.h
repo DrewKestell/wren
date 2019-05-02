@@ -6,6 +6,7 @@
 #include "ShaderBuffer.h"
 #include "Mesh.h"
 #include "ObjectManager.h"
+#include "RenderComponentManager.h"
 #include "PlayerController.h"
 #include "SocketManager.h"
 #include "GameMap/GameMap.h"
@@ -42,6 +43,8 @@ public:
 	// Properties
 	void GetDefaultSize(int& width, int& height) const;
 
+	~Game();
+
 private:
 	int m_playerUpdateIdCounter{ 0 };
 	float updateTimer{ 0.0f };
@@ -57,6 +60,7 @@ private:
 	Layer m_activeLayer{ Login };
 	std::unique_ptr<DX::DeviceResources> m_deviceResources;
 	ObjectManager m_objectManager;
+	RenderComponentManager m_renderComponentManager{ m_objectManager };
 	GameTimer m_timer;
 	Camera m_camera;
 	std::unique_ptr<GameMap> m_gameMap;

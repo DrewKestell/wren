@@ -1,12 +1,12 @@
 #pragma once
 
 #include "UIComponent.h"
-#include "../EventHandling/Observer.h"
-#include "../EventHandling/Events/Event.h"
+#include "EventHandling/Observer.h"
+#include "EventHandling/Events/Event.h"
 
 const FLOAT HEADER_HEIGHT = 20.0f;
 
-class UIPanel : public UIComponent, public Observer
+class UIPanel : public UIComponent
 {
 	ComPtr<ID2D1RoundedRectangleGeometry> headerGeometry;
 	ComPtr<ID2D1RoundedRectangleGeometry> bodyGeometry;

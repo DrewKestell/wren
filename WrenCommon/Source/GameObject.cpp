@@ -11,7 +11,7 @@ void GameObject::Update(const float deltaTime)
 	XMStoreFloat3(&localPosition, movementVec + positionVec);
 }
 
-void GameObject::Initialize(const unsigned int id, const XMFLOAT3 localPosition, const XMFLOAT3 scale)
+void GameObject::Initialize(const long id, const XMFLOAT3 localPosition, const XMFLOAT3 scale)
 {
 	this->id = id;
 	this->localPosition = localPosition;
@@ -24,15 +24,15 @@ XMFLOAT3 GameObject::GetWorldPosition() const
     auto parentPtr = parent;
     while (parentPtr != nullptr)
     {
-        worldPosition = XMFLOAT3Sum(worldPosition, parentPtr->localPosition);
+        worldPosition = Utility::XMFLOAT3Sum(worldPosition, parentPtr->localPosition);
         parentPtr = parentPtr->parent;
     }
     
     return worldPosition;
 }
 
-const unsigned int GameObject::GetId() const { return id; }
-void GameObject::SetId(const unsigned int id) { this->id = id; }
+const long GameObject::GetId() const { return id; }
+void GameObject::SetId(const long id) { this->id = id; }
 XMFLOAT3 GameObject::GetScale() const { return scale; }
 void GameObject::SetScale(const XMFLOAT3 scale) { this->scale = scale; }
 XMFLOAT3 GameObject::GetLocalPosition() const { return localPosition; }

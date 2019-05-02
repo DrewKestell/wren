@@ -1,13 +1,13 @@
 #include "stdafx.h"
 #include "UIInput.h"
 #include "UIComponent.h"
-#include "../EventHandling/Observer.h"
-#include "../EventHandling/Events/MouseEvent.h"
-#include "../EventHandling/Events/KeyDownEvent.h"
-#include "../EventHandling/Events/SystemKeyDownEvent.h"
-#include "../EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "../Utility.h"
-#include "../Layer.h"
+#include "EventHandling/Observer.h"
+#include "EventHandling/Events/MouseEvent.h"
+#include "EventHandling/Events/KeyDownEvent.h"
+#include "EventHandling/Events/SystemKeyDownEvent.h"
+#include "EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "Utility.h"
+#include "Layer.h"
 
 using namespace DX;
 
@@ -100,7 +100,7 @@ const bool UIInput::HandleEvent(const Event* const event)
 			if (isVisible)
 			{
 				const auto position = GetWorldPosition();
-				if (DetectClick(position.x + labelWidth, position.y, position.x + inputWidth + labelWidth, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+				if (Utility::DetectClick(position.x + labelWidth, position.y, position.x + inputWidth + labelWidth, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 				{
 					active = true;
 				}

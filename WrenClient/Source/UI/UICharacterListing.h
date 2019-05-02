@@ -1,10 +1,10 @@
 #pragma once
 
 #include "UIComponent.h"
-#include "../EventHandling/Observer.h"
-#include "../EventHandling/Events/Event.h"
+#include "EventHandling/Observer.h"
+#include "EventHandling/Events/Event.h"
 
-class UICharacterListing : public UIComponent, public Observer
+class UICharacterListing : public UIComponent
 {
 	ComPtr<IDWriteTextLayout> textLayout;
 	ComPtr<ID2D1RoundedRectangleGeometry> geometry;

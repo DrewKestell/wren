@@ -11,11 +11,15 @@
 // Windows Header Files
 #include <windows.h>
 
-
 // reference additional headers your program requires here
 
 #include <string>
 #include <vector>
+#include <map>
+#include <list>
+#include <queue>
 #include <DirectXMath.h>
+#include <codecvt>
+#include <iostream>
 
 using namespace DirectX;

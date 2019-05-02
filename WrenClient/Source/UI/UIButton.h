@@ -1,12 +1,12 @@
 #pragma once
 
 #include "UIComponent.h"
-#include "../EventHandling/Observer.h"
-#include "../EventHandling/Events/Event.h"
+#include "EventHandling/Observer.h"
+#include "EventHandling/Events/Event.h"
 
-class UIButton : public UIComponent, public Observer
+class UIButton : public UIComponent
 {
-	ComPtr<IDWriteTextLayout> buttonTextLayout ;
+	ComPtr<IDWriteTextLayout> buttonTextLayout;
 	ComPtr<ID2D1RoundedRectangleGeometry> buttonGeometry;
 	bool pressed{ false };
 	bool enabled{ true };
