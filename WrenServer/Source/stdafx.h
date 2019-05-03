@@ -22,6 +22,11 @@
 #include <iomanip>
 #include <algorithm>
 #include <string>
+#include <list>
+#include <queue>
+#include <map>
+#include <DirectXMath.h>
 
+using namespace DirectX;
 
 // reference additional headers your program requires here

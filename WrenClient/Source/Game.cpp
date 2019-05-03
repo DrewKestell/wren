@@ -48,7 +48,7 @@ void Game::Initialize(HWND window, int width, int height)
 	m_timer.SetTargetElapsedSeconds(1.0 / 60);
 	*/
 
-	SetActiveLayer(InGame);
+	SetActiveLayer(Login);
 }
 
 #pragma region Frame Update
@@ -61,12 +61,17 @@ void Game::Tick()
 	updateTimer += m_timer.DeltaTime();
 	if (updateTimer >= 0.001666666666f)
 	{
-		m_playerController->Update(updateTimer);
-		m_camera.Update(m_player->GetWorldPosition(), updateTimer);
-		m_objectManager.Update(updateTimer);
+		if (updateTimer >= 0.002)
+			std::cout << "wtf\n";
+		if (m_activeLayer == InGame)
+		{
+			m_playerController->Update(updateTimer);
+			m_camera.Update(m_player->GetWorldPosition(), updateTimer);
+			m_objectManager.Update(updateTimer);
+			SyncWithServer(updateTimer);
+		}
+		
 		g_eventHandler.PublishEvents();
-
-		SyncWithServer(updateTimer);
 
 		updateTimer = 0.0f;
 	}
@@ -828,8 +833,9 @@ void Game::SyncWithServer(const float deltaTime)
 
 		g_socketManager.SendPacket(
 			OPCODE_PLAYER_UPDATE,
-			8,
+			9,
 			std::to_string(m_playerUpdateIdCounter),
+			std::to_string(m_player->GetId()),
 			std::to_string(position.x),
 			std::to_string(position.y),
 			std::to_string(position.z),

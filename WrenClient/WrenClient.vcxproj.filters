@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\WrenClient.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\UI\UIButton.cpp" />
@@ -24,7 +23,6 @@
     <ClCompile Include="Source\RenderComponentManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\UI\UIButton.h" />

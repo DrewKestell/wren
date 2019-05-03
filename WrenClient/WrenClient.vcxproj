@@ -31,7 +31,6 @@
     <ClCompile Include="Source\Game.cpp" />
     <ClCompile Include="Source\GameMap\GameMap.cpp" />
     <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
-    <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\PlayerController.cpp" />
     <ClCompile Include="Source\RenderComponent.cpp" />
@@ -148,7 +147,6 @@
     <ClInclude Include="Source\GameMap\GameMap.h" />
     <ClInclude Include="Source\GameMap\GameMapTile.h" />
     <ClInclude Include="Source\GameMap\TerrainType.h" />
-    <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Source\PlayerController.h" />

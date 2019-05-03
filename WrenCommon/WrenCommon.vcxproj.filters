@@ -34,6 +34,9 @@
     <ClCompile Include="Source\PlayerUpdate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\GameTimer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -70,5 +73,6 @@
     <ClInclude Include="Source\Layer.h" />
     <ClInclude Include="Source\PlayerUpdate.h" />
     <ClInclude Include="Source\EventHandling\Events\EnterWorldSuccessEvent.h" />
+    <ClInclude Include="Source\GameTimer.h" />
   </ItemGroup>
 </Project>

@@ -17,8 +17,8 @@ GameObject& ObjectManager::CreateGameObject(const XMFLOAT3 localPosition, const 
 	if (gameObjectIndex == MAX_GAMEOBJECTS_SIZE)
 		throw std::exception("Max GameObjects exceeded!");
 
-	gameObjects[gameObjectIndex].Initialize(gameObjectIndex, localPosition, scale);
 	auto gameObjectId = id == 0 ? gameObjectIndex : id;
+	gameObjects[gameObjectIndex].Initialize(gameObjectId, localPosition, scale);
 	idIndexMap[gameObjectId] = gameObjectIndex;
 	return gameObjects[gameObjectIndex++];
 }

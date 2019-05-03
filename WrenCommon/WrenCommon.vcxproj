@@ -24,6 +24,7 @@
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
     <ClCompile Include="Source\GameObject.cpp" />
+    <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\PlayerUpdate.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
@@ -53,6 +54,7 @@
     <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
     <ClInclude Include="Source\GameObject.h" />
+    <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\Layer.h" />
     <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\OpCodes.h" />

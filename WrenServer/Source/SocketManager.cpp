@@ -190,7 +190,7 @@ void SocketManager::HandleTimeout()
     });
 }
 
-void SocketManager::TryRecieveMessage()
+bool SocketManager::TryRecieveMessage()
 {
     char buffer[1024];   
     char str[INET_ADDRSTRLEN];
@@ -211,13 +211,13 @@ void SocketManager::TryRecieveMessage()
 		if (!MessagePartsEqual(checksumArr, CHECKSUM.c_str(), checksumArrLen))
 		{
 			std::cout << "Wrong checksum. Ignoring packet.\n";
-			return;
+			return true;
 		}
 
         const auto opcodeArrLen = 2;
         char opcodeArr[opcodeArrLen];
         memcpy(&opcodeArr[0], &buffer[8], opcodeArrLen * sizeof(char));
-        //std::cout << "Opcode: " << opcodeArr[0] << opcodeArr[1] << "\n";
+		//std::cout << "Opcode: " << opcodeArr[0] << opcodeArr[1] << "\n";
 
         std::vector<std::string> args;
         auto bufferLength = strlen(buffer);
@@ -235,9 +235,9 @@ void SocketManager::TryRecieveMessage()
                     arg += buffer[i];
             }
 
-            //std::cout << "Args:\n";
-            //for_each(args.begin(), args.end(), [](std::string str) { std::cout << "  " << str << "\n";  });
-            //std::cout << "\n";
+            /*std::cout << "Args:\n";
+            for_each(args.begin(), args.end(), [](std::string str) { std::cout << "  " << str << "\n";  });
+            std::cout << "\n";*/
         }
 
         if (MessagePartsEqual(opcodeArr, OPCODE_CONNECT, opcodeArrLen))
@@ -247,12 +247,16 @@ void SocketManager::TryRecieveMessage()
             const auto ipAndPort = std::string(str) + ":" + std::to_string(from.sin_port);
 
             Login(accountName, password, ipAndPort);
+
+			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_DISCONNECT, opcodeArrLen))
         {
 			const auto token = args[0];
 
 			Logout(token);
+
+			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT, opcodeArrLen))
         {
@@ -260,6 +264,8 @@ void SocketManager::TryRecieveMessage()
             const auto password = args[1];
 
 			CreateAccount(accountName, password);
+
+			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER, opcodeArrLen))
         {
@@ -267,12 +273,16 @@ void SocketManager::TryRecieveMessage()
 			const auto characterName = args[1];
 
 			CreateCharacter(token, characterName);
+
+			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_HEARTBEAT, opcodeArrLen))
         {
             const auto token = args[0];
 
             UpdateLastHeartbeat(token);
+
+			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_ENTER_WORLD, opcodeArrLen))
         {
@@ -280,6 +290,8 @@ void SocketManager::TryRecieveMessage()
             const auto characterName = args[1];
 
             EnterWorld(token, characterName);
+
+			return true;
         }
 		else if (MessagePartsEqual(opcodeArr, OPCODE_DELETE_CHARACTER, opcodeArrLen))
 		{
@@ -287,22 +299,29 @@ void SocketManager::TryRecieveMessage()
 			const auto characterName = args[1];
 
 			DeleteCharacter(token, characterName);
+
+			return true;
 		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_PLAYER_UPDATE, opcodeArrLen))
 		{
 			const auto token = args[0];
 			const auto idCounter = args[1];
-			const auto posX = args[2];
-			const auto posY = args[3];
-			const auto posZ = args[4];
-			const auto movX = args[5];
-			const auto movY = args[6];
-			const auto movZ = args[7];
-			const auto deltaTime = args[8];
+			const auto characterId = args[2];
+			const auto posX = args[3];
+			const auto posY = args[4];
+			const auto posZ = args[5];
+			const auto movX = args[6];
+			const auto movY = args[7];
+			const auto movZ = args[8];
+			const auto deltaTime = args[9];
 
-			PlayerUpdate(token, idCounter, posX, posY, posZ, movX, movY, movZ, deltaTime);
+			PlayerUpdate(token, idCounter, characterId, posX, posY, posZ, movX, movY, movZ, deltaTime);
+
+			return true;
 		}
     }
+
+	return false;
 }
 
 std::string SocketManager::ListCharacters(const int accountId)
@@ -334,6 +353,7 @@ void SocketManager::DeleteCharacter(const std::string& token, const std::string&
 void SocketManager::PlayerUpdate(
 	const std::string& token,
 	const std::string& idCounter,
+	const std::string& characterId,
 	const std::string& posX,
 	const std::string& posY,
 	const std::string& posZ,
@@ -348,6 +368,20 @@ void SocketManager::PlayerUpdate(
 
 	if (id != std::stoi(idCounter))
 		std::cout << "UpdateIds don't match! Id from client: " << idCounter << ", Id on server: " << id << std::endl;
+
+	GameObject& player = g_objectManager.GetGameObjectById(std::stol(characterId));
+
+	player.SetMovementVector(XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ) });
+
+	std::cout << "Client deltaTime: " << deltaTime << std::endl;
+	
+	/*std::cout << "PlayerPos from Client: \n";
+	Utility::PrintXMFLOAT3(XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ) });
+
+	std::cout << "PlayerPos on Server: \n";
+	Utility::PrintXMFLOAT3(player.GetWorldPosition());*/
+
+	std::cout << std::endl;
 
 	(*it)->IncrementUpdateCounter();
 }

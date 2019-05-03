@@ -16,5 +16,6 @@
     <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\WrenServer.cpp" />
     <ClCompile Include="Source\stdafx.cpp" />
+    <ClCompile Include="Source\ThirdParty\sqlite3.c" />
   </ItemGroup>
 </Project>
