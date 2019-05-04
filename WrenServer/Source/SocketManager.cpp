@@ -372,14 +372,12 @@ void SocketManager::PlayerUpdate(
 	GameObject& player = g_objectManager.GetGameObjectById(std::stol(characterId));
 
 	player.SetMovementVector(XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ) });
-
-	std::cout << "Client deltaTime: " << deltaTime << std::endl;
 	
-	/*std::cout << "PlayerPos from Client: \n";
+	std::cout << "PlayerPos from Client: \n";
 	Utility::PrintXMFLOAT3(XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ) });
 
 	std::cout << "PlayerPos on Server: \n";
-	Utility::PrintXMFLOAT3(player.GetWorldPosition());*/
+	Utility::PrintXMFLOAT3(player.GetWorldPosition());
 
 	std::cout << std::endl;
 

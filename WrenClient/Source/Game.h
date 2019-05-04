@@ -19,6 +19,7 @@
 #include "EventHandling/EventHandler.h"
 
 static const int BUFFER_SIZE = 120;
+static const float UPDATE_FREQUENCY = 0.01666666666f;
 
 class Game : public DX::IDeviceNotify, public Observer
 {

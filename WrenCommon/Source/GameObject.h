@@ -12,7 +12,7 @@ class GameObject
 	XMFLOAT3 localPosition{ 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 scale{ 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 movementVector{ 0.0f, 0.0f, 0.0f };
-	float speed{ 80.0f };
+	float speed{ 60.0f };
 
 	// components. i think this should be a map or vector? map<ComponentType, unsigned int>
 	unsigned int renderComponentId;

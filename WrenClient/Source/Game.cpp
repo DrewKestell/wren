@@ -23,7 +23,6 @@ Game::Game() noexcept(false)
 {
 	m_deviceResources = std::make_unique<DX::DeviceResources>();
 	m_deviceResources->RegisterDeviceNotify(this);
-	m_timer.Reset();
 
 	g_eventHandler.Subscribe(*this);
 }
@@ -48,6 +47,7 @@ void Game::Initialize(HWND window, int width, int height)
 	m_timer.SetTargetElapsedSeconds(1.0 / 60);
 	*/
 
+	m_timer.Reset();
 	SetActiveLayer(Login);
 }
 
@@ -59,21 +59,19 @@ void Game::Tick()
 	m_timer.Tick();
 
 	updateTimer += m_timer.DeltaTime();
-	if (updateTimer >= 0.001666666666f)
+	if (updateTimer >= UPDATE_FREQUENCY)
 	{
-		if (updateTimer >= 0.002)
-			std::cout << "wtf\n";
 		if (m_activeLayer == InGame)
 		{
-			m_playerController->Update(updateTimer);
-			m_camera.Update(m_player->GetWorldPosition(), updateTimer);
-			m_objectManager.Update(updateTimer);
-			SyncWithServer(updateTimer);
+			m_playerController->Update(UPDATE_FREQUENCY);
+			m_camera.Update(m_player->GetWorldPosition(), UPDATE_FREQUENCY);
+			SyncWithServer(UPDATE_FREQUENCY);
+			m_objectManager.Update(UPDATE_FREQUENCY);
 		}
 		
 		g_eventHandler.PublishEvents();
 
-		updateTimer = 0.0f;
+		updateTimer -= UPDATE_FREQUENCY;
 	}
 	
 	Render(updateTimer);

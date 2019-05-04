@@ -20,20 +20,17 @@ int main()
 
     while (true)
     {
-		/*while (socketManager.TryRecieveMessage()) {}
-        socketManager.HandleTimeout();*/
+		while (socketManager.TryRecieveMessage()) {}
+        socketManager.HandleTimeout();
 
 		m_timer.Tick();
 
 		updateTimer += m_timer.DeltaTime();
-		if (updateTimer >= 0.001666666666f)
+		if (updateTimer >= 0.01666666666f)
 		{
-			if (updateTimer >= 0.002)
-				std::cout << "wtf\n";
-			//std::cout << "Server deltaTime: " << updateTimer << std::endl;
-			//g_objectManager.Update(updateTimer);
+			g_objectManager.Update(0.01666666666f);
 
-			updateTimer = 0.0f;
+			updateTimer -= 0.01666666666f;
 		}
     }
     
