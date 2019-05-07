@@ -10,7 +10,7 @@ const auto FAILED_TO_EXECUTE = "Failed to execute statement.";
 const auto ACCOUNT_EXISTS_QUERY = "SELECT id FROM Accounts WHERE account_name = '%s' LIMIT 1;";
 const auto CHARACTER_EXISTS_QUERY = "SELECT id FROM Characters WHERE character_name = '%s' LIMIT 1;";
 const auto CREATE_ACCOUNT_QUERY = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
-const auto CREATE_CHARACTER_QUERY = "INSERT INTO Characters (character_name, account_id) VALUES('%s', '%d');";
+const auto CREATE_CHARACTER_QUERY = "INSERT INTO Characters (character_name, account_id, position_x, position_y, position_z) VALUES('%s', '%d', 0.0, 0.0, 0.0);";
 const auto GET_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
 const auto LIST_CHARACTERS_QUERY = "SELECT * FROM Characters WHERE account_id = '%d';";
 const auto DELETE_CHARACTER_QUERY = "DELETE FROM Characters WHERE character_name = '%s';";
@@ -39,6 +39,7 @@ bool Repository::AccountExists(const std::string& accountName)
     else
     {
         sqlite3_finalize(statement);
+		std::cout << sqlite3_errmsg(dbConnection) << std::endl;
         throw std::exception(FAILED_TO_EXECUTE);
     }
 }
@@ -66,6 +67,7 @@ bool Repository::CharacterExists(const std::string& characterName)
 	else
 	{
 		sqlite3_finalize(statement);
+		std::cout << sqlite3_errmsg(dbConnection) << std::endl;
 		throw std::exception(FAILED_TO_EXECUTE);
 	}
 }
@@ -82,6 +84,7 @@ void Repository::CreateAccount(const std::string& accountName, const std::string
     if (sqlite3_step(statement) != SQLITE_DONE)
     {
         sqlite3_finalize(statement);
+		std::cout << sqlite3_errmsg(dbConnection) << std::endl;
         throw std::exception(FAILED_TO_EXECUTE);
     }
 }
@@ -98,6 +101,7 @@ void Repository::CreateCharacter(const std::string& characterName, const int acc
 	if (sqlite3_step(statement) != SQLITE_DONE)
 	{
 		sqlite3_finalize(statement);
+		std::cout << sqlite3_errmsg(dbConnection) << std::endl;
 		throw std::exception(FAILED_TO_EXECUTE);
 	}
 }
@@ -128,6 +132,7 @@ Account* Repository::GetAccount(const std::string& accountName)
     else
     {
         sqlite3_finalize(statement);
+		std::cout << sqlite3_errmsg(dbConnection) << std::endl;
         throw std::exception(FAILED_TO_EXECUTE);
     }
 }
@@ -181,6 +186,7 @@ std::vector<std::string>* Repository::ListCharacters(const int accountId)
     else
     {
         sqlite3_finalize(statement);
+		std::cout << sqlite3_errmsg(dbConnection) << std::endl;
         throw std::exception(FAILED_TO_EXECUTE);
     }
 }
@@ -201,6 +207,7 @@ void Repository::DeleteCharacter(const std::string& characterName)
 	else
 	{
 		sqlite3_finalize(statement);
+		std::cout << sqlite3_errmsg(dbConnection) << std::endl;
 		throw std::exception(FAILED_TO_EXECUTE);
 	}
 }
@@ -229,6 +236,7 @@ Character* Repository::GetCharacter(const std::string& characterName)
 	else
 	{
 		sqlite3_finalize(statement);
+		std::cout << sqlite3_errmsg(dbConnection) << std::endl;
 		throw std::exception(FAILED_TO_EXECUTE);
 	}
 }

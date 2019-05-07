@@ -16,6 +16,7 @@ int main()
     SocketManager socketManager{ repository };
 
 	auto updateTimer{ 0.0f };
+	auto clientUpdateTimer{ 0.0f };
 	m_timer.Reset();
 
     while (true)
@@ -24,13 +25,22 @@ int main()
         socketManager.HandleTimeout();
 
 		m_timer.Tick();
+		auto deltaTime = m_timer.DeltaTime();
 
-		updateTimer += m_timer.DeltaTime();
+		updateTimer += deltaTime;
 		if (updateTimer >= 0.01666666666f)
 		{
 			g_objectManager.Update(0.01666666666f);
 
 			updateTimer -= 0.01666666666f;
+		}
+		
+		clientUpdateTimer += deltaTime;
+		if (clientUpdateTimer >= 0.1f)
+		{
+			socketManager.UpdateClients();
+
+			clientUpdateTimer -= 0.1f;
 		}
     }
     

@@ -19,3 +19,4 @@ constexpr char OPCODE_DELETE_CHARACTER[2] = { '1', '3' };
 constexpr char OPCODE_DELETE_CHARACTER_SUCCESSFUL[2] = { '1', '4' };
 constexpr char OPCODE_PLAYER_UPDATE[2] = { '1', '5' };
 constexpr char OPCODE_PLAYER_CORRECTION[2] = { '1', '6' };
+constexpr char OPCODE_GAMEOBJECT_UPDATE[2] = { '1', '7' };

@@ -14,6 +14,7 @@
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
+#include "EventHandling/Events/GameObjectUpdateEvent.h"
 
 SocketManager g_socketManager;
 
@@ -806,6 +807,30 @@ const bool Game::HandleEvent(const Event* const event)
 			m_playerController = std::make_unique<PlayerController>(player);
 
 			SetActiveLayer(InGame);
+
+			break;
+		}
+		case EventType::GameObjectUpdate:
+		{
+			const auto derivedEvent = (GameObjectUpdateEvent*)event;
+
+			const auto gameObjectId = derivedEvent->characterId;
+			const auto pos = XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ };
+			const auto mov = XMFLOAT3{ derivedEvent->movX, derivedEvent->movY, derivedEvent->movZ };
+
+			if (!m_objectManager.GameObjectExists(gameObjectId))
+			{
+				GameObject& obj = m_objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, gameObjectId);
+				obj.SetMovementVector(mov);
+				auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(gameObjectId, m_sphereMesh, vertexShader.Get(), pixelShader.Get(), color01SRV.Get());
+				obj.SetRenderComponentId(sphereRenderComponent.GetId());
+			}
+			else
+			{
+				GameObject& gameObject = m_objectManager.GetGameObjectById(derivedEvent->characterId);
+				gameObject.SetLocalPosition(pos);
+				gameObject.SetMovementVector(mov);
+			}
 
 			break;
 		}

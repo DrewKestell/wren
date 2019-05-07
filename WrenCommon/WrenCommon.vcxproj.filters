@@ -74,5 +74,6 @@
     <ClInclude Include="Source\PlayerUpdate.h" />
     <ClInclude Include="Source\EventHandling\Events\EnterWorldSuccessEvent.h" />
     <ClInclude Include="Source\GameTimer.h" />
+    <ClInclude Include="Source\EventHandling\Events\GameObjectUpdateEvent.h" />
   </ItemGroup>
 </Project>

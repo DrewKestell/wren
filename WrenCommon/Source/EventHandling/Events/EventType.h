@@ -24,5 +24,6 @@ enum class EventType
 	OpcodeNotImplemented,
 	DeleteCharacterSuccess,
 	PlayerCorrection,
-	DeleteGameObjectEvent
+	DeleteGameObjectEvent,
+	GameObjectUpdate
 };

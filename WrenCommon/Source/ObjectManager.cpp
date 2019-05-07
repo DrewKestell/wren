@@ -12,7 +12,7 @@ void ObjectManager::Update(const float deltaTime)
 // For now, make id optional, and default to the gameObjectIndex it one isn't passed in
 // On the client, all object creation should be triggered by an event from the server,
 // so we should have an id in that case.
-GameObject& ObjectManager::CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, long id)
+GameObject& ObjectManager::CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, const long id)
 {
 	if (gameObjectIndex == MAX_GAMEOBJECTS_SIZE)
 		throw std::exception("Max GameObjects exceeded!");
@@ -42,4 +42,10 @@ GameObject& ObjectManager::GetGameObjectById(long gameObjectId)
 {
 	const auto index = idIndexMap[gameObjectId];
 	return gameObjects[index];
+}
+
+// TODO: is this safe? this assumes the first object will always be in use before calling this function
+const bool ObjectManager::GameObjectExists(long gameObjectId)
+{
+	return idIndexMap[gameObjectId] > 0;
 }

@@ -15,4 +15,5 @@ public:
 	GameObject& CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, long id = 0);
 	void DeleteGameObject(EventHandler& eventHandler, const long gameObjectId);
 	GameObject& GetGameObjectById(long gameObjectId);
+	const bool GameObjectExists(long gameObjectId);
 };

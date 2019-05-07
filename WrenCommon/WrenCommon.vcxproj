@@ -43,6 +43,7 @@
     <ClInclude Include="Source\EventHandling\Events\EnterWorldSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\Event.h" />
     <ClInclude Include="Source\EventHandling\Events\EventType.h" />
+    <ClInclude Include="Source\EventHandling\Events\GameObjectUpdateEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\KeyDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\KeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\LoginFailedEvent.h" />

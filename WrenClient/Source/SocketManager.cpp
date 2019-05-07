@@ -9,8 +9,8 @@
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
+#include "EventHandling/Events/GameObjectUpdateEvent.h"
 
-constexpr auto CLIENT_PORT_NUMBER = 27015;
 constexpr auto SERVER_PORT_NUMBER = 27016;
 
 extern EventHandler g_eventHandler;
@@ -22,7 +22,6 @@ SocketManager::SocketManager()
         throw new std::exception("Failed to initialize sockets.");
 
     local.sin_family = AF_INET;
-    local.sin_port = htons(CLIENT_PORT_NUMBER);
     inet_pton(AF_INET, "127.0.0.1", &local.sin_addr);
 
     to.sin_family = AF_INET;
@@ -219,6 +218,19 @@ bool SocketManager::TryRecieveMessage()
 			const auto direction = args[5];
 
 			// publish event
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_GAMEOBJECT_UPDATE, opcodeArrLen))
+		{
+			const auto characterId = args[0];
+			const auto posX = args[1];
+			const auto posY = args[2];
+			const auto posZ = args[3];
+			const auto movX = args[4];
+			const auto movY = args[5];
+			const auto movZ = args[6];
+
+			g_eventHandler.QueueEvent(new GameObjectUpdateEvent{ std::stol(*characterId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ) });
+			return true;
 		}
 		else
 		{

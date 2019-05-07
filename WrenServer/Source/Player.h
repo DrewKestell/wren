@@ -8,17 +8,21 @@ class Player
 	DWORD lastHeartbeat;
 	std::string characterName;
 	int updateCounter{ 0 };
+	sockaddr_in from;
+	int characterId{ 0 };
     
 public:
     Player(
 		const int accountId,
 		const std::string& token,
 		const std::string& ipAndPort,
-		const DWORD lastHeartbeat)
+		const DWORD lastHeartbeat,
+		sockaddr_in from)
 		: accountId{ accountId },
 		  token{ token },
 		  ipAndPort { ipAndPort },
-		  lastHeartbeat { lastHeartbeat }
+		  lastHeartbeat { lastHeartbeat },
+		  from{ from }
     {
 	}
 	const int GetAccountId() const { return accountId; }
@@ -30,4 +34,7 @@ public:
     void SetLastHeartbeat(const DWORD heartbeat) { lastHeartbeat = heartbeat; }
 	void IncrementUpdateCounter() { updateCounter++; };
 	const int GetUpdateCounter() const { return updateCounter; }
+	sockaddr_in GetSockAddr() { return from; }
+	const int GetCharacterId() const { return characterId; }
+	void SetCharacterId(const int characterId) { this->characterId = characterId; }
 };

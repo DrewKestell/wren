@@ -29,7 +29,7 @@ SocketManager::SocketManager(Repository& repository)
     local.sin_port = htons(PORT_NUMBER);
     local.sin_addr.s_addr = INADDR_ANY;
 
-    fromlen = sizeof(from);
+	fromlen = sizeof(from);
 
     socketS = socket(AF_INET, SOCK_DGRAM, 0);
     int error;
@@ -59,8 +59,10 @@ bool SocketManager::MessagePartsEqual(const char* first, const char* second, con
     return true;
 }
 
-void SocketManager::Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort)
+void SocketManager::Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, sockaddr_in from)
 {
+	std::cout << ipAndPort << std::endl;
+
 	std::string error;
 	auto account = repository.GetAccount(accountName);
 	if (account)
@@ -85,11 +87,12 @@ void SocketManager::Login(const std::string& accountName, const std::string& pas
 				account->GetId(),
 				token,
 				ipAndPort,
-				GetTickCount()
+				GetTickCount(),
+				from
 			};
 			players.push_back(player);
             
-			SendPacket(OPCODE_LOGIN_SUCCESSFUL, 2, token, ListCharacters(player->GetAccountId()));
+			SendPacket(from, OPCODE_LOGIN_SUCCESSFUL, 2, token, ListCharacters(player->GetAccountId()));
 			std::cout << "AccountId " << account->GetId() << " connected to the server.\n\n";
 		}
 
@@ -98,7 +101,7 @@ void SocketManager::Login(const std::string& accountName, const std::string& pas
 		error = INCORRECT_USERNAME;
 
 	if (error != "")
-		SendPacket(OPCODE_LOGIN_UNSUCCESSFUL, 1, error);
+		SendPacket(from, OPCODE_LOGIN_UNSUCCESSFUL, 1, error);
 }
 
 void SocketManager::Logout(const std::string& token)
@@ -108,12 +111,12 @@ void SocketManager::Logout(const std::string& token)
 	players.erase(it);
 }
 
-void SocketManager::CreateAccount(const std::string& accountName, const std::string& password)
+void SocketManager::CreateAccount(const std::string& accountName, const std::string& password, sockaddr_in from)
 {
 	if (repository.AccountExists(accountName))
 	{
 		const std::string error = ACCOUNT_ALREADY_EXISTS;
-		SendPacket(OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL, 1, error);
+		SendPacket(from, OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL, 1, error);
 	}
 	else
 	{
@@ -129,22 +132,23 @@ void SocketManager::CreateAccount(const std::string& accountName, const std::str
 			throw std::exception(LIBSODIUM_MEMORY_ERROR);
 
 		repository.CreateAccount(accountName, hashedPassword);
-		SendPacket(OPCODE_CREATE_ACCOUNT_SUCCESSFUL);
+		SendPacket(from, OPCODE_CREATE_ACCOUNT_SUCCESSFUL);
 	}
 }
 
 void SocketManager::CreateCharacter(const std::string& token, const std::string& characterName)
 {
 	const auto it = GetPlayer(token);
+
 	if (repository.CharacterExists(characterName))
 	{
 		const std::string error = CHARACTER_ALREADY_EXISTS;
-		SendPacket(OPCODE_CREATE_CHARACTER_UNSUCCESSFUL, 1, error);
+		SendPacket((*it)->GetSockAddr(), OPCODE_CREATE_CHARACTER_UNSUCCESSFUL, 1, error);
 	}
 	else
 	{
 		repository.CreateCharacter(characterName, (*it)->GetAccountId());
-		SendPacket(OPCODE_CREATE_CHARACTER_SUCCESSFUL, 1, ListCharacters((*it)->GetAccountId()));
+		SendPacket((*it)->GetSockAddr(), OPCODE_CREATE_CHARACTER_SUCCESSFUL, 1, ListCharacters((*it)->GetAccountId()));
 	}
 }
 
@@ -154,8 +158,9 @@ void SocketManager::UpdateLastHeartbeat(const std::string& token)
     (*it)->SetLastHeartbeat(GetTickCount());
 }
 
-void SocketManager::SendPacket(const std::string& opcode, const int argCount, ...)
+void SocketManager::SendPacket(sockaddr_in from, const std::string& opcode, const int argCount, ...)
 {
+	int fromlen = sizeof(from);
 	std::string response = std::string(CHECKSUM) + opcode;
 
 	va_list args;
@@ -192,107 +197,107 @@ void SocketManager::HandleTimeout()
 
 bool SocketManager::TryRecieveMessage()
 {
-    char buffer[1024];   
-    char str[INET_ADDRSTRLEN];
-    ZeroMemory(buffer, sizeof(buffer));   
-    ZeroMemory(str, sizeof(str));
-    auto result = recvfrom(socketS, buffer, sizeof(buffer), 0, (sockaddr*)&from, &fromlen);
-    int errorCode;
-    if (result == -1)
-        errorCode = WSAGetLastError();
-    if (result != SOCKET_ERROR)
-    {
-        inet_ntop(AF_INET, &(from.sin_addr), str, INET_ADDRSTRLEN);
-        //printf("Received message from %s:%i - %s\n", str, from.sin_port, buffer);
+	char buffer[1024];
+	char str[INET_ADDRSTRLEN];
+	ZeroMemory(buffer, sizeof(buffer));
+	ZeroMemory(str, sizeof(str));
+	auto result = recvfrom(socketS, buffer, sizeof(buffer), 0, (sockaddr*)&from, &fromlen);
+	int errorCode;
+	if (result == -1)
+		errorCode = WSAGetLastError();
+	if (result != SOCKET_ERROR)
+	{
+		inet_ntop(AF_INET, &(from.sin_addr), str, INET_ADDRSTRLEN);
+		//printf("Received message from %s:%i - %s\n", str, from.sin_port, buffer);
 
-        const auto checksumArrLen = 8;
-        char checksumArr[checksumArrLen];
-        memcpy(&checksumArr[0], &buffer[0], checksumArrLen * sizeof(char));
+		const auto checksumArrLen = 8;
+		char checksumArr[checksumArrLen];
+		memcpy(&checksumArr[0], &buffer[0], checksumArrLen * sizeof(char));
 		if (!MessagePartsEqual(checksumArr, CHECKSUM.c_str(), checksumArrLen))
 		{
 			std::cout << "Wrong checksum. Ignoring packet.\n";
 			return true;
 		}
 
-        const auto opcodeArrLen = 2;
-        char opcodeArr[opcodeArrLen];
-        memcpy(&opcodeArr[0], &buffer[8], opcodeArrLen * sizeof(char));
+		const auto opcodeArrLen = 2;
+		char opcodeArr[opcodeArrLen];
+		memcpy(&opcodeArr[0], &buffer[8], opcodeArrLen * sizeof(char));
 		//std::cout << "Opcode: " << opcodeArr[0] << opcodeArr[1] << "\n";
 
-        std::vector<std::string> args;
-        auto bufferLength = strlen(buffer);
-        if (bufferLength > 10)
-        {
-            std::string arg = "";
-            for (unsigned int i = 10; i < bufferLength; i++)
-            {
-                if (buffer[i] == '|')
-                {
-                    args.push_back(arg);
-                    arg = "";
-                }
-                else
-                    arg += buffer[i];
-            }
+		std::vector<std::string> args;
+		auto bufferLength = strlen(buffer);
+		if (bufferLength > 10)
+		{
+			std::string arg = "";
+			for (unsigned int i = 10; i < bufferLength; i++)
+			{
+				if (buffer[i] == '|')
+				{
+					args.push_back(arg);
+					arg = "";
+				}
+				else
+					arg += buffer[i];
+			}
 
-            /*std::cout << "Args:\n";
-            for_each(args.begin(), args.end(), [](std::string str) { std::cout << "  " << str << "\n";  });
-            std::cout << "\n";*/
-        }
+			/*std::cout << "Args:\n";
+			for_each(args.begin(), args.end(), [](std::string str) { std::cout << "  " << str << "\n";  });
+			std::cout << "\n";*/
+		}
 
-        if (MessagePartsEqual(opcodeArr, OPCODE_CONNECT, opcodeArrLen))
-        {
-            const auto accountName = args[0];
-            const auto password = args[1];
-            const auto ipAndPort = std::string(str) + ":" + std::to_string(from.sin_port);
+		if (MessagePartsEqual(opcodeArr, OPCODE_CONNECT, opcodeArrLen))
+		{
+			const auto accountName = args[0];
+			const auto password = args[1];
+			const auto ipAndPort = std::string(str) + ":" + std::to_string(from.sin_port);
 
-            Login(accountName, password, ipAndPort);
+			Login(accountName, password, ipAndPort, from);
 
 			return true;
-        }
-        else if (MessagePartsEqual(opcodeArr, OPCODE_DISCONNECT, opcodeArrLen))
-        {
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_DISCONNECT, opcodeArrLen))
+		{
 			const auto token = args[0];
 
 			Logout(token);
 
 			return true;
-        }
-        else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT, opcodeArrLen))
-        {
-            const auto accountName = args[0];
-            const auto password = args[1];
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT, opcodeArrLen))
+		{
+			const auto accountName = args[0];
+			const auto password = args[1];
 
-			CreateAccount(accountName, password);
+			CreateAccount(accountName, password, from);
 
 			return true;
-        }
-        else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER, opcodeArrLen))
-        {
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER, opcodeArrLen))
+		{
 			const auto token = args[0];
 			const auto characterName = args[1];
 
 			CreateCharacter(token, characterName);
 
 			return true;
-        }
-        else if (MessagePartsEqual(opcodeArr, OPCODE_HEARTBEAT, opcodeArrLen))
-        {
-            const auto token = args[0];
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_HEARTBEAT, opcodeArrLen))
+		{
+			const auto token = args[0];
 
-            UpdateLastHeartbeat(token);
-
-			return true;
-        }
-        else if (MessagePartsEqual(opcodeArr, OPCODE_ENTER_WORLD, opcodeArrLen))
-        {
-            const auto token = args[0];
-            const auto characterName = args[1];
-
-            EnterWorld(token, characterName);
+			UpdateLastHeartbeat(token);
 
 			return true;
-        }
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_ENTER_WORLD, opcodeArrLen))
+		{
+			const auto token = args[0];
+			const auto characterName = args[1];
+
+			EnterWorld(token, characterName);
+
+			return true;
+		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_DELETE_CHARACTER, opcodeArrLen))
 		{
 			const auto token = args[0];
@@ -319,7 +324,7 @@ bool SocketManager::TryRecieveMessage()
 
 			return true;
 		}
-    }
+	}
 
 	return false;
 }
@@ -339,15 +344,16 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
     (*it)->SetLastHeartbeat(GetTickCount());
 
 	auto character = repository.GetCharacter(characterName);
+	(*it)->SetCharacterId(character->id);
 	const auto characterGameObject = g_objectManager.CreateGameObject(character->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)character->id);
-    SendPacket(OPCODE_ENTER_WORLD_SUCCESSFUL, 4, std::to_string(character->id), std::to_string(character->position.x), std::to_string(character->position.y), std::to_string(character->position.z));
+    SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 4, std::to_string(character->id), std::to_string(character->position.x), std::to_string(character->position.y), std::to_string(character->position.z));
 }
 
 void SocketManager::DeleteCharacter(const std::string& token, const std::string& characterName)
 {
 	const auto it = GetPlayer(token);
 	repository.DeleteCharacter(characterName);
-	SendPacket(OPCODE_DELETE_CHARACTER_SUCCESSFUL, 1, ListCharacters((*it)->GetAccountId()));
+	SendPacket((*it)->GetSockAddr(), OPCODE_DELETE_CHARACTER_SUCCESSFUL, 1, ListCharacters((*it)->GetAccountId()));
 }
 
 void SocketManager::PlayerUpdate(
@@ -373,13 +379,37 @@ void SocketManager::PlayerUpdate(
 
 	player.SetMovementVector(XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ) });
 	
-	std::cout << "PlayerPos from Client: \n";
-	Utility::PrintXMFLOAT3(XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ) });
+	//std::cout << "PlayerPos from Client: \n";
+	//Utility::PrintXMFLOAT3(XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ) });
 
-	std::cout << "PlayerPos on Server: \n";
-	Utility::PrintXMFLOAT3(player.GetWorldPosition());
-
-	std::cout << std::endl;
+	//std::cout << "PlayerPos on Server: \n";
+	//Utility::PrintXMFLOAT3(player.GetWorldPosition());
 
 	(*it)->IncrementUpdateCounter();
+}
+
+void SocketManager::UpdateClients()
+{
+	for (auto i = 0; i < players.size(); i++)
+	{
+		auto playerToUpdate = players.at(i);
+
+		if (playerToUpdate->GetCharacterId() == 0)
+			continue;
+
+		for (auto j = 0; j < players.size(); j++)
+		{
+			auto otherPlayer = players.at(j);
+
+			if (playerToUpdate->GetAccountId() == otherPlayer->GetAccountId() || otherPlayer->GetCharacterId() == 0) // FIXME: certainly there's a better way than checking > 0. won't have a characterId until they select a character and enter game.
+				continue;
+
+			auto character = g_objectManager.GetGameObjectById(otherPlayer->GetCharacterId());
+
+			auto pos = character.GetWorldPosition();
+			auto mov = character.GetMovementVector();
+
+			SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 7, std::to_string(character.GetId()), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z));
+		}
+	}
 }
