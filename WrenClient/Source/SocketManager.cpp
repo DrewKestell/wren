@@ -194,9 +194,11 @@ bool SocketManager::TryRecieveMessage()
 			const auto positionX = args[1];
 			const auto positionY = args[2];
 			const auto positionZ = args[3];
+			const auto modelId = args[4];
+			const auto textureId = args[5];
 
             std::cout << "Connected to game world!\n";
-			g_eventHandler.QueueEvent(new EnterWorldSuccessEvent(std::stoi(*id), XMFLOAT3{ std::stof(*positionX), std::stof(*positionY), std::stof(*positionZ) }));
+			g_eventHandler.QueueEvent(new EnterWorldSuccessEvent(std::stoi(*id), XMFLOAT3{ std::stof(*positionX), std::stof(*positionY), std::stof(*positionZ) }, std::stoi(*modelId), std::stoi(*textureId)));
 			return true;
         }
 		else if (MessagePartsEqual(opcodeArr, OPCODE_DELETE_CHARACTER_SUCCESSFUL, opcodeArrLen))
@@ -228,8 +230,10 @@ bool SocketManager::TryRecieveMessage()
 			const auto movX = args[4];
 			const auto movY = args[5];
 			const auto movZ = args[6];
+			const auto modelId = args[7];
+			const auto textureId = args[8];
 
-			g_eventHandler.QueueEvent(new GameObjectUpdateEvent{ std::stol(*characterId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ) });
+			g_eventHandler.QueueEvent(new GameObjectUpdateEvent{ std::stol(*characterId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), std::stoi(*modelId), std::stoi(*textureId) });
 			return true;
 		}
 		else

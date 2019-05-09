@@ -41,13 +41,6 @@ void Game::Initialize(HWND window, int width, int height)
 	m_deviceResources->CreateWindowSizeDependentResources();
 	CreateWindowSizeDependentResources();
 
-	// TODO: Change the timer settings if you want something other than the default variable timestep mode.
-	// e.g. for 60 FPS fixed timestep update logic, call:
-	/*
-	m_timer.SetFixedTimeStep(true);
-	m_timer.SetTargetElapsedSeconds(1.0 / 60);
-	*/
-
 	m_timer.Reset();
 	SetActiveLayer(Login);
 }
@@ -208,7 +201,8 @@ void Game::OnWindowSizeChanged(int width, int height)
 	m_clientWidth = width;
 	m_clientHeight = height;
 
-	m_playerController->SetClientDimensions(width, height);
+	if (m_playerController)
+		m_playerController->SetClientDimensions(width, height);
 }
 #pragma endregion
 
@@ -225,22 +219,16 @@ void Game::CreateDeviceDependentResources()
 	InitializeShaders();
 	InitializeBuffers();
 	InitializeTextures();
+	InitializeMeshes();
 	InitializeRasterStates();
-
+	
 	auto d3dDevice = m_deviceResources->GetD3DDevice();
 	
-	m_gameMap = std::make_unique<GameMap>(d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), grass01SRV.Get());
-	
-	// initialize meshes
-	std::string path = "../../WrenClient/Models/sphere.blend";
-	m_sphereMesh = std::make_shared<Mesh>(path, d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size);
+	m_gameMap = std::make_unique<GameMap>(d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures[2].Get());
 
-	path = "../../WrenClient/Models/tree.blend";
-	m_treeMesh = std::make_unique<Mesh>(path, d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size);
-
-	// initialize tree (TODO: generalize)
+	// initialize tree. TODO: game world needs to be stored on disk somewhere and initialized on startup
 	GameObject& tree = m_objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
-	auto treeRenderComponent = m_renderComponentManager.CreateRenderComponent(tree.GetId(), m_treeMesh, vertexShader.Get(), pixelShader.Get(), color02SRV.Get());
+	auto treeRenderComponent = m_renderComponentManager.CreateRenderComponent(tree.GetId(), meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
 	tree.SetRenderComponentId(treeRenderComponent.GetId());
 }
 
@@ -691,9 +679,39 @@ void Game::InitializeTextures()
 {
 	auto d3dDevice = m_deviceResources->GetD3DDevice();
 
-	CreateDDSTextureFromFile(d3dDevice, L"../../WrenClient/Textures/texture01.dds", nullptr, color01SRV.ReleaseAndGetAddressOf());
-	CreateDDSTextureFromFile(d3dDevice, L"../../WrenClient/Textures/texture02.dds", nullptr, color02SRV.ReleaseAndGetAddressOf());
-	CreateDDSTextureFromFile(d3dDevice, L"../../WrenClient/Textures/grass01.dds", nullptr, grass01SRV.ReleaseAndGetAddressOf());
+	const wchar_t* paths[] =
+	{
+		L"../../WrenClient/Textures/texture01.dds", // 0
+		L"../../WrenClient/Textures/texture02.dds", // 1
+		L"../../WrenClient/Textures/grass01.dds"    // 2
+	};
+
+	// clear calls the destructor of its elements, and ComPtr's destructor handles calling Release()
+	textures.clear();
+
+	for (auto i = 0; i < 3; i++)
+	{
+		ComPtr<ID3D11ShaderResourceView> ptr;
+		CreateDDSTextureFromFile(d3dDevice, paths[i], nullptr, ptr.ReleaseAndGetAddressOf());
+		textures.push_back(ptr);
+	}
+}
+
+void Game::InitializeMeshes()
+{
+	auto d3dDevice = m_deviceResources->GetD3DDevice();
+
+	std::string paths[] = 
+	{
+		"../../WrenClient/Models/sphere.blend", // 0
+		"../../WrenClient/Models/tree.blend"    // 1
+	};
+
+	// clear calls the destructor of its elements, and unique_ptr's destructor handles cleaning itself up
+	meshes.clear();
+
+	for (auto i = 0; i < sizeof(paths) / sizeof(std::string); i++)
+		meshes.push_back(std::make_unique<Mesh>(paths[i], d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size));
 }
 
 void Game::RecreateCharacterListings(const std::vector<std::string*>* characterNames)
@@ -802,7 +820,7 @@ const bool Game::HandleEvent(const Event* const event)
 
 			GameObject& player = m_objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)derivedEvent->characterId);
 			m_player = &player;
-			auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(player.GetId(), m_sphereMesh, vertexShader.Get(), pixelShader.Get(), color01SRV.Get());
+			auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(player.GetId(), meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.SetRenderComponentId(sphereRenderComponent.GetId());
 			m_playerController = std::make_unique<PlayerController>(player);
 
@@ -817,12 +835,14 @@ const bool Game::HandleEvent(const Event* const event)
 			const auto gameObjectId = derivedEvent->characterId;
 			const auto pos = XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ };
 			const auto mov = XMFLOAT3{ derivedEvent->movX, derivedEvent->movY, derivedEvent->movZ };
+			const auto modelId = derivedEvent->modelId;
+			const auto textureId = derivedEvent->textureId;
 
 			if (!m_objectManager.GameObjectExists(gameObjectId))
 			{
 				GameObject& obj = m_objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, gameObjectId);
 				obj.SetMovementVector(mov);
-				auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(gameObjectId, m_sphereMesh, vertexShader.Get(), pixelShader.Get(), color01SRV.Get());
+				auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
 				obj.SetRenderComponentId(sphereRenderComponent.GetId());
 			}
 			else

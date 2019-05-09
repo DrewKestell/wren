@@ -10,7 +10,8 @@ class Player
 	int updateCounter{ 0 };
 	sockaddr_in from;
 	int characterId{ 0 };
-    
+	int modelId{ 0 };
+	int textureId{ 0 };   
 public:
     Player(
 		const int accountId,
@@ -37,4 +38,8 @@ public:
 	sockaddr_in GetSockAddr() { return from; }
 	const int GetCharacterId() const { return characterId; }
 	void SetCharacterId(const int characterId) { this->characterId = characterId; }
+	const int GetModelId() const { return modelId; }
+	void SetModelId(const int modelId) { this->modelId = modelId; }
+	const int GetTextureId() const { return textureId; }
+	void SetTextureId(const int textureId) { this->textureId = textureId; }
 };

@@ -66,12 +66,11 @@ private:
 	Camera m_camera;
 	std::unique_ptr<GameMap> m_gameMap;
 	std::unique_ptr<PlayerController> m_playerController;
-	std::shared_ptr<Mesh> m_sphereMesh;
-	std::shared_ptr<Mesh> m_treeMesh;
 	GameObject* m_player;
-	std::unique_ptr<GameObject> tree;
 	std::vector<UIComponent*> uiComponents;
 	std::unique_ptr<PlayerUpdate> playerUpdates[BUFFER_SIZE];
+	std::vector<std::unique_ptr<Mesh>> meshes;
+	std::vector<ComPtr<ID3D11ShaderResourceView>> textures;
 
 	void Update();
 	void Render(const float updateTimer);
@@ -93,6 +92,7 @@ private:
 	void InitializeShaders();
 	void InitializeBuffers();
 	void InitializeTextures();
+	void InitializeMeshes();
 	void InitializeRasterStates();
 	void RecreateCharacterListings(const std::vector<std::string*>* characterNames);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();
@@ -121,11 +121,6 @@ private:
 	ComPtr<ID3D11VertexShader> vertexShader;
 	ShaderBuffer pixelShaderBuffer{};
 	ComPtr<ID3D11PixelShader> pixelShader;
-
-	// Textures
-	ComPtr<ID3D11ShaderResourceView> color01SRV;
-	ComPtr<ID3D11ShaderResourceView> color02SRV;
-	ComPtr<ID3D11ShaderResourceView> grass01SRV;
 
 	// Raster States
 	ComPtr<ID3D11RasterizerState> wireframeRasterState;

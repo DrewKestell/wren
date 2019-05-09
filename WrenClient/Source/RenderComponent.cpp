@@ -2,7 +2,7 @@
 #include "RenderComponent.h"
 #include "ConstantBufferPerObject.h"
 
-void RenderComponent::Initialize(const unsigned int id, const long gameObjectId, std::shared_ptr<Mesh> mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
+void RenderComponent::Initialize(const unsigned int id, const long gameObjectId, Mesh* mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
 {
 	this->id = id;
 	this->gameObjectId = gameObjectId;

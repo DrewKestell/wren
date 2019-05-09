@@ -345,8 +345,10 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
 
 	auto character = repository.GetCharacter(characterName);
 	(*it)->SetCharacterId(character->id);
+	(*it)->SetModelId(character->modelId);
+	(*it)->SetTextureId(character->textureId);
 	const auto characterGameObject = g_objectManager.CreateGameObject(character->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)character->id);
-    SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 4, std::to_string(character->id), std::to_string(character->position.x), std::to_string(character->position.y), std::to_string(character->position.z));
+    SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 6, std::to_string(character->id), std::to_string(character->position.x), std::to_string(character->position.y), std::to_string(character->position.z), std::to_string(character->modelId), std::to_string(character->textureId));
 }
 
 void SocketManager::DeleteCharacter(const std::string& token, const std::string& characterName)
@@ -409,7 +411,7 @@ void SocketManager::UpdateClients()
 			auto pos = character.GetWorldPosition();
 			auto mov = character.GetMovementVector();
 
-			SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 7, std::to_string(character.GetId()), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z));
+			SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 9, std::to_string(character.GetId()), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z), std::to_string(otherPlayer->GetModelId()), std::to_string(otherPlayer->GetTextureId()));
 		}
 	}
 }

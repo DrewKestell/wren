@@ -228,7 +228,9 @@ Character* Repository::GetCharacter(const std::string& characterName)
 		const double positionX = sqlite3_column_double(statement, 3);
 		const double positionY = sqlite3_column_double(statement, 4);
 		const double positionZ = sqlite3_column_double(statement, 5);
-		auto character = new Character(id, std::string(reinterpret_cast<const char*>(characterName)), accountId, XMFLOAT3{ (float)positionX, (float)positionY, (float)positionZ });
+		const int modelId = sqlite3_column_int(statement, 6);
+		const int textureId = sqlite3_column_int(statement, 7);
+		auto character = new Character(id, std::string(reinterpret_cast<const char*>(characterName)), accountId, XMFLOAT3{ (float)positionX, (float)positionY, (float)positionZ }, modelId, textureId);
 
 		sqlite3_finalize(statement);
 		return character;

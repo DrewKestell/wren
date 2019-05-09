@@ -21,7 +21,7 @@ void RenderComponentManager::Render(ID3D11DeviceContext* d3dContext, const XMMAT
 	}
 }
 
-RenderComponent& RenderComponentManager::CreateRenderComponent(const long gameObjectId, std::shared_ptr<Mesh> mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
+RenderComponent& RenderComponentManager::CreateRenderComponent(const long gameObjectId, Mesh* mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
 {
 	if (renderComponentIndex == MAX_RENDERCOMPONENTS_SIZE)
 		throw std::exception("Max RenderComponents exceeded!");
