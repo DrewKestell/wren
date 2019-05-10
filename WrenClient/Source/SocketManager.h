@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Models/Skill.h>
+
 class SocketManager
 {
 private:
@@ -10,6 +12,7 @@ private:
     SOCKET socketC;   
     bool MessagePartsEqual(const char* first, const char* second, int length);
     std::vector<std::string*>* BuildCharacterVector(std::string* characterString);
+	std::vector<Skill*>* BuildSkillVector(std::string& skillString);
 public:
 	SocketManager();
     bool TryRecieveMessage();

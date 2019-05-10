@@ -22,6 +22,7 @@ private:
 	void CreateCharacter(const std::string& token, const std::string& characterName);
 	void UpdateLastHeartbeat(const std::string& token);
 	std::string ListCharacters(const int accountId);
+	std::string ListSkills(const int accountId);
 	void EnterWorld(const std::string& token, const std::string& characterName);
 	void DeleteCharacter(const std::string& token, const std::string& characterName);
 	void PlayerUpdate(const std::string& token, const std::string& idCounter, const std::string& characterId, const std::string& posX, const std::string& posY, const std::string& posZ, const std::string& movX, const std::string& movY, const std::string& movZ, const std::string& deltaTime);

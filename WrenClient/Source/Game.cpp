@@ -607,6 +607,15 @@ void Game::InitializePanels()
 
 	fpsTextLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 2.0f, 36.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 280.0f, blackBrush.Get(), textFormatFPS.Get(), d2dContext, writeFactory, d2dFactory);
 	diagnosticsPanel->AddChildComponent(*fpsTextLabel);
+
+	// Skills
+	const auto skillsPanelX = 200.0f;
+	const auto skillsPanelY = 200.0f;
+	skillsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ skillsPanelX, skillsPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, true, 200.0f, 200.0f, VK_F3, darkBlueBrush.Get(), whiteBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+
+	skillsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 2.0f, 2.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
+	skillsPanelHeader->SetText("Skills");
+	skillsPanel->AddChildComponent(*skillsPanelHeader);
 }
 
 UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
@@ -823,6 +832,8 @@ const bool Game::HandleEvent(const Event* const event)
 			auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(player.GetId(), meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.SetRenderComponentId(sphereRenderComponent.GetId());
 			m_playerController = std::make_unique<PlayerController>(player);
+
+			skills = derivedEvent->skills;
 
 			SetActiveLayer(InGame);
 

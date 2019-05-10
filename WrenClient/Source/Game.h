@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Models/Skill.h>
 #include "DeviceResources.h"
 #include "GameTimer.h"
 #include "Camera.h"
@@ -71,6 +72,7 @@ private:
 	std::unique_ptr<PlayerUpdate> playerUpdates[BUFFER_SIZE];
 	std::vector<std::unique_ptr<Mesh>> meshes;
 	std::vector<ComPtr<ID3D11ShaderResourceView>> textures;
+	std::vector<Skill*>* skills;
 
 	void Update();
 	void Render(const float updateTimer);
@@ -171,9 +173,11 @@ private:
 	std::unique_ptr<UILabel> gameSettingsPanelHeader;
 	std::unique_ptr<UILabel> gameEditorPanelHeader;
 	std::unique_ptr<UILabel> diagnosticsPanelHeader;
+	std::unique_ptr<UILabel> skillsPanelHeader;
 
 	// Panels
 	std::unique_ptr<UIPanel> gameSettingsPanel;
 	std::unique_ptr<UIPanel> gameEditorPanel;
 	std::unique_ptr<UIPanel> diagnosticsPanel;
+	std::unique_ptr<UIPanel> skillsPanel;
 };

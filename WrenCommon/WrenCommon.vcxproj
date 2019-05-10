@@ -57,6 +57,7 @@
     <ClInclude Include="Source\GameObject.h" />
     <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\Layer.h" />
+    <ClInclude Include="Source\Models\Skill.h" />
     <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\OpCodes.h" />
     <ClInclude Include="Source\PlayerUpdate.h" />

@@ -196,9 +196,10 @@ bool SocketManager::TryRecieveMessage()
 			const auto positionZ = args[3];
 			const auto modelId = args[4];
 			const auto textureId = args[5];
+			const auto skillString = args[6];
 
             std::cout << "Connected to game world!\n";
-			g_eventHandler.QueueEvent(new EnterWorldSuccessEvent(std::stoi(*id), XMFLOAT3{ std::stof(*positionX), std::stof(*positionY), std::stof(*positionZ) }, std::stoi(*modelId), std::stoi(*textureId)));
+			g_eventHandler.QueueEvent(new EnterWorldSuccessEvent(std::stoi(*id), XMFLOAT3{ std::stof(*positionX), std::stof(*positionY), std::stof(*positionZ) }, std::stoi(*modelId), std::stoi(*textureId), BuildSkillVector(*skillString)));
 			return true;
         }
 		else if (MessagePartsEqual(opcodeArr, OPCODE_DELETE_CHARACTER_SUCCESSFUL, opcodeArrLen))
@@ -261,4 +262,36 @@ std::vector<std::string*>* SocketManager::BuildCharacterVector(std::string* char
             *arg += (*characterString)[i];
     }
     return characterList;
+}
+
+std::vector<Skill*>* SocketManager::BuildSkillVector(std::string& skillString)
+{
+	std::vector<Skill*>* skillList = new std::vector<Skill*>;
+	char param = 0;
+	std::string skillId = "";
+	std::string name = "";
+	std::string value = "";
+	for (auto i = 0; i < skillString.length(); i++)
+	{
+		if (skillString[i] == ';')
+		{
+			skillList->push_back(new Skill(std::stoi(skillId), name, std::stoi(value)));
+			param = 0;
+			skillId = "";
+			name = "";
+			value = "";
+		}
+		else if (skillString[i] == '%')
+				param++;
+		else
+		{
+			if (param == 0)
+				skillId += skillString[i];
+			else if (param == 1)
+				name += skillString[i];
+			else
+				value += skillString[i];
+		}
+	}
+	return skillList;
 }

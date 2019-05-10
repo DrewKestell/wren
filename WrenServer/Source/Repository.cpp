@@ -15,6 +15,7 @@ const auto GET_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE account_name = '%s'
 const auto LIST_CHARACTERS_QUERY = "SELECT * FROM Characters WHERE account_id = '%d';";
 const auto DELETE_CHARACTER_QUERY = "DELETE FROM Characters WHERE character_name = '%s';";
 const auto GET_CHARACTER_QUERY = "SELECT * FROM Characters WHERE character_name = '%s' LIMIT 1;";
+const auto LIST_SKILLS_QUERY = "SELECT Skills.id, Skills.name, CharacterSkills.value FROM CharacterSkills INNER JOIN Skills on Skills.id = CharacterSkills.skill_id WHERE CharacterSkills.character_id = '%d';";
 
 bool Repository::AccountExists(const std::string& accountName)
 {
@@ -234,6 +235,38 @@ Character* Repository::GetCharacter(const std::string& characterName)
 
 		sqlite3_finalize(statement);
 		return character;
+	}
+	else
+	{
+		sqlite3_finalize(statement);
+		std::cout << sqlite3_errmsg(dbConnection) << std::endl;
+		throw std::exception(FAILED_TO_EXECUTE);
+	}
+}
+
+std::vector<Skill> Repository::ListSkills(const int characterId)
+{
+	auto dbConnection = GetConnection();
+
+	char query[200];
+	sprintf_s(query, LIST_SKILLS_QUERY, characterId);
+
+	auto statement = PrepareStatement(dbConnection, query);
+
+	std::vector<Skill> skills;
+	auto result = sqlite3_step(statement);
+	if (result == SQLITE_ROW)
+	{
+		while (result == SQLITE_ROW)
+		{
+			const auto skillId = sqlite3_column_int(statement, 0);
+			const unsigned char *skillName = sqlite3_column_text(statement, 1);
+			const auto value = sqlite3_column_int(statement, 2);
+			skills.push_back(Skill{ skillId, std::string(reinterpret_cast<const char*>(skillName)), value });
+			result = sqlite3_step(statement);
+		}
+		sqlite3_finalize(statement);
+		return skills;
 	}
 	else
 	{

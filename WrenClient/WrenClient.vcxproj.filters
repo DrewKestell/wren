@@ -144,6 +144,7 @@
     <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
     <ClInclude Include="Source\RenderComponent.h" />
     <ClInclude Include="Source\RenderComponentManager.h" />
+    <ClInclude Include="Source\UI\UISkillListing.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />
