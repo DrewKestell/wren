@@ -44,9 +44,12 @@
     <ClCompile Include="Source\UI\UIPanel.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\UI\UIButton.cpp" />
-    <ClCompile Include="Source\UI\UICharacterListing.cpp" />
+    <ClCompile Include="Source\UI\UICharacterListing.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="Source\UI\UIInput.cpp" />
     <ClCompile Include="Source\UI\UILabel.cpp" />
+    <ClCompile Include="Source\UI\UISkillListing.cpp" />
     <ClCompile Include="Source\WrenClient.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -309,6 +312,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

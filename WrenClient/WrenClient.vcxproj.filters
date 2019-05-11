@@ -21,6 +21,7 @@
     <ClCompile Include="Source\DeviceResources.cpp" />
     <ClCompile Include="Source\RenderComponent.cpp" />
     <ClCompile Include="Source\RenderComponentManager.cpp" />
+    <ClCompile Include="Source\UI\UISkillListing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
