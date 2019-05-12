@@ -230,6 +230,8 @@ void Game::CreateDeviceDependentResources()
 	GameObject& tree = m_objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
 	auto treeRenderComponent = m_renderComponentManager.CreateRenderComponent(tree.GetId(), meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
 	tree.SetRenderComponentId(treeRenderComponent.GetId());
+
+
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -834,6 +836,16 @@ const bool Game::HandleEvent(const Event* const event)
 			m_playerController = std::make_unique<PlayerController>(player);
 
 			skills = derivedEvent->skills;
+			auto d2dDeviceContext = m_deviceResources->GetD2DDeviceContext();
+			auto writeFactory = m_deviceResources->GetWriteFactory();
+			auto xOffset = 5.0f;
+			auto yOffset = 25.0f;
+			for (auto i = 0; i < derivedEvent->skills->size(); i++)
+			{
+				auto skill = derivedEvent->skills->at(i);
+				m_skillList[skill->skillId] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT3{ xOffset, yOffset + (18.0f * i), 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, *skill, blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatFPS.Get());
+				skillsPanel->AddChildComponent(*m_skillList[skill->skillId]);
+			}
 
 			SetActiveLayer(InGame);
 

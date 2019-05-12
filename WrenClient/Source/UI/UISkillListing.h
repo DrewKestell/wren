@@ -5,25 +5,24 @@
 
 class UISkillListing : public UIComponent
 {
-	const std::string name;
-	int value;
 	ComPtr<IDWriteTextLayout> nameTextLayout;
 	ComPtr<IDWriteTextLayout> valueTextLayout;
 	ID2D1SolidColorBrush* textBrush;
 	ID2D1DeviceContext1* d2dDeviceContext;
+	IDWriteFactory2* writeFactory;
+	IDWriteTextFormat* textFormat;
 public:
 	UISkillListing(
+		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT3 position,
 		const XMFLOAT3 scale,
 		const Layer uiLayer,
-		const float width,
-		const float height,
 		Skill& skill,
 		ID2D1SolidColorBrush* textBrush,
 		ID2D1DeviceContext1* d2dDeviceContext,
 		IDWriteFactory2* writeFactory,
-		IDWriteTextFormat* textFormat,
-		ID2D1Factory2* d2dFactory);
+		IDWriteTextFormat* textFormat);
 	virtual void Draw();
-	void SetValue(const int value) { this->value = value; }
+	virtual const bool HandleEvent(const Event* const event);
+	void SetValue(const int value);
 };

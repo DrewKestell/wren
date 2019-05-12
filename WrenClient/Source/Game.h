@@ -17,6 +17,7 @@
 #include "UI/UIButton.h"
 #include "UI/UIPanel.h"
 #include "UI/UILabel.h"
+#include "UI/UISkillListing.h"
 #include "EventHandling/EventHandler.h"
 
 static const int BUFFER_SIZE = 120;
@@ -55,6 +56,7 @@ private:
 	int m_clientWidth{ 800 };
 	int m_clientHeight{ 600 };
 	std::vector<std::unique_ptr<UICharacterListing>> m_characterList;
+	std::map<int, std::unique_ptr<UISkillListing>> m_skillList;
 	std::string m_characterNamePendingDeletion{};
 	XMMATRIX m_worldTransform{ XMMatrixIdentity() };
 	XMMATRIX m_viewTransform{ XMMatrixIdentity() };
@@ -68,7 +70,7 @@ private:
 	std::unique_ptr<GameMap> m_gameMap;
 	std::unique_ptr<PlayerController> m_playerController;
 	GameObject* m_player;
-	std::vector<UIComponent*> uiComponents;
+	std::vector<UIComponent*> uiComponents; // TODO: i think these should use smart pointers
 	std::unique_ptr<PlayerUpdate> playerUpdates[BUFFER_SIZE];
 	std::vector<std::unique_ptr<Mesh>> meshes;
 	std::vector<ComPtr<ID3D11ShaderResourceView>> textures;
