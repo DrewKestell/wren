@@ -223,7 +223,8 @@ void Game::CreateDeviceDependentResources()
 	InitializeRasterStates();
 	
 	auto d3dDevice = m_deviceResources->GetD3DDevice();
-	
+	auto d2dDeviceContext = m_deviceResources->GetD2DDeviceContext();
+	auto d2dFactory = m_deviceResources->GetD2DFactory();
 	m_gameMap = std::make_unique<GameMap>(d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures[2].Get());
 
 	// initialize tree. TODO: game world needs to be stored on disk somewhere and initialized on startup
@@ -231,7 +232,8 @@ void Game::CreateDeviceDependentResources()
 	auto treeRenderComponent = m_renderComponentManager.CreateRenderComponent(tree.GetId(), meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
 	tree.SetRenderComponentId(treeRenderComponent.GetId());
 
-
+	// init hotbar
+	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT3{ 5.0f, m_clientHeight - 45.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, blackBrush.Get(), d2dDeviceContext, d2dFactory);
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.

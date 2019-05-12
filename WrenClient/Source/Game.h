@@ -18,6 +18,7 @@
 #include "UI/UIPanel.h"
 #include "UI/UILabel.h"
 #include "UI/UISkillListing.h"
+#include "UI/UIHotbar.h"
 #include "EventHandling/EventHandler.h"
 
 static const int BUFFER_SIZE = 120;
@@ -75,6 +76,7 @@ private:
 	std::vector<std::unique_ptr<Mesh>> meshes;
 	std::vector<ComPtr<ID3D11ShaderResourceView>> textures;
 	std::vector<Skill*>* skills;
+	std::unique_ptr<UIHotbar> hotbar;
 
 	void Update();
 	void Render(const float updateTimer);

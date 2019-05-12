@@ -22,6 +22,7 @@
     <ClCompile Include="Source\RenderComponent.cpp" />
     <ClCompile Include="Source\RenderComponentManager.cpp" />
     <ClCompile Include="Source\UI\UISkillListing.cpp" />
+    <ClCompile Include="Source\UI\UIHotbar.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
@@ -146,6 +147,7 @@
     <ClInclude Include="Source\RenderComponent.h" />
     <ClInclude Include="Source\RenderComponentManager.h" />
     <ClInclude Include="Source\UI\UISkillListing.h" />
+    <ClInclude Include="Source\UI\UIHotbar.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

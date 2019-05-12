@@ -46,6 +46,8 @@ UIButton::UIButton(
 		height,
 		buttonTextLayout.ReleaseAndGetAddressOf())
 	);
+
+	d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), buttonGeometry.ReleaseAndGetAddressOf());
 }
 
 void UIButton::Draw()
@@ -64,7 +66,6 @@ void UIButton::Draw()
     else
         buttonColor = buttonBrush;
 
-	d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), buttonGeometry.ReleaseAndGetAddressOf());
     d2dDeviceContext->FillGeometry(buttonGeometry.Get(), buttonColor);
     d2dDeviceContext->DrawGeometry(buttonGeometry.Get(), buttonBorderBrush, borderWeight);
     
