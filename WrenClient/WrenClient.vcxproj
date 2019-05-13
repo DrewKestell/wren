@@ -39,6 +39,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\UI\UIAbility.cpp" />
     <ClCompile Include="Source\UI\UIHotbar.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
+    <ClInclude Include="Source\UI\UIAbility.h" />
     <ClInclude Include="Source\UI\UIHotbar.h" />
     <ClInclude Include="Source\UI\UIInputGroup.h" />
     <ClInclude Include="Source\UI\UIComponent.h" />

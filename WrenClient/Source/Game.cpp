@@ -703,9 +703,10 @@ void Game::InitializeTextures()
 
 	const wchar_t* paths[] =
 	{
-		L"../../WrenClient/Textures/texture01.dds", // 0
-		L"../../WrenClient/Textures/texture02.dds", // 1
-		L"../../WrenClient/Textures/grass01.dds"    // 2
+		L"../../WrenClient/Textures/texture01.dds",     // 0
+		L"../../WrenClient/Textures/texture02.dds",     // 1
+		L"../../WrenClient/Textures/grass01.dds"        // 2
+		L"../../WrenClient/Textures/abilityicon01.dds"  // 3
 	};
 
 	// clear calls the destructor of its elements, and ComPtr's destructor handles calling Release()
@@ -725,8 +726,9 @@ void Game::InitializeMeshes()
 
 	std::string paths[] = 
 	{
-		"../../WrenClient/Models/sphere.blend", // 0
-		"../../WrenClient/Models/tree.blend"    // 1
+		"../../WrenClient/Models/sphere.blend",  // 0
+		"../../WrenClient/Models/tree.blend"     // 1
+		"../../WrenClient/Models/dummy.blend"    // 2
 	};
 
 	// clear calls the destructor of its elements, and unique_ptr's destructor handles cleaning itself up
