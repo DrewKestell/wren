@@ -620,6 +620,15 @@ void Game::InitializePanels()
 	skillsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 2.0f, 2.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	skillsPanelHeader->SetText("Skills");
 	skillsPanel->AddChildComponent(*skillsPanelHeader);
+
+	// Abilities
+	const auto abilitiesPanelX = 300.0f;
+	const auto abilitiesPanelY = 300.0f;
+	abilitiesPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ abilitiesPanelX, abilitiesPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, true, 300.0f, 300.0f, VK_F4, darkBlueBrush.Get(), whiteBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+
+	abilitiesPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 2.0f, 2.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
+	abilitiesPanelHeader->SetText("Abilities");
+	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
 }
 
 UICharacterListing* Game::GetCurrentlySelectedCharacterListing()

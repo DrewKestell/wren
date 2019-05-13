@@ -178,10 +178,12 @@ private:
 	std::unique_ptr<UILabel> gameEditorPanelHeader;
 	std::unique_ptr<UILabel> diagnosticsPanelHeader;
 	std::unique_ptr<UILabel> skillsPanelHeader;
+	std::unique_ptr<UILabel> abilitiesPanelHeader;
 
 	// Panels
 	std::unique_ptr<UIPanel> gameSettingsPanel;
 	std::unique_ptr<UIPanel> gameEditorPanel;
 	std::unique_ptr<UIPanel> diagnosticsPanel;
 	std::unique_ptr<UIPanel> skillsPanel;
+	std::unique_ptr<UIPanel> abilitiesPanel;
 };
