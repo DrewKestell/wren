@@ -705,7 +705,7 @@ void Game::InitializeTextures()
 	{
 		L"../../WrenClient/Textures/texture01.dds",     // 0
 		L"../../WrenClient/Textures/texture02.dds",     // 1
-		L"../../WrenClient/Textures/grass01.dds"        // 2
+		L"../../WrenClient/Textures/grass01.dds",       // 2
 		L"../../WrenClient/Textures/abilityicon01.dds"  // 3
 	};
 
@@ -727,7 +727,7 @@ void Game::InitializeMeshes()
 	std::string paths[] = 
 	{
 		"../../WrenClient/Models/sphere.blend",  // 0
-		"../../WrenClient/Models/tree.blend"     // 1
+		"../../WrenClient/Models/tree.blend",    // 1
 		"../../WrenClient/Models/dummy.blend"    // 2
 	};
 
