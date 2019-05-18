@@ -125,15 +125,6 @@ Mesh::Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShad
 	device->CreateBuffer(&bufferDesc, &indexData, indexBuffer.ReleaseAndGetAddressOf());
 }
 
-void Mesh::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform)
-{
-	// set VertexBuffer and IndexBuffer then Draw
-	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &STRIDE, &OFFSET);
-	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-	immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	immediateContext->DrawIndexed(indexCount, 0, 0);
-}
-
 ID3D11InputLayout* Mesh::GetInputLayout() const { return inputLayout.Get(); }
 
 ID3D11Buffer* Mesh::GetConstantBuffer() const { return constantBuffer.Get(); }

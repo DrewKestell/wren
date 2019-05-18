@@ -652,6 +652,12 @@ void Game::InitializeShaders()
 	pixelShaderBuffer = LoadShader(L"PixelShader.cso");
 	d3dDevice->CreatePixelShader(pixelShaderBuffer.buffer, pixelShaderBuffer.size, nullptr, pixelShader.ReleaseAndGetAddressOf());
 
+	spriteVertexShaderBuffer = LoadShader(L"SpriteVertexShader.cso");
+	d3dDevice->CreateVertexShader(spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, nullptr, spriteVertexShader.ReleaseAndGetAddressOf());
+
+	spritePixelShaderBuffer = LoadShader(L"SpritePixelShader.cso");
+	d3dDevice->CreatePixelShader(spritePixelShaderBuffer.buffer, spritePixelShaderBuffer.size, nullptr, spritePixelShader.ReleaseAndGetAddressOf());
+
 	m_projectionTransform = XMMatrixOrthographicLH((float)m_clientWidth, (float)m_clientHeight, 0.1f, 5000.0f);
 }
 

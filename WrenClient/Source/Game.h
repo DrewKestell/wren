@@ -127,6 +127,10 @@ private:
 	ComPtr<ID3D11VertexShader> vertexShader;
 	ShaderBuffer pixelShaderBuffer{};
 	ComPtr<ID3D11PixelShader> pixelShader;
+	ShaderBuffer spriteVertexShaderBuffer{};
+	ComPtr<ID3D11VertexShader> spriteVertexShader;
+	ShaderBuffer spritePixelShaderBuffer{};
+	ComPtr<ID3D11PixelShader> spritePixelShader;
 
 	// Raster States
 	ComPtr<ID3D11RasterizerState> wireframeRasterState;

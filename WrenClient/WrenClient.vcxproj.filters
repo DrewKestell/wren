@@ -24,6 +24,7 @@
     <ClCompile Include="Source\UI\UISkillListing.cpp" />
     <ClCompile Include="Source\UI\UIHotbar.cpp" />
     <ClCompile Include="Source\UI\UIAbility.cpp" />
+    <ClCompile Include="Source\Sprite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
@@ -150,10 +151,14 @@
     <ClInclude Include="Source\UI\UISkillListing.h" />
     <ClInclude Include="Source\UI\UIHotbar.h" />
     <ClInclude Include="Source\UI\UIAbility.h" />
+    <ClInclude Include="Source\Sprite.h" />
+    <ClInclude Include="Source\SpriteVertex.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />
     <FxCompile Include="Source\Shaders\VertexShader.hlsl" />
+    <FxCompile Include="Source\Shaders\SpriteVertexShader.hlsl" />
+    <FxCompile Include="Source\Shaders\SpritePixelShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Models\sphere.blend" />
@@ -192,5 +197,6 @@
     <Image Include="Textures\texture01.dds" />
     <Image Include="Textures\texture02.dds" />
     <Image Include="Textures\grass01.DDS" />
+    <Image Include="Textures\abilityicon01.DDS" />
   </ItemGroup>
 </Project>

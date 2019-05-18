@@ -15,7 +15,6 @@ class Mesh
 	ComPtr<ID3D11Buffer> indexBuffer;
 public:
 	Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShaderBuffer, const int vertexShaderSize);
-	void Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform);
 	const int GetIndexCount() const;
 	ID3D11InputLayout* GetInputLayout() const;
 	ID3D11Buffer* GetConstantBuffer() const;
