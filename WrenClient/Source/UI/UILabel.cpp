@@ -54,8 +54,6 @@ const bool UILabel::HandleEvent(const Event* const event)
 	{
 		const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
-		isVisible = false;
-
 		if (derivedEvent->layer == uiLayer && GetParent() == nullptr)
 			isVisible = true;
 		else
