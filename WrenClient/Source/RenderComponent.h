@@ -5,6 +5,9 @@
 
 class RenderComponent
 {
+	const unsigned int STRIDE{ sizeof(Vertex) };
+	const unsigned int OFFSET{ 0 };
+
 	unsigned int id{ 0 };
 	long gameObjectId{ 0 };
 	Mesh* mesh{ nullptr };

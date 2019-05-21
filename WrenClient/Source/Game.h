@@ -11,6 +11,7 @@
 #include "PlayerController.h"
 #include "SocketManager.h"
 #include "GameMap/GameMap.h"
+#include "Sprite.h"
 #include "UI/UICharacterListing.h"
 #include "UI/UIInput.h"
 #include "UI/UIInputGroup.h"
@@ -100,6 +101,7 @@ private:
 	void InitializeTextures();
 	void InitializeMeshes();
 	void InitializeRasterStates();
+	void InitializeSprites();
 	void RecreateCharacterListings(const std::vector<std::string*>* characterNames);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();
 
@@ -190,4 +192,10 @@ private:
 	std::unique_ptr<UIPanel> diagnosticsPanel;
 	std::unique_ptr<UIPanel> skillsPanel;
 	std::unique_ptr<UIPanel> abilitiesPanel;
+
+	// Buffers
+	//ComPtr<ID3D11Buffer> constantBufferOnce;
+	
+	// Sprites
+	std::unique_ptr<Sprite> testSprite;
 };

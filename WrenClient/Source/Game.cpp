@@ -131,6 +131,9 @@ void Game::Render(const float updateTimer)
 		m_gameMap->Draw(d3dContext, m_viewTransform, m_projectionTransform);
 
 		m_renderComponentManager.Render(d3dContext, m_viewTransform, m_projectionTransform, updateTimer);
+
+		// sprites
+		testSprite->Draw(d3dContext, m_projectionTransform);
 	}
 
 	// foreach RenderComponent -> Draw
@@ -221,6 +224,7 @@ void Game::CreateDeviceDependentResources()
 	InitializeTextures();
 	InitializeMeshes();
 	InitializeRasterStates();
+	InitializeSprites();
 	
 	auto d3dDevice = m_deviceResources->GetD3DDevice();
 	auto d2dDeviceContext = m_deviceResources->GetD2DDeviceContext();
@@ -685,7 +689,7 @@ void Game::InitializeBuffers()
 	XMStoreFloat4(&pCB->directionalLight, XMVECTOR{ 0.0f, -1.0f, 0.5f, 0.0f });
 	d3dContext->Unmap(constantBufferOnce, 0);
 
-	d3dContext->PSSetConstantBuffers(1, 1, &constantBufferOnce);
+	d3dContext->PSSetConstantBuffers(0, 1, &constantBufferOnce);
 }
 
 void Game::InitializeRasterStates()
@@ -718,7 +722,7 @@ void Game::InitializeTextures()
 	// clear calls the destructor of its elements, and ComPtr's destructor handles calling Release()
 	textures.clear();
 
-	for (auto i = 0; i < 3; i++)
+	for (auto i = 0; i < 4; i++)
 	{
 		ComPtr<ID3D11ShaderResourceView> ptr;
 		CreateDDSTextureFromFile(d3dDevice, paths[i], nullptr, ptr.ReleaseAndGetAddressOf());
@@ -742,6 +746,12 @@ void Game::InitializeMeshes()
 
 	for (auto i = 0; i < sizeof(paths) / sizeof(std::string); i++)
 		meshes.push_back(std::make_unique<Mesh>(paths[i], d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size));
+}
+
+void Game::InitializeSprites()
+{
+	auto d3dDevice = m_deviceResources->GetD3DDevice();
+	testSprite = std::make_unique<Sprite>(spriteVertexShader.Get(), spritePixelShader.Get(), textures[3].Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, d3dDevice, (m_clientWidth / -2) + 25, (m_clientHeight / -2) + 25, 38.0f, 38.0f);
 }
 
 void Game::RecreateCharacterListings(const std::vector<std::string*>* characterNames)

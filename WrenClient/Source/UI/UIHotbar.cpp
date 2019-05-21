@@ -20,7 +20,7 @@ UIHotbar::UIHotbar(
 	const auto width = 40.0f;
 	for (auto i = 0; i < 10; i++)
 	{
-		d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x + (i * width), position.y, position.x + (i * width) + width, position.y + width), 3.0f, 3.0f), geometry[i].ReleaseAndGetAddressOf());
+		d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + (i * width), position.y, position.x + (i * width) + width, position.y + width), geometry[i].ReleaseAndGetAddressOf());
 	}
 }
 

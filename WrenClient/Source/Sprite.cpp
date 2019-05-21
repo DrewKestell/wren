@@ -11,25 +11,25 @@ Sprite::Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader,
 
 	// top left
 	SpriteVertex topLeftVertex;
-	topLeftVertex.Position = XMFLOAT3{ originX - (width / 2), originY - (height / 2), 0.0f };
+	topLeftVertex.Position = XMFLOAT3{ originX - (width / 2), originY + (height / 2), 0.5f };
 	topLeftVertex.TexCoords = XMFLOAT2{ 0.0f, 0.0f };
 	vertices[0] = topLeftVertex;
 
 	// top right
 	SpriteVertex topRightVertex;
-	topRightVertex.Position = XMFLOAT3{ originX + (width / 2), originY - (height / 2), 0.0f };
+	topRightVertex.Position = XMFLOAT3{ originX + (width / 2), originY + (height / 2), 0.5f };
 	topRightVertex.TexCoords = XMFLOAT2{ 1.0f, 0.0f };
 	vertices[1] = topRightVertex;
 
 	// bottom right
 	SpriteVertex bottomRightVertex;
-	bottomRightVertex.Position = XMFLOAT3{ originX + (width / 2), originY + (height / 2), 0.0f };
+	bottomRightVertex.Position = XMFLOAT3{ originX + (width / 2), originY - (height / 2), 0.5f };
 	bottomRightVertex.TexCoords = XMFLOAT2{ 1.0f, 1.0f };
 	vertices[2] = bottomRightVertex;
 
 	// bottom left
 	SpriteVertex bottomLeftVertex;
-	bottomLeftVertex.Position = XMFLOAT3{ originX - (width / 2), originY + (height / 2), 0.0f };
+	bottomLeftVertex.Position = XMFLOAT3{ originX - (width / 2), originY - (height / 2), 0.5f };
 	bottomLeftVertex.TexCoords = XMFLOAT2{ 0.0f, 1.0f };
 	vertices[3] = bottomLeftVertex;
 
@@ -65,7 +65,7 @@ Sprite::Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader,
 
 	device->CreateBuffer(&bufferDesc, nullptr, constantBuffer.ReleaseAndGetAddressOf());
 
-	// create InputLayout
+	// create `
 	D3D11_INPUT_ELEMENT_DESC ied[] =
 	{
 		{"POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -95,40 +95,30 @@ Sprite::Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader,
 	device->CreateBuffer(&bufferDesc, &indexData, indexBuffer.ReleaseAndGetAddressOf());
 }
 
-void Sprite::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform)
+void Sprite::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX projectionTransform)
 {
-	// TODO: update GameObjects position based on state and updateLag
-	auto pos = gameObject.GetWorldPosition();
-	auto scale = gameObject.GetScale();
-	auto worldTransform = XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixTranslation(pos.x, pos.y, pos.z);
-
-	auto constantBuffer = mesh->GetConstantBuffer();
-	auto samplerState = mesh->GetSamplerState();
-	auto vertexBuffer = mesh->GetVertexBuffer();
-
 	// set InputLayout
-	immediateContext->IASetInputLayout(mesh->GetInputLayout());
+	immediateContext->IASetInputLayout(inputLayout.Get());
 
 	// map ConstantBuffer
-	auto worldViewProjection = worldTransform * viewTransform * projectionTransform;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	immediateContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	immediateContext->Map(constantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	auto pCB = reinterpret_cast<ConstantBufferPerObject*>(mappedResource.pData);
-	XMStoreFloat4x4(&pCB->mWorldViewProj, XMMatrixTranspose(worldViewProjection));
-	immediateContext->Unmap(constantBuffer, 0);
+	XMStoreFloat4x4(&pCB->mWorldViewProj, XMMatrixTranspose(projectionTransform));
+	immediateContext->Unmap(constantBuffer.Get(), 0);
 
 	// setup VertexShader
 	immediateContext->VSSetShader(vertexShader, nullptr, 0);
-	immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+	immediateContext->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
 	// setup PixelShader
 	immediateContext->PSSetShader(pixelShader, nullptr, 0);
-	immediateContext->PSSetSamplers(0, 1, &samplerState);
+	immediateContext->PSSetSamplers(0, 1, samplerState.GetAddressOf());
 	immediateContext->PSSetShaderResources(0, 1, &texture);
 
 	// set VertexBuffer and IndexBuffer then Draw
-	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &STRIDE, &OFFSET);
-	immediateContext->IASetIndexBuffer(mesh->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &STRIDE, &OFFSET);
+	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->DrawIndexed(6, 0, 0);
 }

@@ -1,7 +1,7 @@
 Texture2D GTexture : register(t0);
 SamplerState GSampler : register(s0);
 
-cbuffer cbPerFrame : register(b1)
+cbuffer cbPerFrame : register(b0)
 {
 	float4 directionalLight;
 };

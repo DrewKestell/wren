@@ -6,7 +6,7 @@
 
 class UIHotbar : public UIComponent
 {
-	ComPtr<ID2D1RoundedRectangleGeometry> geometry[10];
+	ComPtr<ID2D1RectangleGeometry> geometry[10];
 	ID2D1SolidColorBrush* brush = nullptr;
 	ID2D1DeviceContext1* d2dDeviceContext = nullptr;
 	ID2D1Factory2* d2dFactory = nullptr;

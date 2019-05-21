@@ -164,6 +164,7 @@
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
+    <ClInclude Include="Source\UI\UICharacterHUD.h" />
     <ClInclude Include="Source\UI\UIAbility.h" />
     <ClInclude Include="Source\UI\UIHotbar.h" />
     <ClInclude Include="Source\UI\UIInputGroup.h" />
@@ -190,9 +191,11 @@
     </FxCompile>
     <FxCompile Include="Source\Shaders\SpritePixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Source\Shaders\SpriteVertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Source\Shaders\VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
