@@ -20,6 +20,7 @@
 #include "UI/UILabel.h"
 #include "UI/UISkillListing.h"
 #include "UI/UIHotbar.h"
+#include "UI/UIAbility.h"
 #include "EventHandling/EventHandler.h"
 
 static const int BUFFER_SIZE = 120;
@@ -193,9 +194,6 @@ private:
 	std::unique_ptr<UIPanel> skillsPanel;
 	std::unique_ptr<UIPanel> abilitiesPanel;
 
-	// Buffers
-	//ComPtr<ID3D11Buffer> constantBufferOnce;
-	
-	// Sprites
-	std::unique_ptr<Sprite> testSprite;
+	// Abilities
+	std::unique_ptr<UIAbility> testAbility;
 };

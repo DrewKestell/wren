@@ -131,9 +131,6 @@ void Game::Render(const float updateTimer)
 		m_gameMap->Draw(d3dContext, m_viewTransform, m_projectionTransform);
 
 		m_renderComponentManager.Render(d3dContext, m_viewTransform, m_projectionTransform, updateTimer);
-
-		// sprites
-		testSprite->Draw(d3dContext, m_projectionTransform);
 	}
 
 	// foreach RenderComponent -> Draw
@@ -218,13 +215,13 @@ void Game::CreateDeviceDependentResources()
 	InitializeInputs();
 	InitializeButtons();
 	InitializeLabels();
-	InitializePanels();
+	InitializeTextures();
 	InitializeShaders();
 	InitializeBuffers();
-	InitializeTextures();
 	InitializeMeshes();
 	InitializeRasterStates();
 	InitializeSprites();
+	InitializePanels();
 	
 	auto d3dDevice = m_deviceResources->GetD3DDevice();
 	auto d2dDeviceContext = m_deviceResources->GetD2DDeviceContext();
@@ -577,6 +574,8 @@ void Game::InitializePanels()
 	auto writeFactory = m_deviceResources->GetWriteFactory();
 	auto d2dFactory = m_deviceResources->GetD2DFactory();
 	auto d2dContext = m_deviceResources->GetD2DDeviceContext();
+	auto d3dDevice = m_deviceResources->GetD3DDevice();
+	auto d3dDeviceContext = m_deviceResources->GetD3DDeviceContext();
 
 	// Game Settings
 	const auto gameSettingsPanelX = (m_clientWidth - 400.0f) / 2.0f;
@@ -633,6 +632,9 @@ void Game::InitializePanels()
 	abilitiesPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 2.0f, 2.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	abilitiesPanelHeader->SetText("Abilities");
 	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
+
+	testAbility = std::make_unique<UIAbility>(uiComponents, XMFLOAT3{ 10.0f, 10.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 1, d2dContext, d2dFactory, spriteVertexShader.Get(), spritePixelShader.Get(), textures[3].Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, d3dDevice, 0.0f, 0.0f, d3dDeviceContext, m_projectionTransform);
+	abilitiesPanel->AddChildComponent(*testAbility);
 }
 
 UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
@@ -751,7 +753,7 @@ void Game::InitializeMeshes()
 void Game::InitializeSprites()
 {
 	auto d3dDevice = m_deviceResources->GetD3DDevice();
-	testSprite = std::make_unique<Sprite>(spriteVertexShader.Get(), spritePixelShader.Get(), textures[3].Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, d3dDevice, (m_clientWidth / -2) + 25, (m_clientHeight / -2) + 25, 38.0f, 38.0f);
+	//testSprite = std::make_unique<Sprite>(spriteVertexShader.Get(), spritePixelShader.Get(), textures[3].Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, d3dDevice, (m_clientWidth / -2) + 25, (m_clientHeight / -2) + 25, 38.0f, 38.0f);
 }
 
 void Game::RecreateCharacterListings(const std::vector<std::string*>* characterNames)

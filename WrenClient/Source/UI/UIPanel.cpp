@@ -55,9 +55,6 @@ void UIPanel::Draw()
 	}
 	d2dDeviceContext->FillGeometry(bodyGeometry.Get(), bodyBrush);
 	d2dDeviceContext->DrawGeometry(bodyGeometry.Get(), borderBrush, borderWeight);
-
-	for (auto i = 0; i < children.size(); i++)
-		children.at(i)->Draw();
 }
 
 const bool UIPanel::HandleEvent(const Event* const event)
