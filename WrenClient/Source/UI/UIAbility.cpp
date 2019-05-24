@@ -4,49 +4,56 @@
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 
-UIAbility::UIAbility(std::vector<UIComponent*>& uiComponents,
+UIAbility::UIAbility(
+	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT3 position,
 	const XMFLOAT3 scale,
 	const Layer uiLayer,
 	const int abilityId,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory,
+	ID3D11Device* d3dDevice,
+	ID3D11DeviceContext* d3dDeviceContext,
 	ID3D11VertexShader* vertexShader,
 	ID3D11PixelShader* pixelShader,
 	ID3D11ShaderResourceView* texture,
+	ID2D1SolidColorBrush* highlightBrush,
 	const BYTE* vertexShaderBuffer,
 	const int vertexShaderSize,
-	ID3D11Device* d3dDevice,
-	const float originX,
-	const float originY,
-	ID3D11DeviceContext* d3dDeviceContext,
+	const float worldPosX,
+	const float worldPosY,
+	const float clientWidth,
+	const float clientHeight,
 	const XMMATRIX projectionTransform)
 	: UIComponent(uiComponents, position, scale, uiLayer),
 	  abilityId{ abilityId },
+	  d2dDeviceContext{ d2dDeviceContext },
 	  d3dDeviceContext{ d3dDeviceContext },
+	  highlightBrush{ highlightBrush },
 	  projectionTransform{ projectionTransform }
 {
-	// this doesn't work, because when the constructor is called, the panel parent doesn't exist yet - so the position
-	// will be wrong. 
-	auto worldPosition = GetWorldPosition();
-	auto pos = XMFLOAT3{ worldPosition.x + 20.0f, worldPosition.y + 20.0f, 0.0f };
+	// create highlight
+	d2dFactory->CreateRectangleGeometry(D2D1::RectF(worldPosX, worldPosY , worldPosX + SPRITE_WIDTH, worldPosX + SPRITE_WIDTH), highlightGeometry.ReleaseAndGetAddressOf());
+
+	// create UIAbility
+	auto pos = XMFLOAT3{ worldPosX + 18.0f, worldPosY + 18.0f, 0.0f };
 	FXMVECTOR v = XMLoadFloat3(&pos);
 	CXMMATRIX view = XMMatrixIdentity();
 	CXMMATRIX world = XMMatrixIdentity();
 
 	// this is good though!
-	auto res = XMVector3Unproject(v, 0.0f, 0.0f, 800.0f, 600.0f, 0.0f, 1000.0f, projectionTransform, view, world);
+	auto res = XMVector3Unproject(v, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, view, world);
 	XMFLOAT3 vec;
 	XMStoreFloat3(&vec, res);
-
-	sprite = std::make_unique<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, d3dDevice, vec.x, vec.y , SPRITE_WIDTH, SPRITE_WIDTH);
-	d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x, position.y, position.x + HIGHLIGHT_WIDTH, position.y + HIGHLIGHT_WIDTH), highlightGeometry.ReleaseAndGetAddressOf());
+	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, d3dDevice, vec.x, vec.y, SPRITE_WIDTH, SPRITE_WIDTH);
 }
 
 void UIAbility::Draw()
 {
 	if (!isVisible) return;
 
+	// if hover, draw highlight
+	//d2dDeviceContext->DrawGeometry(highlightGeometry.Get(), highlightBrush, 2.0f);
 	sprite->Draw(d3dDeviceContext, projectionTransform);
 }
 

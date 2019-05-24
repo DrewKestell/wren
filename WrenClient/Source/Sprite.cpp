@@ -11,25 +11,25 @@ Sprite::Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader,
 
 	// top left
 	SpriteVertex topLeftVertex;
-	topLeftVertex.Position = XMFLOAT3{ originX - (width / 2), originY + (height / 2), 0.5f };
+	topLeftVertex.Position = XMFLOAT3{ originX - (width / 2), originY + (height / 2), 0.0f };
 	topLeftVertex.TexCoords = XMFLOAT2{ 0.0f, 0.0f };
 	vertices[0] = topLeftVertex;
 
 	// top right
 	SpriteVertex topRightVertex;
-	topRightVertex.Position = XMFLOAT3{ originX + (width / 2), originY + (height / 2), 0.5f };
+	topRightVertex.Position = XMFLOAT3{ originX + (width / 2), originY + (height / 2), 0.0f };
 	topRightVertex.TexCoords = XMFLOAT2{ 1.0f, 0.0f };
 	vertices[1] = topRightVertex;
 
 	// bottom right
 	SpriteVertex bottomRightVertex;
-	bottomRightVertex.Position = XMFLOAT3{ originX + (width / 2), originY - (height / 2), 0.5f };
+	bottomRightVertex.Position = XMFLOAT3{ originX + (width / 2), originY - (height / 2), 0.0f };
 	bottomRightVertex.TexCoords = XMFLOAT2{ 1.0f, 1.0f };
 	vertices[2] = bottomRightVertex;
 
 	// bottom left
 	SpriteVertex bottomLeftVertex;
-	bottomLeftVertex.Position = XMFLOAT3{ originX - (width / 2), originY - (height / 2), 0.5f };
+	bottomLeftVertex.Position = XMFLOAT3{ originX - (width / 2), originY - (height / 2), 0.0f };
 	bottomLeftVertex.TexCoords = XMFLOAT2{ 0.0f, 1.0f };
 	vertices[3] = bottomLeftVertex;
 

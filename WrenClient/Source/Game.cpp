@@ -633,8 +633,8 @@ void Game::InitializePanels()
 	abilitiesPanelHeader->SetText("Abilities");
 	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
 
-	testAbility = std::make_unique<UIAbility>(uiComponents, XMFLOAT3{ 10.0f, 10.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 1, d2dContext, d2dFactory, spriteVertexShader.Get(), spritePixelShader.Get(), textures[3].Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, d3dDevice, 0.0f, 0.0f, d3dDeviceContext, m_projectionTransform);
-	abilitiesPanel->AddChildComponent(*testAbility);
+	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, d2dContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), whiteBrush.Get(), blackBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, m_projectionTransform, m_clientWidth, m_clientHeight);
+	abilitiesPanel->AddChildComponent(*abilitiesContainer);
 }
 
 UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
@@ -664,7 +664,7 @@ void Game::InitializeShaders()
 	spritePixelShaderBuffer = LoadShader(L"SpritePixelShader.cso");
 	d3dDevice->CreatePixelShader(spritePixelShaderBuffer.buffer, spritePixelShaderBuffer.size, nullptr, spritePixelShader.ReleaseAndGetAddressOf());
 
-	m_projectionTransform = XMMatrixOrthographicLH((float)m_clientWidth, (float)m_clientHeight, 0.1f, 5000.0f);
+	m_projectionTransform = XMMatrixOrthographicLH((float)m_clientWidth, (float)m_clientHeight, 0.0f, 5000.0f);
 }
 
 void Game::InitializeBuffers()
@@ -753,7 +753,6 @@ void Game::InitializeMeshes()
 void Game::InitializeSprites()
 {
 	auto d3dDevice = m_deviceResources->GetD3DDevice();
-	//testSprite = std::make_unique<Sprite>(spriteVertexShader.Get(), spritePixelShader.Get(), textures[3].Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, d3dDevice, (m_clientWidth / -2) + 25, (m_clientHeight / -2) + 25, 38.0f, 38.0f);
 }
 
 void Game::RecreateCharacterListings(const std::vector<std::string*>* characterNames)
@@ -866,9 +865,10 @@ const bool Game::HandleEvent(const Event* const event)
 			player.SetRenderComponentId(sphereRenderComponent.GetId());
 			m_playerController = std::make_unique<PlayerController>(player);
 
-			skills = derivedEvent->skills;
 			auto d2dDeviceContext = m_deviceResources->GetD2DDeviceContext();
 			auto writeFactory = m_deviceResources->GetWriteFactory();
+
+			skills = derivedEvent->skills;
 			auto xOffset = 5.0f;
 			auto yOffset = 25.0f;
 			for (auto i = 0; i < derivedEvent->skills->size(); i++)
@@ -876,6 +876,13 @@ const bool Game::HandleEvent(const Event* const event)
 				auto skill = derivedEvent->skills->at(i);
 				m_skillList[skill->skillId] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT3{ xOffset, yOffset + (18.0f * i), 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, *skill, blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatFPS.Get());
 				skillsPanel->AddChildComponent(*m_skillList[skill->skillId]);
+			}
+
+			abilities = derivedEvent->abilities;
+			for (auto i = 0; i < derivedEvent->abilities->size(); i++)
+			{
+				auto ability = abilities->at(i);
+				abilitiesContainer->AddAbility(ability, textures[ability->spriteId].Get());
 			}
 
 			SetActiveLayer(InGame);

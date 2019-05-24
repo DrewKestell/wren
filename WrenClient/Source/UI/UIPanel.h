@@ -23,6 +23,7 @@ class UIPanel : public UIComponent
     ID2D1SolidColorBrush* borderBrush = nullptr;
     ID2D1DeviceContext1* d2dDeviceContext = nullptr;
     ID2D1Factory2* d2dFactory = nullptr;
+	void SetChildrenAsVisible(UIComponent* uiComponent);
 public:
 	UIPanel(
 		std::vector<UIComponent*>& uiComponents,

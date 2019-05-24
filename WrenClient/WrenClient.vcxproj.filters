@@ -25,6 +25,7 @@
     <ClCompile Include="Source\UI\UIHotbar.cpp" />
     <ClCompile Include="Source\UI\UIAbility.cpp" />
     <ClCompile Include="Source\Sprite.cpp" />
+    <ClCompile Include="Source\UI\UIAbilitiesContainer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
@@ -154,6 +155,7 @@
     <ClInclude Include="Source\Sprite.h" />
     <ClInclude Include="Source\SpriteVertex.h" />
     <ClInclude Include="Source\UI\UICharacterHUD.h" />
+    <ClInclude Include="Source\UI\UIAbilitiesContainer.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />
@@ -187,6 +189,7 @@
     <None Include="Lib\assimp-vc140-mt.dll" />
     <None Include="Models\cube.blend" />
     <None Include="Models\tree.blend" />
+    <None Include="Models\dummy.blend" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Lib\assimp-vc140-mt.lib" />

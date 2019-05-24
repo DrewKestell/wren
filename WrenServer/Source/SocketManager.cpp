@@ -350,6 +350,18 @@ std::string SocketManager::ListSkills(const int characterId)
 	return skillString;
 }
 
+std::string SocketManager::ListAbilities(const int characterId)
+{
+	auto abilities = repository.ListAbilities(characterId);
+	std::string abilityString = "";
+	for (auto i = 0; i < abilities.size(); i++)
+	{
+		auto ability = abilities.at(i);
+		abilityString += (std::to_string(ability.abilityId) + "%" + ability.name + "%" + std::to_string(ability.spriteId) + ";");
+	}
+	return abilityString;
+}
+
 void SocketManager::EnterWorld(const std::string& token, const std::string& characterName)
 {
     const auto it = GetPlayer(token);
@@ -360,7 +372,7 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
 	(*it)->SetModelId(character->modelId);
 	(*it)->SetTextureId(character->textureId);
 	const auto characterGameObject = g_objectManager.CreateGameObject(character->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)character->id);
-    SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 7, std::to_string(character->id), std::to_string(character->position.x), std::to_string(character->position.y), std::to_string(character->position.z), std::to_string(character->modelId), std::to_string(character->textureId), ListSkills(character->id));
+    SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 8, std::to_string(character->id), std::to_string(character->position.x), std::to_string(character->position.y), std::to_string(character->position.z), std::to_string(character->modelId), std::to_string(character->textureId), ListSkills(character->id), ListAbilities(character->id));
 }
 
 void SocketManager::DeleteCharacter(const std::string& token, const std::string& characterName)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Models/Skill.h>
+#include <Models/Ability.h>
 #include "Models/Account.h"
 #include "Models/Character.h"
 
@@ -18,4 +19,5 @@ public:
 	void DeleteCharacter(const std::string& characterName);
 	Character* GetCharacter(const std::string& characterName);
 	std::vector<Skill> ListSkills(const int characterId);
+	std::vector<Ability> ListAbilities(const int characterId);
 };

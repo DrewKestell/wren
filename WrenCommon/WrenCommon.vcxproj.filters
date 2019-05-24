@@ -76,5 +76,6 @@
     <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\EventHandling\Events\GameObjectUpdateEvent.h" />
     <ClInclude Include="Source\Models\Skill.h" />
+    <ClInclude Include="Source\Models\Ability.h" />
   </ItemGroup>
 </Project>

@@ -40,6 +40,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\UI\UIAbilitiesContainer.cpp" />
     <ClCompile Include="Source\UI\UIAbility.cpp" />
     <ClCompile Include="Source\UI\UIHotbar.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
+    <ClInclude Include="Source\UI\UIAbilitiesContainer.h" />
     <ClInclude Include="Source\UI\UICharacterHUD.h" />
     <ClInclude Include="Source\UI\UIAbility.h" />
     <ClInclude Include="Source\UI\UIHotbar.h" />
@@ -232,6 +234,7 @@
     <None Include="Include\assimp\vector3.inl" />
     <None Include="Lib\assimp-vc140-mt.dll" />
     <None Include="Models\cube.blend" />
+    <None Include="Models\dummy.blend" />
     <None Include="Models\sphere.blend" />
     <None Include="Models\tree.blend" />
   </ItemGroup>

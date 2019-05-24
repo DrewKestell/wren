@@ -20,7 +20,7 @@
 #include "UI/UILabel.h"
 #include "UI/UISkillListing.h"
 #include "UI/UIHotbar.h"
-#include "UI/UIAbility.h"
+#include "UI/UIAbilitiesContainer.h"
 #include "EventHandling/EventHandler.h"
 
 static const int BUFFER_SIZE = 120;
@@ -77,7 +77,9 @@ private:
 	std::unique_ptr<PlayerUpdate> playerUpdates[BUFFER_SIZE];
 	std::vector<std::unique_ptr<Mesh>> meshes;
 	std::vector<ComPtr<ID3D11ShaderResourceView>> textures;
+	std::vector<std::shared_ptr<Sprite>> sprites;
 	std::vector<Skill*>* skills;
+	std::vector<Ability*>* abilities;
 	std::unique_ptr<UIHotbar> hotbar;
 
 	void Update();
@@ -195,5 +197,5 @@ private:
 	std::unique_ptr<UIPanel> abilitiesPanel;
 
 	// Abilities
-	std::unique_ptr<UIAbility> testAbility;
+	std::unique_ptr<UIAbilitiesContainer> abilitiesContainer;
 };

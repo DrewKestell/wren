@@ -132,12 +132,7 @@ const bool UIPanel::HandleEvent(const Event* const event)
 				{
 					isVisible = !isVisible;
 
-					auto children = GetChildren();
-					for (auto i = 0; i < children.size(); i++)
-					{
-						auto uiComponent = (UIComponent*)children.at(i);
-						uiComponent->SetVisible(!uiComponent->IsVisible());
-					}
+					SetChildrenAsVisible(this);
 				}
 			}
 
@@ -146,4 +141,15 @@ const bool UIPanel::HandleEvent(const Event* const event)
 	}
 
 	return false;
+}
+
+void UIPanel::SetChildrenAsVisible(UIComponent* uiComponent)
+{
+	auto children = uiComponent->GetChildren();
+	for (auto i = 0; i < children.size(); i++)
+	{
+		auto uiComponent = (UIComponent*)children.at(i);
+		uiComponent->SetVisible(!uiComponent->IsVisible());
+		SetChildrenAsVisible(uiComponent);
+	}
 }
