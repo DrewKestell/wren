@@ -37,6 +37,7 @@ namespace DX
 		ID3D11RenderTargetView*	GetOffscreenRenderTargetView() const { return m_offscreenRenderTargetView.Get(); }
 		ID3D11DepthStencilView* GetDepthStencilView() const { return m_depthStencilView.Get(); }
 		D3D11_VIEWPORT GetScreenViewport() const { return m_screenViewport; }
+		ID3D11DepthStencilState* GetDepthStencilState() const { return m_depthStencilState.Get(); }
 	private:
 		void CreateFactory();
 
@@ -59,6 +60,7 @@ namespace DX
 		ComPtr<ID3D11RenderTargetView> m_backBufferRenderTargetView;
 		ComPtr<ID3D11RenderTargetView> m_offscreenRenderTargetView;
 		ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+		ComPtr<ID3D11DepthStencilState> m_depthStencilState;
 		D3D11_VIEWPORT m_screenViewport{};
 
 		// Direct3D Properties.

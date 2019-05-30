@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "UIHotbar.h"
 #include "Layer.h"
+#include "Events/UIAbilityDroppedEvent.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 
@@ -50,7 +51,45 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 
 			break;
 		}
+		case EventType::UIAbilityDroppedEvent:
+		{
+			const auto derivedEvent = (UIAbilityDroppedEvent*)event;
+
+			const auto index = GetIndex(derivedEvent->mousePosX, derivedEvent->mousePosY);
+			const auto xOffset = index * 40.0f;
+
+			uiAbilities[index] = derivedEvent->uiAbility;
+			uiAbilities[index]->SetLocalPosition(XMFLOAT3{ xOffset + 2.0f, 2.0f, 0.0f });
+			uiAbilities[index]->SetParent(*this);
+
+			break;
+		}
 	}
 
 	return false;
+}
+
+void UIHotbar::DrawSprites()
+{
+	for (auto i = 0; i < 10; i++)
+	{
+		auto uiAbility = uiAbilities[i];
+		if (uiAbility)
+			uiAbility->DrawSprite();
+	}
+}
+
+const int UIHotbar::GetIndex(const float posX, const float posY) const
+{
+	const auto worldPos = GetWorldPosition();
+
+	if (posX < worldPos.x || posX >= worldPos.x + 400.0f || posY < worldPos.y || posY > worldPos.y + 40.0f)
+		return -1;
+
+	return (posX - 5) / 40;
+}
+
+const std::string UIHotbar::GetUIAbilityDragBehavior() const
+{
+	return "MOVE";
 }

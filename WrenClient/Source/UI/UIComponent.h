@@ -24,6 +24,8 @@ public:
 	UIComponent* GetParent() const { return parent; }
 	void SetParent(UIComponent& parent) { /*delete(this->parent);*/ this->parent = &parent; } // TODO: i think parent should be a shared_pointer, because another gameobject could have a reference to it, and we can't delete it 
 	void AddChildComponent(UIComponent& child) { child.SetParent(*this); children.push_back(&child); }
+	void SetLocalPosition(const XMFLOAT3 pos) { this->localPosition = pos; }
+	virtual const std::string GetUIAbilityDragBehavior() const { return "NONE"; }
 	virtual void Draw() = 0;
 	~UIComponent();
 };

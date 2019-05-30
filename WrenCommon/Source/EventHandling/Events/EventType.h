@@ -25,5 +25,7 @@ enum class EventType
 	DeleteCharacterSuccess,
 	PlayerCorrection,
 	DeleteGameObjectEvent,
-	GameObjectUpdate
+	GameObjectUpdate,
+	UIAbilityDroppedEvent,
+	ActivateAbility
 };

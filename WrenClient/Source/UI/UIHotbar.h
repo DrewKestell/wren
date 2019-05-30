@@ -1,15 +1,18 @@
 #pragma once
 
 #include "UIComponent.h"
+#include "UIAbility.h"
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
 
 class UIHotbar : public UIComponent
 {
 	ComPtr<ID2D1RectangleGeometry> geometry[10];
-	ID2D1SolidColorBrush* brush = nullptr;
-	ID2D1DeviceContext1* d2dDeviceContext = nullptr;
-	ID2D1Factory2* d2dFactory = nullptr;
+	UIAbility* uiAbilities[10];
+	ID2D1SolidColorBrush* brush;
+	ID2D1DeviceContext1* d2dDeviceContext;
+	ID2D1Factory2* d2dFactory;
+	const int GetIndex(const float posX, const float posY) const;
 public:
 	UIHotbar(
 		std::vector<UIComponent*>& uiComponents,
@@ -21,4 +24,6 @@ public:
 		ID2D1Factory2* d2dFactory);
 	virtual void Draw();
 	virtual const bool HandleEvent(const Event* const event);
+	virtual const std::string GetUIAbilityDragBehavior() const;
+	void DrawSprites();
 };

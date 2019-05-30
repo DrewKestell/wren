@@ -156,6 +156,7 @@
     <ClInclude Include="Source\SpriteVertex.h" />
     <ClInclude Include="Source\UI\UICharacterHUD.h" />
     <ClInclude Include="Source\UI\UIAbilitiesContainer.h" />
+    <ClInclude Include="Source\Events\UIAbilityDroppedEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

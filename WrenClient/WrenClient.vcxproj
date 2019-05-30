@@ -150,6 +150,7 @@
     <ClInclude Include="Source\EventHandling\Events\MouseMoveEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
+    <ClInclude Include="Source\Events\UIAbilityDroppedEvent.h" />
     <ClInclude Include="Source\Game.h" />
     <ClInclude Include="Source\GameMap\GameMap.h" />
     <ClInclude Include="Source\GameMap\GameMapTile.h" />

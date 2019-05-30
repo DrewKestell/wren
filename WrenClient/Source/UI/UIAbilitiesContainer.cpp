@@ -19,6 +19,7 @@ UIAbilitiesContainer::UIAbilitiesContainer(
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1SolidColorBrush* highlightBrush,
 	ID2D1SolidColorBrush* headerBrush,
+	ID2D1SolidColorBrush* abilityPressedBrush,
 	IDWriteTextFormat* headerTextFormat,
 	ID3D11VertexShader* vertexShader,
 	ID3D11PixelShader* pixelShader,
@@ -36,6 +37,7 @@ UIAbilitiesContainer::UIAbilitiesContainer(
 	  borderBrush{ borderBrush },
 	  highlightBrush{ highlightBrush },
 	  headerBrush{ headerBrush },
+	  abilityPressedBrush{ abilityPressedBrush },
 	  headerTextFormat{ headerTextFormat },
 	  vertexShader{ vertexShader },
 	  pixelShader{ pixelShader },
@@ -52,12 +54,23 @@ void UIAbilitiesContainer::Draw()
 	if (!isVisible) return;
 
 	const auto worldPos = GetWorldPosition();
+	const auto initialSize = headers.size();
 
 	for (auto i = 0; i < headers.size(); i++)
 	{
 		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(worldPos.x + 12.0f, worldPos.y + 30.0 + (i * 60.0f)), headers.at(i).Get(), headerBrush);
-		d2dDeviceContext->DrawGeometry(borderGeometries.at(i).Get(), borderBrush, 2.0f);
 		// if mouse hover, draw highlight
+
+		// Draw Borders
+		borderGeometries.clear();
+		ComPtr<ID2D1RectangleGeometry> borderGeometry;
+		auto xOffset = 12.0f;
+		auto yOffset = 50.0f + (borderGeometries.size() * 60.0f);
+		auto positionX = worldPos.x + xOffset;
+		auto positionY = worldPos.y + yOffset;
+		d2dFactory->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + BORDER_WIDTH, positionY + BORDER_WIDTH), borderGeometry.ReleaseAndGetAddressOf());
+		borderGeometries.push_back(borderGeometry);
+		d2dDeviceContext->DrawGeometry(borderGeometries.at(i).Get(), borderBrush, 2.0f);
 	}
 }
 
@@ -110,11 +123,22 @@ void UIAbilitiesContainer::AddAbility(Ability* ability, ID3D11ShaderResourceView
 	auto yOffset = 50.0f + (initialSize * 60.0f);
 	auto positionX = worldPos.x + xOffset;
 	auto positionY = worldPos.y + yOffset;
-	d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(positionX, positionY, positionX + BORDER_WIDTH, positionY + BORDER_WIDTH), 3.0f, 3.0f), borderGeometry.ReleaseAndGetAddressOf());
-	borderGeometries.push_back(borderGeometry);
 
 	// create UIAbility
-	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility(uiComponents, XMFLOAT3{ xOffset + 2.0f, yOffset + 2.0f, 0.0f }, scale, uiLayer, ability->abilityId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, vertexShaderBuffer, vertexShaderSize, positionX + 2.0f, positionY + 2.0f, clientWidth, clientHeight, projectionTransform));
+	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility(uiComponents, XMFLOAT3{ xOffset + 2.0f, yOffset + 2.0f, 0.0f }, scale, uiLayer, ability->abilityId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, vertexShaderBuffer, vertexShaderSize, positionX + 2.0f, positionY + 2.0f, clientWidth, clientHeight, projectionTransform));
 	uiAbilities.push_back(uiAbility);
 	this->AddChildComponent(*uiAbility);
+}
+
+void UIAbilitiesContainer::DrawSprites()
+{
+	for (auto i = 0; i < uiAbilities.size(); i++)
+	{
+		uiAbilities.at(i)->DrawSprite();
+	}
+}
+
+const std::string UIAbilitiesContainer::GetUIAbilityDragBehavior() const
+{
+	return "COPY";
 }

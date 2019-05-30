@@ -77,5 +77,6 @@
     <ClInclude Include="Source\EventHandling\Events\GameObjectUpdateEvent.h" />
     <ClInclude Include="Source\Models\Skill.h" />
     <ClInclude Include="Source\Models\Ability.h" />
+    <ClInclude Include="Source\EventHandling\Events\ActivateAbilityEvent.h" />
   </ItemGroup>
 </Project>

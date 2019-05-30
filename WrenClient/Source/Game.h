@@ -8,6 +8,7 @@
 #include "Mesh.h"
 #include "ObjectManager.h"
 #include "RenderComponentManager.h"
+#include "StatsComponentManager.h"
 #include "PlayerController.h"
 #include "SocketManager.h"
 #include "GameMap/GameMap.h"
@@ -68,6 +69,7 @@ private:
 	std::unique_ptr<DX::DeviceResources> m_deviceResources;
 	ObjectManager m_objectManager;
 	RenderComponentManager m_renderComponentManager{ m_objectManager };
+	StatsComponentManager m_statsComponentManager{ m_objectManager };
 	GameTimer m_timer;
 	Camera m_camera;
 	std::unique_ptr<GameMap> m_gameMap;
@@ -126,6 +128,9 @@ private:
 	ComPtr<ID2D1SolidColorBrush> successMessageBrush;
 	ComPtr<ID2D1SolidColorBrush> errorMessageBrush;
 	ComPtr<ID2D1SolidColorBrush> selectedCharacterBrush;
+	ComPtr<ID2D1SolidColorBrush> lightGrayBrush;
+	ComPtr<ID2D1SolidColorBrush> abilityHighlightBrush;
+	ComPtr<ID2D1SolidColorBrush> abilityPressedBrush;
 
 	// Shaders
 	ShaderBuffer vertexShaderBuffer{};

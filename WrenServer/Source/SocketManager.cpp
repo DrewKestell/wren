@@ -324,6 +324,15 @@ bool SocketManager::TryRecieveMessage()
 
 			return true;
 		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_ACTIVATE_ABILITY, opcodeArrLen))
+		{
+			const auto token = args[0];
+			const auto ablilityId = args[1];
+
+			// todo
+
+			return true;
+		}
 	}
 
 	return false;

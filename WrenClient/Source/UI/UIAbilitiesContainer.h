@@ -14,7 +14,7 @@ class UIAbilitiesContainer : public UIComponent
 	const float SPRITE_WIDTH = 36.0f;
 	std::vector<Ability*> abilities;
 	std::vector<ComPtr<IDWriteTextLayout>> headers;
-	std::vector<ComPtr<ID2D1RoundedRectangleGeometry>> borderGeometries;
+	std::vector<ComPtr<ID2D1RectangleGeometry>> borderGeometries;
 	std::vector<std::shared_ptr<UIAbility>> uiAbilities;
 	ID2D1DeviceContext1* d2dDeviceContext;
 	ID2D1Factory2* d2dFactory;
@@ -24,6 +24,7 @@ class UIAbilitiesContainer : public UIComponent
 	ID2D1SolidColorBrush* borderBrush;
 	ID2D1SolidColorBrush* highlightBrush;
 	ID2D1SolidColorBrush* headerBrush;
+	ID2D1SolidColorBrush* abilityPressedBrush;
 	IDWriteTextFormat* headerTextFormat;
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
@@ -46,6 +47,7 @@ public:
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1SolidColorBrush* highlightBrush,
 		ID2D1SolidColorBrush* headerBrush,
+		ID2D1SolidColorBrush* abilityPressedBrush,
 		IDWriteTextFormat* headerTextFormat,
 		ID3D11VertexShader* vertexShader,
 		ID3D11PixelShader* pixelShader,
@@ -57,4 +59,6 @@ public:
 	virtual void Draw();
 	virtual const bool HandleEvent(const Event* const event);
 	void AddAbility(Ability* ability, ID3D11ShaderResourceView* texture);
+	virtual const std::string GetUIAbilityDragBehavior() const;
+	void DrawSprites();
 };

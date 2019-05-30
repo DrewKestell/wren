@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "RenderComponent.h"
 #include <OpCodes.h>
+#include "Events/UIAbilityDroppedEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -15,6 +16,7 @@
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
 #include "EventHandling/Events/GameObjectUpdateEvent.h"
+#include "EventHandling/Events/ActivateAbilityEvent.h"
 
 SocketManager g_socketManager;
 
@@ -139,6 +141,10 @@ void Game::Render(const float updateTimer)
 
 	d2dContext->EndDraw();
 
+	// this stuff has to be drawn after EndDraw is called to make sure it's on top of the d2d stuff
+	abilitiesContainer->DrawSprites();
+	hotbar->DrawSprites();
+
 	d3dContext->ResolveSubresource(m_deviceResources->GetBackBufferRenderTarget(), 0, m_deviceResources->GetOffscreenRenderTarget(), 0, DXGI_FORMAT_B8G8R8A8_UNORM);
 
 	// Show the new frame.
@@ -151,10 +157,12 @@ void Game::Clear()
 	auto context = m_deviceResources->GetD3DDeviceContext();
 	auto renderTarget = m_deviceResources->GetOffscreenRenderTargetView();
 	auto depthStencil = m_deviceResources->GetDepthStencilView();
+	auto depthStencilState = m_deviceResources->GetDepthStencilState();
 
 	context->ClearRenderTargetView(renderTarget, Colors::CornflowerBlue);
 	context->ClearDepthStencilView(depthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	context->OMSetRenderTargets(1, &renderTarget, depthStencil);
+	context->OMSetDepthStencilState(depthStencilState, 0);
 
 	// Set the viewport.
 	auto viewport = m_deviceResources->GetScreenViewport();
@@ -306,6 +314,9 @@ void Game::InitializeBrushes()
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.137f, 0.98f, 0.117f, 1.0f), successMessageBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.98f, 0.117f, 0.156f, 1.0f), errorMessageBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.921f, 1.0f, 0.921f, 1.0f), selectedCharacterBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.9f, 0.9f, 0.9f, 1.0f), lightGrayBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.619f, 0.854f, 1.0f, 0.75f), abilityHighlightBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.619f, 0.854f, 1.0f, 0.95f), abilityPressedBrush.ReleaseAndGetAddressOf());
 }
 
 void Game::InitializeTextFormats()
@@ -588,7 +599,7 @@ void Game::InitializePanels()
 		SetActiveLayer(Login);
 	};
 	gameSettings_logoutButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 10.0f, 26.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 80.0f, 24.0f, "LOGOUT", onClickGameSettingsLogoutButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	gameSettingsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ gameSettingsPanelX, gameSettingsPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), whiteBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+	gameSettingsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ gameSettingsPanelX, gameSettingsPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 	gameSettingsPanel->AddChildComponent(*gameSettingsPanelHeader);
 	gameSettingsPanel->AddChildComponent(*gameSettings_logoutButton);
 
@@ -597,13 +608,13 @@ void Game::InitializePanels()
 	const auto gameEditorPanelY = 5.0f;
 	gameEditorPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 2.0f, 2.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	gameEditorPanelHeader->SetText("Game Editor");
-	gameEditorPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ gameEditorPanelX, gameEditorPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, true, 200.0f, 400.0f, VK_F1, darkBlueBrush.Get(), whiteBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+	gameEditorPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ gameEditorPanelX, gameEditorPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, true, 200.0f, 400.0f, VK_F1, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 	gameEditorPanel->AddChildComponent(*gameEditorPanelHeader);
 
 	// Diagnostics
 	const auto diagnosticsPanelX = 580.0f;
 	const auto diagnosticsPanelY = 336.0f;
-	diagnosticsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ diagnosticsPanelX, diagnosticsPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, true, 200.0f, 200.0f, VK_F2, darkBlueBrush.Get(), whiteBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+	diagnosticsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ diagnosticsPanelX, diagnosticsPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, true, 200.0f, 200.0f, VK_F2, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 
 	diagnosticsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 2.0f, 2.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	diagnosticsPanelHeader->SetText("Diagnostics");
@@ -618,7 +629,7 @@ void Game::InitializePanels()
 	// Skills
 	const auto skillsPanelX = 200.0f;
 	const auto skillsPanelY = 200.0f;
-	skillsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ skillsPanelX, skillsPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, true, 200.0f, 200.0f, VK_F3, darkBlueBrush.Get(), whiteBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+	skillsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ skillsPanelX, skillsPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, true, 200.0f, 200.0f, VK_F3, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 
 	skillsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 2.0f, 2.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	skillsPanelHeader->SetText("Skills");
@@ -627,13 +638,13 @@ void Game::InitializePanels()
 	// Abilities
 	const auto abilitiesPanelX = 300.0f;
 	const auto abilitiesPanelY = 300.0f;
-	abilitiesPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ abilitiesPanelX, abilitiesPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, true, 300.0f, 300.0f, VK_F4, darkBlueBrush.Get(), whiteBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+	abilitiesPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ abilitiesPanelX, abilitiesPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, true, 240.0f, 400.0f, VK_F4, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 
 	abilitiesPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 2.0f, 2.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	abilitiesPanelHeader->SetText("Abilities");
 	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
 
-	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, d2dContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), whiteBrush.Get(), blackBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, m_projectionTransform, m_clientWidth, m_clientHeight);
+	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, d2dContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, m_projectionTransform, m_clientWidth, m_clientHeight);
 	abilitiesPanel->AddChildComponent(*abilitiesContainer);
 }
 
@@ -863,6 +874,8 @@ const bool Game::HandleEvent(const Event* const event)
 			m_player = &player;
 			auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(player.GetId(), meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.SetRenderComponentId(sphereRenderComponent.GetId());
+			auto statsComponent = m_statsComponentManager.CreateStatsComponent(player.GetId(), 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
+			player.statsComponentId = statsComponent.id;
 			m_playerController = std::make_unique<PlayerController>(player);
 
 			auto d2dDeviceContext = m_deviceResources->GetD2DDeviceContext();
@@ -912,6 +925,14 @@ const bool Game::HandleEvent(const Event* const event)
 				gameObject.SetLocalPosition(pos);
 				gameObject.SetMovementVector(mov);
 			}
+
+			break;
+		}
+		case EventType::ActivateAbility:
+		{
+			const auto derivedEvent = (ActivateAbilityEvent*)event;
+
+			g_socketManager.SendPacket(OPCODE_ACTIVATE_ABILITY, 1, derivedEvent->abilityId);
 
 			break;
 		}

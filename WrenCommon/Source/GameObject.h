@@ -38,4 +38,5 @@ public:
 	void SetRenderComponentId(const unsigned int renderComponentId);
 	XMFLOAT3 GetMovementVector() const;
 	void SetMovementVector(const XMFLOAT3 movementVector);
+	unsigned int statsComponentId;
 };
