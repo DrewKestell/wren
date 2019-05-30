@@ -73,6 +73,11 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 			{
 				delete derivedEvent->uiAbility;
 			}
+			if (draggingIndex >= 0)
+			{
+				uiAbilities[draggingIndex] = nullptr;
+				draggingIndex = -1;
+			}
 			
 			break;
 		}
@@ -81,8 +86,7 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 			const auto derivedEvent = (StartDraggingUIAbilityEvent*)event;
 			const auto hotbarIndex = derivedEvent->hotbarIndex;
 
-			if (hotbarIndex >= 0)
-				uiAbilities[hotbarIndex] = nullptr;
+			draggingIndex = hotbarIndex;
 		}
 	}
 
@@ -93,9 +97,8 @@ void UIHotbar::DrawSprites()
 {
 	for (auto i = 0; i < 10; i++)
 	{
-		auto uiAbility = uiAbilities[i];
-		if (uiAbility)
-			uiAbility->DrawSprite();
+		if (uiAbilities[i])
+			uiAbilities[i]->DrawSprite();
 	}
 }
 
