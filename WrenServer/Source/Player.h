@@ -4,42 +4,35 @@ class Player
 {
 	const int accountId;
 	const std::string token;
-    const std::string ipAndPort;
-	DWORD lastHeartbeat;
-	std::string characterName;
+	const std::string ipAndPort;
+	sockaddr_in fromSockAddr;
 	int updateCounter{ 0 };
-	sockaddr_in from;
+
+public:
+	DWORD lastHeartbeat;
+	std::string characterName{ "" };
 	int characterId{ 0 };
 	int modelId{ 0 };
-	int textureId{ 0 };   
-public:
-    Player(
+	int textureId{ 0 };
+
+	Player(
 		const int accountId,
 		const std::string& token,
 		const std::string& ipAndPort,
 		const DWORD lastHeartbeat,
-		sockaddr_in from)
+		sockaddr_in fromSockAddr)
 		: accountId{ accountId },
 		  token{ token },
-		  ipAndPort { ipAndPort },
-		  lastHeartbeat { lastHeartbeat },
-		  from{ from }
-    {
+		  ipAndPort{ ipAndPort },
+		  lastHeartbeat{ lastHeartbeat },
+		  fromSockAddr{ fromSockAddr }
+	{
 	}
+
 	const int GetAccountId() const { return accountId; }
 	const std::string& GetToken() const { return token; }
-    const std::string& GetCharacterName() const { return characterName; }
-	void SetCharacterName(const std::string characterName) { this->characterName = characterName; }
-    const std::string& GetIPAndPort() const { return ipAndPort; }
-    const DWORD GetLastHeartbeat() const { return lastHeartbeat; }
-    void SetLastHeartbeat(const DWORD heartbeat) { lastHeartbeat = heartbeat; }
-	void IncrementUpdateCounter() { updateCounter++; };
+	const std::string& GetIPAndPort() const { return ipAndPort; }
 	const int GetUpdateCounter() const { return updateCounter; }
-	sockaddr_in GetSockAddr() { return from; }
-	const int GetCharacterId() const { return characterId; }
-	void SetCharacterId(const int characterId) { this->characterId = characterId; }
-	const int GetModelId() const { return modelId; }
-	void SetModelId(const int modelId) { this->modelId = modelId; }
-	const int GetTextureId() const { return textureId; }
-	void SetTextureId(const int textureId) { this->textureId = textureId; }
+	void IncrementUpdateCounter() { updateCounter++; };
+	sockaddr_in GetSockAddr() { return fromSockAddr; }
 };

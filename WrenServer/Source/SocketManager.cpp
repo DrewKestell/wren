@@ -155,7 +155,7 @@ void SocketManager::CreateCharacter(const std::string& token, const std::string&
 void SocketManager::UpdateLastHeartbeat(const std::string& token)
 {
     const auto it = GetPlayer(token);
-    (*it)->SetLastHeartbeat(GetTickCount());
+	(*it)->lastHeartbeat = GetTickCount();
 }
 
 void SocketManager::SendPacket(sockaddr_in from, const std::string& opcode, const int argCount, ...)
@@ -186,7 +186,7 @@ void SocketManager::HandleTimeout()
 {
     const auto it = players.begin();
     for_each(players.begin(), players.end(), [&it, this](Player* player) {
-        if (GetTickCount() > player->GetLastHeartbeat() + TIMEOUT_DURATION)
+        if (GetTickCount() > player->lastHeartbeat + TIMEOUT_DURATION)
         {
             std::cout << "AccountId " << player->GetAccountId() << " timed out." << "\n\n";
 			delete(*it);
@@ -208,7 +208,6 @@ bool SocketManager::TryRecieveMessage()
 	if (result != SOCKET_ERROR)
 	{
 		inet_ntop(AF_INET, &(from.sin_addr), str, INET_ADDRSTRLEN);
-		//printf("Received message from %s:%i - %s\n", str, from.sin_port, buffer);
 
 		const auto checksumArrLen = 8;
 		char checksumArr[checksumArrLen];
@@ -222,7 +221,17 @@ bool SocketManager::TryRecieveMessage()
 		const auto opcodeArrLen = 2;
 		char opcodeArr[opcodeArrLen];
 		memcpy(&opcodeArr[0], &buffer[8], opcodeArrLen * sizeof(char));
-		//std::cout << "Opcode: " << opcodeArr[0] << opcodeArr[1] << "\n";
+
+		auto logMessage = true;
+		if ((opcodeArr[0] == '1' && opcodeArr[1] == '5') || // PlayerUpdate
+			(opcodeArr[0] == '1' && opcodeArr[1] == '0'))   // Heartbeat
+			logMessage = false;
+
+		if (logMessage)
+		{
+			printf("Received message from %s:%i - %s\n", str, from.sin_port, buffer);
+			std::cout << "Opcode: " << opcodeArr[0] << opcodeArr[1] << "\n";
+		}
 
 		std::vector<std::string> args;
 		auto bufferLength = strlen(buffer);
@@ -240,9 +249,12 @@ bool SocketManager::TryRecieveMessage()
 					arg += buffer[i];
 			}
 
-			/*std::cout << "Args:\n";
-			for_each(args.begin(), args.end(), [](std::string str) { std::cout << "  " << str << "\n";  });
-			std::cout << "\n";*/
+			if (logMessage)
+			{
+				std::cout << "Args:\n";
+				for_each(args.begin(), args.end(), [](std::string str) { std::cout << "  " << str << "\n";  });
+				std::cout << "\n";
+			}
 		}
 
 		if (MessagePartsEqual(opcodeArr, OPCODE_CONNECT, opcodeArrLen))
@@ -342,8 +354,8 @@ std::string SocketManager::ListCharacters(const int accountId)
 {
     auto characters = repository.ListCharacters(accountId);
     std::string characterString = "";
-    for (auto i = 0; i < characters->size(); i++)
-        characterString += (characters->at(i) + ";");
+    for (auto i = 0; i < characters.size(); i++)
+        characterString += (characters.at(i) + ";");
     return characterString;
 }
 
@@ -374,14 +386,16 @@ std::string SocketManager::ListAbilities(const int characterId)
 void SocketManager::EnterWorld(const std::string& token, const std::string& characterName)
 {
     const auto it = GetPlayer(token);
-    (*it)->SetLastHeartbeat(GetTickCount());
-
 	auto character = repository.GetCharacter(characterName);
-	(*it)->SetCharacterId(character->id);
-	(*it)->SetModelId(character->modelId);
-	(*it)->SetTextureId(character->textureId);
-	const auto characterGameObject = g_objectManager.CreateGameObject(character->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)character->id);
-    SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 8, std::to_string(character->id), std::to_string(character->position.x), std::to_string(character->position.y), std::to_string(character->position.z), std::to_string(character->modelId), std::to_string(character->textureId), ListSkills(character->id), ListAbilities(character->id));
+
+	(*it)->lastHeartbeat = GetTickCount();
+	(*it)->characterId = character->GetId();
+	(*it)->modelId = character->GetModelId();
+	(*it)->textureId = character->GetTextureId();
+	const auto characterGameObject = g_objectManager.CreateGameObject(character->GetPosition(), XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)character->GetId());
+	const auto pos = character->GetPosition();
+	const auto charId = character->GetId();
+    SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 8, std::to_string(charId), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(character->GetModelId()), std::to_string(character->GetTextureId()), ListSkills(charId), ListAbilities(charId));
 }
 
 void SocketManager::DeleteCharacter(const std::string& token, const std::string& characterName)
@@ -413,12 +427,6 @@ void SocketManager::PlayerUpdate(
 	GameObject& player = g_objectManager.GetGameObjectById(std::stol(characterId));
 
 	player.SetMovementVector(XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ) });
-	
-	//std::cout << "PlayerPos from Client: \n";
-	//Utility::PrintXMFLOAT3(XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ) });
-
-	//std::cout << "PlayerPos on Server: \n";
-	//Utility::PrintXMFLOAT3(player.GetWorldPosition());
 
 	(*it)->IncrementUpdateCounter();
 }
@@ -429,22 +437,22 @@ void SocketManager::UpdateClients()
 	{
 		auto playerToUpdate = players.at(i);
 
-		if (playerToUpdate->GetCharacterId() == 0)
+		if (playerToUpdate->characterId == 0)
 			continue;
 
 		for (auto j = 0; j < players.size(); j++)
 		{
 			auto otherPlayer = players.at(j);
-
-			if (playerToUpdate->GetAccountId() == otherPlayer->GetAccountId() || otherPlayer->GetCharacterId() == 0) // FIXME: certainly there's a better way than checking > 0. won't have a characterId until they select a character and enter game.
+			const auto otherCharacterId = otherPlayer->characterId;
+			if (playerToUpdate->GetAccountId() == otherPlayer->GetAccountId() || otherCharacterId == 0) // FIXME: certainly there's a better way than checking > 0. won't have a characterId until they select a character and enter game.
 				continue;
 
-			auto character = g_objectManager.GetGameObjectById(otherPlayer->GetCharacterId());
+			auto character = g_objectManager.GetGameObjectById(otherCharacterId);
 
 			auto pos = character.GetWorldPosition();
 			auto mov = character.GetMovementVector();
 
-			SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 9, std::to_string(character.GetId()), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z), std::to_string(otherPlayer->GetModelId()), std::to_string(otherPlayer->GetTextureId()));
+			SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 9, std::to_string(character.GetId()), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z), std::to_string(otherPlayer->modelId), std::to_string(otherPlayer->textureId));
 		}
 	}
 }

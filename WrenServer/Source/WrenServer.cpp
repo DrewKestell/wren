@@ -6,6 +6,9 @@
 ObjectManager g_objectManager;
 GameTimer m_timer;
 
+static const auto updateInterval = 0.01666666666f;
+static const auto clientUpdateInterval = 0.1f;
+
 int main()
 {
     HWND consoleWindow = GetConsoleWindow();
@@ -28,19 +31,19 @@ int main()
 		auto deltaTime = m_timer.DeltaTime();
 
 		updateTimer += deltaTime;
-		if (updateTimer >= 0.01666666666f)
+		if (updateTimer >= updateInterval)
 		{
-			g_objectManager.Update(0.01666666666f);
+			g_objectManager.Update(updateInterval);
 
-			updateTimer -= 0.01666666666f;
+			updateTimer -= updateInterval;
 		}
 		
 		clientUpdateTimer += deltaTime;
-		if (clientUpdateTimer >= 0.1f)
+		if (clientUpdateTimer >= clientUpdateInterval)
 		{
 			socketManager.UpdateClients();
 
-			clientUpdateTimer -= 0.1f;
+			clientUpdateTimer -= clientUpdateInterval;
 		}
     }
     

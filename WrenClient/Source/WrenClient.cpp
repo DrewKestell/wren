@@ -17,11 +17,8 @@ namespace
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
+int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
-
 	if (!XMVerifyCPUSupport())
 		return 1;
 
@@ -71,7 +68,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
 		WS_OVERLAPPEDWINDOW,
 		0,
 		0,
-		rc.right - rc.left, 
+		rc.right - rc.left,
 		rc.bottom - rc.top,
 		nullptr,
 		nullptr,
@@ -155,8 +152,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	auto game = reinterpret_cast<Game*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
 	WPARAM keyCode;
-    switch (message)
-    {
+	switch (message)
+	{
 	case WM_PAINT:
 		if (s_in_sizemove && game)
 		{
@@ -216,12 +213,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_GETMINMAXINFO:
-		{
-			auto info = reinterpret_cast<MINMAXINFO*>(lParam);
-			info->ptMinTrackSize.x = 320;
-			info->ptMinTrackSize.y = 200;
-		}
-		break;
+	{
+		auto info = reinterpret_cast<MINMAXINFO*>(lParam);
+		info->ptMinTrackSize.x = 320;
+		info->ptMinTrackSize.y = 200;
+	}
+	break;
 
 	case WM_ACTIVATEAPP:
 		if (game)
@@ -257,31 +254,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 
-    case WM_DESTROY:
-        PostQuitMessage(0);
+	case WM_DESTROY:
+		PostQuitMessage(0);
 		break;
 
-    case WM_LBUTTONDOWN:
+	case WM_LBUTTONDOWN:
 		g_eventHandler.QueueEvent(new MouseEvent{ EventType::LeftMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
-    case WM_MBUTTONDOWN:
+	case WM_MBUTTONDOWN:
 		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MiddleMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
-    case WM_RBUTTONDOWN:
+	case WM_RBUTTONDOWN:
 		g_eventHandler.QueueEvent(new MouseEvent{ EventType::RightMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
-    case WM_LBUTTONUP:
+	case WM_LBUTTONUP:
 		g_eventHandler.QueueEvent(new MouseEvent{ EventType::LeftMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
-    case WM_MBUTTONUP:
+	case WM_MBUTTONUP:
 		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MiddleMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
-    case WM_RBUTTONUP:
+	case WM_RBUTTONUP:
 		g_eventHandler.QueueEvent(new MouseEvent{ EventType::RightMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
-    case WM_MOUSEMOVE:
+	case WM_MOUSEMOVE:
 		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MouseMoveEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
-        break;
+		break;
 
 	case WM_SYSKEYDOWN:
 		if (wParam == VK_RETURN && (lParam & 0x60000000) == 0x20000000)
@@ -323,7 +320,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 		}
-		
+
 		break;
 
 	case WM_SYSKEYUP:
@@ -336,7 +333,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 
-	case WM_KEYDOWN:		
+	case WM_KEYDOWN:
 		switch (wParam)
 		{
 		case VK_SHIFT:
@@ -364,24 +361,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		g_eventHandler.QueueEvent(new SystemKeyUpEvent{ keyCode });
 		break;
 
-    case WM_CHAR:
-        switch (wParam)
-        {
-        case 0x08: // Ignore backspace.
-            break;
-        case 0x0A: // Ignore linefeed.   
-            break;
-        case 0x1B: // Ignore escape. 
-            break;
-        case 0x09: // Ignore tab.          
-            break;
-        case 0x0D: // Ignore carriage return.
-            break;
-        default:   // Process a normal character press.            
-            auto ch = (wchar_t)wParam;
+	case WM_CHAR:
+		switch (wParam)
+		{
+		case 0x08: // Ignore backspace.
+			break;
+		case 0x0A: // Ignore linefeed.   
+			break;
+		case 0x1B: // Ignore escape. 
+			break;
+		case 0x09: // Ignore tab.          
+			break;
+		case 0x0D: // Ignore carriage return.
+			break;
+		default:   // Process a normal character press.            
+			auto ch = (wchar_t)wParam;
 			g_eventHandler.QueueEvent(new KeyDownEvent{ ch });
-            break;
-        }
+			break;
+		}
 
 	case WM_MENUCHAR:
 		// A menu is active and the user presses a key that does not correspond
@@ -389,11 +386,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// Primarily useful for avoiding the beep on ALT + ENTER.
 		return MAKELRESULT(0, MNC_CLOSE);
 		break;
-	
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-        break;
-    }
 
-    return 0;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+		break;
+	}
+
+	return 0;
 }

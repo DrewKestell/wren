@@ -17,7 +17,8 @@ const auto DELETE_CHARACTER_QUERY = "DELETE FROM Characters WHERE character_name
 const auto GET_CHARACTER_QUERY = "SELECT * FROM Characters WHERE character_name = '%s' LIMIT 1;";
 const auto LIST_SKILLS_QUERY = "SELECT Skills.id, Skills.name, CharacterSkills.value FROM CharacterSkills INNER JOIN Skills on Skills.id = CharacterSkills.skill_id WHERE CharacterSkills.character_id = '%d';";
 const auto LIST_ABILITIES_QUERY = "SELECT Abilities.id, Abilities.name, Abilities.sprite_id FROM CharacterAbilities INNER JOIN Abilities on Abilities.id = CharacterAbilities.ability_id WHERE CharacterAbilities.character_id = '%d';";
-bool Repository::AccountExists(const std::string& accountName)
+
+const bool Repository::AccountExists(const std::string& accountName)
 {
     const auto dbConnection = GetConnection();
 
@@ -45,7 +46,7 @@ bool Repository::AccountExists(const std::string& accountName)
     }
 }
 
-bool Repository::CharacterExists(const std::string& characterName)
+const bool Repository::CharacterExists(const std::string& characterName)
 {
 	const auto dbConnection = GetConnection();
 
@@ -157,7 +158,7 @@ sqlite3_stmt* Repository::PrepareStatement(sqlite3* dbConnection, const char *qu
     return statement;
 }
 
-std::vector<std::string>* Repository::ListCharacters(const int accountId)
+std::vector<std::string> Repository::ListCharacters(const int accountId)
 {
     auto dbConnection = GetConnection();
 
@@ -166,7 +167,7 @@ std::vector<std::string>* Repository::ListCharacters(const int accountId)
 
     auto statement = PrepareStatement(dbConnection, query);
 
-    std::vector<std::string>* characters = new std::vector<std::string>;
+	std::vector<std::string> characters;
     auto result = sqlite3_step(statement);
     if (result == SQLITE_DONE)
     {
@@ -178,7 +179,7 @@ std::vector<std::string>* Repository::ListCharacters(const int accountId)
         while (result == SQLITE_ROW)
         {
             const unsigned char *characterName = sqlite3_column_text(statement, 1);
-            characters->push_back(std::string(reinterpret_cast<const char*>(characterName)));
+            characters.push_back(std::string(reinterpret_cast<const char*>(characterName)));
             result = sqlite3_step(statement);
         }
         sqlite3_finalize(statement);
