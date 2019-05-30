@@ -27,5 +27,6 @@ enum class EventType
 	DeleteGameObjectEvent,
 	GameObjectUpdate,
 	UIAbilityDroppedEvent,
-	ActivateAbility
+	ActivateAbility,
+	StartDraggingUIAbility
 };

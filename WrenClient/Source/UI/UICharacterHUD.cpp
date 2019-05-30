@@ -33,14 +33,14 @@ UICharacterHUD::UICharacterHUD(
 	  nameBrush{ nameBrush }
 {
 	std::wostringstream nameText;
-	buttonText << inNameText;
+	nameText << inNameText;
 	ThrowIfFailed(writeFactory->CreateTextLayout(
-		buttonText.str().c_str(),
-		(UINT32)buttonText.str().size(),
+		nameText.str().c_str(),
+		(UINT32)nameText.str().size(),
 		buttonTextFormat,
-		width,
-		height,
-		buttonTextLayout.ReleaseAndGetAddressOf())
+		200,
+		100,
+		nameTextLayout.ReleaseAndGetAddressOf())
 	);
 }
 

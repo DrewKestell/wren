@@ -51,6 +51,7 @@
     <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\StartDraggingUIAbilityEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />

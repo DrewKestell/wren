@@ -31,7 +31,7 @@ class UIAbility : public UIComponent
 	const BYTE* vertexShaderBuffer;
 	const int vertexShaderSize;
 	const XMMATRIX projectionTransform;
-	UIAbility* abilityCopy;
+	UIAbility* abilityCopy{ nullptr };
 public:
 	UIAbility(
 		std::vector<UIComponent*>& uiComponents,

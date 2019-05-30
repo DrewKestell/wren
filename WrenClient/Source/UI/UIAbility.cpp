@@ -1,10 +1,12 @@
 #include "stdafx.h"
+#include <Utility.h>
 #include "UIAbility.h"
 #include "Layer.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/ActivateAbilityEvent.h"
+#include "EventHandling/Events/StartDraggingUIAbilityEvent.h"
 #include "Events/UIAbilityDroppedEvent.h"
 
 extern EventHandler g_eventHandler;
@@ -75,9 +77,9 @@ void UIAbility::Draw()
 	XMStoreFloat3(&vec, res);
 	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, d3dDevice, vec.x, vec.y, SPRITE_WIDTH, SPRITE_WIDTH);
 
-	if (isHovered)
+	if (isHovered && !isDragging)
 	{
-		const auto thickness = isPressed ? 3.0f : 2.0f;
+		const auto thickness = isPressed ? 5.0f : 3.0f;
 		const auto brush = isPressed ? abilityPressedBrush : highlightBrush;
 		d2dDeviceContext->DrawGeometry(highlightGeometry.Get(), brush, thickness);
 	}
@@ -134,6 +136,8 @@ const bool UIAbility::HandleEvent(const Event* const event)
 							lastDragX = mousePosX;
 							lastDragY = mousePosY;
 						}
+
+						g_eventHandler.QueueEvent(new StartDraggingUIAbilityEvent{ mousePosX, mousePosY, Utility::GetHotbarIndex(clientHeight, mousePosX, mousePosY) });
 					}
 				}
 
@@ -157,7 +161,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 			if (isVisible)
 			{
-				if (isHovered)
+				if (isHovered && !isDragging)
 					isPressed = true;
 			}
 
@@ -170,14 +174,15 @@ const bool UIAbility::HandleEvent(const Event* const event)
 			if (isDragging)
 			{
 				g_eventHandler.QueueEvent(new UIAbilityDroppedEvent{ this, derivedEvent->mousePosX, derivedEvent->mousePosY });
-				isDragging = false;
 			}
 			
-			if (isVisible)
+			if (!isDragging && isVisible && isPressed)
 			{
 				g_eventHandler.QueueEvent(new ActivateAbilityEvent{ abilityId });
-				isPressed = false;
 			}
+
+			isPressed = false;
+			isDragging = false;
 
 			break;
 		}

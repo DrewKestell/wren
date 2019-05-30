@@ -26,6 +26,9 @@
     <ClCompile Include="Source\UI\UIAbility.cpp" />
     <ClCompile Include="Source\Sprite.cpp" />
     <ClCompile Include="Source\UI\UIAbilitiesContainer.cpp" />
+    <ClCompile Include="Source\StatsComponent.cpp" />
+    <ClCompile Include="Source\StatsComponentManager.cpp" />
+    <ClCompile Include="Source\UI\UICharacterHUD.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
@@ -157,6 +160,8 @@
     <ClInclude Include="Source\UI\UICharacterHUD.h" />
     <ClInclude Include="Source\UI\UIAbilitiesContainer.h" />
     <ClInclude Include="Source\Events\UIAbilityDroppedEvent.h" />
+    <ClInclude Include="Source\StatsComponentManager.h" />
+    <ClInclude Include="Source\StatsComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

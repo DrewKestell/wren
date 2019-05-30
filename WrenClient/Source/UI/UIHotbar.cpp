@@ -1,9 +1,11 @@
 #include "stdafx.h"
+#include <Utility.h>
 #include "UIHotbar.h"
 #include "Layer.h"
 #include "Events/UIAbilityDroppedEvent.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "EventHandling/Events/StartDraggingUIAbilityEvent.h"
 
 UIHotbar::UIHotbar(
 	std::vector<UIComponent*>& uiComponents,
@@ -12,11 +14,13 @@ UIHotbar::UIHotbar(
 	const Layer uiLayer,
 	ID2D1SolidColorBrush* brush,
 	ID2D1DeviceContext1* d2dDeviceContext,
-	ID2D1Factory2* d2dFactory)
+	ID2D1Factory2* d2dFactory,
+	const float clientHeight)
 	: UIComponent(uiComponents, position, scale, uiLayer),
-	brush{ brush },
-	d2dDeviceContext{ d2dDeviceContext },
-	d2dFactory{ d2dFactory }
+	  brush{ brush },
+	  d2dDeviceContext{ d2dDeviceContext },
+	  d2dFactory{ d2dFactory },
+	  clientHeight{ clientHeight }
 {
 	const auto width = 40.0f;
 	for (auto i = 0; i < 10; i++)
@@ -55,14 +59,30 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (UIAbilityDroppedEvent*)event;
 
-			const auto index = GetIndex(derivedEvent->mousePosX, derivedEvent->mousePosY);
-			const auto xOffset = index * 40.0f;
+			const auto index = Utility::GetHotbarIndex(clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
 
-			uiAbilities[index] = derivedEvent->uiAbility;
-			uiAbilities[index]->SetLocalPosition(XMFLOAT3{ xOffset + 2.0f, 2.0f, 0.0f });
-			uiAbilities[index]->SetParent(*this);
+			if (index >= 0)
+			{
+				const auto xOffset = index * 40.0f;
 
+				uiAbilities[index] = derivedEvent->uiAbility;
+				uiAbilities[index]->SetLocalPosition(XMFLOAT3{ xOffset + 2.0f, 2.0f, 0.0f });
+				uiAbilities[index]->SetParent(*this);
+			}
+			else
+			{
+				delete derivedEvent->uiAbility;
+			}
+			
 			break;
+		}
+		case EventType::StartDraggingUIAbility:
+		{
+			const auto derivedEvent = (StartDraggingUIAbilityEvent*)event;
+			const auto hotbarIndex = derivedEvent->hotbarIndex;
+
+			if (hotbarIndex >= 0)
+				uiAbilities[hotbarIndex] = nullptr;
 		}
 	}
 
@@ -77,16 +97,6 @@ void UIHotbar::DrawSprites()
 		if (uiAbility)
 			uiAbility->DrawSprite();
 	}
-}
-
-const int UIHotbar::GetIndex(const float posX, const float posY) const
-{
-	const auto worldPos = GetWorldPosition();
-
-	if (posX < worldPos.x || posX >= worldPos.x + 400.0f || posY < worldPos.y || posY > worldPos.y + 40.0f)
-		return -1;
-
-	return (posX - 5) / 40;
 }
 
 const std::string UIHotbar::GetUIAbilityDragBehavior() const

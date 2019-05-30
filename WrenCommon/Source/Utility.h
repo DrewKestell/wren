@@ -7,4 +7,5 @@ public:
 	static bool DetectClick(const float topLeftX, const float topLeftY, const float bottomRightX, const float bottomRightY, const float mousePosX, const float mousePosY);
 	static std::string ws2s(const std::wstring& wstr);
 	static void PrintXMFLOAT3(const XMFLOAT3 vec);
+	static const char GetHotbarIndex(const float clientHeight, const float mousePosX, const float mousePosY);
 };

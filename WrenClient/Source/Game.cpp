@@ -242,7 +242,7 @@ void Game::CreateDeviceDependentResources()
 	tree.SetRenderComponentId(treeRenderComponent.GetId());
 
 	// init hotbar
-	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT3{ 5.0f, m_clientHeight - 45.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, blackBrush.Get(), d2dDeviceContext, d2dFactory);
+	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT3{ 5.0f, m_clientHeight - 45.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, blackBrush.Get(), d2dDeviceContext, d2dFactory, m_clientHeight);
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -636,8 +636,8 @@ void Game::InitializePanels()
 	skillsPanel->AddChildComponent(*skillsPanelHeader);
 
 	// Abilities
-	const auto abilitiesPanelX = 300.0f;
-	const auto abilitiesPanelY = 300.0f;
+	const auto abilitiesPanelX = 10.0f;
+	const auto abilitiesPanelY = 10.0f;
 	abilitiesPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ abilitiesPanelX, abilitiesPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, true, 240.0f, 400.0f, VK_F4, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 
 	abilitiesPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 2.0f, 2.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
@@ -932,7 +932,7 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (ActivateAbilityEvent*)event;
 
-			g_socketManager.SendPacket(OPCODE_ACTIVATE_ABILITY, 1, derivedEvent->abilityId);
+			g_socketManager.SendPacket(OPCODE_ACTIVATE_ABILITY, 1, std::to_string(derivedEvent->abilityId));
 
 			break;
 		}

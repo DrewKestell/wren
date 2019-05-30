@@ -78,5 +78,6 @@
     <ClInclude Include="Source\Models\Skill.h" />
     <ClInclude Include="Source\Models\Ability.h" />
     <ClInclude Include="Source\EventHandling\Events\ActivateAbilityEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\StartDraggingUIAbilityEvent.h" />
   </ItemGroup>
 </Project>

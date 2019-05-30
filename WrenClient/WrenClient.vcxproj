@@ -36,12 +36,15 @@
     <ClCompile Include="Source\RenderComponent.cpp" />
     <ClCompile Include="Source\RenderComponentManager.cpp" />
     <ClCompile Include="Source\Sprite.cpp" />
+    <ClCompile Include="Source\StatsComponent.cpp" />
+    <ClCompile Include="Source\StatsComponentManager.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Source\UI\UIAbilitiesContainer.cpp" />
     <ClCompile Include="Source\UI\UIAbility.cpp" />
+    <ClCompile Include="Source\UI\UICharacterHUD.cpp" />
     <ClCompile Include="Source\UI\UIHotbar.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
@@ -163,6 +166,8 @@
     <ClInclude Include="Source\ShaderBuffer.h" />
     <ClInclude Include="Source\Sprite.h" />
     <ClInclude Include="Source\SpriteVertex.h" />
+    <ClInclude Include="Source\StatsComponent.h" />
+    <ClInclude Include="Source\StatsComponentManager.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />

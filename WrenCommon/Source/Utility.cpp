@@ -23,3 +23,11 @@ void Utility::PrintXMFLOAT3(const XMFLOAT3 vec)
 {
 	std::cout << vec.x << ", " << vec.y << ", " << vec.z << "\n";
 }
+
+const char Utility::GetHotbarIndex(const float clientHeight, const float mousePosX, const float mousePosY)
+{
+	if (mousePosX < 5.0f || mousePosX >= 405.0f || mousePosY < clientHeight - 45.0f || mousePosY > clientHeight - 5.0f)
+		return -1;
+
+	return (mousePosX - 5) / 40;
+}

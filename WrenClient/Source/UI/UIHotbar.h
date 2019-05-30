@@ -8,11 +8,11 @@
 class UIHotbar : public UIComponent
 {
 	ComPtr<ID2D1RectangleGeometry> geometry[10];
-	UIAbility* uiAbilities[10];
+	UIAbility* uiAbilities[10] = { nullptr };
 	ID2D1SolidColorBrush* brush;
 	ID2D1DeviceContext1* d2dDeviceContext;
 	ID2D1Factory2* d2dFactory;
-	const int GetIndex(const float posX, const float posY) const;
+	float clientHeight;
 public:
 	UIHotbar(
 		std::vector<UIComponent*>& uiComponents,
@@ -21,7 +21,8 @@ public:
 		const Layer uiLayer,
 		ID2D1SolidColorBrush* brush,
 		ID2D1DeviceContext1* d2dDeviceContext,
-		ID2D1Factory2* d2dFactory);
+		ID2D1Factory2* d2dFactory,
+		const float clientHeight);
 	virtual void Draw();
 	virtual const bool HandleEvent(const Event* const event);
 	virtual const std::string GetUIAbilityDragBehavior() const;
