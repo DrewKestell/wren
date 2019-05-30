@@ -1,3 +1,0 @@
-﻿FXC : error X3084: 'numthreads(X,Y,Z)' attribute expected, where 'X,Y,Z' are the dimensions of the thread group
-  
-  compilation failed; no code produced

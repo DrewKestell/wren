@@ -1,7 +1,0 @@
-﻿  Repository.cpp
-c:\repos\wren\wrenserver\source\repository.cpp(1): fatal error C1083: Cannot open include file: 'sqlite3.h': No such file or directory
-  SocketManager.cpp
-c:\repos\wren\wrenserver\source\socketmanager.cpp(3): fatal error C1083: Cannot open include file: 'sodium.h': No such file or directory
-  WrenServer.cpp
-c:\repos\wren\wrenserver\source\repository.h(5): fatal error C1083: Cannot open include file: 'sqlite3.h': No such file or directory
-  Generating Code...
