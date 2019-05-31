@@ -58,7 +58,7 @@ void UIAbilitiesContainer::Draw()
 
 	for (auto i = 0; i < headers.size(); i++)
 	{
-		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(worldPos.x + 12.0f, worldPos.y + 30.0 + (i * 60.0f)), headers.at(i).Get(), headerBrush);
+		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(worldPos.x + 12.0f, worldPos.y + 30.0f + (i * 60.0f)), headers.at(i).Get(), headerBrush);
 		// if mouse hover, draw highlight
 
 		// Draw Borders

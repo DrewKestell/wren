@@ -52,7 +52,7 @@ const bool RenderComponentManager::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (DeleteGameObjectEvent*)event;
 			const auto gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-			DeleteRenderComponent(gameObject.GetRenderComponentId());
+			DeleteRenderComponent(gameObject.renderComponentId);
 			break;
 		}
 	}

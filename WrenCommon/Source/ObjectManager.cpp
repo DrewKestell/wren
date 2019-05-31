@@ -38,14 +38,14 @@ void ObjectManager::DeleteGameObject(EventHandler& eventHandler, const long game
 	eventHandler.QueueEvent(new DeleteGameObjectEvent(gameObjectId));
 }
 
-GameObject& ObjectManager::GetGameObjectById(long gameObjectId)
+GameObject& ObjectManager::GetGameObjectById(const long gameObjectId)
 {
 	const auto index = idIndexMap[gameObjectId];
 	return gameObjects[index];
 }
 
 // TODO: is this safe? this assumes the first object will always be in use before calling this function
-const bool ObjectManager::GameObjectExists(long gameObjectId)
+const bool ObjectManager::GameObjectExists(const long gameObjectId)
 {
 	return idIndexMap[gameObjectId] > 0;
 }

@@ -2,7 +2,7 @@
 #include "Game.h"
 #include "ConstantBufferOnce.h"
 #include "Camera.h"
-#include "RenderComponent.h"
+#include "Components/RenderComponent.h"
 #include <OpCodes.h>
 #include "Events/UIAbilityDroppedEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
@@ -239,7 +239,7 @@ void Game::CreateDeviceDependentResources()
 	// initialize tree. TODO: game world needs to be stored on disk somewhere and initialized on startup
 	GameObject& tree = m_objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
 	auto treeRenderComponent = m_renderComponentManager.CreateRenderComponent(tree.GetId(), meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
-	tree.SetRenderComponentId(treeRenderComponent.GetId());
+	tree.renderComponentId = treeRenderComponent.GetId();
 
 	// init hotbar
 	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT3{ 5.0f, m_clientHeight - 45.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, blackBrush.Get(), d2dDeviceContext, d2dFactory, m_clientHeight);
@@ -873,7 +873,7 @@ const bool Game::HandleEvent(const Event* const event)
 			GameObject& player = m_objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)derivedEvent->characterId);
 			m_player = &player;
 			auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(player.GetId(), meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
-			player.SetRenderComponentId(sphereRenderComponent.GetId());
+			player.renderComponentId = sphereRenderComponent.GetId();
 			auto statsComponent = m_statsComponentManager.CreateStatsComponent(player.GetId(), 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
 			player.statsComponentId = statsComponent.id;
 			m_playerController = std::make_unique<PlayerController>(player);
@@ -917,7 +917,7 @@ const bool Game::HandleEvent(const Event* const event)
 				GameObject& obj = m_objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, gameObjectId);
 				obj.SetMovementVector(mov);
 				auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
-				obj.SetRenderComponentId(sphereRenderComponent.GetId());
+				obj.renderComponentId = sphereRenderComponent.GetId();
 			}
 			else
 			{

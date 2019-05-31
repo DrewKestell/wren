@@ -19,16 +19,17 @@
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\Game.cpp" />
     <ClCompile Include="Source\DeviceResources.cpp" />
-    <ClCompile Include="Source\RenderComponent.cpp" />
-    <ClCompile Include="Source\RenderComponentManager.cpp" />
     <ClCompile Include="Source\UI\UISkillListing.cpp" />
     <ClCompile Include="Source\UI\UIHotbar.cpp" />
     <ClCompile Include="Source\UI\UIAbility.cpp" />
     <ClCompile Include="Source\Sprite.cpp" />
     <ClCompile Include="Source\UI\UIAbilitiesContainer.cpp" />
-    <ClCompile Include="Source\StatsComponent.cpp" />
     <ClCompile Include="Source\StatsComponentManager.cpp" />
     <ClCompile Include="Source\UI\UICharacterHUD.cpp" />
+    <ClCompile Include="Source\Components\RenderComponent.cpp" />
+    <ClCompile Include="Source\Components\RenderComponentManager.cpp" />
+    <ClCompile Include="Source\Components\StatsComponent.cpp" />
+    <ClCompile Include="Source\Components\StatsComponentManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
@@ -150,8 +151,6 @@
     <ClInclude Include="Source\DeviceResources.h" />
     <ClInclude Include="Source\ShaderBuffer.h" />
     <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
-    <ClInclude Include="Source\RenderComponent.h" />
-    <ClInclude Include="Source\RenderComponentManager.h" />
     <ClInclude Include="Source\UI\UISkillListing.h" />
     <ClInclude Include="Source\UI\UIHotbar.h" />
     <ClInclude Include="Source\UI\UIAbility.h" />
@@ -160,8 +159,10 @@
     <ClInclude Include="Source\UI\UICharacterHUD.h" />
     <ClInclude Include="Source\UI\UIAbilitiesContainer.h" />
     <ClInclude Include="Source\Events\UIAbilityDroppedEvent.h" />
-    <ClInclude Include="Source\StatsComponentManager.h" />
-    <ClInclude Include="Source\StatsComponent.h" />
+    <ClInclude Include="Source\Components\RenderComponent.h" />
+    <ClInclude Include="Source\Components\RenderComponentManager.h" />
+    <ClInclude Include="Source\Components\StatsComponent.h" />
+    <ClInclude Include="Source\Components\StatsComponentManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

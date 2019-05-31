@@ -10,16 +10,16 @@ class UIButton : public UIComponent
 	ComPtr<ID2D1RoundedRectangleGeometry> buttonGeometry;
 	bool pressed{ false };
 	bool enabled{ true };
-    float width{ 0.0f };
-	float height{ 0.0f };
-	const std::function<void()> onClick{};
-	ID2D1SolidColorBrush* buttonBrush = nullptr;
-    ID2D1SolidColorBrush* pressedButtonBrush = nullptr;
-    ID2D1SolidColorBrush* buttonBorderBrush = nullptr;
-    ID2D1SolidColorBrush* buttonTextBrush = nullptr;
-    ID2D1SolidColorBrush* disabledBrush = nullptr;
-    ID2D1DeviceContext1* d2dDeviceContext = nullptr;
-	ID2D1Factory2* d2dFactory = nullptr;
+	ID2D1SolidColorBrush* disabledBrush{ nullptr };
+    float width;
+	float height;
+	const std::function<void()> onClick;
+	ID2D1SolidColorBrush* buttonBrush;
+    ID2D1SolidColorBrush* pressedButtonBrush;
+    ID2D1SolidColorBrush* buttonBorderBrush;
+    ID2D1SolidColorBrush* buttonTextBrush;
+    ID2D1DeviceContext1* d2dDeviceContext;
+	ID2D1Factory2* d2dFactory;
     
 public:
 	UIButton(

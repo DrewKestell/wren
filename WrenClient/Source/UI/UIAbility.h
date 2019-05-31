@@ -7,14 +7,14 @@
 
 class UIAbility : public UIComponent
 {
-	const float SPRITE_WIDTH = 36.0f;
-	const float HIGHLIGHT_WIDTH = 36.0f;
+	const float SPRITE_WIDTH{ 36.0f };
+	const float HIGHLIGHT_WIDTH{ 36.0f };
 	bool isHovered{ false };
 	bool isPressed{ false };
-	bool isDragging{ false };
-	float lastDragX{ 0.0f };
-	float lastDragY{ 0.0f };
-	const int abilityId{ 0 };
+	bool isDragging;
+	float lastDragX;
+	float lastDragY;
+	const int abilityId;
 	ComPtr<ID2D1RectangleGeometry> highlightGeometry;
 	std::shared_ptr<Sprite> sprite;
 	ID2D1DeviceContext1* d2dDeviceContext;

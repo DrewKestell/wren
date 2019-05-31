@@ -12,8 +12,8 @@ class ObjectManager
 	unsigned int gameObjectIndex{ 0 };
 public:
 	void Update(const float deltaTime);
-	GameObject& CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, long id = 0);
+	GameObject& CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, const long id = 0);
 	void DeleteGameObject(EventHandler& eventHandler, const long gameObjectId);
-	GameObject& GetGameObjectById(long gameObjectId);
-	const bool GameObjectExists(long gameObjectId);
+	GameObject& GetGameObjectById(const long gameObjectId);
+	const bool GameObjectExists(const long gameObjectId);
 };

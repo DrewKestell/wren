@@ -8,10 +8,10 @@
 
 class UIAbilitiesContainer : public UIComponent
 {
-	const float HEADER_WIDTH = 200.0f;
-	const float HEADER_HEIGHT = 30.0f;
-	const float BORDER_WIDTH = 40.0f;
-	const float SPRITE_WIDTH = 36.0f;
+	const float HEADER_WIDTH{ 200.0f };
+	const float HEADER_HEIGHT{ 30.0f };
+	const float BORDER_WIDTH{ 40.0f };
+	const float SPRITE_WIDTH{ 36.0f };
 	std::vector<Ability*> abilities;
 	std::vector<ComPtr<IDWriteTextLayout>> headers;
 	std::vector<ComPtr<ID2D1RectangleGeometry>> borderGeometries;

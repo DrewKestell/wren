@@ -6,16 +6,13 @@ class GameObject
 {
 	long id{ 0 };
 	GameObject* parent{ nullptr };
-    std::vector<GameObject*> children;
+	std::vector<GameObject*> children{ nullptr };
 	
 	// physics component?
 	XMFLOAT3 localPosition{ 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 scale{ 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 movementVector{ 0.0f, 0.0f, 0.0f };
 	float speed{ 60.0f };
-
-	// components. i think this should be a map or vector? map<ComponentType, unsigned int>
-	unsigned int renderComponentId;
 
 	void Initialize(const long id, const XMFLOAT3 localPosition, const XMFLOAT3 scale);
 
@@ -34,9 +31,10 @@ public:
 	void SetId(const long id);
 	XMFLOAT3 GetLocalPosition() const;
 	void SetLocalPosition(XMFLOAT3 localPosition);
-	unsigned int GetRenderComponentId() const;
-	void SetRenderComponentId(const unsigned int renderComponentId);
 	XMFLOAT3 GetMovementVector() const;
 	void SetMovementVector(const XMFLOAT3 movementVector);
-	unsigned int statsComponentId;
+
+	// components. i think this should be a map or vector? map<ComponentType, unsigned int>
+	unsigned int statsComponentId{ 0 };
+	unsigned int renderComponentId{ 0 };
 };
