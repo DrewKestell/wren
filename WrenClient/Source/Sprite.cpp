@@ -117,7 +117,7 @@ void Sprite::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX projecti
 	immediateContext->PSSetShaderResources(0, 1, &texture);
 
 	// set VertexBuffer and IndexBuffer then Draw
-	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &STRIDE, &OFFSET);
+	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &SPRITE_STRIDE, &SPRITE_OFFSET);
 	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->DrawIndexed(6, 0, 0);

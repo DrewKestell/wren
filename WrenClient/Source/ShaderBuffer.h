@@ -2,6 +2,6 @@
 
 struct ShaderBuffer
 {
-	BYTE* buffer;
+	unsigned char* buffer;
 	int size;
 };

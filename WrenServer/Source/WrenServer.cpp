@@ -25,7 +25,9 @@ int main()
     while (true)
     {
 		while (socketManager.TryRecieveMessage()) {}
-        socketManager.HandleTimeout();
+
+		// turn this off for debugging
+        //socketManager.HandleTimeout();
 
 		m_timer.Tick();
 		auto deltaTime = m_timer.DeltaTime();

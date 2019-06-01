@@ -9,9 +9,10 @@ private:
 	std::string m_token{ "" };
     sockaddr_in local;
     sockaddr_in to;
-    int toLen;
-    SOCKET socketC;   
-    bool MessagePartsEqual(const char* first, const char* second, int length);
+	int toLen{ 0 };
+    SOCKET socketC;
+
+    bool MessagePartsEqual(const char* first, const char* second, const int length) const;
     std::vector<std::string*>* BuildCharacterVector(std::string* characterString);
 	std::vector<Skill*>* BuildSkillVector(std::string& skillString);
 	std::vector<Ability*>* BuildAbilityVector(std::string& abilityString);

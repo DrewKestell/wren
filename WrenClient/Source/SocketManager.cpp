@@ -40,7 +40,7 @@ SocketManager::SocketManager()
     ioctlsocket(socketC, FIONBIO, &nonBlocking);
 }
 
-bool SocketManager::MessagePartsEqual(const char* first, const char* second, int length)
+bool SocketManager::MessagePartsEqual(const char* first, const char* second, int length) const
 {
     for (auto i = 0; i < length; i++)
     {

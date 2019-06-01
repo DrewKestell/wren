@@ -176,7 +176,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 				g_eventHandler.QueueEvent(new UIAbilityDroppedEvent{ this, derivedEvent->mousePosX, derivedEvent->mousePosY });
 			}
 			
-			if (!isDragging && isVisible && isPressed)
+			if (!isDragging && isVisible && isHovered && isPressed)
 			{
 				g_eventHandler.QueueEvent(new ActivateAbilityEvent{ abilityId });
 			}

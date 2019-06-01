@@ -4,9 +4,6 @@
 
 class Mesh
 {
-	const unsigned int STRIDE{ sizeof(Vertex) };
-	const unsigned int OFFSET{ 0 };
-
 	int indexCount{ 0 };
 	ComPtr<ID3D11InputLayout> inputLayout;
 	ComPtr<ID3D11Buffer> constantBuffer;
