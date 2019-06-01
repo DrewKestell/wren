@@ -64,7 +64,7 @@ const bool UICharacterListing::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
-		case EventType::LeftMouseDownEvent:
+		case EventType::LeftMouseDown:
 		{
 			selected = false;
 

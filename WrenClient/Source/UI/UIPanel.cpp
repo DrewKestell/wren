@@ -62,7 +62,7 @@ const bool UIPanel::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
-		case EventType::LeftMouseDownEvent:
+		case EventType::LeftMouseDown:
 		{
 			const auto mouseDownEvent = (MouseEvent*)event;
 
@@ -79,7 +79,7 @@ const bool UIPanel::HandleEvent(const Event* const event)
 			
 			break;
 		}
-		case EventType::LeftMouseUpEvent:
+		case EventType::LeftMouseUp:
 		{
 			const auto mouseUpEvent = (MouseEvent*)event;
 
@@ -87,7 +87,7 @@ const bool UIPanel::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::MouseMoveEvent:
+		case EventType::MouseMove:
 		{
 			const auto mouseMoveEvent = (MouseEvent*)event;
 
@@ -122,7 +122,7 @@ const bool UIPanel::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::SystemKeyDownEvent:
+		case EventType::SystemKeyDown:
 		{
 			if (isActive)
 			{

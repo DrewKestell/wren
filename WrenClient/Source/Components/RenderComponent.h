@@ -3,11 +3,11 @@
 #include "GameObject.h"
 #include "Mesh.h"
 
+static const unsigned int STRIDE{ sizeof(Vertex) };
+static const unsigned int OFFSET{ 0 };
+
 class RenderComponent
 {
-	const unsigned int STRIDE{ sizeof(Vertex) };
-	const unsigned int OFFSET{ 0 };
-
 	unsigned int id{ 0 };
 	long gameObjectId{ 0 };
 	Mesh* mesh{ nullptr };
@@ -17,10 +17,6 @@ class RenderComponent
 
 	void Initialize(const unsigned int id, const long gameObjectId, Mesh* mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture);
 	void Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform, const float updateLag, GameObject& gameObject);
-
-	void SetId(const unsigned int id);
-	const long GetGameObjectId() const;
-	void SetGameObjectId(const long id);
 
 	friend class RenderComponentManager;
 public:

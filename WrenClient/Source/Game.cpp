@@ -24,8 +24,8 @@ extern EventHandler g_eventHandler;
 
 Game::Game() noexcept(false)
 {
-	m_deviceResources = std::make_unique<DX::DeviceResources>();
-	m_deviceResources->RegisterDeviceNotify(this);
+	deviceResources = std::make_unique<DX::DeviceResources>();
+	deviceResources->RegisterDeviceNotify(this);
 
 	g_eventHandler.Subscribe(*this);
 }
@@ -35,15 +35,15 @@ Game::Game() noexcept(false)
 // Game-specific initialization should go in Game.cpp
 void Game::Initialize(HWND window, int width, int height)
 {
-	m_deviceResources->SetWindow(window, width, height);
+	deviceResources->SetWindow(window, width, height);
 
-	m_deviceResources->CreateDeviceResources();
+	deviceResources->CreateDeviceResources();
 	CreateDeviceDependentResources();
 
-	m_deviceResources->CreateWindowSizeDependentResources();
+	deviceResources->CreateWindowSizeDependentResources();
 	CreateWindowSizeDependentResources();
 
-	m_timer.Reset();
+	timer.Reset();
 	SetActiveLayer(Login);
 }
 
@@ -52,17 +52,17 @@ void Game::Tick()
 {
 	while (g_socketManager.TryRecieveMessage()) {}
 
-	m_timer.Tick();
+	timer.Tick();
 
-	updateTimer += m_timer.DeltaTime();
+	updateTimer += timer.DeltaTime();
 	if (updateTimer >= UPDATE_FREQUENCY)
 	{
-		if (m_activeLayer == InGame)
+		if (activeLayer == InGame)
 		{
-			m_playerController->Update(UPDATE_FREQUENCY);
-			m_camera.Update(m_player->GetWorldPosition(), UPDATE_FREQUENCY);
+			playerController->Update(UPDATE_FREQUENCY);
+			camera.Update(player->GetWorldPosition(), UPDATE_FREQUENCY);
 			SyncWithServer(UPDATE_FREQUENCY);
-			m_objectManager.Update(UPDATE_FREQUENCY);
+			objectManager.Update(UPDATE_FREQUENCY);
 		}
 		
 		g_eventHandler.PublishEvents();
@@ -75,7 +75,7 @@ void Game::Tick()
 
 void Game::Update()
 {
-	float elapsedTime = float(m_timer.DeltaTime());
+	float elapsedTime = float(timer.DeltaTime());
 
 	// TODO: Add your game logic here.
 	elapsedTime;
@@ -86,13 +86,13 @@ void Game::Update()
 void Game::Render(const float updateTimer)
 {
 	// Don't try to render anything before the first Update.
-	if (m_timer.TotalTime() == 0)
+	if (timer.TotalTime() == 0)
 		return;
 
 	Clear();
 
-	auto d3dContext = m_deviceResources->GetD3DDeviceContext();
-	auto d2dContext = m_deviceResources->GetD2DDeviceContext();
+	auto d3dContext = deviceResources->GetD3DDeviceContext();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
 	d2dContext->BeginDraw();
 
@@ -102,7 +102,7 @@ void Game::Render(const float updateTimer)
 	frameCnt++;
 	
 	// update FPS text
-	if (m_timer.TotalTime() - timeElapsed >= 1)
+	if (timer.TotalTime() - timeElapsed >= 1)
 	{
 		float mspf = (float)1000 / frameCnt;
 		const auto fpsText = "FPS: " + std::to_string(frameCnt) + ", MSPF: " + std::to_string(mspf);
@@ -116,23 +116,23 @@ void Game::Render(const float updateTimer)
 	}
 
 	// update MousePos text
-	const auto mousePosText = "MousePosX: " + std::to_string((int)m_mousePosX) + ", MousePosY: " + std::to_string((int)m_mousePosY);
+	const auto mousePosText = "MousePosX: " + std::to_string((int)mousePosX) + ", MousePosY: " + std::to_string((int)mousePosY);
 	mousePosLabel->SetText(mousePosText.c_str());
 
-	if (m_activeLayer == InGame)
+	if (activeLayer == InGame)
 	{
-		auto camPos = m_camera.GetPosition();
+		auto camPos = camera.GetPosition();
 		XMVECTORF32 s_Eye = { camPos.x, camPos.y, camPos.z, 0.0f };
 		XMVECTORF32 s_At = { camPos.x - 500.0f, 0.0f, camPos.z + 500.0f, 0.0f };
 		XMVECTORF32 s_Up = { 0.0f, 1.0f, 0.0f, 0.0f };
-		m_viewTransform = XMMatrixLookAtLH(s_Eye, s_At, s_Up);
+		viewTransform = XMMatrixLookAtLH(s_Eye, s_At, s_Up);
 
 		d3dContext->RSSetState(solidRasterState.Get());
 		//d3dContext->RSSetState(wireframeRasterState);
 
-		m_gameMap->Draw(d3dContext, m_viewTransform, m_projectionTransform);
+		gameMap->Draw(d3dContext, viewTransform, projectionTransform);
 
-		m_renderComponentManager.Render(d3dContext, m_viewTransform, m_projectionTransform, updateTimer);
+		renderComponentManager.Render(d3dContext, viewTransform, projectionTransform, updateTimer);
 	}
 
 	// foreach RenderComponent -> Draw
@@ -145,19 +145,19 @@ void Game::Render(const float updateTimer)
 	abilitiesContainer->DrawSprites();
 	hotbar->DrawSprites();
 
-	d3dContext->ResolveSubresource(m_deviceResources->GetBackBufferRenderTarget(), 0, m_deviceResources->GetOffscreenRenderTarget(), 0, DXGI_FORMAT_B8G8R8A8_UNORM);
+	d3dContext->ResolveSubresource(deviceResources->GetBackBufferRenderTarget(), 0, deviceResources->GetOffscreenRenderTarget(), 0, DXGI_FORMAT_B8G8R8A8_UNORM);
 
 	// Show the new frame.
-	m_deviceResources->Present();
+	deviceResources->Present();
 }
 
 void Game::Clear()
 {
 	// Clear the views.
-	auto context = m_deviceResources->GetD3DDeviceContext();
-	auto renderTarget = m_deviceResources->GetOffscreenRenderTargetView();
-	auto depthStencil = m_deviceResources->GetDepthStencilView();
-	auto depthStencilState = m_deviceResources->GetDepthStencilState();
+	auto context = deviceResources->GetD3DDeviceContext();
+	auto renderTarget = deviceResources->GetOffscreenRenderTargetView();
+	auto depthStencil = deviceResources->GetDepthStencilView();
+	auto depthStencilState = deviceResources->GetDepthStencilState();
 
 	context->ClearRenderTargetView(renderTarget, Colors::CornflowerBlue);
 	context->ClearDepthStencilView(depthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -165,7 +165,7 @@ void Game::Clear()
 	context->OMSetDepthStencilState(depthStencilState, 0);
 
 	// Set the viewport.
-	auto viewport = m_deviceResources->GetScreenViewport();
+	auto viewport = deviceResources->GetScreenViewport();
 	context->RSSetViewports(1, &viewport);
 }
 #pragma endregion
@@ -188,29 +188,29 @@ void Game::OnSuspending()
 
 void Game::OnResuming()
 {
-	m_timer.Reset();
+	timer.Reset();
 
 	// TODO: Game is being power-resumed (or returning from minimize).
 }
 
 void Game::OnWindowMoved()
 {
-	auto r = m_deviceResources->GetOutputSize();
-	m_deviceResources->WindowSizeChanged(r.right, r.bottom);
+	auto r = deviceResources->GetOutputSize();
+	deviceResources->WindowSizeChanged(r.right, r.bottom);
 }
 
 void Game::OnWindowSizeChanged(int width, int height)
 {
-	if (!m_deviceResources->WindowSizeChanged(width, height))
+	if (!deviceResources->WindowSizeChanged(width, height))
 		return;
 
 	CreateWindowSizeDependentResources();
 
-	m_clientWidth = width;
-	m_clientHeight = height;
+	clientWidth = width;
+	clientHeight = height;
 
-	if (m_playerController)
-		m_playerController->SetClientDimensions(width, height);
+	if (playerController)
+		playerController->SetClientDimensions(width, height);
 }
 #pragma endregion
 
@@ -231,18 +231,18 @@ void Game::CreateDeviceDependentResources()
 	InitializeSprites();
 	InitializePanels();
 	
-	auto d3dDevice = m_deviceResources->GetD3DDevice();
-	auto d2dDeviceContext = m_deviceResources->GetD2DDeviceContext();
-	auto d2dFactory = m_deviceResources->GetD2DFactory();
-	m_gameMap = std::make_unique<GameMap>(d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures[2].Get());
+	auto d3dDevice = deviceResources->GetD3DDevice();
+	auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+	gameMap = std::make_unique<GameMap>(d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures[2].Get());
 
 	// initialize tree. TODO: game world needs to be stored on disk somewhere and initialized on startup
-	GameObject& tree = m_objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
-	auto treeRenderComponent = m_renderComponentManager.CreateRenderComponent(tree.GetId(), meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
+	GameObject& tree = objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
+	auto treeRenderComponent = renderComponentManager.CreateRenderComponent(tree.GetId(), meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
 	tree.renderComponentId = treeRenderComponent.GetId();
 
 	// init hotbar
-	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT3{ 5.0f, m_clientHeight - 45.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, blackBrush.Get(), d2dDeviceContext, d2dFactory, m_clientHeight);
+	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT3{ 5.0f, clientHeight - 45.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -262,7 +262,7 @@ void Game::OnDeviceRestored()
 
 	CreateWindowSizeDependentResources();
 
-	SetActiveLayer(m_activeLayer);
+	SetActiveLayer(activeLayer);
 }
 #pragma endregion
 
@@ -304,7 +304,7 @@ ShaderBuffer Game::LoadShader(const std::wstring filename)
 
 void Game::InitializeBrushes()
 {
-	auto d2dContext = m_deviceResources->GetD2DDeviceContext();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.35f, 0.35f, 0.35f, 1.0f), grayBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.22f, 0.22f, 0.22f, 1.0f), blackBrush.ReleaseAndGetAddressOf());
@@ -324,7 +324,7 @@ void Game::InitializeTextFormats()
 	auto arialFontFamily = L"Arial";
 	auto locale = L"en-US";
 
-	auto writeFactory = m_deviceResources->GetWriteFactory();
+	auto writeFactory = deviceResources->GetWriteFactory();
 
 	// FPS / MousePos
 	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 10.0f, locale, textFormatFPS.ReleaseAndGetAddressOf());
@@ -364,9 +364,9 @@ void Game::InitializeTextFormats()
 
 void Game::InitializeInputs()
 {
-	auto writeFactory = m_deviceResources->GetWriteFactory();
-	auto d2dFactory = m_deviceResources->GetD2DFactory();
-	auto d2dContext = m_deviceResources->GetD2DDeviceContext();
+	auto writeFactory = deviceResources->GetWriteFactory();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
 	// LoginScreen
 	loginScreen_accountNameInput = std::make_unique<UIInput>(uiComponents, XMFLOAT3{ 15.0f, 20.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, Login, false, 120.0f, 260.0f, 24.0f, "Account Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
@@ -390,9 +390,9 @@ void Game::InitializeInputs()
 
 void Game::InitializeButtons()
 {
-	auto writeFactory = m_deviceResources->GetWriteFactory();
-	auto d2dFactory = m_deviceResources->GetD2DFactory();
-	auto d2dContext = m_deviceResources->GetD2DDeviceContext();
+	auto writeFactory = deviceResources->GetWriteFactory();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
 	
 	const auto onClickLoginButton = [this]()
 	{
@@ -463,7 +463,7 @@ void Game::InitializeButtons()
 	{
 		characterSelect_successMessageLabel->SetText("");
 
-		if (m_characterList.size() == 5)
+		if (characterList.size() == 5)
 			characterSelect_errorMessageLabel->SetText("You can not have more than 5 characters.");
 		else
 			SetActiveLayer(CreateCharacter);
@@ -494,7 +494,7 @@ void Game::InitializeButtons()
 			characterSelect_errorMessageLabel->SetText("You must select a character to delete.");
 		else
 		{
-			m_characterNamePendingDeletion = characterInput->GetName();
+			characterNamePendingDeletion = characterInput->GetName();
 			SetActiveLayer(DeleteCharacter);
 		}
 	};
@@ -539,12 +539,12 @@ void Game::InitializeButtons()
 
 	const auto onClickDeleteCharacterConfirm = [this]()
 	{
-		g_socketManager.SendPacket(OPCODE_DELETE_CHARACTER, 1, m_characterNamePendingDeletion);
+		g_socketManager.SendPacket(OPCODE_DELETE_CHARACTER, 1, characterNamePendingDeletion);
 	};
 
 	const auto onClickDeleteCharacterCancel = [this]()
 	{
-		m_characterNamePendingDeletion = "";
+		characterNamePendingDeletion = "";
 		SetActiveLayer(CharacterSelect);
 	};
 
@@ -554,9 +554,9 @@ void Game::InitializeButtons()
 
 void Game::InitializeLabels()
 {
-	auto writeFactory = m_deviceResources->GetWriteFactory();
-	auto d2dFactory = m_deviceResources->GetD2DFactory();
-	auto d2dContext = m_deviceResources->GetD2DDeviceContext();
+	auto writeFactory = deviceResources->GetWriteFactory();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
 	loginScreen_successMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 30.0f, 170.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, Login, 400.0f, successMessageBrush.Get(), textFormatSuccessMessage.Get(), d2dContext, writeFactory, d2dFactory);
 	loginScreen_errorMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 30.0f, 170.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, Login, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
@@ -582,15 +582,15 @@ void Game::InitializeLabels()
 
 void Game::InitializePanels()
 {
-	auto writeFactory = m_deviceResources->GetWriteFactory();
-	auto d2dFactory = m_deviceResources->GetD2DFactory();
-	auto d2dContext = m_deviceResources->GetD2DDeviceContext();
-	auto d3dDevice = m_deviceResources->GetD3DDevice();
-	auto d3dDeviceContext = m_deviceResources->GetD3DDeviceContext();
+	auto writeFactory = deviceResources->GetWriteFactory();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
+	auto d3dDevice = deviceResources->GetD3DDevice();
+	auto d3dDeviceContext = deviceResources->GetD3DDeviceContext();
 
 	// Game Settings
-	const auto gameSettingsPanelX = (m_clientWidth - 400.0f) / 2.0f;
-	const auto gameSettingsPanelY = (m_clientHeight - 200.0f) / 2.0f;
+	const auto gameSettingsPanelX = (clientWidth - 400.0f) / 2.0f;
+	const auto gameSettingsPanelY = (clientHeight - 200.0f) / 2.0f;
 	gameSettingsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{2.0f, 2.0f, 0.0f}, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	gameSettingsPanelHeader->SetText("Game Settings");
 	const auto onClickGameSettingsLogoutButton = [this]()
@@ -644,24 +644,24 @@ void Game::InitializePanels()
 	abilitiesPanelHeader->SetText("Abilities");
 	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
 
-	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, d2dContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, m_projectionTransform, m_clientWidth, m_clientHeight);
+	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, d2dContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
 	abilitiesPanel->AddChildComponent(*abilitiesContainer);
 }
 
 UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
 {
 	UICharacterListing* characterListing = nullptr;
-	for (auto i = 0; i < m_characterList.size(); i++)
+	for (auto i = 0; i < characterList.size(); i++)
 	{
-		if (m_characterList.at(i)->IsSelected())
-			characterListing = m_characterList.at(i).get();
+		if (characterList.at(i)->IsSelected())
+			characterListing = characterList.at(i).get();
 	}
 	return characterListing;
 }
 
 void Game::InitializeShaders()
 {
-	auto d3dDevice = m_deviceResources->GetD3DDevice();
+	auto d3dDevice = deviceResources->GetD3DDevice();
 
 	vertexShaderBuffer = LoadShader(L"VertexShader.cso");
 	d3dDevice->CreateVertexShader(vertexShaderBuffer.buffer, vertexShaderBuffer.size, nullptr, vertexShader.ReleaseAndGetAddressOf());
@@ -675,13 +675,13 @@ void Game::InitializeShaders()
 	spritePixelShaderBuffer = LoadShader(L"SpritePixelShader.cso");
 	d3dDevice->CreatePixelShader(spritePixelShaderBuffer.buffer, spritePixelShaderBuffer.size, nullptr, spritePixelShader.ReleaseAndGetAddressOf());
 
-	m_projectionTransform = XMMatrixOrthographicLH((float)m_clientWidth, (float)m_clientHeight, 0.0f, 5000.0f);
+	projectionTransform = XMMatrixOrthographicLH((float)clientWidth, (float)clientHeight, 0.0f, 5000.0f);
 }
 
 void Game::InitializeBuffers()
 {
-	auto d3dDevice = m_deviceResources->GetD3DDevice();
-	auto d3dContext = m_deviceResources->GetD3DDeviceContext();
+	auto d3dDevice = deviceResources->GetD3DDevice();
+	auto d3dContext = deviceResources->GetD3DDeviceContext();
 
 	// create constant buffer
 	D3D11_BUFFER_DESC bufferDesc;
@@ -707,7 +707,7 @@ void Game::InitializeBuffers()
 
 void Game::InitializeRasterStates()
 {
-	auto d3dDevice = m_deviceResources->GetD3DDevice();
+	auto d3dDevice = deviceResources->GetD3DDevice();
 
 	CD3D11_RASTERIZER_DESC wireframeRasterStateDesc(D3D11_FILL_WIREFRAME, D3D11_CULL_BACK, FALSE,
 		D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
@@ -722,7 +722,7 @@ void Game::InitializeRasterStates()
 
 void Game::InitializeTextures()
 {
-	auto d3dDevice = m_deviceResources->GetD3DDevice();
+	auto d3dDevice = deviceResources->GetD3DDevice();
 
 	const wchar_t* paths[] =
 	{
@@ -745,7 +745,7 @@ void Game::InitializeTextures()
 
 void Game::InitializeMeshes()
 {
-	auto d3dDevice = m_deviceResources->GetD3DDevice();
+	auto d3dDevice = deviceResources->GetD3DDevice();
 
 	std::string paths[] = 
 	{
@@ -763,21 +763,21 @@ void Game::InitializeMeshes()
 
 void Game::InitializeSprites()
 {
-	auto d3dDevice = m_deviceResources->GetD3DDevice();
+	auto d3dDevice = deviceResources->GetD3DDevice();
 }
 
 void Game::RecreateCharacterListings(const std::vector<std::string*>* characterNames)
 {
-	auto writeFactory = m_deviceResources->GetWriteFactory();
-	auto d2dFactory = m_deviceResources->GetD2DFactory();
-	auto d2dContext = m_deviceResources->GetD2DDeviceContext();
+	auto writeFactory = deviceResources->GetWriteFactory();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
-	m_characterList.clear();
+	characterList.clear();
 
 	for (auto i = 0; i < characterNames->size(); i++)
 	{
 		const float y = 100.0f + (i * 40.0f);
-		m_characterList.push_back(std::make_unique<UICharacterListing>(uiComponents, XMFLOAT3{ 25.0f, y, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CharacterSelect, 260.0f, 30.0f, (*characterNames->at(i)).c_str(), whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatAccountCredsInputValue.Get(), d2dFactory));
+		characterList.push_back(std::make_unique<UICharacterListing>(uiComponents, XMFLOAT3{ 25.0f, y, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CharacterSelect, 260.0f, 30.0f, (*characterNames->at(i)).c_str(), whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatAccountCredsInputValue.Get(), d2dFactory));
 	}
 }
 
@@ -786,18 +786,18 @@ const bool Game::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
-		case EventType::KeyDownEvent:
+		case EventType::KeyDown:
 		{
 			const auto derivedEvent = (KeyDownEvent*)event;
 
 			break;
 		}
-		case EventType::MouseMoveEvent:
+		case EventType::MouseMove:
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
-			m_mousePosX = derivedEvent->mousePosX;
-			m_mousePosY = derivedEvent->mousePosY;
+			mousePosX = derivedEvent->mousePosX;
+			mousePosY = derivedEvent->mousePosY;
 
 			break;
 		}
@@ -859,7 +859,7 @@ const bool Game::HandleEvent(const Event* const event)
 			const auto derivedEvent = (DeleteCharacterSuccessEvent*)event;
 
 			RecreateCharacterListings(derivedEvent->characterList);
-			m_characterNamePendingDeletion = "";
+			characterNamePendingDeletion = "";
 			createCharacter_errorMessageLabel->SetText("");
 			characterSelect_successMessageLabel->SetText("Character deleted successfully.");
 			SetActiveLayer(CharacterSelect);
@@ -870,16 +870,16 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (EnterWorldSuccessEvent*)event;
 
-			GameObject& player = m_objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)derivedEvent->characterId);
-			m_player = &player;
-			auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(player.GetId(), meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
+			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)derivedEvent->characterId);
+			this->player = &player;
+			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(player.GetId(), meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.renderComponentId = sphereRenderComponent.GetId();
-			auto statsComponent = m_statsComponentManager.CreateStatsComponent(player.GetId(), 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
+			auto statsComponent = statsComponentManager.CreateStatsComponent(player.GetId(), 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
 			player.statsComponentId = statsComponent.id;
-			m_playerController = std::make_unique<PlayerController>(player);
+			playerController = std::make_unique<PlayerController>(player);
 
-			auto d2dDeviceContext = m_deviceResources->GetD2DDeviceContext();
-			auto writeFactory = m_deviceResources->GetWriteFactory();
+			auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+			auto writeFactory = deviceResources->GetWriteFactory();
 
 			skills = derivedEvent->skills;
 			auto xOffset = 5.0f;
@@ -887,8 +887,8 @@ const bool Game::HandleEvent(const Event* const event)
 			for (auto i = 0; i < derivedEvent->skills->size(); i++)
 			{
 				auto skill = derivedEvent->skills->at(i);
-				m_skillList[skill->skillId] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT3{ xOffset, yOffset + (18.0f * i), 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, *skill, blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatFPS.Get());
-				skillsPanel->AddChildComponent(*m_skillList[skill->skillId]);
+				skillList[skill->skillId] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT3{ xOffset, yOffset + (18.0f * i), 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, *skill, blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatFPS.Get());
+				skillsPanel->AddChildComponent(*skillList[skill->skillId]);
 			}
 
 			abilities = derivedEvent->abilities;
@@ -912,16 +912,16 @@ const bool Game::HandleEvent(const Event* const event)
 			const auto modelId = derivedEvent->modelId;
 			const auto textureId = derivedEvent->textureId;
 
-			if (!m_objectManager.GameObjectExists(gameObjectId))
+			if (!objectManager.GameObjectExists(gameObjectId))
 			{
-				GameObject& obj = m_objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, gameObjectId);
+				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, gameObjectId);
 				obj.SetMovementVector(mov);
-				auto sphereRenderComponent = m_renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
+				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
 				obj.renderComponentId = sphereRenderComponent.GetId();
 			}
 			else
 			{
-				GameObject& gameObject = m_objectManager.GetGameObjectById(derivedEvent->characterId);
+				GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->characterId);
 				gameObject.SetLocalPosition(pos);
 				gameObject.SetMovementVector(mov);
 			}
@@ -943,7 +943,7 @@ const bool Game::HandleEvent(const Event* const event)
 
 void Game::SetActiveLayer(const Layer layer)
 {
-	m_activeLayer = layer;
+	activeLayer = layer;
 	g_eventHandler.QueueEvent(new ChangeActiveLayerEvent{ layer });
 }
 
@@ -951,16 +951,16 @@ void Game::SyncWithServer(const float deltaTime)
 {
 	if (g_socketManager.Connected())
 	{
-		const auto position = m_player->GetWorldPosition();
-		const auto movementVector = m_player->GetMovementVector();
+		const auto position = player->GetWorldPosition();
+		const auto movementVector = player->GetMovementVector();
 
-		playerUpdates[m_playerUpdateIdCounter % BUFFER_SIZE] = std::make_unique<PlayerUpdate>(m_playerUpdateIdCounter, position, movementVector, deltaTime);
+		playerUpdates[playerUpdateIdCounter % BUFFER_SIZE] = std::make_unique<PlayerUpdate>(playerUpdateIdCounter, position, movementVector, deltaTime);
 
 		g_socketManager.SendPacket(
 			OPCODE_PLAYER_UPDATE,
 			9,
-			std::to_string(m_playerUpdateIdCounter),
-			std::to_string(m_player->GetId()),
+			std::to_string(playerUpdateIdCounter),
+			std::to_string(player->GetId()),
 			std::to_string(position.x),
 			std::to_string(position.y),
 			std::to_string(position.z),
@@ -969,7 +969,7 @@ void Game::SyncWithServer(const float deltaTime)
 			std::to_string(movementVector.z),
 			std::to_string(deltaTime));
 
-		m_playerUpdateIdCounter++;
+		playerUpdateIdCounter++;
 	}
 }
 

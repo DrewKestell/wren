@@ -2,19 +2,13 @@
 #include "Camera.h"
 #include "Utility.h"
 
-// probably want a state machine here (moveState, etc)
 void Camera::Update(XMFLOAT3 player, const float deltaTime)
 {
-	//std::cout << gameTimer.DeltaTime() << std::endl;
-
 	auto deltaX = std::abs(player.x - camX);
 	auto deltaZ = std::abs(player.z - camZ);
 	auto max = std::max(deltaX, deltaZ);
 	deltaX = (float)(deltaX / max);
 	deltaZ = (float)(deltaZ / max);
-
-	/*std::cout << "deltaX: " << deltaX << std::endl;
-	std::cout << "deltaZ: " << deltaZ << std::endl;*/
 
 	if (deltaX < 0.0005f && deltaZ < 0.0005f)
 	{

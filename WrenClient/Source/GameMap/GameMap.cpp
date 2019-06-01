@@ -111,7 +111,7 @@ void GameMap::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTra
 	immediateContext->IASetInputLayout(inputLayout.Get());
 
 	// map ConstantBuffer
-	auto worldViewProjection = worldTransform * viewTransform * projectionTransform;
+	auto worldViewProjection = WORLD_TRANSFORM * viewTransform * projectionTransform;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	immediateContext->Map(constantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	auto pCB = reinterpret_cast<ConstantBufferPerObject*>(mappedResource.pData);
@@ -128,7 +128,7 @@ void GameMap::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTra
 	immediateContext->PSSetSamplers(0, 1, samplerState.GetAddressOf());
 
 	// set VertexBuffer and IndexBuffer then Draw
-	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &GAMEMAP_STRIDE, &GAMEMAP_OFFSET);
 	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->DrawIndexed(INDEX_COUNT, 0, 0);

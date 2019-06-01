@@ -104,7 +104,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::MouseMoveEvent:
+		case EventType::MouseMove:
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 			const auto mousePosX = derivedEvent->mousePosX;
@@ -155,7 +155,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::LeftMouseDownEvent:
+		case EventType::LeftMouseDown:
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
@@ -167,7 +167,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::LeftMouseUpEvent:
+		case EventType::LeftMouseUp:
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
@@ -186,7 +186,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::UIAbilityDroppedEvent:
+		case EventType::UIAbilityDropped:
 		{
 			abilityCopy = nullptr;
 

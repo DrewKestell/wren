@@ -55,7 +55,7 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::UIAbilityDroppedEvent:
+		case EventType::UIAbilityDropped:
 		{
 			const auto derivedEvent = (UIAbilityDroppedEvent*)event;
 

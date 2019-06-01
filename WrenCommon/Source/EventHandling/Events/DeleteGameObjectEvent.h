@@ -6,9 +6,9 @@ class DeleteGameObjectEvent : public Event
 {
 public:
 	DeleteGameObjectEvent(const long gameObjectId)
-		: Event(EventType::DeleteGameObjectEvent),
+		: Event(EventType::DeleteGameObject),
 		  gameObjectId{ gameObjectId }
 	{
 	}
-	long gameObjectId{ 0 };
+	long gameObjectId;
 };

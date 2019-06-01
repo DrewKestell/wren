@@ -8,7 +8,7 @@ class UIAbilityDroppedEvent : public MouseEvent
 {
 public:
 	UIAbilityDroppedEvent(UIAbility* uiAbility, const float mousePosX, const float mousePosY)
-		: MouseEvent(EventType::UIAbilityDroppedEvent, mousePosX, mousePosY),
+		: MouseEvent(EventType::UIAbilityDropped, mousePosX, mousePosY),
 		  uiAbility { uiAbility }
 	{
 	}

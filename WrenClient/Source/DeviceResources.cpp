@@ -42,7 +42,7 @@ void DeviceResources::CreateDeviceResources()
 		1,
 		D3D11_SDK_VERSION,
 		device.GetAddressOf(),  // Returns the Direct3D device created.
-		&m_d3dFeatureLevel,     // Returns feature level of device created.
+		&d3dFeatureLevel,     // Returns feature level of device created.
 		context.GetAddressOf()  // Returns the device immediate context.
 	);
 	ThrowIfFailed(hr);
@@ -70,21 +70,19 @@ void DeviceResources::CreateDeviceResources()
 	}
 #endif
 
-	ThrowIfFailed(device.As(&m_d3dDevice));
-	ThrowIfFailed(context.As(&m_d3dContext));
+	ThrowIfFailed(device.As(&d3dDevice));
+	ThrowIfFailed(context.As(&d3dContext));
 	//ThrowIfFailed(context.As(&m_d3dAnnotation));
 
 	// WriteFactory is used for Text related tasks, such as CreateTextLayout.
 	// Text rendering happens through the D2DContext, for example:
 	//   writeFactory->CreateTextLayout...
 	//   d2dContext->DrawTextLayout...
-	ComPtr<IDWriteFactory> writeFactory;
 	ThrowIfFailed(DWriteCreateFactory(
 		DWRITE_FACTORY_TYPE_SHARED,
 		__uuidof(IDWriteFactory),
 		&writeFactory
 	));
-	ThrowIfFailed(writeFactory.As(&m_writeFactory));
 
 	// D2DFactory is used to create 2D geometry, for example:
 	//   d2dFactory->CreateRoundedRectangleGeometry...
@@ -93,28 +91,22 @@ void DeviceResources::CreateDeviceResources()
 #ifdef _DEBUG
 	options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 #endif
-	ComPtr<ID2D1Factory> d2dFactory;
 	ThrowIfFailed(D2D1CreateFactory(
 		D2D1_FACTORY_TYPE_MULTI_THREADED,
 		__uuidof(ID2D1Factory),
 		&options,
 		&d2dFactory
 	));
-	ThrowIfFailed(d2dFactory.As(&m_d2dFactory));
 
 	// Get a reference to the DXGIDevice to use in creation of the D2DDevice
 	ComPtr<IDXGIDevice> dxgiDevice;
 	ThrowIfFailed(device.As(&dxgiDevice));
 
 	// Create D2DDevice
-	ComPtr<ID2D1Device> d2dDevice;
-	ThrowIfFailed(m_d2dFactory->CreateDevice(dxgiDevice.Get(), d2dDevice.GetAddressOf()));
-	ThrowIfFailed(d2dDevice.As(&m_d2dDevice));
+	ThrowIfFailed(d2dFactory->CreateDevice(dxgiDevice.Get(), d2dDevice.GetAddressOf()));
 
 	// Create D2DContext
-	ComPtr<ID2D1DeviceContext1> d2dDeviceContext;
-	ThrowIfFailed(m_d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &d2dDeviceContext));
-	ThrowIfFailed(d2dDeviceContext.As(&m_d2dContext));
+	ThrowIfFailed(d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, d2dContext.ReleaseAndGetAddressOf()));
 
 	// Get MSAA settings
 	ThrowIfFailed(device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, msaaCount, &msaaQuality));
@@ -130,7 +122,7 @@ void DeviceResources::CreateFactory()
 		{
 			debugDXGI = true;
 
-			ThrowIfFailed(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(m_dxgiFactory.ReleaseAndGetAddressOf())));
+			ThrowIfFailed(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(dxgiFactory.ReleaseAndGetAddressOf())));
 
 			dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true);
 			dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
@@ -148,7 +140,7 @@ void DeviceResources::CreateFactory()
 
 	if (!debugDXGI)
 #endif
-		ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(m_dxgiFactory.ReleaseAndGetAddressOf())));
+		ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(dxgiFactory.ReleaseAndGetAddressOf())));
 }
 
 // These resources need to be recreated every time the window size is changed.
@@ -156,27 +148,26 @@ void DeviceResources::CreateWindowSizeDependentResources()
 {
 	// Clear the previous window size specific context.
 	ID3D11RenderTargetView* nullViews[] = { nullptr };
-	m_d3dContext->OMSetRenderTargets(_countof(nullViews), nullViews, nullptr);
-	m_d2dContext->SetTarget(nullptr);
-	m_backBufferRenderTargetView.Reset();
-	m_offscreenRenderTargetView.Reset();
-	m_depthStencilView.Reset();
-	m_backBufferRenderTarget.Reset();
-	m_offscreenRenderTarget.Reset();
-	m_depthStencil.Reset();
-	m_d3dContext->Flush();
+	d3dContext->OMSetRenderTargets(_countof(nullViews), nullViews, nullptr);
+	d2dContext->SetTarget(nullptr);
+	backBufferRenderTargetView.Reset();
+	offscreenRenderTargetView.Reset();
+	depthStencilView.Reset();
+	backBufferRenderTarget.Reset();
+	offscreenRenderTarget.Reset();
+	depthStencil.Reset();
+	d3dContext->Flush();
 	//m_d2dContext->Flush();
 
 	// Determine the render target size in pixels.
-	UINT renderTargetWidth = std::max<UINT>(m_outputSize.right - m_outputSize.left, 1);
-	UINT renderTargetHeight = std::max<UINT>(m_outputSize.bottom - m_outputSize.top, 1);
-	DXGI_FORMAT backBufferFormat = m_backBufferFormat;
+	UINT renderTargetWidth = std::max<UINT>(outputSize.right - outputSize.left, 1);
+	UINT renderTargetHeight = std::max<UINT>(outputSize.bottom - outputSize.top, 1);
 
-	if (m_swapChain)
+	if (swapChain)
 	{
 		// If the swap chain already exists, resize it.
-		HRESULT hr = m_swapChain->ResizeBuffers(
-			m_backBufferCount,
+		HRESULT hr = swapChain->ResizeBuffers(
+			backBufferCount,
 			renderTargetWidth,
 			renderTargetHeight,
 			backBufferFormat,
@@ -187,7 +178,7 @@ void DeviceResources::CreateWindowSizeDependentResources()
 		{
 #ifdef _DEBUG
 			char buff[64] = {};
-			sprintf_s(buff, "Device Lost on ResizeBuffers: Reason code 0x%08X\n", (hr == DXGI_ERROR_DEVICE_REMOVED) ? m_d3dDevice->GetDeviceRemovedReason() : hr);
+			sprintf_s(buff, "Device Lost on ResizeBuffers: Reason code 0x%08X\n", (hr == DXGI_ERROR_DEVICE_REMOVED) ? d3dDevice->GetDeviceRemovedReason() : hr);
 			OutputDebugStringA(buff);
 #endif
 			// If the device was removed for any reason, a new device and swap chain will need to be created.
@@ -210,7 +201,7 @@ void DeviceResources::CreateWindowSizeDependentResources()
 		swapChainDesc.Height = renderTargetHeight;
 		swapChainDesc.Format = backBufferFormat;
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = m_backBufferCount;
+		swapChainDesc.BufferCount = backBufferCount;
 		swapChainDesc.SampleDesc.Count = 1;
 		swapChainDesc.SampleDesc.Quality = 0;
 		swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
@@ -222,25 +213,25 @@ void DeviceResources::CreateWindowSizeDependentResources()
 		fsSwapChainDesc.Windowed = TRUE;
 
 		// Create a SwapChain from a Win32 window.
-		ThrowIfFailed(m_dxgiFactory->CreateSwapChainForHwnd(
-			m_d3dDevice.Get(),
-			m_window,
+		ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(
+			d3dDevice.Get(),
+			window,
 			&swapChainDesc,
 			&fsSwapChainDesc,
 			nullptr,
-			m_swapChain.ReleaseAndGetAddressOf()
+			swapChain.ReleaseAndGetAddressOf()
 		));
 
 		// This class does not support exclusive full-screen mode and prevents DXGI from responding to the ALT+ENTER shortcut
-		ThrowIfFailed(m_dxgiFactory->MakeWindowAssociation(m_window, DXGI_MWA_NO_ALT_ENTER));
+		ThrowIfFailed(dxgiFactory->MakeWindowAssociation(window, DXGI_MWA_NO_ALT_ENTER));
 	}
 
-	ThrowIfFailed(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&m_backBufferRenderTarget));
-	ThrowIfFailed(m_d3dDevice->CreateRenderTargetView(m_backBufferRenderTarget.Get(), NULL, &m_backBufferRenderTargetView));
+	ThrowIfFailed(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferRenderTarget));
+	ThrowIfFailed(d3dDevice->CreateRenderTargetView(backBufferRenderTarget.Get(), NULL, &backBufferRenderTargetView));
 
 	// Create a depth stencil view for use with 3D rendering.
 	CD3D11_TEXTURE2D_DESC depthStencilDesc;
-	depthStencilDesc.Format = m_depthBufferFormat;
+	depthStencilDesc.Format = depthBufferFormat;
 	depthStencilDesc.Width = renderTargetWidth;
 	depthStencilDesc.Height = renderTargetHeight;
 	depthStencilDesc.SampleDesc.Count = msaaCount;
@@ -252,17 +243,17 @@ void DeviceResources::CreateWindowSizeDependentResources()
 	depthStencilDesc.CPUAccessFlags = 0;
 	depthStencilDesc.MiscFlags = 0;
 
-	ThrowIfFailed(m_d3dDevice->CreateTexture2D(
+	ThrowIfFailed(d3dDevice->CreateTexture2D(
 		&depthStencilDesc,
 		nullptr,
-		m_depthStencil.ReleaseAndGetAddressOf()
+		depthStencil.ReleaseAndGetAddressOf()
 	));
 
 	CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2DMS);
-	ThrowIfFailed(m_d3dDevice->CreateDepthStencilView(
-		m_depthStencil.Get(),
+	ThrowIfFailed(d3dDevice->CreateDepthStencilView(
+		depthStencil.Get(),
 		&depthStencilViewDesc,
-		m_depthStencilView.ReleaseAndGetAddressOf()
+		depthStencilView.ReleaseAndGetAddressOf()
 	));
 
 	// foo
@@ -284,7 +275,7 @@ void DeviceResources::CreateWindowSizeDependentResources()
 	depthStencilDescription.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 	depthStencilDescription.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
-	ThrowIfFailed(m_d3dDevice->CreateDepthStencilState(&depthStencilDescription, &m_depthStencilState));
+	ThrowIfFailed(d3dDevice->CreateDepthStencilState(&depthStencilDescription, &depthStencilState));
 	
 	// Create offscreen render target
 	D3D11_TEXTURE2D_DESC surfaceDesc;
@@ -300,10 +291,10 @@ void DeviceResources::CreateWindowSizeDependentResources()
 	surfaceDesc.MiscFlags = 0;
 	surfaceDesc.Usage = D3D11_USAGE_DEFAULT;
 
-	ThrowIfFailed(m_d3dDevice->CreateTexture2D(&surfaceDesc, nullptr, &m_offscreenRenderTarget));
+	ThrowIfFailed(d3dDevice->CreateTexture2D(&surfaceDesc, nullptr, &offscreenRenderTarget));
 
 	CD3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc(D3D11_RTV_DIMENSION_TEXTURE2DMS);
-	ThrowIfFailed(m_d3dDevice->CreateRenderTargetView(m_offscreenRenderTarget.Get(), &renderTargetViewDesc, &m_offscreenRenderTargetView));
+	ThrowIfFailed(d3dDevice->CreateRenderTargetView(offscreenRenderTarget.Get(), &renderTargetViewDesc, &offscreenRenderTargetView));
 
 	// Get reference to DXGISurface and create a bitmap from that surface
 	// to use as a rendering target for our D2DContext.
@@ -316,15 +307,15 @@ void DeviceResources::CreateWindowSizeDependentResources()
 	bp.colorContext = nullptr;
 
 	ComPtr<IDXGISurface> dxgiSurface;
-	ThrowIfFailed(m_offscreenRenderTarget.As(&dxgiSurface));
+	ThrowIfFailed(offscreenRenderTarget.As(&dxgiSurface));
 
 	ComPtr<ID2D1Bitmap1> targetBitmap;
-	ThrowIfFailed(m_d2dContext->CreateBitmapFromDxgiSurface(dxgiSurface.Get(), &bp, &targetBitmap));
+	ThrowIfFailed(d2dContext->CreateBitmapFromDxgiSurface(dxgiSurface.Get(), &bp, &targetBitmap));
 
-	m_d2dContext->SetTarget(targetBitmap.Get());
+	d2dContext->SetTarget(targetBitmap.Get());
 
 	// Set the 3D rendering viewport to target the entire window.
-	m_screenViewport = CD3D11_VIEWPORT(
+	screenViewport = CD3D11_VIEWPORT(
 		0.0f,
 		0.0f,
 		static_cast<float>(renderTargetWidth),
@@ -335,56 +326,56 @@ void DeviceResources::CreateWindowSizeDependentResources()
 // Recreate all device resources and set them back to the current state.
 void DeviceResources::HandleDeviceLost()
 {
-	if (m_deviceNotify)
+	if (deviceNotify)
 	{
-		m_deviceNotify->OnDeviceLost();
+		deviceNotify->OnDeviceLost();
 	}
 
-	m_d2dContext.Reset();
-	m_d2dDevice.Reset();
-	m_d2dFactory.Reset();
-	m_writeFactory.Reset();
-	m_depthStencilView.Reset();
-	m_backBufferRenderTargetView.Reset();
-	m_offscreenRenderTargetView.Reset();
-	m_backBufferRenderTarget.Reset();
-	m_offscreenRenderTarget.Reset();
-	m_depthStencil.Reset();
-	m_swapChain.Reset();
-	m_d3dContext.Reset();	
+	d2dContext.Reset();
+	d2dDevice.Reset();
+	d2dFactory.Reset();
+	writeFactory.Reset();
+	depthStencilView.Reset();
+	backBufferRenderTargetView.Reset();
+	offscreenRenderTargetView.Reset();
+	backBufferRenderTarget.Reset();
+	offscreenRenderTarget.Reset();
+	depthStencil.Reset();
+	swapChain.Reset();
+	d3dContext.Reset();	
 	//m_d3dAnnotation.Reset();
 
 #ifdef _DEBUG
 	{
 		ComPtr<ID3D11Debug> d3dDebug;
-		if (SUCCEEDED(m_d3dDevice.As(&d3dDebug)))
+		if (SUCCEEDED(d3dDevice.As(&d3dDebug)))
 		{
 			d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY);
 		}
 	}
 #endif
 
-	m_d3dDevice.Reset();
-	m_dxgiFactory.Reset();
+	d3dDevice.Reset();
+	dxgiFactory.Reset();
 
 	CreateDeviceResources();
 	CreateWindowSizeDependentResources();
 
-	if (m_deviceNotify)
+	if (deviceNotify)
 	{
-		m_deviceNotify->OnDeviceRestored();
+		deviceNotify->OnDeviceRestored();
 	}
 }
 
 // This method is called when the Win32 window is created (or re-created).
 void DeviceResources::SetWindow(HWND window, int width, int height)
 {
-	m_window = window;
+	this->window = window;
 
-	m_outputSize.top = 0;
-	m_outputSize.left = 0;
-	m_outputSize.right = width;
-	m_outputSize.bottom = height;
+	outputSize.top = 0;
+	outputSize.left = 0;
+	outputSize.right = width;
+	outputSize.bottom = height;
 }
 
 void DeviceResources::Present()
@@ -394,14 +385,14 @@ void DeviceResources::Present()
 	// The first argument instructs DXGI to block until VSync, putting the application
 	// to sleep until the next VSync. This ensures we don't waste any cycles rendering
 	// frames that will never be displayed to the screen.
-	hr = m_swapChain->Present(1, 0);
+	hr = swapChain->Present(1, 0);
 
 	// Discard the contents of the render target.
 	// This is a valid operation only when the existing contents will be entirely
 	// overwritten. If dirty or scroll rects are used, this call should be removed.
-	m_d3dContext->DiscardView(m_backBufferRenderTargetView.Get());
-	m_d3dContext->DiscardView(m_offscreenRenderTargetView.Get());
-	m_d3dContext->DiscardView(m_depthStencilView.Get());
+	d3dContext->DiscardView(backBufferRenderTargetView.Get());
+	d3dContext->DiscardView(offscreenRenderTargetView.Get());
+	d3dContext->DiscardView(depthStencilView.Get());
 
 	// If the device was removed either by a disconnection or a driver upgrade, we 
 	// must recreate all device resources.
@@ -409,7 +400,7 @@ void DeviceResources::Present()
 	{
 #ifdef _DEBUG
 		char buff[64] = {};
-		sprintf_s(buff, "Device Lost on Present: Reason code 0x%08X\n", (hr == DXGI_ERROR_DEVICE_REMOVED) ? m_d3dDevice->GetDeviceRemovedReason() : hr);
+		sprintf_s(buff, "Device Lost on Present: Reason code 0x%08X\n", (hr == DXGI_ERROR_DEVICE_REMOVED) ? d3dDevice->GetDeviceRemovedReason() : hr);
 		OutputDebugStringA(buff);
 #endif
 		HandleDeviceLost();
@@ -418,7 +409,7 @@ void DeviceResources::Present()
 	{
 		ThrowIfFailed(hr);
 
-		if (!m_dxgiFactory->IsCurrent())
+		if (!dxgiFactory->IsCurrent())
 		{
 			// Output information is cached on the DXGI Factory. If it is stale we need to create a new factory.
 			CreateFactory();
@@ -433,7 +424,7 @@ bool DeviceResources::WindowSizeChanged(int width, int height)
 	newRc.top = 0;
 	newRc.right = width;
 	newRc.bottom = height;
-	if (newRc == m_outputSize)
+	if (newRc == outputSize)
 	{
 		// Handle color space settings for HDR
 		//UpdateColorSpace();
@@ -441,7 +432,7 @@ bool DeviceResources::WindowSizeChanged(int width, int height)
 		return false;
 	}
 
-	m_outputSize = newRc;
+	outputSize = newRc;
 	CreateWindowSizeDependentResources();
 	return true;
 }

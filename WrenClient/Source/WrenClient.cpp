@@ -259,25 +259,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_LBUTTONDOWN:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::LeftMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::LeftMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
 	case WM_MBUTTONDOWN:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MiddleMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MiddleMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
 	case WM_RBUTTONDOWN:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::RightMouseDownEvent, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::RightMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
 	case WM_LBUTTONUP:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::LeftMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::LeftMouseUp,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
 	case WM_MBUTTONUP:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MiddleMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MiddleMouseUp,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
 	case WM_RBUTTONUP:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::RightMouseUpEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::RightMouseUp,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
 	case WM_MOUSEMOVE:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MouseMoveEvent,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MouseMove,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
 		break;
 
 	case WM_SYSKEYDOWN:

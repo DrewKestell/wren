@@ -23,7 +23,7 @@ const bool PlayerController::HandleEvent(const Event* const event)
 		{
 			//todo
 		}
-		case EventType::RightMouseDownEvent:
+		case EventType::RightMouseDown:
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
@@ -32,7 +32,7 @@ const bool PlayerController::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::RightMouseUpEvent:
+		case EventType::RightMouseUp:
 		{
 			const auto mouseUpEvent = (MouseEvent*)event;
 
@@ -40,7 +40,7 @@ const bool PlayerController::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::MouseMoveEvent:
+		case EventType::MouseMove:
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 

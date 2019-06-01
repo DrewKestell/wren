@@ -91,7 +91,7 @@ const bool UIInput::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
-		case EventType::LeftMouseDownEvent:
+		case EventType::LeftMouseDown:
 		{
 			active = false;
 
@@ -108,7 +108,7 @@ const bool UIInput::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::KeyDownEvent:
+		case EventType::KeyDown:
 		{
 			if (active)
 			{
@@ -123,7 +123,7 @@ const bool UIInput::HandleEvent(const Event* const event)
 			
 			break;
 		}
-		case EventType::SystemKeyDownEvent:
+		case EventType::SystemKeyDown:
 		{
 			if (active)
 			{

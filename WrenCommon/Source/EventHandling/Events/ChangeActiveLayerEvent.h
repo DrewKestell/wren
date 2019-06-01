@@ -8,7 +8,7 @@ class ChangeActiveLayerEvent : public Event
 public:
 	ChangeActiveLayerEvent(const Layer layer)
 		: Event(EventType::ChangeActiveLayer),
-		layer{ layer }
+		  layer{ layer }
 	{
 	}
 	const Layer layer;

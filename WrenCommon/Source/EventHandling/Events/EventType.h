@@ -2,16 +2,16 @@
 
 enum class EventType
 {
-	LeftMouseDownEvent,
-	LeftMouseUpEvent,
-	RightMouseDownEvent,
-	RightMouseUpEvent,
-	MiddleMouseDownEvent,
-	MiddleMouseUpEvent,
-	MouseMoveEvent,
-	KeyDownEvent,
-	SystemKeyDownEvent,
-	SystemKeyUpEvent,
+	LeftMouseDown,
+	LeftMouseUp,
+	RightMouseDown,
+	RightMouseUp,
+	MiddleMouseDown,
+	MiddleMouseUp,
+	MouseMove,
+	KeyDown,
+	SystemKeyDown,
+	SystemKeyUp,
 	ChangeActiveLayer,
 	CreateAccountFailed,
 	CreateAccountSuccess,
@@ -24,9 +24,9 @@ enum class EventType
 	OpcodeNotImplemented,
 	DeleteCharacterSuccess,
 	PlayerCorrection,
-	DeleteGameObjectEvent,
+	DeleteGameObject,
 	GameObjectUpdate,
-	UIAbilityDroppedEvent,
+	UIAbilityDropped,
 	ActivateAbility,
 	StartDraggingUIAbility
 };

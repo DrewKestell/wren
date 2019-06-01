@@ -38,13 +38,13 @@ const bool StatsComponentManager::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
-	case EventType::DeleteGameObjectEvent:
-	{
-		const auto derivedEvent = (DeleteGameObjectEvent*)event;
-		const auto gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-		DeleteStatsComponent(gameObject.statsComponentId);
-		break;
-	}
+		case EventType::DeleteGameObject:
+		{
+			const auto derivedEvent = (DeleteGameObjectEvent*)event;
+			const auto gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
+			DeleteStatsComponent(gameObject.statsComponentId);
+			break;
+		}
 	}
 	return false;
 }

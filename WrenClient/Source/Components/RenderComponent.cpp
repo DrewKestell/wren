@@ -51,6 +51,3 @@ void RenderComponent::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX
 }
 
 const unsigned int RenderComponent::GetId() const { return id; }
-void RenderComponent::SetId(const unsigned int id) { this->id = id; }
-const long RenderComponent::GetGameObjectId() const { return gameObjectId; }
-void RenderComponent::SetGameObjectId(const long id) { this->gameObjectId = gameObjectId; }

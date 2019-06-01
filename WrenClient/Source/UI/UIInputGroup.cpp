@@ -30,7 +30,7 @@ const bool UIInputGroup::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::SystemKeyDownEvent:
+		case EventType::SystemKeyDown:
 		{
 			const auto derivedEvent = (SystemKeyDownEvent*)event;
 
