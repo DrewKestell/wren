@@ -218,8 +218,6 @@ bool SocketManager::TryRecieveMessage()
 			const auto posX = args[1];
 			const auto posY = args[2];
 			const auto posZ = args[3];
-			const auto state = args[4];
-			const auto direction = args[5];
 
 			// publish event
 		}

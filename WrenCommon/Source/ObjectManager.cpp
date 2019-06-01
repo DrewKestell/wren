@@ -2,10 +2,10 @@
 #include "ObjectManager.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 
-void ObjectManager::Update(const float deltaTime)
+void ObjectManager::Update(const float deltaTime, bool emulateHack)
 {
 	for (unsigned int i = 0; i < gameObjectIndex; i++)
-		gameObjects[i].Update(deltaTime);
+		gameObjects[i].Update(deltaTime, emulateHack);
 }
 
 // I think all created GameObjects on the server should be coming from a DB somewhere, so they should have an Id

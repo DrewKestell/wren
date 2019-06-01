@@ -62,7 +62,7 @@ void Game::Tick()
 			playerController->Update(UPDATE_FREQUENCY);
 			camera.Update(player->GetWorldPosition(), UPDATE_FREQUENCY);
 			SyncWithServer(UPDATE_FREQUENCY);
-			objectManager.Update(UPDATE_FREQUENCY);
+			objectManager.Update(UPDATE_FREQUENCY, true);
 		}
 		
 		g_eventHandler.PublishEvents();

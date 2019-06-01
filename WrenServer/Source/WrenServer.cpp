@@ -35,7 +35,7 @@ int main()
 		updateTimer += deltaTime;
 		if (updateTimer >= updateInterval)
 		{
-			g_objectManager.Update(updateInterval);
+			g_objectManager.Update(updateInterval, false);
 
 			updateTimer -= updateInterval;
 		}

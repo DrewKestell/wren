@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "GameObject.h"
 
-void GameObject::Update(const float deltaTime)
+void GameObject::Update(const float deltaTime, bool emulateHack)
 {
+	const auto testSpeed = emulateHack ? speed : speed * 1.5;
+
 	// TODO: map bounds checking
 	auto movementVec = XMLoadFloat3(&movementVector);
-	movementVec *= speed * deltaTime;
+	movementVec *= testSpeed * deltaTime;
 	
 	auto positionVec = XMLoadFloat3(&localPosition);
 	XMStoreFloat3(&localPosition, movementVec + positionVec);

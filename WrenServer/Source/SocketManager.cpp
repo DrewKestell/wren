@@ -429,6 +429,17 @@ void SocketManager::PlayerUpdate(
 	player.SetMovementVector(XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ) });
 
 	(*it)->IncrementUpdateCounter();
+
+	const auto clientPosX = std::stof(posX);
+	const auto clientPosY = std::stof(posY);
+	const auto clientPosZ = std::stof(posZ);
+	auto currentPos = player.GetWorldPosition();
+
+	if (currentPos.x != clientPosX || currentPos.y != clientPosY || currentPos.z != clientPosZ)
+	{
+		std::cout << "Updates don't match. Need to send correction.\n";
+		SendPacket((*it)->GetSockAddr(), OPCODE_PLAYER_CORRECTION, 4, id, std::to_string(currentPos.x), std::to_string(currentPos.y), std::to_string(currentPos.z));
+	}
 }
 
 void SocketManager::UpdateClients()
