@@ -936,6 +936,12 @@ const bool Game::HandleEvent(const Event* const event)
 
 			break;
 		}
+		case EventType::PlayerCorrection:
+		{
+			const auto derivedEvent = (ActivateAbilityEvent*)event;
+
+			player->SetLocalPosition(XMFLOAT3{derivedEvent->})
+		}
 	}
 
 	return false;

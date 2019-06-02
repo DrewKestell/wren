@@ -10,6 +10,7 @@
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
 #include "EventHandling/Events/GameObjectUpdateEvent.h"
+#include "EventHandling/Events/PlayerCorrectionEvent.h"
 
 constexpr auto SERVER_PORT_NUMBER = 27016;
 
@@ -214,12 +215,13 @@ bool SocketManager::TryRecieveMessage()
 		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_PLAYER_CORRECTION, opcodeArrLen))
 		{
-			const auto idCounter = args[0];
+			const auto updateId = args[0];
 			const auto posX = args[1];
 			const auto posY = args[2];
 			const auto posZ = args[3];
 
-			// publish event
+			g_eventHandler.QueueEvent(new PlayerCorrectionEvent{ std::stoi(*updateId), std::stof(*posX), std::stof(*posY), std::stof(*posZ) });
+			return true;
 		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_GAMEOBJECT_UPDATE, opcodeArrLen))
 		{

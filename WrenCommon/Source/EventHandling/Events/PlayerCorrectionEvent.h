@@ -5,8 +5,14 @@
 class PlayerCorrectionEvent : public Event
 {
 public:
-	PlayerCorrectionEvent()
-		: Event(EventType::PlayerCorrection)
+	PlayerCorrectionEvent(const int updateId, const float posX, const float posY, const float posZ)
+		: Event(EventType::PlayerCorrection),
+		  updateId{ updateId },
+		  posX{ posX }, posY{ posY }, posZ{ posZ }
 	{
 	}
+	const int updateId;
+	const float posX;
+	const float posY;
+	const float posZ;
 };
