@@ -1,5 +1,6 @@
 #pragma once
 
+#include <PlayerController.h>
 #include "Player.h"
 #include "Repository.h"
 
@@ -8,6 +9,7 @@ class SocketManager
 private:
     Repository repository;
     std::vector<Player*> players;
+	std::vector<PlayerController> playerControllers;
     sockaddr_in local;
     sockaddr_in from;
     int fromlen;
@@ -26,7 +28,7 @@ private:
 	std::string ListAbilities(const int characterId);
 	void EnterWorld(const std::string& token, const std::string& characterName);
 	void DeleteCharacter(const std::string& token, const std::string& characterName);
-	void PlayerUpdate(const std::string& token, const std::string& idCounter, const std::string& characterId, const std::string& posX, const std::string& posY, const std::string& posZ, const std::string& movX, const std::string& movY, const std::string& movZ, const std::string& deltaTime);
+	void PlayerUpdate(const std::string& token, const std::string& idCounter, const std::string& characterId, const std::string& posX, const std::string& posY, const std::string& posZ, const std::string& isRightClickHeld, const std::string& mouseDirX, const std::string& mouseDirY, const std::string& mouseDirZ);
 public:
     SocketManager(Repository& repository);
     bool TryRecieveMessage();

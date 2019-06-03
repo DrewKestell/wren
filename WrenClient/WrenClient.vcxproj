@@ -33,7 +33,6 @@
     <ClCompile Include="Source\GameMap\GameMap.cpp" />
     <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
-    <ClCompile Include="Source\PlayerController.cpp" />
     <ClCompile Include="Source\Components\RenderComponent.cpp" />
     <ClCompile Include="Source\Components\RenderComponentManager.cpp" />
     <ClCompile Include="Source\Sprite.cpp" />
@@ -160,7 +159,6 @@
     <ClInclude Include="Source\GameMap\TerrainType.h" />
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\Mesh.h" />
-    <ClInclude Include="Source\PlayerController.h" />
     <ClInclude Include="Source\Components\RenderComponent.h" />
     <ClInclude Include="Source\Components\RenderComponentManager.h" />
     <ClInclude Include="Source\ShaderBuffer.h" />

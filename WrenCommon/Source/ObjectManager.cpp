@@ -2,10 +2,10 @@
 #include "ObjectManager.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 
-void ObjectManager::Update(const float deltaTime, bool emulateHack)
+void ObjectManager::Update()
 {
 	for (unsigned int i = 0; i < gameObjectIndex; i++)
-		gameObjects[i].Update(deltaTime, emulateHack);
+		gameObjects[i].Update();
 }
 
 // I think all created GameObjects on the server should be coming from a DB somewhere, so they should have an Id
@@ -31,7 +31,7 @@ void ObjectManager::DeleteGameObject(EventHandler& eventHandler, const long game
 	memcpy(&gameObjects[gameObjectToDeleteIndex], &gameObjects[lastGameObjectIndex], sizeof(GameObject));
 
 	// then update the index of the moved RenderComponent
-	auto lastGameObjectId = gameObjects[gameObjectToDeleteIndex].GetId();
+	auto lastGameObjectId = gameObjects[gameObjectToDeleteIndex].id;
 	idIndexMap[lastGameObjectId] = gameObjectToDeleteIndex;
 
 	// publish event that other ComponentManagers can subscribe to so they can delete those Components

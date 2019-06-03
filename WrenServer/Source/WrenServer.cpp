@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <Constants.h>
 #include <ObjectManager.h>
 #include "SocketManager.h"
 #include <GameTimer.h>
@@ -6,14 +7,13 @@
 ObjectManager g_objectManager;
 GameTimer m_timer;
 
-static const auto updateInterval = 0.01666666666f;
-static const auto clientUpdateInterval = 0.1f;
+static const auto CLIENT_UPDATE_FREQUENCY = 0.1f;
 
 int main()
 {
     HWND consoleWindow = GetConsoleWindow();
     MoveWindow(consoleWindow, 810, 0, 800, 800, TRUE);
-    std::cout << "WrenServer initialized.\n";
+    std::cout << "WrenServer initialized.\n\n";
 
     Repository repository;
     SocketManager socketManager{ repository };
@@ -33,19 +33,19 @@ int main()
 		auto deltaTime = m_timer.DeltaTime();
 
 		updateTimer += deltaTime;
-		if (updateTimer >= updateInterval)
+		if (updateTimer >= UPDATE_FREQUENCY)
 		{
-			g_objectManager.Update(updateInterval, false);
+			g_objectManager.Update();
 
-			updateTimer -= updateInterval;
+			updateTimer -= UPDATE_FREQUENCY;
 		}
 		
 		clientUpdateTimer += deltaTime;
-		if (clientUpdateTimer >= clientUpdateInterval)
+		if (clientUpdateTimer >= CLIENT_UPDATE_FREQUENCY)
 		{
 			socketManager.UpdateClients();
 
-			clientUpdateTimer -= clientUpdateInterval;
+			clientUpdateTimer -= CLIENT_UPDATE_FREQUENCY;
 		}
     }
     

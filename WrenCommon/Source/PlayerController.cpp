@@ -1,61 +1,61 @@
 #include "stdafx.h"
+#include <OpCodes.h>
 #include "PlayerController.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/MouseEvent.h"
-
-extern EventHandler g_eventHandler;
+#include "EventHandling/Events/PlayerCorrectionEvent.h"
 
 PlayerController::PlayerController(GameObject& player)
 	: player{ player }
 {
 	clientWidth = 800;
 	clientHeight = 600;
-
-	g_eventHandler.Subscribe(*this);
 }
 
-const bool PlayerController::HandleEvent(const Event* const event)
+void PlayerController::OnPlayerCorrectionEvent(PlayerCorrectionEvent* event)
 {
-	const auto type = event->type;
-	switch (type)
+	const auto cachedInput = isRightClickHeld;
+	const auto cachedMouseDir = currentMouseDirection;
+
+	// first correct the incorrect position sent in the update
+	const auto updateId = event->updateId;
+	const auto correctedPos = XMFLOAT3{ event->posX, event->posY, event->posZ };
+	playerUpdates[updateId % BUFFER_SIZE] = std::make_unique<PlayerUpdate>(updateId, correctedPos, playerUpdates[updateId % BUFFER_SIZE]->isRightClickHeld, playerUpdates[updateId % BUFFER_SIZE]->currentMouseDirection);
+	player.localPosition = correctedPos;
+
+	// now rerun the updates between the correction and current using the stored state
+	for (auto i = updateId + 1; i < playerUpdateIdCounter; i++)
 	{
-		case EventType::PlayerCorrection:
-		{
-			//todo
-		}
-		case EventType::RightMouseDown:
-		{
-			const auto derivedEvent = (MouseEvent*)event;
-
-			isRightClickHeld = true;
-			UpdateCurrentMouseDirection(derivedEvent->mousePosX, derivedEvent->mousePosY);
-
-			break;
-		}
-		case EventType::RightMouseUp:
-		{
-			const auto mouseUpEvent = (MouseEvent*)event;
-
-			isRightClickHeld = false;
-
-			break;
-		}
-		case EventType::MouseMove:
-		{
-			const auto derivedEvent = (MouseEvent*)event;
-
-			if (isRightClickHeld)
-				UpdateCurrentMouseDirection(derivedEvent->mousePosX, derivedEvent->mousePosY);
-
-			break;
-		}
+		isRightClickHeld = playerUpdates[updateId % BUFFER_SIZE]->isRightClickHeld;
+		currentMouseDirection = playerUpdates[updateId % BUFFER_SIZE]->currentMouseDirection;
+		
+		Update();
+		player.Update();
 	}
 
-	return false;
+	isRightClickHeld = cachedInput;
+	currentMouseDirection = cachedMouseDir;
+}
+
+void PlayerController::OnRightMouseDownEvent(MouseEvent* event)
+{
+	isRightClickHeld = true;
+	UpdateCurrentMouseDirection(event->mousePosX, event->mousePosY);
+}
+
+void PlayerController::OnRightMouseUpEvent(MouseEvent* event)
+{
+	isRightClickHeld = false;
+}
+
+void PlayerController::OnMouseMoveEvent(MouseEvent* event)
+{
+	if (isRightClickHeld)
+		UpdateCurrentMouseDirection(event->mousePosX, event->mousePosY);
 }
 
 // probably want a state machine here (moveState, etc)
-void PlayerController::Update(const float deltaTime)
+void PlayerController::Update()
 {
 	const auto playerPos = player.GetWorldPosition();
 
@@ -67,25 +67,23 @@ void PlayerController::Update(const float deltaTime)
 
 		if (deltaX < 1.0f && deltaZ < 1.0f)
 		{
-			player.SetLocalPosition(XMFLOAT3{ destination.x, 0.0f, destination.z });
+			player.localPosition = XMFLOAT3{ destination.x, 0.0f, destination.z };
 			if (!isRightClickHeld)
 			{
 				isMoving = false;
-				player.SetMovementVector(XMFLOAT3{ 0.0f, 0.0f, 0.0f });
+				player.movementVector = XMFLOAT3{ 0.0f, 0.0f, 0.0f };
 			}
 			else
 			{
-				player.SetMovementVector(currentMouseDirection);
+				player.movementVector = currentMouseDirection;
 				SetDestination(playerPos);
 			}
-
-			//
 		}
 	}
 	if (!isMoving && isRightClickHeld)
 	{
 		isMoving = true;
-		player.SetMovementVector(currentMouseDirection);
+		player.movementVector = currentMouseDirection;
 		SetDestination(playerPos);
 	}
 }
@@ -143,7 +141,13 @@ void PlayerController::UpdateCurrentMouseDirection(const float mousePosX, const 
 	}
 }
 
-PlayerController::~PlayerController()
+PlayerUpdate* PlayerController::GeneratePlayerUpdate()
 {
-	g_eventHandler.Unsubscribe(*this);
+	const auto position = player.GetWorldPosition();
+
+	playerUpdates[playerUpdateIdCounter % BUFFER_SIZE] = std::make_unique<PlayerUpdate>(playerUpdateIdCounter, position, isRightClickHeld, currentMouseDirection);
+
+	playerUpdateIdCounter++;
+
+	return playerUpdates[(playerUpdateIdCounter - 1) % BUFFER_SIZE].get();
 }

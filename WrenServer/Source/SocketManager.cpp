@@ -327,12 +327,12 @@ bool SocketManager::TryRecieveMessage()
 			const auto posX = args[3];
 			const auto posY = args[4];
 			const auto posZ = args[5];
-			const auto movX = args[6];
-			const auto movY = args[7];
-			const auto movZ = args[8];
-			const auto deltaTime = args[9];
+			const auto isRightClickHeld = args[6];
+			const auto mouseDirX = args[7];
+			const auto mouseDirY = args[8];
+			const auto mouseDirZ = args[9];
 
-			PlayerUpdate(token, idCounter, characterId, posX, posY, posZ, movX, movY, movZ, deltaTime);
+			PlayerUpdate(token, idCounter, characterId, posX, posY, posZ, isRightClickHeld, mouseDirX, mouseDirY, mouseDirZ);
 
 			return true;
 		}
@@ -392,10 +392,11 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
 	(*it)->characterId = character->GetId();
 	(*it)->modelId = character->GetModelId();
 	(*it)->textureId = character->GetTextureId();
-	const auto characterGameObject = g_objectManager.CreateGameObject(character->GetPosition(), XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)character->GetId());
+	GameObject& characterGameObject = g_objectManager.CreateGameObject(character->GetPosition(), XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)character->GetId());
+	(*it)->playerController = std::make_unique<PlayerController>(characterGameObject);
 	const auto pos = character->GetPosition();
 	const auto charId = character->GetId();
-    SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 8, std::to_string(charId), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(character->GetModelId()), std::to_string(character->GetTextureId()), ListSkills(charId), ListAbilities(charId));
+	SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 9, std::to_string(charId), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(character->GetModelId()), std::to_string(character->GetTextureId()), ListSkills(charId), ListAbilities(charId), character->GetName());
 }
 
 void SocketManager::DeleteCharacter(const std::string& token, const std::string& characterName)
@@ -412,10 +413,10 @@ void SocketManager::PlayerUpdate(
 	const std::string& posX,
 	const std::string& posY,
 	const std::string& posZ,
-	const std::string& movX,
-	const std::string& movY,
-	const std::string& movZ,
-	const std::string& deltaTime)
+	const std::string& isRightClickHeld,
+	const std::string& mouseDirX,
+	const std::string& mouseDirY,
+	const std::string& mouseDirZ)
 {
 	const auto it = GetPlayer(token);
 
@@ -426,10 +427,6 @@ void SocketManager::PlayerUpdate(
 
 	GameObject& player = g_objectManager.GetGameObjectById(std::stol(characterId));
 
-	player.SetMovementVector(XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ) });
-
-	(*it)->IncrementUpdateCounter();
-
 	const auto clientPosX = std::stof(posX);
 	const auto clientPosY = std::stof(posY);
 	const auto clientPosZ = std::stof(posZ);
@@ -438,8 +435,13 @@ void SocketManager::PlayerUpdate(
 	if (currentPos.x != clientPosX || currentPos.y != clientPosY || currentPos.z != clientPosZ)
 	{
 		std::cout << "Updates don't match. Need to send correction.\n";
-		SendPacket((*it)->GetSockAddr(), OPCODE_PLAYER_CORRECTION, 4, id, std::to_string(currentPos.x), std::to_string(currentPos.y), std::to_string(currentPos.z));
+		SendPacket((*it)->GetSockAddr(), OPCODE_PLAYER_CORRECTION, 4, std::to_string(id), std::to_string(currentPos.x), std::to_string(currentPos.y), std::to_string(currentPos.z));
 	}
+
+	(*it)->playerController->isRightClickHeld = isRightClickHeld == "1";
+	(*it)->playerController->currentMouseDirection = XMFLOAT3{ std::stof(mouseDirX), std::stof(mouseDirY), std::stof(mouseDirZ) };
+	(*it)->playerController->Update();
+	(*it)->IncrementUpdateCounter();
 }
 
 void SocketManager::UpdateClients()
@@ -461,9 +463,9 @@ void SocketManager::UpdateClients()
 			auto character = g_objectManager.GetGameObjectById(otherCharacterId);
 
 			auto pos = character.GetWorldPosition();
-			auto mov = character.GetMovementVector();
+			auto mov = character.movementVector;
 
-			SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 9, std::to_string(character.GetId()), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z), std::to_string(otherPlayer->modelId), std::to_string(otherPlayer->textureId));
+			SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 9, std::to_string(character.id), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z), std::to_string(otherPlayer->modelId), std::to_string(otherPlayer->textureId));
 		}
 	}
 }

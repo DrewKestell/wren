@@ -59,10 +59,27 @@ void Game::Tick()
 	{
 		if (activeLayer == InGame)
 		{
-			playerController->Update(UPDATE_FREQUENCY);
+			playerController->Update();
 			camera.Update(player->GetWorldPosition(), UPDATE_FREQUENCY);
-			SyncWithServer(UPDATE_FREQUENCY);
-			objectManager.Update(UPDATE_FREQUENCY, true);
+			if (g_socketManager.Connected())
+			{
+				auto playerUpdate = playerController->GeneratePlayerUpdate();
+
+				g_socketManager.SendPacket(
+					OPCODE_PLAYER_UPDATE,
+					9,
+					std::to_string(playerUpdate->id),
+					std::to_string(player->id),
+					std::to_string(playerUpdate->position.x),
+					std::to_string(playerUpdate->position.y),
+					std::to_string(playerUpdate->position.z),
+					std::to_string(playerUpdate->isRightClickHeld),
+					std::to_string(playerUpdate->currentMouseDirection.x),
+					std::to_string(playerUpdate->currentMouseDirection.y),
+					std::to_string(playerUpdate->currentMouseDirection.z)
+				);
+			}
+			objectManager.Update();
 		}
 		
 		g_eventHandler.PublishEvents();
@@ -234,11 +251,13 @@ void Game::CreateDeviceDependentResources()
 	auto d3dDevice = deviceResources->GetD3DDevice();
 	auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
 	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto writeFactory = deviceResources->GetWriteFactory();
+
 	gameMap = std::make_unique<GameMap>(d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures[2].Get());
 
 	// initialize tree. TODO: game world needs to be stored on disk somewhere and initialized on startup
 	GameObject& tree = objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
-	auto treeRenderComponent = renderComponentManager.CreateRenderComponent(tree.GetId(), meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
+	auto treeRenderComponent = renderComponentManager.CreateRenderComponent(tree.id, meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
 	tree.renderComponentId = treeRenderComponent.GetId();
 
 	// init hotbar
@@ -317,6 +336,10 @@ void Game::InitializeBrushes()
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.9f, 0.9f, 0.9f, 1.0f), lightGrayBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.619f, 0.854f, 1.0f, 0.75f), abilityHighlightBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.619f, 0.854f, 1.0f, 0.95f), abilityPressedBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(1.0f, 0.0f, 0.0f, 1.0f), healthBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 1.0f, 1.0f), manaBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.0f, 1.0f, 0.0f, 1.0f), staminaBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.9f, 0.9f, 0.9f, 1.0f), statBackgroundBrush.ReleaseAndGetAddressOf());
 }
 
 void Game::InitializeTextFormats()
@@ -792,12 +815,33 @@ const bool Game::HandleEvent(const Event* const event)
 
 			break;
 		}
+		case EventType::RightMouseDown:
+		{
+			const auto derivedEvent = (MouseEvent*)event;
+
+			if (playerController)
+				playerController->OnRightMouseDownEvent(derivedEvent);
+
+			break;
+		}
+		case EventType::RightMouseUp:
+		{
+			const auto derivedEvent = (MouseEvent*)event;
+
+			if (playerController)
+				playerController->OnRightMouseUpEvent(derivedEvent);
+
+			break;
+		}
 		case EventType::MouseMove:
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
 			mousePosX = derivedEvent->mousePosX;
 			mousePosY = derivedEvent->mousePosY;
+
+			if (playerController)
+				playerController->OnMouseMoveEvent(derivedEvent);
 
 			break;
 		}
@@ -872,12 +916,13 @@ const bool Game::HandleEvent(const Event* const event)
 
 			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)derivedEvent->characterId);
 			this->player = &player;
-			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(player.GetId(), meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
+			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(player.id, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.renderComponentId = sphereRenderComponent.GetId();
-			auto statsComponent = statsComponentManager.CreateStatsComponent(player.GetId(), 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
+			auto statsComponent = statsComponentManager.CreateStatsComponent(player.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
 			player.statsComponentId = statsComponent.id;
 			playerController = std::make_unique<PlayerController>(player);
 
+			auto d2dFactory = deviceResources->GetD2DFactory();
 			auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
 			auto writeFactory = deviceResources->GetWriteFactory();
 
@@ -898,6 +943,9 @@ const bool Game::HandleEvent(const Event* const event)
 				abilitiesContainer->AddAbility(ability, textures[ability->spriteId].Get());
 			}
 
+			// init characterHUD
+			characterHUD = std::make_unique<UICharacterHUD>(uiComponents, XMFLOAT3{ 10.0f, 12.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, statsComponent, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get(), derivedEvent->name->c_str());
+
 			SetActiveLayer(InGame);
 
 			break;
@@ -915,15 +963,15 @@ const bool Game::HandleEvent(const Event* const event)
 			if (!objectManager.GameObjectExists(gameObjectId))
 			{
 				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, gameObjectId);
-				obj.SetMovementVector(mov);
+				obj.movementVector = mov;
 				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
 				obj.renderComponentId = sphereRenderComponent.GetId();
 			}
 			else
 			{
 				GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->characterId);
-				gameObject.SetLocalPosition(pos);
-				gameObject.SetMovementVector(mov);
+				gameObject.localPosition = pos;
+				gameObject.movementVector = mov;
 			}
 
 			break;
@@ -938,9 +986,12 @@ const bool Game::HandleEvent(const Event* const event)
 		}
 		case EventType::PlayerCorrection:
 		{
-			const auto derivedEvent = (ActivateAbilityEvent*)event;
+			const auto derivedEvent = (PlayerCorrectionEvent*)event;
 
-			player->SetLocalPosition(XMFLOAT3{derivedEvent->})
+			if (playerController)
+				playerController->OnPlayerCorrectionEvent(derivedEvent);
+
+			break;
 		}
 	}
 
@@ -951,32 +1002,6 @@ void Game::SetActiveLayer(const Layer layer)
 {
 	activeLayer = layer;
 	g_eventHandler.QueueEvent(new ChangeActiveLayerEvent{ layer });
-}
-
-void Game::SyncWithServer(const float deltaTime)
-{
-	if (g_socketManager.Connected())
-	{
-		const auto position = player->GetWorldPosition();
-		const auto movementVector = player->GetMovementVector();
-
-		playerUpdates[playerUpdateIdCounter % BUFFER_SIZE] = std::make_unique<PlayerUpdate>(playerUpdateIdCounter, position, movementVector, deltaTime);
-
-		g_socketManager.SendPacket(
-			OPCODE_PLAYER_UPDATE,
-			9,
-			std::to_string(playerUpdateIdCounter),
-			std::to_string(player->GetId()),
-			std::to_string(position.x),
-			std::to_string(position.y),
-			std::to_string(position.z),
-			std::to_string(movementVector.x),
-			std::to_string(movementVector.y),
-			std::to_string(movementVector.z),
-			std::to_string(deltaTime));
-
-		playerUpdateIdCounter++;
-	}
 }
 
 Game::~Game()

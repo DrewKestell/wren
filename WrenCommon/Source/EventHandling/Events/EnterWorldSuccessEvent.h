@@ -11,14 +11,15 @@ using namespace DirectX;
 class EnterWorldSuccessEvent : public Event
 {
 public:
-	EnterWorldSuccessEvent(const int characterId, const XMFLOAT3 position, const int modelId, const int textureId, std::vector<Skill*>* skills, std::vector<Ability*>* abilities)
+	EnterWorldSuccessEvent(const int characterId, const XMFLOAT3 position, const int modelId, const int textureId, std::vector<Skill*>* skills, std::vector<Ability*>* abilities, std::string* name)
 		: Event(EventType::EnterWorldSuccess),
 		  characterId{ characterId },
 		  position{ position },
 		  modelId{ modelId },
 		  textureId{ textureId },
 		  skills{ skills },
-		  abilities{ abilities }
+		  abilities{ abilities },
+		  name{ name }
 	{
 	}
 	const int characterId;
@@ -27,4 +28,5 @@ public:
 	const int textureId;
 	std::vector<Skill*>* skills;
 	std::vector<Ability*>* abilities;
+	std::string* name;
 };

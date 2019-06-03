@@ -11,7 +11,7 @@ class ObjectManager
 	GameObject gameObjects[MAX_GAMEOBJECTS_SIZE];
 	unsigned int gameObjectIndex{ 0 };
 public:
-	void Update(const float deltaTime, bool emulateHack);
+	void Update();
 	GameObject& CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, const long id = 0);
 	void DeleteGameObject(EventHandler& eventHandler, const long gameObjectId);
 	GameObject& GetGameObjectById(const long gameObjectId);

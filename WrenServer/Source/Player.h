@@ -14,6 +14,7 @@ public:
 	int characterId{ 0 };
 	int modelId{ 0 };
 	int textureId{ 0 };
+	std::unique_ptr<PlayerController> playerController;
 
 	Player(
 		const int accountId,

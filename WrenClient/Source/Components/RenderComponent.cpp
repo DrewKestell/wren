@@ -16,7 +16,7 @@ void RenderComponent::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX
 {
 	// TODO: update GameObjects position based on state and updateLag
 	auto pos = gameObject.GetWorldPosition();
-	auto scale = gameObject.GetScale();
+	auto scale = gameObject.scale;
 	auto worldTransform = XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixTranslation(pos.x, pos.y, pos.z);
 
 	auto constantBuffer = mesh->GetConstantBuffer();

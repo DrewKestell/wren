@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Models/Skill.h>
+#include <PlayerController.h>
+#include <Constants.h>
 #include "DeviceResources.h"
 #include "GameTimer.h"
 #include "Camera.h"
@@ -9,7 +11,6 @@
 #include "ObjectManager.h"
 #include "Components/RenderComponentManager.h"
 #include "Components/StatsComponentManager.h"
-#include "PlayerController.h"
 #include "SocketManager.h"
 #include "GameMap/GameMap.h"
 #include "Sprite.h"
@@ -22,10 +23,8 @@
 #include "UI/UISkillListing.h"
 #include "UI/UIHotbar.h"
 #include "UI/UIAbilitiesContainer.h"
+#include "UI/UICharacterHUD.h"
 #include "EventHandling/EventHandler.h"
-
-static const int BUFFER_SIZE = 120;
-static const float UPDATE_FREQUENCY = 0.01666666666f;
 
 class Game : public DX::IDeviceNotify, public Observer
 {
@@ -53,7 +52,6 @@ public:
 	~Game();
 
 private:
-	int playerUpdateIdCounter{ 0 };
 	float updateTimer{ 0.0f };
 	float mousePosX{ 0.0f };
 	float mousePosY{ 0.0f };
@@ -76,13 +74,13 @@ private:
 	std::unique_ptr<PlayerController> playerController;
 	GameObject* player;
 	std::vector<UIComponent*> uiComponents; // TODO: i think these should use smart pointers
-	std::unique_ptr<PlayerUpdate> playerUpdates[BUFFER_SIZE];
 	std::vector<std::unique_ptr<Mesh>> meshes;
 	std::vector<ComPtr<ID3D11ShaderResourceView>> textures;
 	std::vector<std::shared_ptr<Sprite>> sprites;
 	std::vector<Skill*>* skills;
 	std::vector<Ability*>* abilities;
 	std::unique_ptr<UIHotbar> hotbar;
+	std::unique_ptr<UICharacterHUD> characterHUD;
 
 	void Update();
 	void Render(const float updateTimer);
@@ -93,7 +91,6 @@ private:
 	ShaderBuffer LoadShader(const std::wstring filename);
 	virtual const bool HandleEvent(const Event* const event);
 	void SetActiveLayer(const Layer layer);
-	void SyncWithServer(const float deltaTime);
 
 	void InitializeBrushes();
 	void InitializeTextFormats();
@@ -131,6 +128,10 @@ private:
 	ComPtr<ID2D1SolidColorBrush> lightGrayBrush;
 	ComPtr<ID2D1SolidColorBrush> abilityHighlightBrush;
 	ComPtr<ID2D1SolidColorBrush> abilityPressedBrush;
+	ComPtr<ID2D1SolidColorBrush> healthBrush;
+	ComPtr<ID2D1SolidColorBrush> manaBrush;
+	ComPtr<ID2D1SolidColorBrush> staminaBrush;
+	ComPtr<ID2D1SolidColorBrush> statBackgroundBrush;
 
 	// Shaders
 	ShaderBuffer vertexShaderBuffer{};

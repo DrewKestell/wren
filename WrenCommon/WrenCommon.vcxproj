@@ -26,6 +26,7 @@
     <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
+    <ClCompile Include="Source\PlayerController.cpp" />
     <ClCompile Include="Source\PlayerUpdate.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -33,6 +34,7 @@
     <ClCompile Include="Source\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Constants.h" />
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
     <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateAccountFailedEvent.h" />
@@ -63,6 +65,7 @@
     <ClInclude Include="Source\Models\Skill.h" />
     <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\OpCodes.h" />
+    <ClInclude Include="Source\PlayerController.h" />
     <ClInclude Include="Source\PlayerUpdate.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />

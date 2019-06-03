@@ -5,6 +5,8 @@
 
 class UICharacterHUD : public UIComponent
 {
+	ComPtr<ID2D1RectangleGeometry> characterPortraitGeometry;
+	ComPtr<ID2D1RectangleGeometry> statsContainerGeometry;
 	ComPtr<ID2D1RectangleGeometry> healthGeometry;
 	ComPtr<ID2D1RectangleGeometry> maxHealthGeometry;
 	ComPtr<ID2D1RectangleGeometry> manaGeometry;
@@ -18,11 +20,11 @@ class UICharacterHUD : public UIComponent
 	ID2D1SolidColorBrush* statBackgroundBrush;
 	ID2D1SolidColorBrush* statBorderBrush;
 	ID2D1SolidColorBrush* nameBrush;
+	ID2D1SolidColorBrush* whiteBrush;
 	ID2D1DeviceContext1* d2dDeviceContext;
-	IDWriteFactory2* writeFactory;
 	IDWriteTextFormat* buttonTextFormat;
 	ID2D1Factory2* d2dFactory;
-	StatsComponent* statsComponent;
+	StatsComponent& statsComponent;
 public:
 	UICharacterHUD(
 		std::vector<UIComponent*>& uiComponents,
@@ -33,13 +35,14 @@ public:
 		IDWriteFactory2* writeFactory,
 		IDWriteTextFormat* buttonTextFormat,
 		ID2D1Factory2* d2dFactory,
-		StatsComponent* statsComponent,
+		StatsComponent& statsComponent,
 		ID2D1SolidColorBrush* healthBrush,
 		ID2D1SolidColorBrush* manaBrush,
 		ID2D1SolidColorBrush* staminaBrush,
 		ID2D1SolidColorBrush* statBackgroundBrush,
 		ID2D1SolidColorBrush* statBorderBrush,
 		ID2D1SolidColorBrush* nameBrush,
+		ID2D1SolidColorBrush* whiteBrush,
 		const char* inNameText);
 	virtual void Draw();
 	virtual const bool HandleEvent(const Event* const event);

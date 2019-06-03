@@ -15,7 +15,6 @@
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
     <ClCompile Include="Source\stdafx.cpp" />
-    <ClCompile Include="Source\PlayerController.cpp" />
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\Game.cpp" />
     <ClCompile Include="Source\DeviceResources.cpp" />
@@ -24,7 +23,6 @@
     <ClCompile Include="Source\UI\UIAbility.cpp" />
     <ClCompile Include="Source\Sprite.cpp" />
     <ClCompile Include="Source\UI\UIAbilitiesContainer.cpp" />
-    <ClCompile Include="Source\StatsComponentManager.cpp" />
     <ClCompile Include="Source\UI\UICharacterHUD.cpp" />
     <ClCompile Include="Source\Components\RenderComponent.cpp" />
     <ClCompile Include="Source\Components\RenderComponentManager.cpp" />
@@ -141,7 +139,6 @@
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\ConstantBufferOnce.h" />
-    <ClInclude Include="Source\PlayerController.h" />
     <ClInclude Include="Source\EventHandling\Events\LeftMouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\LeftMouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RightMouseDownEvent.h" />

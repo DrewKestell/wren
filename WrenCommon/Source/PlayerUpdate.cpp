@@ -4,11 +4,11 @@
 PlayerUpdate::PlayerUpdate(
 	const int id,
 	const XMFLOAT3 position,
-	const XMFLOAT3 movementVector,
-	const float deltaTime)
+	const bool isRightClickHeld,
+	const XMFLOAT3 currentMouseDirection)
 	: id{ id },
 	  position{ position },
-	  movementVector{ movementVector },
-	  deltaTime{ deltaTime }
+	  isRightClickHeld{ isRightClickHeld },
+	  currentMouseDirection{ currentMouseDirection }
 {
 }

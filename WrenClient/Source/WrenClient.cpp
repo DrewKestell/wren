@@ -34,7 +34,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
 	HWND consoleWindow = GetConsoleWindow();
 	MoveWindow(consoleWindow, 0, 640, 800, 400, TRUE);
-	std::cout << "WrenClient initialized.\n";
+	std::cout << "WrenClient initialized.\n\n";
 #endif
 
 	// Register class

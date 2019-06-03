@@ -37,6 +37,9 @@
     <ClCompile Include="Source\GameTimer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\PlayerController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -79,5 +82,7 @@
     <ClInclude Include="Source\Models\Ability.h" />
     <ClInclude Include="Source\EventHandling\Events\ActivateAbilityEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\StartDraggingUIAbilityEvent.h" />
+    <ClInclude Include="Source\PlayerController.h" />
+    <ClInclude Include="Source\Constants.h" />
   </ItemGroup>
 </Project>
