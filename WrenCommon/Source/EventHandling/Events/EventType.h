@@ -28,5 +28,7 @@ enum class EventType
 	GameObjectUpdate,
 	UIAbilityDropped,
 	ActivateAbility,
-	StartDraggingUIAbility
+	StartDraggingUIAbility,
+	SetTarget,
+	UnsetTarget
 };

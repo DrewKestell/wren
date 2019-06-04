@@ -24,6 +24,7 @@
 #include "UI/UIHotbar.h"
 #include "UI/UIAbilitiesContainer.h"
 #include "UI/UICharacterHUD.h"
+#include "UI/UITargetHUD.h"
 #include "EventHandling/EventHandler.h"
 
 class Game : public DX::IDeviceNotify, public Observer
@@ -80,6 +81,7 @@ private:
 	std::vector<Skill*>* skills;
 	std::vector<Ability*>* abilities;
 	std::unique_ptr<UIHotbar> hotbar;
+	std::unique_ptr<UITargetHUD> targetHUD;
 	std::unique_ptr<UICharacterHUD> characterHUD;
 
 	void Update();

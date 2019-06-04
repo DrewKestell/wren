@@ -174,12 +174,10 @@ void Game::Clear()
 	auto context = deviceResources->GetD3DDeviceContext();
 	auto renderTarget = deviceResources->GetOffscreenRenderTargetView();
 	auto depthStencil = deviceResources->GetDepthStencilView();
-	auto depthStencilState = deviceResources->GetDepthStencilState();
 
 	context->ClearRenderTargetView(renderTarget, Colors::CornflowerBlue);
 	context->ClearDepthStencilView(depthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	context->OMSetRenderTargets(1, &renderTarget, depthStencil);
-	context->OMSetDepthStencilState(depthStencilState, 0);
 
 	// Set the viewport.
 	auto viewport = deviceResources->GetScreenViewport();
@@ -262,6 +260,9 @@ void Game::CreateDeviceDependentResources()
 
 	// init hotbar
 	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT3{ 5.0f, clientHeight - 45.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
+
+	// init targetHUD
+	targetHUD = std::make_unique<UITargetHUD>(uiComponents, XMFLOAT3{ 260.0f, 12.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -752,13 +753,14 @@ void Game::InitializeTextures()
 		L"../../WrenClient/Textures/texture01.dds",     // 0
 		L"../../WrenClient/Textures/texture02.dds",     // 1
 		L"../../WrenClient/Textures/grass01.dds",       // 2
-		L"../../WrenClient/Textures/abilityicon01.dds"  // 3
+		L"../../WrenClient/Textures/abilityicon01.dds", // 3
+		L"../../WrenClient/Textures/texture03.dds"      // 4
 	};
 
 	// clear calls the destructor of its elements, and ComPtr's destructor handles calling Release()
 	textures.clear();
 
-	for (auto i = 0; i < 4; i++)
+	for (auto i = 0; i < 5; i++)
 	{
 		ComPtr<ID3D11ShaderResourceView> ptr;
 		CreateDDSTextureFromFile(d3dDevice, paths[i], nullptr, ptr.ReleaseAndGetAddressOf());

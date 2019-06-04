@@ -37,7 +37,6 @@ namespace DX
 		ID3D11RenderTargetView*	GetOffscreenRenderTargetView() const { return offscreenRenderTargetView.Get(); }
 		ID3D11DepthStencilView* GetDepthStencilView() const { return depthStencilView.Get(); }
 		D3D11_VIEWPORT GetScreenViewport() const { return screenViewport; }
-		ID3D11DepthStencilState* GetDepthStencilState() const { return depthStencilState.Get(); }
 	private:
 		void CreateFactory();
 

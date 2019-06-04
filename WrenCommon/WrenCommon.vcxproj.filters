@@ -84,5 +84,6 @@
     <ClInclude Include="Source\EventHandling\Events\StartDraggingUIAbilityEvent.h" />
     <ClInclude Include="Source\PlayerController.h" />
     <ClInclude Include="Source\Constants.h" />
+    <ClInclude Include="Source\EventHandling\Events\SetTargetEvent.h" />
   </ItemGroup>
 </Project>

@@ -255,27 +255,6 @@ void DeviceResources::CreateWindowSizeDependentResources()
 		&depthStencilViewDesc,
 		depthStencilView.ReleaseAndGetAddressOf()
 	));
-
-	// foo
-	D3D11_DEPTH_STENCIL_DESC depthStencilDescription;
-	depthStencilDescription.DepthEnable = false;
-	depthStencilDescription.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	depthStencilDescription.DepthFunc = D3D11_COMPARISON_ALWAYS;
-	depthStencilDescription.StencilEnable = false;
-	depthStencilDescription.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-	depthStencilDescription.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-	// Stencil operations if pixel is front-facing
-	depthStencilDescription.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDescription.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDescription.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDescription.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	// Stencil operations if pixel is back-facing
-	depthStencilDescription.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDescription.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDescription.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDescription.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-
-	ThrowIfFailed(d3dDevice->CreateDepthStencilState(&depthStencilDescription, &depthStencilState));
 	
 	// Create offscreen render target
 	D3D11_TEXTURE2D_DESC surfaceDesc;

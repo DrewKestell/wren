@@ -10,5 +10,5 @@ public:
 		  gameObjectId{ gameObjectId }
 	{
 	}
-	long gameObjectId;
+	const long gameObjectId;
 };

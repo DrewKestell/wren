@@ -397,6 +397,9 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
 	const auto pos = character->GetPosition();
 	const auto charId = character->GetId();
 	SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 9, std::to_string(charId), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(character->GetModelId()), std::to_string(character->GetTextureId()), ListSkills(charId), ListAbilities(charId), character->GetName());
+
+	// test
+	SendPacket((*it)->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 9, std::to_string(50), std::to_string(0.0f), std::to_string(0.0f), std::to_string(0.0f), std::to_string(0.0f), std::to_string(0.0f), std::to_string(0.0f), std::to_string(2), std::to_string(4));
 }
 
 void SocketManager::DeleteCharacter(const std::string& token, const std::string& characterName)
