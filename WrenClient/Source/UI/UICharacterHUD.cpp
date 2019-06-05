@@ -54,6 +54,8 @@ UICharacterHUD::UICharacterHUD(
 
 void UICharacterHUD::Draw()
 {
+	if (!isVisible) return;
+
 	const auto position = GetWorldPosition();
 
 	d2dDeviceContext->FillGeometry(characterPortraitGeometry.Get(), statBackgroundBrush);
@@ -94,17 +96,17 @@ const bool UICharacterHUD::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
-	case EventType::ChangeActiveLayer:
-	{
-		const auto derivedEvent = (ChangeActiveLayerEvent*)event;
+		case EventType::ChangeActiveLayer:
+		{
+			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
-		if (derivedEvent->layer == uiLayer && GetParent() == nullptr)
-			isVisible = true;
-		else
-			isVisible = false;
+			if (derivedEvent->layer == uiLayer && GetParent() == nullptr)
+				isVisible = true;
+			else
+				isVisible = false;
 
-		break;
-	}
+			break;
+		}
 	}
 
 	return false;

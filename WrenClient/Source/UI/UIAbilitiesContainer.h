@@ -58,6 +58,7 @@ public:
 		const float clientHeight);
 	virtual void Draw();
 	virtual const bool HandleEvent(const Event* const event);
+	void ClearAbilities();
 	void AddAbility(Ability* ability, ID3D11ShaderResourceView* texture);
 	virtual const std::string GetUIAbilityDragBehavior() const;
 	void DrawSprites();

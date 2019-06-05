@@ -78,8 +78,6 @@ private:
 	std::vector<std::unique_ptr<Mesh>> meshes;
 	std::vector<ComPtr<ID3D11ShaderResourceView>> textures;
 	std::vector<std::shared_ptr<Sprite>> sprites;
-	std::vector<Skill*>* skills;
-	std::vector<Ability*>* abilities;
 	std::unique_ptr<UIHotbar> hotbar;
 	std::unique_ptr<UITargetHUD> targetHUD;
 	std::unique_ptr<UICharacterHUD> characterHUD;

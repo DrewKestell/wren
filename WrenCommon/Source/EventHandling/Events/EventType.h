@@ -30,5 +30,6 @@ enum class EventType
 	ActivateAbility,
 	StartDraggingUIAbility,
 	SetTarget,
-	UnsetTarget
+	UnsetTarget,
+	Logout
 };

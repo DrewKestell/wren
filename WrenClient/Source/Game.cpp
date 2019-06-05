@@ -450,7 +450,7 @@ void Game::InitializeButtons()
 
 	// LoginScreen
 	loginScreen_loginButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 145.0f, 96.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, Login, 80.0f, 24.0f, "LOGIN", onClickLoginButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	loginScreen_createAccountButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 15.0f, 522.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, Login, 160.0f, 24.0f, "CREATE ACCOUNT", onClickLoginScreenCreateAccountButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	loginScreen_createAccountButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 15.0f, clientHeight - 40.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, Login, 160.0f, 24.0f, "CREATE ACCOUNT", onClickLoginScreenCreateAccountButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 
 	const auto onClickCreateAccountCreateAccountButton = [this]()
 	{
@@ -481,7 +481,7 @@ void Game::InitializeButtons()
 
 	// CreateAccount
 	createAccount_createAccountButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 145.0f, 96.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CreateAccount, 80.0f, 24.0f, "CREATE", onClickCreateAccountCreateAccountButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	createAccount_cancelButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 15.0f, 522.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CreateAccount, 80.0f, 24.0f, "CANCEL", onClickCreateAccountCancelButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	createAccount_cancelButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 15.0f, clientHeight - 40.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CreateAccount, 80.0f, 24.0f, "CANCEL", onClickCreateAccountCancelButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 
 	const auto onClickCharacterSelectNewCharacterButton = [this]()
 	{
@@ -525,6 +525,7 @@ void Game::InitializeButtons()
 
 	const auto onClickCharacterSelectLogoutButton = [this]()
 	{
+		g_socketManager.Logout();
 		SetActiveLayer(Login);
 	};
 
@@ -532,7 +533,7 @@ void Game::InitializeButtons()
 	characterSelect_newCharacterButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 15.0f, 20.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CharacterSelect, 140.0f, 24.0f, "NEW CHARACTER", onClickCharacterSelectNewCharacterButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 	characterSelect_enterWorldButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 170.0f, 20.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CharacterSelect, 120.0f, 24.0f, "ENTER WORLD", onClickCharacterSelectEnterWorldButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 	characterSelect_deleteCharacterButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 305.0f, 20.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CharacterSelect, 160.0f, 24.0f, "DELETE CHARACTER", onClickCharacterSelectDeleteCharacterButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	characterSelect_logoutButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 15.0f, 522.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CharacterSelect, 80.0f, 24.0f, "LOGOUT", onClickCharacterSelectLogoutButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext,  writeFactory, textFormatButtonText.Get(), d2dFactory);
+	characterSelect_logoutButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 15.0f, clientHeight - 40.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CharacterSelect, 80.0f, 24.0f, "LOGOUT", onClickCharacterSelectLogoutButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext,  writeFactory, textFormatButtonText.Get(), d2dFactory);
 
 	const auto onClickCreateCharacterCreateCharacterButton = [this]()
 	{
@@ -557,7 +558,7 @@ void Game::InitializeButtons()
 
 	// CreateCharacter
 	createCharacter_createCharacterButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 165.0f, 64.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CreateCharacter, 160.0f, 24.0f, "CREATE CHARACTER", onClickCreateCharacterCreateCharacterButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	createCharacter_backButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 15.0f, 522.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CreateCharacter, 80.0f, 24.0f, "BACK", onClickCreateCharacterBackButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	createCharacter_backButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 15.0f, clientHeight - 40.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CreateCharacter, 80.0f, 24.0f, "BACK", onClickCreateCharacterBackButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 
 	// DeleteCharacter
 
@@ -615,15 +616,15 @@ void Game::InitializePanels()
 	// Game Settings
 	const auto gameSettingsPanelX = (clientWidth - 400.0f) / 2.0f;
 	const auto gameSettingsPanelY = (clientHeight - 200.0f) / 2.0f;
-	gameSettingsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{2.0f, 2.0f, 0.0f}, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
-	gameSettingsPanelHeader->SetText("Game Settings");
 	const auto onClickGameSettingsLogoutButton = [this]()
 	{
 		g_socketManager.SendPacket(OPCODE_DISCONNECT);
 		SetActiveLayer(Login);
 	};
-	gameSettings_logoutButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 10.0f, 26.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 80.0f, 24.0f, "LOGOUT", onClickGameSettingsLogoutButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 	gameSettingsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ gameSettingsPanelX, gameSettingsPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+	gameSettings_logoutButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 10.0f, 26.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 80.0f, 24.0f, "LOGOUT", onClickGameSettingsLogoutButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	gameSettingsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT3{ 2.0f, 2.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
+	gameSettingsPanelHeader->SetText("Game Settings");
 	gameSettingsPanel->AddChildComponent(*gameSettingsPanelHeader);
 	gameSettingsPanel->AddChildComponent(*gameSettings_logoutButton);
 
@@ -920,7 +921,7 @@ const bool Game::HandleEvent(const Event* const event)
 			this->player = &player;
 			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(player.id, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.renderComponentId = sphereRenderComponent.GetId();
-			auto statsComponent = statsComponentManager.CreateStatsComponent(player.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
+			StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(player.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
 			player.statsComponentId = statsComponent.id;
 			playerController = std::make_unique<PlayerController>(player);
 
@@ -928,20 +929,23 @@ const bool Game::HandleEvent(const Event* const event)
 			auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
 			auto writeFactory = deviceResources->GetWriteFactory();
 
-			skills = derivedEvent->skills;
 			auto xOffset = 5.0f;
 			auto yOffset = 25.0f;
+			
 			for (auto i = 0; i < derivedEvent->skills->size(); i++)
 			{
 				auto skill = derivedEvent->skills->at(i);
-				skillList[skill->skillId] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT3{ xOffset, yOffset + (18.0f * i), 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, *skill, blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatFPS.Get());
-				skillsPanel->AddChildComponent(*skillList[skill->skillId]);
+				if (!skillList[skill->skillId])
+				{
+					skillList[skill->skillId] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT3{ xOffset, yOffset + (18.0f * i), 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, *skill, blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatFPS.Get());
+					skillsPanel->AddChildComponent(*skillList[skill->skillId]);
+				}
 			}
 
-			abilities = derivedEvent->abilities;
+			abilitiesContainer->ClearAbilities();
 			for (auto i = 0; i < derivedEvent->abilities->size(); i++)
 			{
-				auto ability = abilities->at(i);
+				auto ability = derivedEvent->abilities->at(i);
 				abilitiesContainer->AddAbility(ability, textures[ability->spriteId].Get());
 			}
 

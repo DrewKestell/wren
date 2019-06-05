@@ -34,3 +34,13 @@ UIComponent::~UIComponent()
 	uiComponents.erase(std::find(uiComponents.begin(), uiComponents.end(), this));
 	g_eventHandler.Unsubscribe(*this);
 }
+
+void UIComponent::ClearChildren()
+{
+	for (auto i = 0; i < children.size(); i++)
+	{
+		if (children.at(i))
+			delete children.at(i);
+	}
+	children.clear();
+}

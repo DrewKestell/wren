@@ -6,7 +6,7 @@
 class SocketManager
 {
 private:
-	std::string m_token{ "" };
+	std::string token{ "" };
     sockaddr_in local;
     sockaddr_in to;
 	int toLen{ 0 };
@@ -22,4 +22,5 @@ public:
     void CloseSockets();
     void SendPacket(const std::string& opcode, const int argCount = 0, ...);
 	bool Connected();
+	void Logout();
 };

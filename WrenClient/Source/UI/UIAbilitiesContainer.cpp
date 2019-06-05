@@ -142,3 +142,13 @@ const std::string UIAbilitiesContainer::GetUIAbilityDragBehavior() const
 {
 	return "COPY";
 }
+
+void UIAbilitiesContainer::ClearAbilities()
+{
+	for (auto i = 0; i < abilities.size(); i++)
+		delete abilities.at(i);
+	abilities.clear();
+	headers.clear();
+	borderGeometries.clear();
+	uiAbilities.clear();
+}

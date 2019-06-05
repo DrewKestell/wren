@@ -55,8 +55,8 @@ void SocketManager::SendPacket(const std::string& opcode, const int argCount, ..
 {
     std::string packet = std::string(CHECKSUM) + opcode;
 
-	if (m_token != "")
-		packet += m_token + "|";
+	if (token != "")
+		packet += token + "|";
 
     va_list args;
     va_start(args, argCount);
@@ -75,14 +75,14 @@ void SocketManager::SendPacket(const std::string& opcode, const int argCount, ..
 	{
 		if (opcode == std::string(OPCODE_DISCONNECT))
 		{
-			m_token = "";
+			token = "";
 		}
 	}
 }
 
 bool SocketManager::Connected()
 {
-	return m_token != "";
+	return token != "";
 }
 
 void SocketManager::CloseSockets()
@@ -160,7 +160,7 @@ bool SocketManager::TryRecieveMessage()
             const auto characterString = args[1];
             const auto characterList = BuildCharacterVector(characterString);
 
-			m_token = *token;
+			this->token = *token;
 
             std::cout << "Login successful. Token received: " + *token + "\n";
 			g_eventHandler.QueueEvent(new LoginSuccessEvent{ characterList });
@@ -328,4 +328,9 @@ std::vector<Ability*>* SocketManager::BuildAbilityVector(std::string& abilityStr
 		}
 	}
 	return abilityList;
+}
+
+void SocketManager::Logout()
+{
+	token = "";
 }
