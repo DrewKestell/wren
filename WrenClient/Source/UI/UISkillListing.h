@@ -16,6 +16,7 @@ public:
 		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT2 position,
 		const Layer uiLayer,
+		const int zIndex,
 		Skill& skill,
 		ID2D1SolidColorBrush* textBrush,
 		ID2D1DeviceContext1* d2dDeviceContext,

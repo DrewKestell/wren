@@ -29,6 +29,7 @@ public:
 		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT2 position,
 		const Layer uiLayer,
+		const int zIndex,
 		const bool isDraggable,
 		const float width,
 		const float height,

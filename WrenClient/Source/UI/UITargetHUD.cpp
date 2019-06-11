@@ -9,6 +9,7 @@ UITargetHUD::UITargetHUD(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
+	const int zIndex,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* buttonTextFormat,
@@ -20,7 +21,7 @@ UITargetHUD::UITargetHUD(
 	ID2D1SolidColorBrush* statBorderBrush,
 	ID2D1SolidColorBrush* nameBrush,
 	ID2D1SolidColorBrush* whiteBrush)
-	: UIComponent(uiComponents, position, uiLayer),
+	: UIComponent(uiComponents, position, uiLayer, zIndex),
 	d2dDeviceContext{ d2dDeviceContext },
 	d2dFactory{ d2dFactory },
 	writeFactory{ writeFactory },

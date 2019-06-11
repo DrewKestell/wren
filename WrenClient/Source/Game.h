@@ -81,6 +81,7 @@ private:
 	std::unique_ptr<UIHotbar> hotbar;
 	std::unique_ptr<UITargetHUD> targetHUD;
 	std::unique_ptr<UICharacterHUD> characterHUD;
+	std::vector<Skill*>* skills;
 	std::vector<Ability*>* abilities;
 
 	void Render(const float updateTimer);
@@ -104,6 +105,7 @@ private:
 	void InitializeMeshes();
 	void InitializeRasterStates();
 	void InitializeSprites();
+	void InitializeSkills();
 	void InitializeAbilitiesContainer();
 	void RecreateCharacterListings(const std::vector<std::string*>* characterNames);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();

@@ -14,7 +14,8 @@ protected:
 	UIComponent* parent{ nullptr };
 	std::vector<UIComponent*> children;
 public:
-	UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT2 localPosition, const Layer uiLayer);
+	int zIndex{ 0 };
+	UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT2 localPosition, const Layer uiLayer, const int zIndex);
 	void Translate(XMFLOAT2 vector) { localPosition = Utility::XMFLOAT2Sum(localPosition, vector); }
 	std::vector<UIComponent*>& GetChildren() { return children; }
 	XMFLOAT2 GetWorldPosition() const;

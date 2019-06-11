@@ -15,6 +15,7 @@ UIInput::UIInput(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
+	const int zIndex,
 	const bool secure,
 	const float labelWidth,
 	const float inputWidth,
@@ -29,7 +30,7 @@ UIInput::UIInput(
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* labelTextFormat,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(uiComponents, position, uiLayer),
+	: UIComponent(uiComponents, position, uiLayer, zIndex),
 	  secure{ secure },
 	  labelWidth{ labelWidth },
 	  inputWidth{ inputWidth },

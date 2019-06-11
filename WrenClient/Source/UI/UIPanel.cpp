@@ -12,6 +12,7 @@ UIPanel::UIPanel(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
+	const int zIndex,
 	const bool isDraggable,
 	const float width,
 	const float height,
@@ -21,7 +22,7 @@ UIPanel::UIPanel(
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(uiComponents, position, uiLayer),
+	: UIComponent(uiComponents, position, uiLayer, zIndex),
 	  isDraggable{ isDraggable },
 	  width{ width },
 	  height{ height },

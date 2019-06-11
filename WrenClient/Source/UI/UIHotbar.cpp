@@ -11,11 +11,12 @@ UIHotbar::UIHotbar(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
+	const int zIndex,
 	ID2D1SolidColorBrush* brush,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory,
 	const float clientHeight)
-	: UIComponent(uiComponents, position, uiLayer),
+	: UIComponent(uiComponents, position, uiLayer, zIndex),
 	  brush{ brush },
 	  d2dDeviceContext{ d2dDeviceContext },
 	  d2dFactory{ d2dFactory },

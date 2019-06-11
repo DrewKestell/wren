@@ -4,10 +4,11 @@
 
 extern EventHandler g_eventHandler;
 
-UIComponent::UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT2 localPosition, const Layer uiLayer)
+UIComponent::UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT2 localPosition, const Layer uiLayer, const int zIndex)
 	: uiComponents{ uiComponents },
 	  localPosition{ localPosition },
-	  uiLayer{ uiLayer }
+	  uiLayer{ uiLayer },
+	  zIndex{ zIndex }
 {
 	uiComponents.push_back(this);
 	g_eventHandler.Subscribe(*this);

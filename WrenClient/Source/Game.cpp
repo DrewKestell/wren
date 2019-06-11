@@ -22,6 +22,8 @@ SocketManager g_socketManager;
 
 extern EventHandler g_eventHandler;
 
+bool CompareUIComponents(UIComponent* a, UIComponent* b) { return (a->zIndex < b->zIndex); }
+
 Game::Game() noexcept(false)
 {
 	deviceResources = std::make_unique<DX::DeviceResources>();
@@ -254,7 +256,7 @@ void Game::CreateDeviceDependentResources()
 	tree.renderComponentId = treeRenderComponent.GetId();
 
 	// init targetHUD
-	targetHUD = std::make_unique<UITargetHUD>(uiComponents, XMFLOAT2{ 260.0f, 12.0f }, InGame, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
+	targetHUD = std::make_unique<UITargetHUD>(uiComponents, XMFLOAT2{ 260.0f, 12.0f }, InGame, 0, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -269,10 +271,15 @@ void Game::CreateWindowSizeDependentResources()
 	auto d2dFactory = deviceResources->GetD2DFactory();
 
 	// init hotbar
-	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
+	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
+
+	if (skills)
+		InitializeSkills();
 
 	if (abilities)
 		InitializeAbilitiesContainer();
+
+	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 }
 
 void Game::OnDeviceLost()
@@ -397,21 +404,21 @@ void Game::InitializeInputs()
 	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
 	// LoginScreen
-	loginScreen_accountNameInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, Login, false, 120.0f, 260.0f, 24.0f, "Account Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
-	loginScreen_passwordInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 50.0f }, Login, true, 120.0f, 260.0f, 24.0f, "Password:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
+	loginScreen_accountNameInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, Login, 0, false, 120.0f, 260.0f, 24.0f, "Account Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
+	loginScreen_passwordInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 50.0f }, Login, 0, true, 120.0f, 260.0f, 24.0f, "Password:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
 	loginScreen_inputGroup = std::make_unique<UIInputGroup>(Login);
 	loginScreen_inputGroup->AddInput(loginScreen_accountNameInput.get());
 	loginScreen_inputGroup->AddInput(loginScreen_passwordInput.get());
 
 	// CreateAccount
-	createAccount_accountNameInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, CreateAccount, false, 120.0f, 260.0f, 24.0f, "Account Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
-	createAccount_passwordInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 50.0f  }, CreateAccount, true, 120.0f, 260.0f, 24.0f, "Password:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
+	createAccount_accountNameInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, CreateAccount, 0, false, 120.0f, 260.0f, 24.0f, "Account Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
+	createAccount_passwordInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 50.0f  }, CreateAccount, 0, true, 120.0f, 260.0f, 24.0f, "Password:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
 	createAccount_inputGroup = std::make_unique<UIInputGroup>(CreateAccount);
 	createAccount_inputGroup->AddInput(createAccount_accountNameInput.get());
 	createAccount_inputGroup->AddInput(createAccount_passwordInput.get());
 
 	// CreateCharacter
-	createCharacter_characterNameInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, CreateCharacter, false, 140.0f, 260.0f, 24.0f, "Character Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
+	createCharacter_characterNameInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, CreateCharacter, 0, false, 140.0f, 260.0f, 24.0f, "Character Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
 	createCharacter_inputGroup = std::make_unique<UIInputGroup>(CreateCharacter);
 	createCharacter_inputGroup->AddInput(createCharacter_characterNameInput.get());
 }
@@ -453,8 +460,8 @@ void Game::InitializeButtons()
 	};
 
 	// LoginScreen
-	loginScreen_loginButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 145.0f, 96.0f }, Login, 80.0f, 24.0f, "LOGIN", onClickLoginButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	loginScreen_createAccountButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, Login, 160.0f, 24.0f, "CREATE ACCOUNT", onClickLoginScreenCreateAccountButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	loginScreen_loginButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 145.0f, 96.0f }, Login, 0, 80.0f, 24.0f, "LOGIN", onClickLoginButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	loginScreen_createAccountButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, Login, 0, 160.0f, 24.0f, "CREATE ACCOUNT", onClickLoginScreenCreateAccountButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 
 	const auto onClickCreateAccountCreateAccountButton = [this]()
 	{
@@ -484,8 +491,8 @@ void Game::InitializeButtons()
 	};
 
 	// CreateAccount
-	createAccount_createAccountButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 145.0f, 96.0f }, CreateAccount, 80.0f, 24.0f, "CREATE", onClickCreateAccountCreateAccountButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	createAccount_cancelButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, CreateAccount, 80.0f, 24.0f, "CANCEL", onClickCreateAccountCancelButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	createAccount_createAccountButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 145.0f, 96.0f }, CreateAccount, 0, 80.0f, 24.0f, "CREATE", onClickCreateAccountCreateAccountButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	createAccount_cancelButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, CreateAccount, 0, 80.0f, 24.0f, "CANCEL", onClickCreateAccountCancelButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 
 	const auto onClickCharacterSelectNewCharacterButton = [this]()
 	{
@@ -535,10 +542,10 @@ void Game::InitializeButtons()
 	};
 
 	// CharacterSelect
-	characterSelect_newCharacterButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, CharacterSelect, 140.0f, 24.0f, "NEW CHARACTER", onClickCharacterSelectNewCharacterButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	characterSelect_enterWorldButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 170.0f, 20.0f }, CharacterSelect, 120.0f, 24.0f, "ENTER WORLD", onClickCharacterSelectEnterWorldButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	characterSelect_deleteCharacterButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 305.0f, 20.0f }, CharacterSelect, 160.0f, 24.0f, "DELETE CHARACTER", onClickCharacterSelectDeleteCharacterButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	characterSelect_logoutButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, CharacterSelect, 80.0f, 24.0f, "LOGOUT", onClickCharacterSelectLogoutButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext,  writeFactory, textFormatButtonText.Get(), d2dFactory);
+	characterSelect_newCharacterButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, CharacterSelect, 0, 140.0f, 24.0f, "NEW CHARACTER", onClickCharacterSelectNewCharacterButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	characterSelect_enterWorldButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 170.0f, 20.0f }, CharacterSelect, 0, 120.0f, 24.0f, "ENTER WORLD", onClickCharacterSelectEnterWorldButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	characterSelect_deleteCharacterButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 305.0f, 20.0f }, CharacterSelect, 0, 160.0f, 24.0f, "DELETE CHARACTER", onClickCharacterSelectDeleteCharacterButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	characterSelect_logoutButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, CharacterSelect, 0, 80.0f, 24.0f, "LOGOUT", onClickCharacterSelectLogoutButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext,  writeFactory, textFormatButtonText.Get(), d2dFactory);
 
 	const auto onClickCreateCharacterCreateCharacterButton = [this]()
 	{
@@ -562,8 +569,8 @@ void Game::InitializeButtons()
 	};
 
 	// CreateCharacter
-	createCharacter_createCharacterButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 165.0f, 64.0f }, CreateCharacter, 160.0f, 24.0f, "CREATE CHARACTER", onClickCreateCharacterCreateCharacterButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	createCharacter_backButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, CreateCharacter, 80.0f, 24.0f, "BACK", onClickCreateCharacterBackButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	createCharacter_createCharacterButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 165.0f, 64.0f }, CreateCharacter, 0, 160.0f, 24.0f, "CREATE CHARACTER", onClickCreateCharacterCreateCharacterButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	createCharacter_backButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, CreateCharacter, 0, 80.0f, 24.0f, "BACK", onClickCreateCharacterBackButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 
 	// DeleteCharacter
 	const auto onClickDeleteCharacterConfirm = [this]()
@@ -577,8 +584,8 @@ void Game::InitializeButtons()
 		SetActiveLayer(CharacterSelect);
 	};
 
-	deleteCharacter_confirmButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 10.0f, 30.0f }, DeleteCharacter, 100.0f, 24.0f, "CONFIRM", onClickDeleteCharacterConfirm, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext,  writeFactory, textFormatButtonText.Get(), d2dFactory);
-	deleteCharacter_cancelButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 120.0f, 30.0f }, DeleteCharacter, 100.0f, 24.0f, "CANCEL", onClickDeleteCharacterCancel, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	deleteCharacter_confirmButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 10.0f, 30.0f }, DeleteCharacter, 0, 100.0f, 24.0f, "CONFIRM", onClickDeleteCharacterConfirm, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext,  writeFactory, textFormatButtonText.Get(), d2dFactory);
+	deleteCharacter_cancelButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 120.0f, 30.0f }, DeleteCharacter, 0, 100.0f, 24.0f, "CANCEL", onClickDeleteCharacterCancel, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 }
 
 void Game::InitializeLabels()
@@ -587,25 +594,25 @@ void Game::InitializeLabels()
 	auto d2dFactory = deviceResources->GetD2DFactory();
 	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
-	loginScreen_successMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 170.0f }, Login, 400.0f, successMessageBrush.Get(), textFormatSuccessMessage.Get(), d2dContext, writeFactory, d2dFactory);
-	loginScreen_errorMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 170.0f }, Login, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
+	loginScreen_successMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 170.0f }, Login, 0, 400.0f, successMessageBrush.Get(), textFormatSuccessMessage.Get(), d2dContext, writeFactory, d2dFactory);
+	loginScreen_errorMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 170.0f }, Login, 0, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
 
-	createAccount_errorMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 170.0f }, CreateAccount, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
+	createAccount_errorMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 170.0f }, CreateAccount, 0, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
 
-	connecting_statusLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, Connecting, 400.0f, blackBrush.Get(), textFormatAccountCreds.Get(), d2dContext, writeFactory, d2dFactory);
+	connecting_statusLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, Connecting, 0, 400.0f, blackBrush.Get(), textFormatAccountCreds.Get(), d2dContext, writeFactory, d2dFactory);
 	connecting_statusLabel->SetText("Connecting...");
 
-	characterSelect_successMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 400.0f }, CharacterSelect, 400.0f, successMessageBrush.Get(), textFormatSuccessMessage.Get(), d2dContext, writeFactory, d2dFactory);
-	characterSelect_errorMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 400.0f }, CharacterSelect, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
-	characterSelect_headerLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 15.0f, 60.0f }, CharacterSelect, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
+	characterSelect_successMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 400.0f }, CharacterSelect, 0, 400.0f, successMessageBrush.Get(), textFormatSuccessMessage.Get(), d2dContext, writeFactory, d2dFactory);
+	characterSelect_errorMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 400.0f }, CharacterSelect, 0, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
+	characterSelect_headerLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 15.0f, 60.0f }, CharacterSelect, 0, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	characterSelect_headerLabel->SetText("Character List:");
 
-	createCharacter_errorMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 170.0f }, CreateCharacter, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
+	createCharacter_errorMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 170.0f }, CreateCharacter, 0, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
 
-	deleteCharacter_headerLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 10.0f, 10.0f }, DeleteCharacter, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
+	deleteCharacter_headerLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 10.0f, 10.0f }, DeleteCharacter, 0, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
 	deleteCharacter_headerLabel->SetText("Are you sure you want to delete this character?");
 
-	enteringWorld_statusLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 5.0f, 20.0f }, EnteringWorld, 400.0f, blackBrush.Get(), textFormatAccountCreds.Get(), d2dContext, writeFactory, d2dFactory);
+	enteringWorld_statusLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 5.0f, 20.0f }, EnteringWorld, 0, 400.0f, blackBrush.Get(), textFormatAccountCreds.Get(), d2dContext, writeFactory, d2dFactory);
 	enteringWorld_statusLabel->SetText("Entering World...");
 }
 
@@ -626,9 +633,9 @@ void Game::InitializePanels()
 
 		SetActiveLayer(Login);
 	};
-	gameSettingsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ gameSettingsPanelX, gameSettingsPanelY }, InGame, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
-	gameSettings_logoutButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 10.0f, 26.0f }, InGame, 80.0f, 24.0f, "LOGOUT", onClickGameSettingsLogoutButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
-	gameSettingsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
+	gameSettingsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ gameSettingsPanelX, gameSettingsPanelY }, InGame, 0, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+	gameSettings_logoutButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 10.0f, 26.0f }, InGame, 1, 80.0f, 24.0f, "LOGOUT", onClickGameSettingsLogoutButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	gameSettingsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 1, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	gameSettingsPanelHeader->SetText("Game Settings");
 	gameSettingsPanel->AddChildComponent(*gameSettingsPanelHeader);
 	gameSettingsPanel->AddChildComponent(*gameSettings_logoutButton);
@@ -636,45 +643,45 @@ void Game::InitializePanels()
 	// Game Editor
 	const auto gameEditorPanelX = 580.0f;
 	const auto gameEditorPanelY = 5.0f;
-	gameEditorPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
+	gameEditorPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 1, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	gameEditorPanelHeader->SetText("Game Editor");
-	gameEditorPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ gameEditorPanelX, gameEditorPanelY }, InGame, true, 200.0f, 400.0f, VK_F1, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+	gameEditorPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ gameEditorPanelX, gameEditorPanelY }, InGame, 0, true, 200.0f, 400.0f, VK_F1, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 	gameEditorPanel->AddChildComponent(*gameEditorPanelHeader);
 
 	// Diagnostics
 	const auto diagnosticsPanelX = 580.0f;
 	const auto diagnosticsPanelY = 336.0f;
-	diagnosticsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ diagnosticsPanelX, diagnosticsPanelY }, InGame, true, 200.0f, 200.0f, VK_F2, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+	diagnosticsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ diagnosticsPanelX, diagnosticsPanelY }, InGame, 0, true, 200.0f, 200.0f, VK_F2, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 
-	diagnosticsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
+	diagnosticsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 1, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	diagnosticsPanelHeader->SetText("Diagnostics");
 	diagnosticsPanel->AddChildComponent(*diagnosticsPanelHeader);
 
-	mousePosLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 22.0f }, InGame, 280.0f, blackBrush.Get(), textFormatFPS.Get(), d2dContext, writeFactory, d2dFactory);
+	mousePosLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 22.0f }, InGame, 1, 280.0f, blackBrush.Get(), textFormatFPS.Get(), d2dContext, writeFactory, d2dFactory);
 	diagnosticsPanel->AddChildComponent(*mousePosLabel);
 
-	fpsTextLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 36.0f }, InGame, 280.0f, blackBrush.Get(), textFormatFPS.Get(), d2dContext, writeFactory, d2dFactory);
+	fpsTextLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 36.0f }, InGame, 1, 280.0f, blackBrush.Get(), textFormatFPS.Get(), d2dContext, writeFactory, d2dFactory);
 	diagnosticsPanel->AddChildComponent(*fpsTextLabel);
 
 	// Skills
 	const auto skillsPanelX = 200.0f;
 	const auto skillsPanelY = 200.0f;
-	skillsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ skillsPanelX, skillsPanelY }, InGame, true, 200.0f, 200.0f, VK_F3, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+	skillsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ skillsPanelX, skillsPanelY }, InGame, 0, true, 200.0f, 200.0f, VK_F3, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 
-	skillsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
+	skillsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 1, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	skillsPanelHeader->SetText("Skills");
 	skillsPanel->AddChildComponent(*skillsPanelHeader);
 
 	// Abilities
 	const auto abilitiesPanelX = 10.0f;
 	const auto abilitiesPanelY = 10.0f;
-	abilitiesPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ abilitiesPanelX, abilitiesPanelY }, InGame, true, 240.0f, 400.0f, VK_F4, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
+	abilitiesPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ abilitiesPanelX, abilitiesPanelY }, InGame, 0, true, 240.0f, 400.0f, VK_F4, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 
-	abilitiesPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
+	abilitiesPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 2, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	abilitiesPanelHeader->SetText("Abilities");
 	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
 
-	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, d2dContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
+	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 1, d2dContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
 	abilitiesPanel->AddChildComponent(*abilitiesContainer);
 }
 
@@ -806,7 +813,7 @@ void Game::RecreateCharacterListings(const std::vector<std::string*>* characterN
 	for (auto i = 0; i < characterNames->size(); i++)
 	{
 		const float y = 100.0f + (i * 40.0f);
-		characterList.push_back(std::make_unique<UICharacterListing>(uiComponents, XMFLOAT2{ 25.0f, y }, CharacterSelect, 260.0f, 30.0f, (*characterNames->at(i)).c_str(), whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatAccountCredsInputValue.Get(), d2dFactory));
+		characterList.push_back(std::make_unique<UICharacterListing>(uiComponents, XMFLOAT2{ 25.0f, y }, CharacterSelect, 1, 260.0f, 30.0f, (*characterNames->at(i)).c_str(), whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatAccountCredsInputValue.Get(), d2dFactory));
 	}
 }
 
@@ -932,18 +939,14 @@ const bool Game::HandleEvent(const Event* const event)
 			auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
 			auto writeFactory = deviceResources->GetWriteFactory();
 
-			auto xOffset = 5.0f;
-			auto yOffset = 25.0f;
-			
-			for (auto i = 0; i < derivedEvent->skills->size(); i++)
-			{
-				auto skill = derivedEvent->skills->at(i);
-				if (!skillList[skill->skillId])
-				{
-					skillList[skill->skillId] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT2{ xOffset, yOffset + (18.0f * i) }, InGame, *skill, blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatFPS.Get());
-					skillsPanel->AddChildComponent(*skillList[skill->skillId]);
-				}
-			}
+			if (skills)
+				skills->clear();
+			skills = derivedEvent->skills;
+
+			// logging out doesn't empty the skillsPanel's skills list, 
+			// so check for it to avoid duplicating skill listings on successive logins
+			if (skillsPanel->GetChildren().size() == 1) 
+				InitializeSkills();
 
 			if (abilities)
 				abilities->clear();
@@ -951,7 +954,9 @@ const bool Game::HandleEvent(const Event* const event)
 			InitializeAbilitiesContainer();
 
 			// init characterHUD
-			characterHUD = std::make_unique<UICharacterHUD>(uiComponents, XMFLOAT2{ 10.0f, 12.0f }, InGame, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, statsComponent, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get(), derivedEvent->name->c_str());
+			characterHUD = std::make_unique<UICharacterHUD>(uiComponents, XMFLOAT2{ 10.0f, 12.0f }, InGame, 0, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, statsComponent, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get(), derivedEvent->name->c_str());
+
+			std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 
 			SetActiveLayer(InGame);
 
@@ -1014,6 +1019,25 @@ void Game::SetActiveLayer(const Layer layer)
 Game::~Game()
 {
 	g_eventHandler.Unsubscribe(*this);
+}
+
+void Game::InitializeSkills()
+{
+	auto xOffset = 5.0f;
+	auto yOffset = 25.0f;
+
+	auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+	auto writeFactory = deviceResources->GetWriteFactory();
+
+	for (auto i = 0; i < skills->size(); i++)
+	{
+		auto skill = skills->at(i);
+
+		if (!skillList[skill->skillId])
+			skillList[skill->skillId] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT2{ xOffset, yOffset + (18.0f * i) }, InGame, 1, *skill, blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatFPS.Get());
+
+		skillsPanel->AddChildComponent(*skillList[skill->skillId]);
+	}
 }
 
 void Game::InitializeAbilitiesContainer()

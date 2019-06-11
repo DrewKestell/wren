@@ -12,6 +12,7 @@ UIButton::UIButton(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
+	const int zIndex,
 	const float width,
 	const float height,
 	const char* inButtonText,
@@ -24,7 +25,7 @@ UIButton::UIButton(
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* buttonTextFormat,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(uiComponents, position, uiLayer),
+	: UIComponent(uiComponents, position, uiLayer, zIndex),
 	  width{ width },
 	  height{ height },
 	  onClick{ onClick },

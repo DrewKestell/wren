@@ -29,6 +29,7 @@ public:
 		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT2 position,
 		const Layer uiLayer,
+		const int zIndex,
 		const bool secure,
 		const float labelWidth,
 		const float inputWidth,
