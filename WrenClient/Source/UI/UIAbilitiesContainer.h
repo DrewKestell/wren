@@ -30,10 +30,11 @@ class UIAbilitiesContainer : public UIComponent
 	ID3D11PixelShader* pixelShader;
 	const BYTE* vertexShaderBuffer;
 	const int vertexShaderSize;
-	const XMMATRIX projectionTransform;
-	const float clientWidth;
-	const float clientHeight;
 public:
+	float clientWidth;
+	float clientHeight;
+	XMMATRIX projectionTransform;
+
 	UIAbilitiesContainer(
 		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT3 position,

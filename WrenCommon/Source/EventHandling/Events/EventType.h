@@ -31,5 +31,6 @@ enum class EventType
 	StartDraggingUIAbility,
 	SetTarget,
 	UnsetTarget,
-	Logout
+	Logout,
+	DeselectCharacterListing
 };

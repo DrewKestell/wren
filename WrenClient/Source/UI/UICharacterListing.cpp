@@ -10,6 +10,8 @@
 
 using namespace DX;
 
+extern EventHandler g_eventHandler;
+
 UICharacterListing::UICharacterListing(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT3 position,
@@ -66,7 +68,7 @@ const bool UICharacterListing::HandleEvent(const Event* const event)
 	{
 		case EventType::LeftMouseDown:
 		{
-			selected = false;
+			const auto wasSelected = selected;
 
 			const auto mouseDownEvent = (MouseEvent*)event;
 
@@ -76,6 +78,9 @@ const bool UICharacterListing::HandleEvent(const Event* const event)
 				if (Utility::DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 					selected = true;
 			}
+
+			if (wasSelected && !selected)
+				g_eventHandler.QueueEvent(new Event(EventType::DeselectCharacterListing));
 			
 			break;
 		}
@@ -89,6 +94,12 @@ const bool UICharacterListing::HandleEvent(const Event* const event)
 				isVisible = true;
 			else
 				isVisible = false;
+
+			break;
+		}
+		case EventType::DeselectCharacterListing:
+		{
+			selected = false;
 
 			break;
 		}

@@ -89,14 +89,6 @@ void Game::Tick()
 	
 	Render(updateTimer);
 }
-
-void Game::Update()
-{
-	float elapsedTime = float(timer.DeltaTime());
-
-	// TODO: Add your game logic here.
-	elapsedTime;
-}
 #pragma endregion
 
 #pragma region Frame Render
@@ -219,13 +211,18 @@ void Game::OnWindowSizeChanged(int width, int height)
 	if (!deviceResources->WindowSizeChanged(width, height))
 		return;
 
-	CreateWindowSizeDependentResources();
-
 	clientWidth = width;
 	clientHeight = height;
 
+	abilitiesContainer->clientWidth = (float)width;
+	abilitiesContainer->clientHeight = (float)height;
+
+	CreateWindowSizeDependentResources();
+
 	if (playerController)
 		playerController->SetClientDimensions(width, height);
+
+	SetActiveLayer(activeLayer);
 }
 #pragma endregion
 
@@ -236,7 +233,6 @@ void Game::CreateDeviceDependentResources()
 	InitializeBrushes();
 	InitializeTextFormats();
 	InitializeInputs();
-	InitializeButtons();
 	InitializeLabels();
 	InitializeTextures();
 	InitializeShaders();
@@ -244,7 +240,6 @@ void Game::CreateDeviceDependentResources()
 	InitializeMeshes();
 	InitializeRasterStates();
 	InitializeSprites();
-	InitializePanels();
 	
 	auto d3dDevice = deviceResources->GetD3DDevice();
 	auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
@@ -258,9 +253,6 @@ void Game::CreateDeviceDependentResources()
 	auto treeRenderComponent = renderComponentManager.CreateRenderComponent(tree.id, meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
 	tree.renderComponentId = treeRenderComponent.GetId();
 
-	// init hotbar
-	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT3{ 5.0f, clientHeight - 45.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
-
 	// init targetHUD
 	targetHUD = std::make_unique<UITargetHUD>(uiComponents, XMFLOAT3{ 260.0f, 12.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
 }
@@ -268,7 +260,19 @@ void Game::CreateDeviceDependentResources()
 // Allocate all memory resources that change on a window SizeChanged event.
 void Game::CreateWindowSizeDependentResources()
 {
-	// TODO: Initialize windows-size dependent objects here.
+	projectionTransform = XMMatrixOrthographicLH((float)clientWidth, (float)clientHeight, 0.0f, 5000.0f);
+
+	InitializeButtons();
+	InitializePanels();
+
+	auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+
+	// init hotbar
+	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT3{ 5.0f, clientHeight - 45.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
+
+	if (abilities)
+		InitializeAbilitiesContainer();
 }
 
 void Game::OnDeviceLost()
@@ -526,6 +530,7 @@ void Game::InitializeButtons()
 	const auto onClickCharacterSelectLogoutButton = [this]()
 	{
 		g_socketManager.Logout();
+
 		SetActiveLayer(Login);
 	};
 
@@ -561,7 +566,6 @@ void Game::InitializeButtons()
 	createCharacter_backButton = std::make_unique<UIButton>(uiComponents, XMFLOAT3{ 15.0f, clientHeight - 40.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, CreateCharacter, 80.0f, 24.0f, "BACK", onClickCreateCharacterBackButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 
 	// DeleteCharacter
-
 	const auto onClickDeleteCharacterConfirm = [this]()
 	{
 		g_socketManager.SendPacket(OPCODE_DELETE_CHARACTER, 1, characterNamePendingDeletion);
@@ -619,6 +623,7 @@ void Game::InitializePanels()
 	const auto onClickGameSettingsLogoutButton = [this]()
 	{
 		g_socketManager.SendPacket(OPCODE_DISCONNECT);
+
 		SetActiveLayer(Login);
 	};
 	gameSettingsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT3{ gameSettingsPanelX, gameSettingsPanelY, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
@@ -699,8 +704,6 @@ void Game::InitializeShaders()
 
 	spritePixelShaderBuffer = LoadShader(L"SpritePixelShader.cso");
 	d3dDevice->CreatePixelShader(spritePixelShaderBuffer.buffer, spritePixelShaderBuffer.size, nullptr, spritePixelShader.ReleaseAndGetAddressOf());
-
-	projectionTransform = XMMatrixOrthographicLH((float)clientWidth, (float)clientHeight, 0.0f, 5000.0f);
 }
 
 void Game::InitializeBuffers()
@@ -942,12 +945,10 @@ const bool Game::HandleEvent(const Event* const event)
 				}
 			}
 
-			abilitiesContainer->ClearAbilities();
-			for (auto i = 0; i < derivedEvent->abilities->size(); i++)
-			{
-				auto ability = derivedEvent->abilities->at(i);
-				abilitiesContainer->AddAbility(ability, textures[ability->spriteId].Get());
-			}
+			if (abilities)
+				abilities->clear();
+			abilities = derivedEvent->abilities;
+			InitializeAbilitiesContainer();
 
 			// init characterHUD
 			characterHUD = std::make_unique<UICharacterHUD>(uiComponents, XMFLOAT3{ 10.0f, 12.0f, 0.0f }, XMFLOAT3{ 0.0f, 0.0f, 0.0f }, InGame, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, statsComponent, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get(), derivedEvent->name->c_str());
@@ -1013,4 +1014,14 @@ void Game::SetActiveLayer(const Layer layer)
 Game::~Game()
 {
 	g_eventHandler.Unsubscribe(*this);
+}
+
+void Game::InitializeAbilitiesContainer()
+{
+	abilitiesContainer->ClearAbilities();
+	for (auto i = 0; i < abilities->size(); i++)
+	{
+		auto ability = abilities->at(i);
+		abilitiesContainer->AddAbility(ability, textures[ability->spriteId].Get());
+	}
 }
