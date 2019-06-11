@@ -13,8 +13,7 @@ extern EventHandler g_eventHandler;
 
 UIAbility::UIAbility(
 	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT3 position,
-	const XMFLOAT3 scale,
+	const XMFLOAT2 position,
 	const Layer uiLayer,
 	const int abilityId,
 	ID2D1DeviceContext1* d2dDeviceContext,
@@ -36,7 +35,7 @@ UIAbility::UIAbility(
 	const bool isDragging,
 	const float mousePosX,
 	const float mousePosY)
-	: UIComponent(uiComponents, position, scale, uiLayer),
+	: UIComponent(uiComponents, position, uiLayer),
 	  abilityId{ abilityId },
 	  d2dDeviceContext{ d2dDeviceContext },
 	  d2dFactory{ d2dFactory },
@@ -127,7 +126,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 						if (dragBehavior == "COPY")
 						{
-							abilityCopy = new UIAbility(uiComponents, worldPos, scale, uiLayer, abilityId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, vertexShaderBuffer, vertexShaderSize, worldPos.x, worldPos.y, clientWidth, clientHeight, projectionTransform, true, mousePosX, mousePosY);
+							abilityCopy = new UIAbility(uiComponents, worldPos, uiLayer, abilityId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, vertexShaderBuffer, vertexShaderSize, worldPos.x, worldPos.y, clientWidth, clientHeight, projectionTransform, true, mousePosX, mousePosY);
 							abilityCopy->SetVisible(true);
 						}
 						else if (dragBehavior == "MOVE")
@@ -146,7 +145,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 					const auto deltaX = mousePosX - lastDragX;
 					const auto deltaY = mousePosY - lastDragY;
 
-					Translate(XMFLOAT3(deltaX, deltaY, 0.0f));
+					Translate(XMFLOAT2(deltaX, deltaY));
 
 					lastDragX = mousePosX;
 					lastDragY = mousePosY;

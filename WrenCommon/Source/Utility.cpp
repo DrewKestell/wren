@@ -6,6 +6,11 @@ XMFLOAT3 Utility::XMFLOAT3Sum(const XMFLOAT3 l, const XMFLOAT3 r)
     return XMFLOAT3(l.x + r.x, l.y + r.y, l.z + r.z);
 }
 
+XMFLOAT2 Utility::XMFLOAT2Sum(const XMFLOAT2 l, const XMFLOAT2 r)
+{
+	return XMFLOAT2(l.x + r.x, l.y + r.y);
+}
+
 bool Utility::DetectClick(const float topLeftX, const float topLeftY, const float bottomRightX, const float bottomRightY, const float mousePosX, const float mousePosY)
 {
 	return mousePosX >= topLeftX && mousePosX <= bottomRightX && mousePosY >= topLeftY && mousePosY <= bottomRightY;

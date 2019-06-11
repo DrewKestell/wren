@@ -37,8 +37,7 @@ public:
 
 	UIAbilitiesContainer(
 		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT3 position,
-		const XMFLOAT3 scale,
+		const XMFLOAT2 position,
 		const Layer uiLayer,
 		ID2D1DeviceContext1* d2dDeviceContext,
 		ID2D1Factory2* d2dFactory,

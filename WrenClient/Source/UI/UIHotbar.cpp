@@ -9,14 +9,13 @@
 
 UIHotbar::UIHotbar(
 	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT3 position,
-	const XMFLOAT3 scale,
+	const XMFLOAT2 position,
 	const Layer uiLayer,
 	ID2D1SolidColorBrush* brush,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory,
 	const float clientHeight)
-	: UIComponent(uiComponents, position, scale, uiLayer),
+	: UIComponent(uiComponents, position, uiLayer),
 	  brush{ brush },
 	  d2dDeviceContext{ d2dDeviceContext },
 	  d2dFactory{ d2dFactory },
@@ -66,7 +65,7 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 				const auto xOffset = index * 40.0f;
 
 				uiAbilities[index] = derivedEvent->uiAbility;
-				uiAbilities[index]->SetLocalPosition(XMFLOAT3{ xOffset + 2.0f, 2.0f, 0.0f });
+				uiAbilities[index]->SetLocalPosition(XMFLOAT2{ xOffset + 2.0f, 2.0f });
 				uiAbilities[index]->SetParent(*this);
 			}
 			else

@@ -27,8 +27,7 @@ class UIPanel : public UIComponent
 public:
 	UIPanel(
 		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT3 position,
-		const XMFLOAT3 scale,
+		const XMFLOAT2 position,
 		const Layer uiLayer,
 		const bool isDraggable,
 		const float width,

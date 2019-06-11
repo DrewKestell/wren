@@ -24,8 +24,7 @@ class UIButton : public UIComponent
 public:
 	UIButton(
 		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT3 position,
-		const XMFLOAT3 scale,
+		const XMFLOAT2 position,
 		const Layer uiLayer,
 		const float width,
 		const float height,

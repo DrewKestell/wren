@@ -17,8 +17,7 @@ class UIHotbar : public UIComponent
 public:
 	UIHotbar(
 		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT3 position,
-		const XMFLOAT3 scale,
+		const XMFLOAT2 position,
 		const Layer uiLayer,
 		ID2D1SolidColorBrush* brush,
 		ID2D1DeviceContext1* d2dDeviceContext,

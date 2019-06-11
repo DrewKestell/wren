@@ -27,8 +27,7 @@ class UIInput : public UIComponent
 public:
 	UIInput(
 		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT3 position,
-		const XMFLOAT3 scale,
+		const XMFLOAT2 position,
 		const Layer uiLayer,
 		const bool secure,
 		const float labelWidth,

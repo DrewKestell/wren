@@ -4,23 +4,22 @@
 
 extern EventHandler g_eventHandler;
 
-UIComponent::UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT3 localPosition, const XMFLOAT3 scale, const Layer uiLayer)
+UIComponent::UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT2 localPosition, const Layer uiLayer)
 	: uiComponents{ uiComponents },
 	  localPosition{ localPosition },
-	  scale{ scale },
 	  uiLayer{ uiLayer }
 {
 	uiComponents.push_back(this);
 	g_eventHandler.Subscribe(*this);
 }
 
-XMFLOAT3 UIComponent::GetWorldPosition() const
+XMFLOAT2 UIComponent::GetWorldPosition() const
 {
 	auto worldPosition = localPosition;
 	auto parentPtr = parent;
 	while (parentPtr != nullptr)
 	{
-		worldPosition = Utility::XMFLOAT3Sum(worldPosition, parentPtr->localPosition);
+		worldPosition = Utility::XMFLOAT2Sum(worldPosition, parentPtr->localPosition);
 		parentPtr = parentPtr->parent;
 	}
 

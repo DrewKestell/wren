@@ -10,8 +10,7 @@ using namespace DX;
 
 UIButton::UIButton(
 	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT3 position,
-	const XMFLOAT3 scale,
+	const XMFLOAT2 position,
 	const Layer uiLayer,
 	const float width,
 	const float height,
@@ -25,7 +24,7 @@ UIButton::UIButton(
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* buttonTextFormat,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(uiComponents, position, scale, uiLayer),
+	: UIComponent(uiComponents, position, uiLayer),
 	  width{ width },
 	  height{ height },
 	  onClick{ onClick },

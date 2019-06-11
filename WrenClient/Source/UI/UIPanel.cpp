@@ -10,8 +10,7 @@
 
 UIPanel::UIPanel(
 	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT3 position,
-	const XMFLOAT3 scale,
+	const XMFLOAT2 position,
 	const Layer uiLayer,
 	const bool isDraggable,
 	const float width,
@@ -22,7 +21,7 @@ UIPanel::UIPanel(
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory)
-	: UIComponent(uiComponents, position, scale, uiLayer),
+	: UIComponent(uiComponents, position, uiLayer),
 	  isDraggable{ isDraggable },
 	  width{ width },
 	  height{ height },
@@ -96,7 +95,7 @@ const bool UIPanel::HandleEvent(const Event* const event)
 				const auto deltaX = mouseMoveEvent->mousePosX - lastDragX;
 				const auto deltaY = mouseMoveEvent->mousePosY - lastDragY;
 
-				Translate(XMFLOAT3(deltaX, deltaY, 0.0f));
+				Translate(XMFLOAT2{ deltaX, deltaY });
 
 				lastDragX = mouseMoveEvent->mousePosX;
 				lastDragY = mouseMoveEvent->mousePosY;

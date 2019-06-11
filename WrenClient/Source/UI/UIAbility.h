@@ -35,8 +35,7 @@ class UIAbility : public UIComponent
 public:
 	UIAbility(
 		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT3 position,
-		const XMFLOAT3 scale,
+		const XMFLOAT2 position,
 		const Layer uiLayer,
 		const int abilityId,
 		ID2D1DeviceContext1* d2dDeviceContext,

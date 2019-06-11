@@ -8,8 +8,7 @@ using namespace DX;
 
 UIAbilitiesContainer::UIAbilitiesContainer(
 	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT3 position,
-	const XMFLOAT3 scale,
+	const XMFLOAT2 position,
 	const Layer uiLayer,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory,
@@ -28,7 +27,7 @@ UIAbilitiesContainer::UIAbilitiesContainer(
 	const XMMATRIX projectionTransform,
 	const float clientWidth,
 	const float clientHeight)
-	: UIComponent(uiComponents, position, scale, uiLayer),
+	: UIComponent(uiComponents, position, uiLayer),
 	  d2dDeviceContext{ d2dDeviceContext },
 	  d2dFactory{ d2dFactory },
 	  d3dDevice{ d3dDevice },
@@ -125,7 +124,7 @@ void UIAbilitiesContainer::AddAbility(Ability* ability, ID3D11ShaderResourceView
 	auto positionY = worldPos.y + yOffset;
 
 	// create UIAbility
-	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility(uiComponents, XMFLOAT3{ xOffset + 2.0f, yOffset + 2.0f, 0.0f }, scale, uiLayer, ability->abilityId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, vertexShaderBuffer, vertexShaderSize, positionX + 2.0f, positionY + 2.0f, clientWidth, clientHeight, projectionTransform));
+	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility(uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, ability->abilityId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, vertexShaderBuffer, vertexShaderSize, positionX + 2.0f, positionY + 2.0f, clientWidth, clientHeight, projectionTransform));
 	uiAbilities.push_back(uiAbility);
 	this->AddChildComponent(*uiAbility);
 }

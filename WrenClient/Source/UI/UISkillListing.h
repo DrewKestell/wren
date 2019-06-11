@@ -14,8 +14,7 @@ class UISkillListing : public UIComponent
 public:
 	UISkillListing(
 		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT3 position,
-		const XMFLOAT3 scale,
+		const XMFLOAT2 position,
 		const Layer uiLayer,
 		Skill& skill,
 		ID2D1SolidColorBrush* textBrush,

@@ -6,15 +6,14 @@ using namespace DX;
 
 UISkillListing::UISkillListing(
 	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT3 position,
-	const XMFLOAT3 scale,
+	const XMFLOAT2 position,
 	const Layer uiLayer,
 	Skill& skill,
 	ID2D1SolidColorBrush* textBrush,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* textFormat)
-	: UIComponent(uiComponents, position, scale, uiLayer),
+	: UIComponent(uiComponents, position, uiLayer),
 	  textBrush{ textBrush },
 	  writeFactory{ writeFactory },
 	  textFormat{ textFormat },
