@@ -1034,7 +1034,7 @@ void Game::InitializeSkills()
 		auto skill = skills->at(i);
 
 		if (!skillList[skill->skillId])
-			skillList[skill->skillId] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT2{ xOffset, yOffset + (18.0f * i) }, InGame, 1, *skill, blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatFPS.Get());
+			skillList[skill->skillId] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT2{ xOffset, yOffset + (18.0f * i) }, InGame, 2, *skill, blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatFPS.Get());
 
 		skillsPanel->AddChildComponent(*skillList[skill->skillId]);
 	}
