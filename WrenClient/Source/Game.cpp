@@ -32,6 +32,28 @@ Game::Game() noexcept(false)
 	g_eventHandler.Subscribe(*this);
 }
 
+void Game::PublishEvents()
+{
+	auto eventQueue = g_eventHandler.eventQueue;
+	while (!eventQueue->empty())
+	{
+		const auto event = eventQueue->front();
+		eventQueue->pop();
+		for (auto it = g_eventHandler.observers->begin(); it != g_eventHandler.observers->end(); it++)
+		{
+			const auto stopPropagation = (*it)->HandleEvent(event);
+			if (stopPropagation)
+				break;
+		}
+		for (auto it = uiComponents.rbegin(); it != uiComponents.rend(); it++)
+		{
+			const auto stopPropagation = (*it)->HandleEvent(event);
+			if (stopPropagation)
+				break;
+		}
+	}
+}
+
 // General initialization that would likely be shared between any D3D application
 //   should go in DeviceResources.cpp
 // Game-specific initialization should go in Game.cpp
@@ -84,7 +106,7 @@ void Game::Tick()
 			objectManager.Update();
 		}
 		
-		g_eventHandler.PublishEvents();
+		PublishEvents();
 
 		updateTimer -= UPDATE_FREQUENCY;
 	}

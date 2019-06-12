@@ -92,6 +92,7 @@ private:
 	ShaderBuffer LoadShader(const std::wstring filename);
 	virtual const bool HandleEvent(const Event* const event);
 	void SetActiveLayer(const Layer layer);
+	void PublishEvents();
 
 	void InitializeBrushes();
 	void InitializeTextFormats();

@@ -11,7 +11,6 @@ UIComponent::UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT2
 	  zIndex{ zIndex }
 {
 	uiComponents.push_back(this);
-	g_eventHandler.Subscribe(*this);
 }
 
 XMFLOAT2 UIComponent::GetWorldPosition() const
@@ -32,7 +31,6 @@ void UIComponent::Draw() {}
 UIComponent::~UIComponent()
 {
 	uiComponents.erase(std::find(uiComponents.begin(), uiComponents.end(), this));
-	g_eventHandler.Unsubscribe(*this);
 }
 
 void UIComponent::ClearChildren()
