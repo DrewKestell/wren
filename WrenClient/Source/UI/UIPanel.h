@@ -24,12 +24,13 @@ class UIPanel : public UIComponent
     ID2D1DeviceContext1* d2dDeviceContext = nullptr;
     ID2D1Factory2* d2dFactory = nullptr;
 	void SetChildrenAsVisible(UIComponent* uiComponent);
+	void BringToFront(UIComponent* uiComponent);
 public:
 	UIPanel(
 		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT2 position,
 		const Layer uiLayer,
-		const int zIndex,
+		const unsigned int zIndex,
 		const bool isDraggable,
 		const float width,
 		const float height,

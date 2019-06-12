@@ -4,7 +4,7 @@
 
 extern EventHandler g_eventHandler;
 
-UIComponent::UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT2 localPosition, const Layer uiLayer, const int zIndex)
+UIComponent::UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT2 localPosition, const Layer uiLayer, const unsigned int zIndex)
 	: uiComponents{ uiComponents },
 	  localPosition{ localPosition },
 	  uiLayer{ uiLayer },

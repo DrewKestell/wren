@@ -32,5 +32,6 @@ enum class EventType
 	SetTarget,
 	UnsetTarget,
 	Logout,
-	DeselectCharacterListing
+	DeselectCharacterListing,
+	ReorderUIComponents
 };

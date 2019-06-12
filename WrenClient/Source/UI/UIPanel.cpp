@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "UIPanel.h"
 #include "UIComponent.h"
+#include "EventHandling/EventHandler.h"
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
@@ -8,11 +9,14 @@
 #include "Utility.h"
 #include "Layer.h"
 
+extern unsigned int g_zIndex;
+extern EventHandler g_eventHandler;
+
 UIPanel::UIPanel(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
-	const int zIndex,
+	const unsigned int zIndex,
 	const bool isDraggable,
 	const float width,
 	const float height,
@@ -69,12 +73,24 @@ const bool UIPanel::HandleEvent(const Event* const event)
 			if (isVisible)
 			{
 				const auto position = GetWorldPosition();
-				if (isVisible && isDraggable && Utility::DetectClick(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+				bool stopEvent{ false };
+				if (isDraggable && Utility::DetectClick(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 				{
 					lastDragX = mouseDownEvent->mousePosX;
 					lastDragY = mouseDownEvent->mousePosY;
 					isDragging = true;
 				}
+				if (Utility::DetectClick(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+				{
+					g_zIndex++;
+					zIndex = g_zIndex;
+					BringToFront(this);
+
+					g_eventHandler.QueueEvent(new Event(EventType::ReorderUIComponents));
+
+					stopEvent = true;
+				}
+				return stopEvent;
 			}
 			
 			break;
@@ -133,6 +149,15 @@ const bool UIPanel::HandleEvent(const Event* const event)
 					isVisible = !isVisible;
 
 					SetChildrenAsVisible(this);
+
+					if (isVisible)
+					{
+						g_zIndex++;
+						zIndex = g_zIndex;
+						BringToFront(this);
+					}
+
+					g_eventHandler.QueueEvent(new Event(EventType::ReorderUIComponents));
 				}
 			}
 
@@ -146,10 +171,28 @@ const bool UIPanel::HandleEvent(const Event* const event)
 void UIPanel::SetChildrenAsVisible(UIComponent* uiComponent)
 {
 	auto children = uiComponent->GetChildren();
+
 	for (auto i = 0; i < children.size(); i++)
 	{
 		auto uiComponent = (UIComponent*)children.at(i);
-		uiComponent->SetVisible(!uiComponent->IsVisible());
+		uiComponent->isVisible = !uiComponent->isVisible;
+
 		SetChildrenAsVisible(uiComponent);
+	}
+}
+
+void UIPanel::BringToFront(UIComponent* uiComponent)
+{
+	auto children = uiComponent->GetChildren();
+
+	if (children.size() > 0)
+		g_zIndex++;
+
+	for (auto i = 0; i < children.size(); i++)
+	{
+		auto uiComponent = (UIComponent*)children.at(i);
+		uiComponent->zIndex = g_zIndex;
+
+		BringToFront(uiComponent);
 	}
 }

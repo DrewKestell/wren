@@ -15,7 +15,7 @@ UIAbility::UIAbility(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
-	const int zIndex,
+	const unsigned int zIndex,
 	const int abilityId,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory,
@@ -128,7 +128,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 						if (dragBehavior == "COPY")
 						{
 							abilityCopy = new UIAbility(uiComponents, worldPos, uiLayer, 2, abilityId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, vertexShaderBuffer, vertexShaderSize, worldPos.x, worldPos.y, clientWidth, clientHeight, projectionTransform, true, mousePosX, mousePosY);
-							abilityCopy->SetVisible(true);
+							abilityCopy->isVisible = true;
 						}
 						else if (dragBehavior == "MOVE")
 						{

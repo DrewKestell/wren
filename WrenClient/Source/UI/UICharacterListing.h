@@ -23,7 +23,7 @@ public:
 		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT2 position,
 		const Layer uiLayer,
-		const int zIndex,
+		const unsigned int zIndex,
 		const float width,
 		const float height,
 		const char* inText,
