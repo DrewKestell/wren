@@ -9,7 +9,7 @@ UITargetHUD::UITargetHUD(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
-	const int zIndex,
+	const unsigned int zIndex,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* buttonTextFormat,

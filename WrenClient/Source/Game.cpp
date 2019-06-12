@@ -19,6 +19,7 @@
 #include "EventHandling/Events/ActivateAbilityEvent.h"
 
 SocketManager g_socketManager;
+unsigned int g_zIndex{ 0 };
 
 extern EventHandler g_eventHandler;
 
@@ -643,9 +644,9 @@ void Game::InitializePanels()
 	// Game Editor
 	const auto gameEditorPanelX = 580.0f;
 	const auto gameEditorPanelY = 5.0f;
+	gameEditorPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ gameEditorPanelX, gameEditorPanelY }, InGame, 1, true, 200.0f, 400.0f, VK_F1, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 	gameEditorPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 2, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dContext, writeFactory, d2dFactory);
 	gameEditorPanelHeader->SetText("Game Editor");
-	gameEditorPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ gameEditorPanelX, gameEditorPanelY }, InGame, 1, true, 200.0f, 400.0f, VK_F1, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dContext, d2dFactory);
 	gameEditorPanel->AddChildComponent(*gameEditorPanelHeader);
 
 	// Diagnostics
@@ -1002,6 +1003,12 @@ const bool Game::HandleEvent(const Event* const event)
 
 			if (playerController)
 				playerController->OnPlayerCorrectionEvent(derivedEvent);
+
+			break;
+		}
+		case EventType::ReorderUIComponents:
+		{
+			std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 
 			break;
 		}

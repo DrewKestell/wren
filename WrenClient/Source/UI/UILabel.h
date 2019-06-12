@@ -18,7 +18,7 @@ public:
 		std::vector<UIComponent*>& uiComponents,
 		const XMFLOAT2 position,
 		const Layer uiLayer,
-		const int zIndex,
+		const unsigned int zIndex,
 		const float width,
 		ID2D1SolidColorBrush* textBrush,
 		IDWriteTextFormat* textFormat,
