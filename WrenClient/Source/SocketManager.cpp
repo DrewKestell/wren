@@ -16,6 +16,8 @@ constexpr auto SERVER_PORT_NUMBER = 27016;
 
 extern EventHandler g_eventHandler;
 
+static bool logMessages{ false };
+
 SocketManager::SocketManager()
 {
     WSADATA wsaData;
@@ -103,14 +105,16 @@ bool SocketManager::TryRecieveMessage()
         errorCode = WSAGetLastError();
     if (result != SOCKET_ERROR)
     {
-        printf("Received message from server.\n");
+		if (logMessages)
+			printf("Received message from server.\n");
 
         const auto checksumArrLen = 8;
         char checksumArr[checksumArrLen];
         memcpy(&checksumArr[0], &buffer[0], checksumArrLen * sizeof(char));
         if (!MessagePartsEqual(checksumArr, CHECKSUM.c_str(), checksumArrLen))
         {
-            std::cout << "Wrong checksum. Ignoring packet.\n";
+			if (logMessages)
+				std::cout << "Wrong checksum. Ignoring packet.\n";
 			g_eventHandler.QueueEvent(new Event{ EventType::WrongChecksum });
 			return true;
         }
@@ -136,21 +140,26 @@ bool SocketManager::TryRecieveMessage()
                     *arg += buffer[i];
             }
 
-            std::cout << "Args:\n";
-            for_each(args.begin(), args.end(), [](std::string* str) { std::cout << "  " << *str << "\n";  });
-            std::cout << "\n";
+			if (logMessages)
+			{
+				std::cout << "Args:\n";
+				for_each(args.begin(), args.end(), [](std::string* str) { std::cout << "  " << *str << "\n";  });
+				std::cout << "\n";
+			}
         }
 
         if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL, opcodeArrLen))
         {
             const auto error = args[0];
-            std::cout << "Failed to create account. Reason: " + *error + "\n";
+			if (logMessages)
+				std::cout << "Failed to create account. Reason: " + *error + "\n";
 			g_eventHandler.QueueEvent(new CreateAccountFailedEvent{ error });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT_SUCCESSFUL, opcodeArrLen))
         {
-            std::cout << "Successfully created account.\n";
+			if (logMessages)
+				std::cout << "Successfully created account.\n";
 			g_eventHandler.QueueEvent(new Event{EventType::CreateAccountSuccess});
 			return true;
         }
@@ -162,14 +171,16 @@ bool SocketManager::TryRecieveMessage()
 
 			this->token = *token;
 
-            std::cout << "Login successful. Token received: " + *token + "\n";
+			if (logMessages)
+				std::cout << "Login successful. Token received: " + *token + "\n";
 			g_eventHandler.QueueEvent(new LoginSuccessEvent{ characterList });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_LOGIN_UNSUCCESSFUL, opcodeArrLen))
         {
             const auto error = args[0];
-            std::cout << "Login failed. Reason: " + *error + "\n";
+			if (logMessages)
+				std::cout << "Login failed. Reason: " + *error + "\n";
 			g_eventHandler.QueueEvent(new LoginFailedEvent{ error });
 			return true;
         }
@@ -178,14 +189,16 @@ bool SocketManager::TryRecieveMessage()
             const auto characterString = args[0];
             const auto characterList = BuildCharacterVector(characterString);
 
-            std::cout << "Character creation successful.";
+			if (logMessages)
+				std::cout << "Character creation successful.";
 			g_eventHandler.QueueEvent(new CreateCharacterSuccessEvent{ characterList });
 			return true;
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_CHARACTER_UNSUCCESSFUL, opcodeArrLen))
         {
             const auto error = args[0];
-            std::cout << "Character creation failed. Reason: " + *error + "\n";
+			if (logMessages)
+				std::cout << "Character creation failed. Reason: " + *error + "\n";
 			g_eventHandler.QueueEvent(new CreateCharacterFailedEvent{ error });
 			return true;
         }
@@ -201,7 +214,8 @@ bool SocketManager::TryRecieveMessage()
 			const auto abilityString = args[7];
 			const auto name = args[8];
 
-            std::cout << "Connected to game world!\n";
+			if (logMessages)
+				std::cout << "Connected to game world!\n";
 			g_eventHandler.QueueEvent(new EnterWorldSuccessEvent(std::stoi(*id), XMFLOAT3{ std::stof(*positionX), std::stof(*positionY), std::stof(*positionZ) }, std::stoi(*modelId), std::stoi(*textureId), BuildSkillVector(*skillString), BuildAbilityVector(*abilityString), name));
 			return true;
         }
@@ -210,7 +224,8 @@ bool SocketManager::TryRecieveMessage()
 			const auto characterString = args[0];
 			const auto characterList = BuildCharacterVector(characterString);
 
-			std::cout << "Delete character successful.";
+			if (logMessages)
+				std::cout << "Delete character successful.";
 			g_eventHandler.QueueEvent(new DeleteCharacterSuccessEvent{ characterList });
 			return true;
 		}
@@ -241,7 +256,8 @@ bool SocketManager::TryRecieveMessage()
 		}
 		else
 		{
-			std::cout << "Opcode not implemented.\n";
+			if (logMessages)
+				std::cout << "Opcode not implemented.\n";
 			g_eventHandler.QueueEvent(new Event{ EventType::OpcodeNotImplemented });
 			return true;
 		}

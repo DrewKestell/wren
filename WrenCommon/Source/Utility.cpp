@@ -34,5 +34,5 @@ const char Utility::GetHotbarIndex(const float clientHeight, const float mousePo
 	if (mousePosX < 5.0f || mousePosX >= 405.0f || mousePosY < clientHeight - 45.0f || mousePosY > clientHeight - 5.0f)
 		return -1;
 
-	return (mousePosX - 5) / 40;
+	return (char)((mousePosX - 5) / 40);
 }

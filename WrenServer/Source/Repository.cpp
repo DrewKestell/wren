@@ -256,7 +256,12 @@ std::vector<Skill> Repository::ListSkills(const int characterId)
 
 	std::vector<Skill> skills;
 	auto result = sqlite3_step(statement);
-	if (result == SQLITE_ROW)
+	if (result == SQLITE_DONE)
+	{
+		sqlite3_finalize(statement);
+		return skills;
+	}
+	else if (result == SQLITE_ROW)
 	{
 		while (result == SQLITE_ROW)
 		{
@@ -288,7 +293,12 @@ std::vector<Ability> Repository::ListAbilities(const int characterId)
 
 	std::vector<Ability> abilities;
 	auto result = sqlite3_step(statement);
-	if (result == SQLITE_ROW)
+	if (result == SQLITE_DONE)
+	{
+		sqlite3_finalize(statement);
+		return abilities;
+	}
+	else if (result == SQLITE_ROW)
 	{
 		while (result == SQLITE_ROW)
 		{

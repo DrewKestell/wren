@@ -16,13 +16,13 @@ class UIInput : public UIComponent
 	float labelWidth{ 0.0f };
 	float inputWidth{ 0.0f };
 	float height{ 0.0f };
-	ID2D1SolidColorBrush* labelBrush = nullptr;
-    ID2D1SolidColorBrush* inputBrush = nullptr;
-    ID2D1SolidColorBrush* inputBorderBrush = nullptr;
-    ID2D1SolidColorBrush* inputValueBrush = nullptr;
-    IDWriteTextFormat* inputValueTextFormat = nullptr;
-    IDWriteFactory2* writeFactory = nullptr;  
-    ID2D1DeviceContext1* d2dDeviceContext = nullptr;
+	ID2D1SolidColorBrush* labelBrush;
+    ID2D1SolidColorBrush* inputBrush;
+    ID2D1SolidColorBrush* inputBorderBrush;
+    ID2D1SolidColorBrush* inputValueBrush;
+    IDWriteTextFormat* inputValueTextFormat;
+    IDWriteFactory2* writeFactory;
+    ID2D1DeviceContext1* d2dDeviceContext;
    
 public:
 	UIInput(

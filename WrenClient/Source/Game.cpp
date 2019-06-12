@@ -46,9 +46,9 @@ void Game::PublishEvents()
 			if (stopPropagation)
 				break;
 		}
-		for (auto it = uiComponents.rbegin(); it != uiComponents.rend(); it++)
+		for (int i = (int)uiComponents.size() - 1; i >= 0; i--)
 		{
-			const auto stopPropagation = (*it)->HandleEvent(event);
+			const auto stopPropagation = uiComponents.at(i)->HandleEvent(event);
 			if (stopPropagation)
 				break;
 		}
@@ -788,13 +788,15 @@ void Game::InitializeTextures()
 		L"../../WrenClient/Textures/texture02.dds",     // 1
 		L"../../WrenClient/Textures/grass01.dds",       // 2
 		L"../../WrenClient/Textures/abilityicon01.dds", // 3
-		L"../../WrenClient/Textures/texture03.dds"      // 4
+		L"../../WrenClient/Textures/texture03.dds",     // 4
+		L"../../WrenClient/Textures/abilityicon02.dds", // 5
+		L"../../WrenClient/Textures/abilityicon03.dds"  // 6
 	};
 
 	// clear calls the destructor of its elements, and ComPtr's destructor handles calling Release()
 	textures.clear();
 
-	for (auto i = 0; i < 5; i++)
+	for (auto i = 0; i < 7; i++)
 	{
 		ComPtr<ID3D11ShaderResourceView> ptr;
 		CreateDDSTextureFromFile(d3dDevice, paths[i], nullptr, ptr.ReleaseAndGetAddressOf());

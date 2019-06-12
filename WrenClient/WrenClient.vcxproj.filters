@@ -208,5 +208,8 @@
     <Image Include="Textures\texture02.dds" />
     <Image Include="Textures\grass01.DDS" />
     <Image Include="Textures\abilityicon01.DDS" />
+    <Image Include="Textures\texture03.DDS" />
+    <Image Include="Textures\abilityicon02.DDS" />
+    <Image Include="Textures\abilityicon03.DDS" />
   </ItemGroup>
 </Project>

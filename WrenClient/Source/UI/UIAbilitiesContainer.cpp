@@ -55,17 +55,17 @@ void UIAbilitiesContainer::Draw()
 
 	const auto worldPos = GetWorldPosition();
 	const auto initialSize = headers.size();
+	borderGeometries.clear();
 
 	for (auto i = 0; i < headers.size(); i++)
 	{
-		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(worldPos.x + 12.0f, worldPos.y + 30.0f + (i * 60.0f)), headers.at(i).Get(), headerBrush);
+		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(worldPos.x + 12.0f, worldPos.y + 30.0f + (i * 70.0f)), headers.at(i).Get(), headerBrush);
 		// if mouse hover, draw highlight
 
 		// Draw Borders
-		borderGeometries.clear();
 		ComPtr<ID2D1RectangleGeometry> borderGeometry;
 		auto xOffset = 12.0f;
-		auto yOffset = 50.0f + (borderGeometries.size() * 60.0f);
+		auto yOffset = 50.0f + (borderGeometries.size() * 70.0f);
 		auto positionX = worldPos.x + xOffset;
 		auto positionY = worldPos.y + yOffset;
 		d2dFactory->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + BORDER_WIDTH, positionY + BORDER_WIDTH), borderGeometry.ReleaseAndGetAddressOf());
@@ -120,7 +120,7 @@ void UIAbilitiesContainer::AddAbility(Ability* ability, ID3D11ShaderResourceView
 	const auto worldPos = GetWorldPosition();
 	ComPtr<ID2D1RoundedRectangleGeometry> borderGeometry;
 	auto xOffset = 12.0f;
-	auto yOffset = 50.0f + (initialSize * 60.0f);
+	auto yOffset = 50.0f + (initialSize * 70.0f);
 	auto positionX = worldPos.x + xOffset;
 	auto positionY = worldPos.y + yOffset;
 
