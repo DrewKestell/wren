@@ -17,6 +17,7 @@
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
 #include "EventHandling/Events/GameObjectUpdateEvent.h"
 #include "EventHandling/Events/ActivateAbilityEvent.h"
+#include "EventHandling/Events/SetTargetEvent.h"
 
 SocketManager g_socketManager;
 unsigned int g_zIndex{ 0 };
@@ -1035,6 +1036,60 @@ const bool Game::HandleEvent(const Event* const event)
 			std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 
 			break;
+		}
+		case EventType::LeftMouseDown:
+		{
+			if (activeLayer != Layer::InGame) break;
+
+			const auto derivedEvent = (MouseEvent*)event;
+
+			std::cout << "Click at x: " << derivedEvent->mousePosX << ", y: " << derivedEvent->mousePosY << std::endl;
+
+			auto gameObject = objectManager.GetGameObjectById(50);
+			auto pos = gameObject.GetWorldPosition();
+			auto scale = gameObject.scale;
+			auto worldTransform = XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixTranslation(pos.x, pos.y, pos.z);
+
+			XMVECTOR roScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 0.0f, 1.0f);
+			XMVECTOR rdScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 1.0f, 1.0f);
+			XMVECTOR ro = XMVector3Unproject(roScreen, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
+			XMVECTOR rd = XMVector3Unproject(rdScreen, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
+			rd = XMVector3Normalize(rd - ro);
+
+			auto renderComponent = renderComponentManager.GetRenderComponentById(gameObject.renderComponentId);
+			auto vertices = renderComponent.mesh->vertices;
+			auto indices = renderComponent.mesh->indices;
+
+			float dist;
+			float smallestDist = FLT_MAX;
+			unsigned int i = 0;
+			while (i < indices.size())
+			{
+				auto ver1 = vertices[indices[i]];
+				auto ver2 = vertices[indices[i + 1]];
+				auto ver3 = vertices[indices[i + 2]];
+				XMVECTOR v1 = XMVectorSet(ver1.Position.x, ver1.Position.y, ver1.Position.z, 1.0f);
+				XMVECTOR v2 = XMVectorSet(ver2.Position.x, ver2.Position.y, ver2.Position.z, 1.0f);
+				XMVECTOR v3 = XMVectorSet(ver3.Position.x, ver3.Position.y, ver3.Position.z, 1.0f);
+				auto result = TriangleTests::Intersects(ro, rd, v1, v2, v3, dist);
+				if (result)
+				{
+					if (dist < smallestDist)
+						smallestDist = dist;
+				}
+				i += 3;
+			}
+			if (smallestDist < FLT_MAX)
+			{
+				std::cout << "Click detected on dummy at depth: " << smallestDist << std::endl;
+				StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(gameObject.statsComponentId);
+				auto name = "Dummy";
+				g_eventHandler.QueueEvent(new SetTargetEvent{ gameObject.id, &statsComponent, name });
+			}
+			else
+			{
+				g_eventHandler.QueueEvent(new Event{ EventType::UnsetTarget });
+			}
 		}
 	}
 

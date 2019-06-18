@@ -39,6 +39,7 @@
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 #include <DirectXMath.h>
+#include <DirectXCollision.h>
 #include <DirectXColors.h>
 #include "DDSTextureLoader.h"
 #include <cmath>

@@ -10,7 +10,6 @@ class RenderComponent
 {
 	unsigned int id{ 0 };
 	long gameObjectId{ 0 };
-	Mesh* mesh{ nullptr };
 	ID3D11VertexShader* vertexShader{ nullptr };
 	ID3D11PixelShader* pixelShader{ nullptr };
 	ID3D11ShaderResourceView* texture{ nullptr };
@@ -20,5 +19,7 @@ class RenderComponent
 
 	friend class RenderComponentManager;
 public:
+	Mesh* mesh{ nullptr };
+
 	const unsigned int GetId() const;
 };

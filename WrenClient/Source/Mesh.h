@@ -11,6 +11,9 @@ class Mesh
 	ComPtr<ID3D11Buffer> vertexBuffer;
 	ComPtr<ID3D11Buffer> indexBuffer;
 public:
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+
 	Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShaderBuffer, const int vertexShaderSize);
 	const int GetIndexCount() const;
 	ID3D11InputLayout* GetInputLayout() const;

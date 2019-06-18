@@ -33,6 +33,12 @@ void StatsComponentManager::DeleteStatsComponent(const unsigned int statsCompone
 	idIndexMap[lastStatsComponentId] = statsComponentToDeleteIndex;
 }
 
+StatsComponent& StatsComponentManager::GetStatsComponentById(const unsigned int statsComponentId)
+{
+	const auto index = idIndexMap[statsComponentId];
+	return statsComponents[index];
+}
+
 const bool StatsComponentManager::HandleEvent(const Event* const event)
 {
 	const auto type = event->type;

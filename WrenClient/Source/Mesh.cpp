@@ -18,9 +18,6 @@ Mesh::Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShad
 
 	const auto mesh = scene->mMeshes[scene->mRootNode->mChildren[0]->mMeshes[0]];
 
-	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
-
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;

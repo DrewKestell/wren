@@ -43,6 +43,12 @@ void RenderComponentManager::DeleteRenderComponent(const unsigned int renderComp
 	idIndexMap[lastRenderComponentId] = renderComponentToDeleteIndex;
 }
 
+RenderComponent& RenderComponentManager::GetRenderComponentById(const unsigned int renderComponentId)
+{
+	const auto index = idIndexMap[renderComponentId];
+	return renderComponents[index];
+}
+
 const bool RenderComponentManager::HandleEvent(const Event* const event)
 {
 	const auto type = event->type;
