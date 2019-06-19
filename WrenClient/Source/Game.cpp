@@ -278,6 +278,9 @@ void Game::CreateDeviceDependentResources()
 	GameObject& tree = objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
 	auto treeRenderComponent = renderComponentManager.CreateRenderComponent(tree.id, meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
 	tree.renderComponentId = treeRenderComponent.GetId();
+	std::string* treeName = new std::string("Tree");
+	StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(tree.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, treeName);
+	tree.statsComponentId = statsComponent.id;
 
 	// init targetHUD
 	targetHUD = std::make_unique<UITargetHUD>(uiComponents, XMFLOAT2{ 260.0f, 12.0f }, InGame, 0, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
@@ -957,7 +960,8 @@ const bool Game::HandleEvent(const Event* const event)
 			this->player = &player;
 			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(player.id, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.renderComponentId = sphereRenderComponent.GetId();
-			StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(player.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
+			std::string* playerName = new std::string("Bloog");
+			StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(player.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, playerName);
 			player.statsComponentId = statsComponent.id;
 			playerController = std::make_unique<PlayerController>(player);
 
@@ -997,6 +1001,7 @@ const bool Game::HandleEvent(const Event* const event)
 			const auto mov = XMFLOAT3{ derivedEvent->movX, derivedEvent->movY, derivedEvent->movZ };
 			const auto modelId = derivedEvent->modelId;
 			const auto textureId = derivedEvent->textureId;
+			auto name = derivedEvent->name;
 
 			if (!objectManager.GameObjectExists(gameObjectId))
 			{
@@ -1004,6 +1009,8 @@ const bool Game::HandleEvent(const Event* const event)
 				obj.movementVector = mov;
 				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
 				obj.renderComponentId = sphereRenderComponent.GetId();
+				StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, name);
+				obj.statsComponentId = statsComponent.id;
 			}
 			else
 			{
@@ -1043,48 +1050,53 @@ const bool Game::HandleEvent(const Event* const event)
 
 			const auto derivedEvent = (MouseEvent*)event;
 
-			std::cout << "Click at x: " << derivedEvent->mousePosX << ", y: " << derivedEvent->mousePosY << std::endl;
-
-			auto gameObject = objectManager.GetGameObjectById(50);
-			auto pos = gameObject.GetWorldPosition();
-			auto scale = gameObject.scale;
-			auto worldTransform = XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixTranslation(pos.x, pos.y, pos.z);
-
-			XMVECTOR roScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 0.0f, 1.0f);
-			XMVECTOR rdScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 1.0f, 1.0f);
-			XMVECTOR ro = XMVector3Unproject(roScreen, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
-			XMVECTOR rd = XMVector3Unproject(rdScreen, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
-			rd = XMVector3Normalize(rd - ro);
-
-			auto renderComponent = renderComponentManager.GetRenderComponentById(gameObject.renderComponentId);
-			auto vertices = renderComponent.mesh->vertices;
-			auto indices = renderComponent.mesh->indices;
-
-			float dist;
+			GameObject* clickedGameObject{ nullptr };
 			float smallestDist = FLT_MAX;
-			unsigned int i = 0;
-			while (i < indices.size())
+
+			auto gameObjects = objectManager.GetGameObjects();
+			for (unsigned int j = 0; j < objectManager.GetGameObjectIndex(); j++)
 			{
-				auto ver1 = vertices[indices[i]];
-				auto ver2 = vertices[indices[i + 1]];
-				auto ver3 = vertices[indices[i + 2]];
-				XMVECTOR v1 = XMVectorSet(ver1.Position.x, ver1.Position.y, ver1.Position.z, 1.0f);
-				XMVECTOR v2 = XMVectorSet(ver2.Position.x, ver2.Position.y, ver2.Position.z, 1.0f);
-				XMVECTOR v3 = XMVectorSet(ver3.Position.x, ver3.Position.y, ver3.Position.z, 1.0f);
-				auto result = TriangleTests::Intersects(ro, rd, v1, v2, v3, dist);
-				if (result)
+				GameObject& gameObject = gameObjects[j];
+				auto pos = gameObject.GetWorldPosition();
+				auto scale = gameObject.scale;
+				auto worldTransform = XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixTranslation(pos.x, pos.y, pos.z);
+
+				XMVECTOR roScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 0.0f, 1.0f);
+				XMVECTOR rdScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 1.0f, 1.0f);
+				XMVECTOR ro = XMVector3Unproject(roScreen, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
+				XMVECTOR rd = XMVector3Unproject(rdScreen, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
+				rd = XMVector3Normalize(rd - ro);
+
+				auto renderComponent = renderComponentManager.GetRenderComponentById(gameObject.renderComponentId);
+				auto vertices = renderComponent.mesh->vertices;
+				auto indices = renderComponent.mesh->indices;
+
+				float dist;
+				unsigned int i = 0;
+				while (i < indices.size())
 				{
-					if (dist < smallestDist)
-						smallestDist = dist;
+					auto ver1 = vertices[indices[i]];
+					auto ver2 = vertices[indices[i + 1]];
+					auto ver3 = vertices[indices[i + 2]];
+					XMVECTOR v1 = XMVectorSet(ver1.Position.x, ver1.Position.y, ver1.Position.z, 1.0f);
+					XMVECTOR v2 = XMVectorSet(ver2.Position.x, ver2.Position.y, ver2.Position.z, 1.0f);
+					XMVECTOR v3 = XMVectorSet(ver3.Position.x, ver3.Position.y, ver3.Position.z, 1.0f);
+					auto result = TriangleTests::Intersects(ro, rd, v1, v2, v3, dist);
+					if (result)
+					{
+						if (dist < smallestDist)
+						{
+							smallestDist = dist;
+							clickedGameObject = &gameObject;
+						}
+					}
+					i += 3;
 				}
-				i += 3;
 			}
-			if (smallestDist < FLT_MAX)
+			if (clickedGameObject)
 			{
-				std::cout << "Click detected on dummy at depth: " << smallestDist << std::endl;
-				StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(gameObject.statsComponentId);
-				auto name = "Dummy";
-				g_eventHandler.QueueEvent(new SetTargetEvent{ gameObject.id, &statsComponent, name });
+				StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(clickedGameObject->statsComponentId);
+				g_eventHandler.QueueEvent(new SetTargetEvent{ clickedGameObject->id, &statsComponent });
 			}
 			else
 			{

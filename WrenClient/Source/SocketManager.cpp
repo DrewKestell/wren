@@ -250,8 +250,9 @@ bool SocketManager::TryRecieveMessage()
 			const auto movZ = args[6];
 			const auto modelId = args[7];
 			const auto textureId = args[8];
+			const auto name = args[9];
 
-			g_eventHandler.QueueEvent(new GameObjectUpdateEvent{ std::stol(*characterId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), std::stoi(*modelId), std::stoi(*textureId) });
+			g_eventHandler.QueueEvent(new GameObjectUpdateEvent{ std::stol(*characterId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), std::stoi(*modelId), std::stoi(*textureId), name });
 			return true;
 		}
 		else

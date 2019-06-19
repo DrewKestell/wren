@@ -49,3 +49,13 @@ const bool ObjectManager::GameObjectExists(const long gameObjectId)
 {
 	return idIndexMap[gameObjectId] > 0;
 }
+
+GameObject* ObjectManager::GetGameObjects()
+{
+	return gameObjects;
+}
+
+const unsigned int ObjectManager::GetGameObjectIndex()
+{
+	return gameObjectIndex;
+}

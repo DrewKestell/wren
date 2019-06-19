@@ -16,4 +16,6 @@ public:
 	void DeleteGameObject(EventHandler& eventHandler, const long gameObjectId);
 	GameObject& GetGameObjectById(const long gameObjectId);
 	const bool GameObjectExists(const long gameObjectId);
+	GameObject* GetGameObjects();
+	const unsigned int GetGameObjectIndex();
 };

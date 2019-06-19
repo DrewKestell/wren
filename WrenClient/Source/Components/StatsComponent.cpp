@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "StatsComponent.h"
 
-void StatsComponent::Initialize(const unsigned int id, const long gameObjectId, const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina, const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance)
+void StatsComponent::Initialize(const unsigned int id, const long gameObjectId, const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina, const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance, std::string* name)
 {
 	this->id = id;
 	this->gameObjectId = gameObjectId;
@@ -18,4 +18,5 @@ void StatsComponent::Initialize(const unsigned int id, const long gameObjectId, 
 	this->charisma = charisma;
 	this->luck = luck;
 	this->endurance = endurance;
+	this->name = name;
 }

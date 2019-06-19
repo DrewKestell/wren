@@ -2,7 +2,7 @@
 
 class StatsComponent
 {
-	void Initialize(const unsigned int id, const long gameObjectId, const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina, const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance);
+	void Initialize(const unsigned int id, const long gameObjectId, const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina, const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance, std::string* name);
 
 	friend class StatsComponentManager;
 public:
@@ -21,4 +21,5 @@ public:
 	int charisma{ 0 };
 	int luck{ 0 };
 	int endurance{ 0 };
+	std::string* name{ nullptr };
 };
