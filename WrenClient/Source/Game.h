@@ -25,6 +25,7 @@
 #include "UI/UIAbilitiesContainer.h"
 #include "UI/UICharacterHUD.h"
 #include "UI/UITargetHUD.h"
+#include "UI/UITextWindow.h"
 #include "EventHandling/EventHandler.h"
 
 class Game : public DX::IDeviceNotify, public Observer
@@ -81,8 +82,10 @@ private:
 	std::unique_ptr<UIHotbar> hotbar;
 	std::unique_ptr<UITargetHUD> targetHUD;
 	std::unique_ptr<UICharacterHUD> characterHUD;
+	std::unique_ptr<UITextWindow> textWindow;
 	std::vector<Skill*>* skills;
 	std::vector<Ability*>* abilities;
+	std::vector<std::string*>* textWindowMessages = new std::vector<std::string*>;
 
 	void Render(const float updateTimer);
 	void Clear();
@@ -119,6 +122,7 @@ private:
 	ComPtr<IDWriteTextFormat> textFormatButtonText;
 	ComPtr<IDWriteTextFormat> textFormatSuccessMessage;
 	ComPtr<IDWriteTextFormat> textFormatErrorMessage;
+	ComPtr<IDWriteTextFormat> textFormatTextWindow;
 
 	// Brushes
 	ComPtr<ID2D1SolidColorBrush> grayBrush;

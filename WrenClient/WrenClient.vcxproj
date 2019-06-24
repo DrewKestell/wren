@@ -57,6 +57,7 @@
     <ClCompile Include="Source\UI\UILabel.cpp" />
     <ClCompile Include="Source\UI\UISkillListing.cpp" />
     <ClCompile Include="Source\UI\UITargetHUD.cpp" />
+    <ClCompile Include="Source\UI\UITextWindow.cpp" />
     <ClCompile Include="Source\WrenClient.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -184,6 +185,7 @@
     <ClInclude Include="Source\UI\UILabel.h" />
     <ClInclude Include="Source\UI\UISkillListing.h" />
     <ClInclude Include="Source\UI\UITargetHUD.h" />
+    <ClInclude Include="Source\UI\UITextWindow.h" />
     <ClInclude Include="Source\Vertex.h" />
   </ItemGroup>
   <ItemGroup>

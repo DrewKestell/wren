@@ -296,9 +296,13 @@ void Game::CreateWindowSizeDependentResources()
 
 	auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
 	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto writeFactory = deviceResources->GetWriteFactory();
 
 	// init hotbar
 	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
+
+	// init textWindow
+	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, textWindowMessages, statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), d2dFactory);
 
 	if (skills)
 		InitializeSkills();
@@ -422,6 +426,11 @@ void Game::InitializeTextFormats()
 	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, textFormatErrorMessage.ReleaseAndGetAddressOf());
 	textFormatErrorMessage->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatErrorMessage->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	// UITextWindow
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTextWindow.ReleaseAndGetAddressOf());
+	textFormatTextWindow->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatTextWindow->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 }
 
 void Game::InitializeInputs()
@@ -988,6 +997,10 @@ const bool Game::HandleEvent(const Event* const event)
 
 			std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 
+			// TODO: consolidate this
+			textWindowMessages->push_back(new std::string("Welcome to Wren!"));
+			textWindow->UpdateMessages();
+
 			SetActiveLayer(InGame);
 
 			break;
@@ -1063,8 +1076,8 @@ const bool Game::HandleEvent(const Event* const event)
 
 				XMVECTOR roScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 0.0f, 1.0f);
 				XMVECTOR rdScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 1.0f, 1.0f);
-				XMVECTOR ro = XMVector3Unproject(roScreen, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
-				XMVECTOR rd = XMVector3Unproject(rdScreen, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
+				XMVECTOR ro = XMVector3Unproject(roScreen, 0.0f, 0.0f, (float)clientWidth, (float)clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
+				XMVECTOR rd = XMVector3Unproject(rdScreen, 0.0f, 0.0f, (float)clientWidth, (float)clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
 				rd = XMVector3Normalize(rd - ro);
 
 				auto renderComponent = renderComponentManager.GetRenderComponentById(gameObject.renderComponentId);
