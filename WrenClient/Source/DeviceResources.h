@@ -16,6 +16,7 @@ namespace DX
 
 		void CreateDeviceResources();
 		void CreateWindowSizeDependentResources();
+		HWND GetWindow() { return window; }
 		void SetWindow(HWND window, int width, int height);
 		bool WindowSizeChanged(int width, int height);
 		void HandleDeviceLost();

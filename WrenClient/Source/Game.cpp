@@ -302,7 +302,7 @@ void Game::CreateWindowSizeDependentResources()
 	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
 
 	// init textWindow
-	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, textWindowMessages, statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), d2dFactory);
+	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, textWindowMessages, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), d2dFactory);
 
 	if (skills)
 		InitializeSkills();
@@ -369,7 +369,7 @@ void Game::InitializeBrushes()
 	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.35f, 0.35f, 0.35f, 1.0f), grayBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.22f, 0.22f, 0.22f, 1.0f), blackBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.1f, 0.1f, 0.1f, 1.0f), blackBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f), whiteBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.619f, 0.854f, 1.0f, 1.0f), blueBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.301f, 0.729f, 1.0f, 1.0f), darkBlueBrush.ReleaseAndGetAddressOf());
@@ -383,6 +383,7 @@ void Game::InitializeBrushes()
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 1.0f, 1.0f), manaBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.0f, 1.0f, 0.0f, 1.0f), staminaBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.9f, 0.9f, 0.9f, 1.0f), statBackgroundBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.3f, 0.3f, 0.3f, 1.0f), darkGrayBrush.ReleaseAndGetAddressOf());
 }
 
 void Game::InitializeTextFormats()
@@ -495,9 +496,15 @@ void Game::InitializeButtons()
 		SetActiveLayer(CreateAccount);
 	};
 
+	const auto onClickLoginScreeQuitGameButton = [this]()
+	{
+		QuitGame();
+	};
+
 	// LoginScreen
 	loginScreen_loginButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 145.0f, 96.0f }, Login, 0, 80.0f, 24.0f, "LOGIN", onClickLoginButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 	loginScreen_createAccountButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, Login, 0, 160.0f, 24.0f, "CREATE ACCOUNT", onClickLoginScreenCreateAccountButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
+	loginScreen_quitGameButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ clientWidth - 95.0f, clientHeight - 40.0f }, Login, 0, 80.0f, 24.0f, "QUIT", onClickLoginScreeQuitGameButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 
 	const auto onClickCreateAccountCreateAccountButton = [this]()
 	{
@@ -1159,4 +1166,10 @@ void Game::InitializeAbilitiesContainer()
 		auto ability = abilities->at(i);
 		abilitiesContainer->AddAbility(ability, textures[ability->spriteId].Get());
 	}
+}
+
+void Game::QuitGame()
+{
+	auto hWnd = deviceResources->GetWindow();
+	DestroyWindow(hWnd);
 }

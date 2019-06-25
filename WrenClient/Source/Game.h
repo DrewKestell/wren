@@ -96,6 +96,7 @@ private:
 	virtual const bool HandleEvent(const Event* const event);
 	void SetActiveLayer(const Layer layer);
 	void PublishEvents();
+	void QuitGame();
 
 	void InitializeBrushes();
 	void InitializeTextFormats();
@@ -140,6 +141,7 @@ private:
 	ComPtr<ID2D1SolidColorBrush> manaBrush;
 	ComPtr<ID2D1SolidColorBrush> staminaBrush;
 	ComPtr<ID2D1SolidColorBrush> statBackgroundBrush;
+	ComPtr<ID2D1SolidColorBrush> darkGrayBrush;
 
 	// Shaders
 	ShaderBuffer vertexShaderBuffer{};
@@ -172,6 +174,7 @@ private:
 	// Buttons
 	std::unique_ptr<UIButton> loginScreen_loginButton;
 	std::unique_ptr<UIButton> loginScreen_createAccountButton;
+	std::unique_ptr<UIButton> loginScreen_quitGameButton;
 	std::unique_ptr<UIButton> createAccount_createAccountButton;
 	std::unique_ptr<UIButton> createAccount_cancelButton;
 	std::unique_ptr<UIButton> characterSelect_newCharacterButton;

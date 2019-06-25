@@ -9,8 +9,11 @@ class UITextWindow : public UIComponent
 	std::vector<std::string*>* messages;
 	ComPtr<IDWriteTextLayout> textLayout;
 	ComPtr<ID2D1RectangleGeometry> windowGeometry;
+	ComPtr<ID2D1RectangleGeometry> inputGeometry;
 	ID2D1SolidColorBrush* backgroundBrush;
 	ID2D1SolidColorBrush* borderBrush;
+	ID2D1SolidColorBrush* inputBrush;
+	ID2D1SolidColorBrush* inputTextBrush;
 	ID2D1SolidColorBrush* textBrush;
 	ID2D1DeviceContext1* d2dDeviceContext;
 	IDWriteFactory2* writeFactory;
@@ -26,6 +29,8 @@ public:
 		std::vector<std::string*>* messages,
 		ID2D1SolidColorBrush* backgroundBrush,
 		ID2D1SolidColorBrush* borderBrush,
+		ID2D1SolidColorBrush* inputBrush,
+		ID2D1SolidColorBrush* inputTextBrush,
 		ID2D1SolidColorBrush* textBrush,
 		ID2D1DeviceContext1* d2dDeviceContext,
 		IDWriteFactory2* writeFactory,

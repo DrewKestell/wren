@@ -15,6 +15,8 @@ UITextWindow::UITextWindow(
 	std::vector<std::string*>* messages,
 	ID2D1SolidColorBrush* backgroundBrush,
 	ID2D1SolidColorBrush* borderBrush,
+	ID2D1SolidColorBrush* inputBrush,
+	ID2D1SolidColorBrush* inputTextBrush,
 	ID2D1SolidColorBrush* textBrush,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	IDWriteFactory2* writeFactory,
@@ -24,6 +26,8 @@ UITextWindow::UITextWindow(
 	messages{ messages },
 	backgroundBrush{ backgroundBrush },
 	borderBrush{ borderBrush },
+	inputBrush{ inputBrush },
+	inputTextBrush{ inputTextBrush },
 	textBrush{ textBrush },
 	d2dDeviceContext{ d2dDeviceContext },
 	writeFactory{ writeFactory },
@@ -32,7 +36,8 @@ UITextWindow::UITextWindow(
 {
 	UpdateMessages();
 
-	d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x, position.y, position.x + 600.0f, position.y + 245.0f), windowGeometry.ReleaseAndGetAddressOf());
+	d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x, position.y, position.x + 600.0f, position.y + 220.0f), windowGeometry.ReleaseAndGetAddressOf());
+	d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x, position.y + 220.0f, position.x + 600.0f, position.y + 245.0f), inputGeometry.ReleaseAndGetAddressOf());
 }
 
 void UITextWindow::Draw()
@@ -41,7 +46,9 @@ void UITextWindow::Draw()
 
 	// Draw window
 	d2dDeviceContext->FillGeometry(windowGeometry.Get(), backgroundBrush);
+	d2dDeviceContext->FillGeometry(inputGeometry.Get(), inputBrush);
 	d2dDeviceContext->DrawGeometry(windowGeometry.Get(), borderBrush, 2.0f);
+	d2dDeviceContext->DrawGeometry(inputGeometry.Get(), borderBrush, 2.0f);
 
 	const auto position = GetWorldPosition();
 
@@ -101,7 +108,7 @@ void UITextWindow::UpdateMessages()
 		(UINT32)text.str().size(),
 		textFormat,
 		590.0f,
-		235.0f,
+		210.0f,
 		textLayout.ReleaseAndGetAddressOf())
 	);
 }
