@@ -85,5 +85,7 @@
     <ClInclude Include="Source\PlayerController.h" />
     <ClInclude Include="Source\Constants.h" />
     <ClInclude Include="Source\EventHandling\Events\SetTargetEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\SendChatMessage.h" />
+    <ClInclude Include="Source\EventHandling\Events\PropagateChatMessage.h" />
   </ItemGroup>
 </Project>

@@ -33,5 +33,7 @@ enum class EventType
 	UnsetTarget,
 	Logout,
 	DeselectCharacterListing,
-	ReorderUIComponents
+	ReorderUIComponents,
+	SendChatMessage,
+	PropagateChatMessage
 };

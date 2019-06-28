@@ -345,6 +345,16 @@ bool SocketManager::TryRecieveMessage()
 
 			return true;
 		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_SEND_CHAT_MESSAGE, opcodeArrLen))
+		{
+			const auto token = args[0];
+			const auto message = args[1];
+			const auto senderName = args[2];
+
+			const auto it = GetPlayer(token); // this is here to validate token
+
+			PropagateChatMessage(senderName, message);
+		}
 	}
 
 	return false;
@@ -392,6 +402,7 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
 	(*it)->characterId = character->GetId();
 	(*it)->modelId = character->GetModelId();
 	(*it)->textureId = character->GetTextureId();
+	(*it)->characterName = character->GetName();
 	GameObject& characterGameObject = g_objectManager.CreateGameObject(character->GetPosition(), XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)character->GetId());
 	(*it)->playerController = std::make_unique<PlayerController>(characterGameObject);
 	const auto pos = character->GetPosition();
@@ -471,5 +482,15 @@ void SocketManager::UpdateClients()
 
 			SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 10, std::to_string(character.id), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z), std::to_string(otherPlayer->modelId), std::to_string(otherPlayer->textureId), otherPlayer->characterName);
 		}
+	}
+}
+
+void SocketManager::PropagateChatMessage(const std::string& senderName, const std::string& message)
+{
+	for (auto i = 0; i < players.size(); i++)
+	{
+		auto playerToUpdate = players.at(i);
+
+		SendPacket(playerToUpdate->GetSockAddr(), OPCODE_PROPAGATE_CHAT_MESSAGE, 2, senderName, message);
 	}
 }

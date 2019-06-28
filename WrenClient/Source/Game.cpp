@@ -18,6 +18,8 @@
 #include "EventHandling/Events/GameObjectUpdateEvent.h"
 #include "EventHandling/Events/ActivateAbilityEvent.h"
 #include "EventHandling/Events/SetTargetEvent.h"
+#include "EventHandling/Events/SendChatMessage.h"
+#include "EventHandling/Events/PropagateChatMessage.h"
 
 SocketManager g_socketManager;
 unsigned int g_zIndex{ 0 };
@@ -105,6 +107,7 @@ void Game::Tick()
 					std::to_string(playerUpdate->currentMouseDirection.z)
 				);
 			}
+			textWindow->Update(timer.DeltaTime()); // this should be handled by objectManager.Update()...
 			objectManager.Update();
 		}
 		
@@ -302,7 +305,7 @@ void Game::CreateWindowSizeDependentResources()
 	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
 
 	// init textWindow
-	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, textWindowMessages, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), d2dFactory);
+	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, textWindowMessages, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
 
 	if (skills)
 		InitializeSkills();
@@ -384,6 +387,7 @@ void Game::InitializeBrushes()
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.0f, 1.0f, 0.0f, 1.0f), staminaBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.9f, 0.9f, 0.9f, 1.0f), statBackgroundBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.3f, 0.3f, 0.3f, 1.0f), darkGrayBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.6f, 0.6f, 0.6f, 1.0f), mediumGrayBrush.ReleaseAndGetAddressOf());
 }
 
 void Game::InitializeTextFormats()
@@ -432,6 +436,11 @@ void Game::InitializeTextFormats()
 	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTextWindow.ReleaseAndGetAddressOf());
 	textFormatTextWindow->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatTextWindow->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	// UITextWindow inactive
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_ITALIC, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTextWindowInactive.ReleaseAndGetAddressOf());
+	textFormatTextWindowInactive->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatTextWindowInactive->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 }
 
 void Game::InitializeInputs()
@@ -976,8 +985,7 @@ const bool Game::HandleEvent(const Event* const event)
 			this->player = &player;
 			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(player.id, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.renderComponentId = sphereRenderComponent.GetId();
-			std::string* playerName = new std::string("Bloog");
-			StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(player.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, playerName);
+			StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(player.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, derivedEvent->name);
 			player.statsComponentId = statsComponent.id;
 			playerController = std::make_unique<PlayerController>(player);
 
@@ -1122,6 +1130,28 @@ const bool Game::HandleEvent(const Event* const event)
 			{
 				g_eventHandler.QueueEvent(new Event{ EventType::UnsetTarget });
 			}
+
+			break;
+		}
+		case EventType::SendChatMessage:
+		{
+			const auto derivedEvent = (SendChatMessage*)event;
+
+			auto statsComponent = statsComponentManager.GetStatsComponentById(player->statsComponentId);
+
+			g_socketManager.SendPacket(OPCODE_SEND_CHAT_MESSAGE, 2, statsComponent.name, *derivedEvent->message);
+
+			break;
+		}
+		case EventType::PropagateChatMessage:
+		{
+			const auto derivedEvent = (PropagateChatMessage*)event;
+
+			std::string* msg = new std::string("(" + *derivedEvent->senderName + ") " + *derivedEvent->message);
+			textWindowMessages->push_back(msg);
+			textWindow->UpdateMessages();
+
+			break;
 		}
 	}
 

@@ -21,3 +21,5 @@ constexpr char OPCODE_PLAYER_UPDATE[2] = { '1', '5' };
 constexpr char OPCODE_PLAYER_CORRECTION[2] = { '1', '6' };
 constexpr char OPCODE_GAMEOBJECT_UPDATE[2] = { '1', '7' };
 constexpr char OPCODE_ACTIVATE_ABILITY[2] = { '1', '8' };
+constexpr char OPCODE_SEND_CHAT_MESSAGE[2] = { '1', '9' };
+constexpr char OPCODE_PROPAGATE_CHAT_MESSAGE[2] = { '2', '0' };

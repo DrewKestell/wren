@@ -29,6 +29,7 @@ private:
 	void EnterWorld(const std::string& token, const std::string& characterName);
 	void DeleteCharacter(const std::string& token, const std::string& characterName);
 	void PlayerUpdate(const std::string& token, const std::string& idCounter, const std::string& characterId, const std::string& posX, const std::string& posY, const std::string& posZ, const std::string& isRightClickHeld, const std::string& mouseDirX, const std::string& mouseDirY, const std::string& mouseDirZ);
+	void PropagateChatMessage(const std::string& senderName, const std::string& message);
 public:
     SocketManager(Repository& repository);
     bool TryRecieveMessage();

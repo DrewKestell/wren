@@ -124,6 +124,7 @@ private:
 	ComPtr<IDWriteTextFormat> textFormatSuccessMessage;
 	ComPtr<IDWriteTextFormat> textFormatErrorMessage;
 	ComPtr<IDWriteTextFormat> textFormatTextWindow;
+	ComPtr<IDWriteTextFormat> textFormatTextWindowInactive;
 
 	// Brushes
 	ComPtr<ID2D1SolidColorBrush> grayBrush;
@@ -142,6 +143,7 @@ private:
 	ComPtr<ID2D1SolidColorBrush> staminaBrush;
 	ComPtr<ID2D1SolidColorBrush> statBackgroundBrush;
 	ComPtr<ID2D1SolidColorBrush> darkGrayBrush;
+	ComPtr<ID2D1SolidColorBrush> mediumGrayBrush;
 
 	// Shaders
 	ShaderBuffer vertexShaderBuffer{};

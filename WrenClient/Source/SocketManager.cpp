@@ -11,6 +11,7 @@
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
 #include "EventHandling/Events/GameObjectUpdateEvent.h"
 #include "EventHandling/Events/PlayerCorrectionEvent.h"
+#include "EventHandling/Events/PropagateChatMessage.h"
 
 constexpr auto SERVER_PORT_NUMBER = 27016;
 
@@ -253,6 +254,15 @@ bool SocketManager::TryRecieveMessage()
 			const auto name = args[9];
 
 			g_eventHandler.QueueEvent(new GameObjectUpdateEvent{ std::stol(*characterId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), std::stoi(*modelId), std::stoi(*textureId), name });
+			return true;
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_PROPAGATE_CHAT_MESSAGE, opcodeArrLen))
+		{
+			const auto message = args[0];
+			const auto senderName = args[1];
+
+			g_eventHandler.QueueEvent(new PropagateChatMessage(senderName, message));
+
 			return true;
 		}
 		else
