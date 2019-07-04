@@ -85,7 +85,8 @@ private:
 	std::unique_ptr<UITextWindow> textWindow;
 	std::vector<Skill*>* skills;
 	std::vector<Ability*>* abilities;
-	std::vector<std::string*>* textWindowMessages = new std::vector<std::string*>;
+	unsigned int* textWindowMessageIndex = new unsigned int{ 0 };
+	std::string* textWindowMessages[MESSAGE_BUFFER_SIZE];
 
 	void Render(const float updateTimer);
 	void Clear();
@@ -144,6 +145,8 @@ private:
 	ComPtr<ID2D1SolidColorBrush> statBackgroundBrush;
 	ComPtr<ID2D1SolidColorBrush> darkGrayBrush;
 	ComPtr<ID2D1SolidColorBrush> mediumGrayBrush;
+	ComPtr<ID2D1SolidColorBrush> scrollBarBackgroundBrush;
+	ComPtr<ID2D1SolidColorBrush> scrollBarBrush;
 
 	// Shaders
 	ShaderBuffer vertexShaderBuffer{};

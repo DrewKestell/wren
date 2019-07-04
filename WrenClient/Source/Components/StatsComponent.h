@@ -22,4 +22,5 @@ public:
 	int luck{ 0 };
 	int endurance{ 0 };
 	std::string* name{ nullptr };
+	long targetId{ -1 };
 };

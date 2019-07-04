@@ -355,6 +355,25 @@ bool SocketManager::TryRecieveMessage()
 
 			PropagateChatMessage(senderName, message);
 		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_SET_TARGET, opcodeArrLen))
+		{
+			const auto token = args[0];
+			const auto targetId = args[1];
+
+			const auto it = GetPlayer(token);
+			(*it)->targetId = std::stol(targetId);
+
+			std::cout << (*it)->targetId << std::endl;
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_UNSET_TARGET, opcodeArrLen))
+		{
+			const auto token = args[0];
+
+			const auto it = GetPlayer(token);
+			(*it)->targetId = -1;
+
+			std::cout << (*it)->targetId << std::endl;
+		}
 	}
 
 	return false;

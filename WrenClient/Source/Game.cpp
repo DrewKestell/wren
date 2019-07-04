@@ -305,7 +305,7 @@ void Game::CreateWindowSizeDependentResources()
 	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
 
 	// init textWindow
-	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, textWindowMessages, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
+	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, textWindowMessages, textWindowMessageIndex, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
 
 	if (skills)
 		InitializeSkills();
@@ -385,9 +385,11 @@ void Game::InitializeBrushes()
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(1.0f, 0.0f, 0.0f, 1.0f), healthBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 1.0f, 1.0f), manaBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.0f, 1.0f, 0.0f, 1.0f), staminaBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.9f, 0.9f, 0.9f, 1.0f), statBackgroundBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.95f, 0.95f, 0.95f, 1.0f), statBackgroundBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.3f, 0.3f, 0.3f, 1.0f), darkGrayBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.6f, 0.6f, 0.6f, 1.0f), mediumGrayBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.85f, 0.85f, 0.85f, 1.0f), scrollBarBackgroundBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.65f, 0.65f, 0.65f, 1.0f), scrollBarBrush.ReleaseAndGetAddressOf());
 }
 
 void Game::InitializeTextFormats()
@@ -1012,9 +1014,7 @@ const bool Game::HandleEvent(const Event* const event)
 
 			std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 
-			// TODO: consolidate this
-			textWindowMessages->push_back(new std::string("Welcome to Wren!"));
-			textWindow->UpdateMessages();
+			textWindow->AddMessage(new std::string("Welcome to Wren!"));
 
 			SetActiveLayer(InGame);
 
@@ -1121,14 +1121,19 @@ const bool Game::HandleEvent(const Event* const event)
 					i += 3;
 				}
 			}
+			StatsComponent& playerStats = statsComponentManager.GetStatsComponentById(player->statsComponentId);
 			if (clickedGameObject)
 			{
 				StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(clickedGameObject->statsComponentId);
 				g_eventHandler.QueueEvent(new SetTargetEvent{ clickedGameObject->id, &statsComponent });
+				playerStats.targetId = clickedGameObject->id;
+				g_socketManager.SendPacket(OPCODE_SET_TARGET, 1, std::to_string(clickedGameObject->id));
 			}
 			else
 			{
 				g_eventHandler.QueueEvent(new Event{ EventType::UnsetTarget });
+				playerStats.targetId = -1;
+				g_socketManager.SendPacket(OPCODE_UNSET_TARGET);
 			}
 
 			break;
@@ -1148,8 +1153,7 @@ const bool Game::HandleEvent(const Event* const event)
 			const auto derivedEvent = (PropagateChatMessage*)event;
 
 			std::string* msg = new std::string("(" + *derivedEvent->senderName + ") " + *derivedEvent->message);
-			textWindowMessages->push_back(msg);
-			textWindow->UpdateMessages();
+			textWindow->AddMessage(msg);
 
 			break;
 		}
