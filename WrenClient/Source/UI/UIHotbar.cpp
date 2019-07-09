@@ -7,6 +7,8 @@
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/StartDraggingUIAbilityEvent.h"
 
+extern EventHandler g_eventHandler;
+
 UIHotbar::UIHotbar(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
@@ -68,6 +70,10 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 				uiAbilities[index] = derivedEvent->uiAbility;
 				uiAbilities[index]->SetLocalPosition(XMFLOAT2{ xOffset + 2.0f, 2.0f });
 				uiAbilities[index]->SetParent(*this);
+
+				// it's important that UIAbilities receive certain events (mouse clicks for example) before other
+				// UI elements, so we reorder here to make sure the UIComponents are in the right order.
+				g_eventHandler.QueueEvent(new Event(EventType::ReorderUIComponents));
 			}
 			else
 			{

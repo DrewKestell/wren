@@ -10,6 +10,9 @@ constexpr auto INCORRECT_PASSWORD = "Incorrect Password.";
 constexpr auto ACCOUNT_ALREADY_EXISTS = "Account already exists.";
 constexpr auto LIBSODIUM_MEMORY_ERROR = "Ran out of memory while hashing password.";
 constexpr auto CHARACTER_ALREADY_EXISTS = "Character already exists.";
+constexpr auto INVALID_ATTACK_TARGET = "You can't attack that.";
+constexpr auto NO_ATTACK_TARGET = "You need a target before attacking.";
+constexpr auto MESSAGE_TYPE_ERROR = "ERROR";
 
 constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
 constexpr auto PORT_NUMBER = 27016;
@@ -39,6 +42,8 @@ SocketManager::SocketManager(Repository& repository)
 
     DWORD nonBlocking = 1;
     ioctlsocket(socketS, FIONBIO, &nonBlocking);
+
+	abilities = repository.ListAbilities();
 }
 
 std::vector<Player*>::iterator SocketManager::GetPlayer(const std::string& token)
@@ -339,9 +344,15 @@ bool SocketManager::TryRecieveMessage()
 		else if (MessagePartsEqual(opcodeArr, OPCODE_ACTIVATE_ABILITY, opcodeArrLen))
 		{
 			const auto token = args[0];
-			const auto ablilityId = args[1];
+			const auto abilityId = args[1];
 
-			// todo
+			const auto playerIt = GetPlayer(token);
+
+			const auto abilityIt = find_if(abilities.begin(), abilities.end(), [&abilityId](Ability ability) { return ability.abilityId == std::stoi(abilityId); });
+			if (abilityIt == abilities.end())
+				return true;
+			
+			ActivateAbility(*playerIt, *abilityIt);
 
 			return true;
 		}
@@ -390,7 +401,7 @@ std::string SocketManager::ListCharacters(const int accountId)
 
 std::string SocketManager::ListSkills(const int characterId)
 {
-	auto skills = repository.ListSkills(characterId);
+	auto skills = repository.ListCharacterSkills(characterId);
 	std::string skillString = "";
 	for (auto i = 0; i < skills.size(); i++)
 	{
@@ -402,12 +413,12 @@ std::string SocketManager::ListSkills(const int characterId)
 
 std::string SocketManager::ListAbilities(const int characterId)
 {
-	auto abilities = repository.ListAbilities(characterId);
+	auto abilities = repository.ListCharacterAbilities(characterId);
 	std::string abilityString = "";
 	for (auto i = 0; i < abilities.size(); i++)
 	{
 		auto ability = abilities.at(i);
-		abilityString += (std::to_string(ability.abilityId) + "%" + ability.name + "%" + std::to_string(ability.spriteId) + ";");
+		abilityString += (std::to_string(ability.abilityId) + "%" + ability.name + "%" + std::to_string(ability.spriteId) +  + "%" + std::to_string(ability.toggled) + "%" + std::to_string(ability.targeted) + ";");
 	}
 	return abilityString;
 }
@@ -512,4 +523,30 @@ void SocketManager::PropagateChatMessage(const std::string& senderName, const st
 
 		SendPacket(playerToUpdate->GetSockAddr(), OPCODE_PROPAGATE_CHAT_MESSAGE, 2, senderName, message);
 	}
+}
+
+void SocketManager::ActivateAbility(Player* player, Ability& ability)
+{
+	if (ability.name == "Auto Attack")
+	{
+		if (!player->autoAttackOn && player->targetId == -1)
+		{
+			SendPacket(player->GetSockAddr(), OPCODE_SERVER_MESSAGE, 2, std::string(NO_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR));
+			return;
+		}
+		else
+		{
+			player->autoAttackOn = !player->autoAttackOn;
+		}
+	}
+	else if (ability.name == "Fireball")
+	{
+
+	}
+	else if (ability.name == "Healing")
+	{
+
+	}
+
+	SendPacket(player->GetSockAddr(), OPCODE_ACTIVATE_ABILITY_SUCCESS, 1, std::to_string(ability.abilityId));
 }

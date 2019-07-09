@@ -5,13 +5,17 @@
 class Ability
 {
 public:
-	Ability(const int abilityId, const std::string name, const int spriteId)
+	Ability(const int abilityId, const std::string name, const int spriteId, const bool toggled, const bool targeted)
 		: abilityId{ abilityId },
 		  name{ name },
-		  spriteId{ spriteId }
+		  spriteId{ spriteId },
+		  toggled{ toggled },
+		  targeted{ targeted }
 	{
 	}
 	const int abilityId;
 	const std::string name;
 	const int spriteId;
+	const bool toggled;
+	const bool targeted;
 };

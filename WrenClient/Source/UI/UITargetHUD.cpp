@@ -117,6 +117,8 @@ const bool UITargetHUD::HandleEvent(const Event* const event)
 		case EventType::UnsetTarget:
 		{
 			isVisible = false;
+
+			break;
 		}
 	}
 

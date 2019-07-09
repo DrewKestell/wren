@@ -16,6 +16,8 @@ public:
 	int textureId{ 0 };
 	std::unique_ptr<PlayerController> playerController;
 	long targetId{ -1 };
+	unsigned int attackTimer{ 0 };
+	bool autoAttackOn{ false };
 
 	Player(
 		const int accountId,

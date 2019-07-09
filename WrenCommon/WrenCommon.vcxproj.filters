@@ -87,5 +87,7 @@
     <ClInclude Include="Source\EventHandling\Events\SetTargetEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SendChatMessage.h" />
     <ClInclude Include="Source\EventHandling\Events\PropagateChatMessage.h" />
+    <ClInclude Include="Source\EventHandling\Events\ServerMessageEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\ActivateAbilitySuccessEvent.h" />
   </ItemGroup>
 </Project>

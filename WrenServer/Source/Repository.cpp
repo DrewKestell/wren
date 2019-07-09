@@ -15,8 +15,9 @@ const auto GET_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE account_name = '%s'
 const auto LIST_CHARACTERS_QUERY = "SELECT * FROM Characters WHERE account_id = '%d';";
 const auto DELETE_CHARACTER_QUERY = "DELETE FROM Characters WHERE character_name = '%s';";
 const auto GET_CHARACTER_QUERY = "SELECT * FROM Characters WHERE character_name = '%s' LIMIT 1;";
-const auto LIST_SKILLS_QUERY = "SELECT Skills.id, Skills.name, CharacterSkills.value FROM CharacterSkills INNER JOIN Skills on Skills.id = CharacterSkills.skill_id WHERE CharacterSkills.character_id = '%d';";
-const auto LIST_ABILITIES_QUERY = "SELECT Abilities.id, Abilities.name, Abilities.sprite_id FROM CharacterAbilities INNER JOIN Abilities on Abilities.id = CharacterAbilities.ability_id WHERE CharacterAbilities.character_id = '%d';";
+const auto LIST_CHARACTER_SKILLS_QUERY = "SELECT Skills.id, Skills.name, CharacterSkills.value FROM CharacterSkills INNER JOIN Skills on Skills.id = CharacterSkills.skill_id WHERE CharacterSkills.character_id = '%d';";
+const auto LIST_CHARACTER_ABILITIES_QUERY = "SELECT Abilities.id, Abilities.name, Abilities.sprite_id, Abilities.toggled FROM CharacterAbilities INNER JOIN Abilities on Abilities.id = CharacterAbilities.ability_id WHERE CharacterAbilities.character_id = '%d';";
+const auto LIST_ABILITIES_QUERY = "SELECT id, name, sprite_id, toggled, targeted FROM Abilities;";
 
 const bool Repository::AccountExists(const std::string& accountName)
 {
@@ -245,12 +246,12 @@ Character* Repository::GetCharacter(const std::string& characterName)
 	}
 }
 
-std::vector<Skill> Repository::ListSkills(const int characterId)
+std::vector<Skill> Repository::ListCharacterSkills(const int characterId)
 {
 	auto dbConnection = GetConnection();
 
 	char query[200];
-	sprintf_s(query, LIST_SKILLS_QUERY, characterId);
+	sprintf_s(query, LIST_CHARACTER_SKILLS_QUERY, characterId);
 
 	auto statement = PrepareStatement(dbConnection, query);
 
@@ -282,12 +283,12 @@ std::vector<Skill> Repository::ListSkills(const int characterId)
 	}
 }
 
-std::vector<Ability> Repository::ListAbilities(const int characterId)
+std::vector<Ability> Repository::ListCharacterAbilities(const int characterId)
 {
 	auto dbConnection = GetConnection();
 
-	char query[200];
-	sprintf_s(query, LIST_ABILITIES_QUERY, characterId);
+	char query[300];
+	sprintf_s(query, LIST_CHARACTER_ABILITIES_QUERY, characterId);
 
 	auto statement = PrepareStatement(dbConnection, query);
 
@@ -305,7 +306,45 @@ std::vector<Ability> Repository::ListAbilities(const int characterId)
 			const auto abilityId = sqlite3_column_int(statement, 0);
 			const unsigned char *name = sqlite3_column_text(statement, 1);
 			const auto spriteId = sqlite3_column_int(statement, 2);
-			abilities.push_back(Ability{ abilityId, std::string(reinterpret_cast<const char*>(name)), spriteId });
+			const auto toggled = sqlite3_column_int(statement, 3) == 1;
+			const auto targeted = sqlite3_column_int(statement, 4) == 1;
+			abilities.push_back(Ability(abilityId, std::string(reinterpret_cast<const char*>(name)), spriteId, toggled, targeted));
+			result = sqlite3_step(statement);
+		}
+		sqlite3_finalize(statement);
+		return abilities;
+	}
+	else
+	{
+		sqlite3_finalize(statement);
+		std::cout << sqlite3_errmsg(dbConnection) << std::endl;
+		throw std::exception(FAILED_TO_EXECUTE);
+	}
+}
+
+std::vector<Ability> Repository::ListAbilities()
+{
+	auto dbConnection = GetConnection();
+
+	auto statement = PrepareStatement(dbConnection, LIST_ABILITIES_QUERY);
+
+	std::vector<Ability> abilities;
+	auto result = sqlite3_step(statement);
+	if (result == SQLITE_DONE)
+	{
+		sqlite3_finalize(statement);
+		return abilities;
+	}
+	else if (result == SQLITE_ROW)
+	{
+		while (result == SQLITE_ROW)
+		{
+			const auto abilityId = sqlite3_column_int(statement, 0);
+			const unsigned char *name = sqlite3_column_text(statement, 1);
+			const auto spriteId = sqlite3_column_int(statement, 2);
+			const auto toggled = sqlite3_column_int(statement, 3) == 1;
+			const auto targeted = sqlite3_column_int(statement, 4) == 1;
+			abilities.push_back(Ability(abilityId, std::string(reinterpret_cast<const char*>(name)), spriteId, toggled, targeted));
 			result = sqlite3_step(statement);
 		}
 		sqlite3_finalize(statement);

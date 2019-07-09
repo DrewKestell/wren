@@ -7,6 +7,7 @@
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/ActivateAbilityEvent.h"
 #include "EventHandling/Events/StartDraggingUIAbilityEvent.h"
+#include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
 #include "Events/UIAbilityDroppedEvent.h"
 
 extern EventHandler g_eventHandler;
@@ -17,6 +18,7 @@ UIAbility::UIAbility(
 	const Layer uiLayer,
 	const unsigned int zIndex,
 	const int abilityId,
+	const bool toggled,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory,
 	ID3D11Device* d3dDevice,
@@ -26,6 +28,7 @@ UIAbility::UIAbility(
 	ID3D11ShaderResourceView* texture,
 	ID2D1SolidColorBrush* highlightBrush,
 	ID2D1SolidColorBrush* abilityPressedBrush,
+	ID2D1SolidColorBrush* abilityToggledBrush,
 	const BYTE* vertexShaderBuffer,
 	const int vertexShaderSize,
 	const float worldPosX,
@@ -38,6 +41,7 @@ UIAbility::UIAbility(
 	const float mousePosY)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
 	  abilityId{ abilityId },
+	  toggled{ toggled },
 	  d2dDeviceContext{ d2dDeviceContext },
 	  d2dFactory{ d2dFactory },
 	  clientWidth{ clientWidth },
@@ -51,6 +55,7 @@ UIAbility::UIAbility(
 	  d3dDeviceContext{ d3dDeviceContext },
 	  highlightBrush{ highlightBrush },
 	  abilityPressedBrush{ abilityPressedBrush },
+	  abilityToggledBrush{ abilityToggledBrush },
 	  projectionTransform{ projectionTransform },
 	  isDragging{ isDragging },
 	  lastDragX{ mousePosX },
@@ -66,6 +71,10 @@ void UIAbility::Draw()
 
 	// create highlight
 	d2dFactory->CreateRectangleGeometry(D2D1::RectF(worldPos.x, worldPos.y, worldPos.x + HIGHLIGHT_WIDTH, worldPos.y + HIGHLIGHT_WIDTH), highlightGeometry.ReleaseAndGetAddressOf());
+
+	// create toggle geometry
+	if (toggled)
+		d2dFactory->CreateRectangleGeometry(D2D1::RectF(worldPos.x, worldPos.y, worldPos.x + HIGHLIGHT_WIDTH, worldPos.y + HIGHLIGHT_WIDTH), toggledGeometry.ReleaseAndGetAddressOf());
 
 	auto pos = XMFLOAT3{ worldPos.x + 18.0f, worldPos.y + 18.0f, 0.0f };
 	FXMVECTOR v = XMLoadFloat3(&pos);
@@ -83,6 +92,9 @@ void UIAbility::Draw()
 		const auto brush = isPressed ? abilityPressedBrush : highlightBrush;
 		d2dDeviceContext->DrawGeometry(highlightGeometry.Get(), brush, thickness);
 	}
+	
+	if (isToggled)
+		d2dDeviceContext->DrawGeometry(highlightGeometry.Get(), abilityToggledBrush, 4.0f);
 
 	if (abilityCopy)
 		abilityCopy->Draw();
@@ -127,7 +139,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 						if (dragBehavior == "COPY")
 						{
-							abilityCopy = new UIAbility(uiComponents, worldPos, uiLayer, 2, abilityId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, vertexShaderBuffer, vertexShaderSize, worldPos.x, worldPos.y, clientWidth, clientHeight, projectionTransform, true, mousePosX, mousePosY);
+							abilityCopy = new UIAbility(uiComponents, worldPos, uiLayer, 2, abilityId, toggled, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, worldPos.x, worldPos.y, clientWidth, clientHeight, projectionTransform, true, mousePosX, mousePosY);
 							abilityCopy->isVisible = true;
 						}
 						else if (dragBehavior == "MOVE")
@@ -162,7 +174,10 @@ const bool UIAbility::HandleEvent(const Event* const event)
 			if (isVisible)
 			{
 				if (isHovered && !isDragging)
+				{
 					isPressed = true;
+					return true;
+				}
 			}
 
 			break;
@@ -170,6 +185,8 @@ const bool UIAbility::HandleEvent(const Event* const event)
 		case EventType::LeftMouseUp:
 		{
 			const auto derivedEvent = (MouseEvent*)event;
+
+			auto stopPropagation = false;
 
 			if (isDragging)
 			{
@@ -179,18 +196,38 @@ const bool UIAbility::HandleEvent(const Event* const event)
 			if (!isDragging && isVisible && isHovered && isPressed)
 			{
 				g_eventHandler.QueueEvent(new ActivateAbilityEvent{ abilityId });
+				stopPropagation = true;
 			}
 
 			isPressed = false;
 			isDragging = false;
 
-			break;
+			return stopPropagation;
 		}
 		case EventType::UIAbilityDropped:
 		{
 			abilityCopy = nullptr;
 
 			break;
+		}
+		case EventType::ActivateAbilitySuccess:
+		{
+			const auto derivedEvent = (ActivateAbilitySuccessEvent*)event;
+
+			if (abilityId == derivedEvent->abilityId)
+			{
+				if (toggled)
+					isToggled = !isToggled;
+			}
+
+			break;
+		}
+		case EventType::UnsetTarget:
+		{
+			// if any abilities require a target, toggle them off
+
+			if (isToggled)
+				g_eventHandler.QueueEvent(new ActivateAbilityEvent{ abilityId });
 		}
 	}
 

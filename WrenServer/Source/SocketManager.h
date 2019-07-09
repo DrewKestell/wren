@@ -9,6 +9,7 @@ class SocketManager
 private:
     Repository repository;
     std::vector<Player*> players;
+	std::vector<Ability> abilities;
 	std::vector<PlayerController> playerControllers;
     sockaddr_in local;
     sockaddr_in from;
@@ -30,6 +31,7 @@ private:
 	void DeleteCharacter(const std::string& token, const std::string& characterName);
 	void PlayerUpdate(const std::string& token, const std::string& idCounter, const std::string& characterId, const std::string& posX, const std::string& posY, const std::string& posZ, const std::string& isRightClickHeld, const std::string& mouseDirX, const std::string& mouseDirY, const std::string& mouseDirZ);
 	void PropagateChatMessage(const std::string& senderName, const std::string& message);
+	void ActivateAbility(Player* player, Ability& ability);
 public:
     SocketManager(Repository& repository);
     bool TryRecieveMessage();

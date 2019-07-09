@@ -35,5 +35,7 @@ enum class EventType
 	DeselectCharacterListing,
 	ReorderUIComponents,
 	SendChatMessage,
-	PropagateChatMessage
+	PropagateChatMessage,
+	ServerMessage,
+	ActivateAbilitySuccess
 };

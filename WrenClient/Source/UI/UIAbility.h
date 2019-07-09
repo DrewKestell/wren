@@ -11,11 +11,14 @@ class UIAbility : public UIComponent
 	const float HIGHLIGHT_WIDTH{ 36.0f };
 	bool isHovered{ false };
 	bool isPressed{ false };
+	bool isToggled{ false };
 	bool isDragging;
 	float lastDragX;
 	float lastDragY;
 	const int abilityId;
+	bool toggled;
 	ComPtr<ID2D1RectangleGeometry> highlightGeometry;
+	ComPtr<ID2D1RectangleGeometry> toggledGeometry;
 	std::shared_ptr<Sprite> sprite;
 	ID2D1DeviceContext1* d2dDeviceContext;
 	ID2D1Factory2* d2dFactory;
@@ -24,6 +27,7 @@ class UIAbility : public UIComponent
 	const float clientHeight;
 	ID2D1SolidColorBrush* highlightBrush;
 	ID2D1SolidColorBrush* abilityPressedBrush;
+	ID2D1SolidColorBrush* abilityToggledBrush;
 	ID3D11DeviceContext* d3dDeviceContext;
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
@@ -39,6 +43,7 @@ public:
 		const Layer uiLayer,
 		const unsigned int zIndex,
 		const int abilityId,
+		const bool toggled,
 		ID2D1DeviceContext1* d2dDeviceContext,
 		ID2D1Factory2* d2dFactory,
 		ID3D11Device* d3dDevice,
@@ -48,6 +53,7 @@ public:
 		ID3D11ShaderResourceView* texture,
 		ID2D1SolidColorBrush* highlightBrush,
 		ID2D1SolidColorBrush* abilityPressedBrush,
+		ID2D1SolidColorBrush* abilityToggledBrush,
 		const BYTE* vertexShaderBuffer,
 		const int vertexShaderSize,
 		const float worldPosX,

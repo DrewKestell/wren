@@ -25,6 +25,7 @@ class UIAbilitiesContainer : public UIComponent
 	ID2D1SolidColorBrush* highlightBrush;
 	ID2D1SolidColorBrush* headerBrush;
 	ID2D1SolidColorBrush* abilityPressedBrush;
+	ID2D1SolidColorBrush* abilityToggledBrush;
 	IDWriteTextFormat* headerTextFormat;
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
@@ -49,6 +50,7 @@ public:
 		ID2D1SolidColorBrush* highlightBrush,
 		ID2D1SolidColorBrush* headerBrush,
 		ID2D1SolidColorBrush* abilityPressedBrush,
+		ID2D1SolidColorBrush* abilityToggledBrush,
 		IDWriteTextFormat* headerTextFormat,
 		ID3D11VertexShader* vertexShader,
 		ID3D11PixelShader* pixelShader,

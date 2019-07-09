@@ -25,3 +25,5 @@ constexpr char OPCODE_SEND_CHAT_MESSAGE[2] = { '1', '9' };
 constexpr char OPCODE_PROPAGATE_CHAT_MESSAGE[2] = { '2', '0' };
 constexpr char OPCODE_SET_TARGET[2] = { '2', '1' };
 constexpr char OPCODE_UNSET_TARGET[2] = { '2', '2' };
+constexpr char OPCODE_SERVER_MESSAGE[2] = { '2', '3' };
+constexpr char OPCODE_ACTIVATE_ABILITY_SUCCESS[2] = { '2', '4' };

@@ -12,6 +12,8 @@
 #include "EventHandling/Events/GameObjectUpdateEvent.h"
 #include "EventHandling/Events/PlayerCorrectionEvent.h"
 #include "EventHandling/Events/PropagateChatMessage.h"
+#include "EventHandling/Events/ServerMessageEvent.h"
+#include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
 
 constexpr auto SERVER_PORT_NUMBER = 27016;
 
@@ -265,6 +267,23 @@ bool SocketManager::TryRecieveMessage()
 
 			return true;
 		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_SERVER_MESSAGE, opcodeArrLen))
+		{
+			const auto message = args[0];
+			const auto type = args[1];
+
+			g_eventHandler.QueueEvent(new ServerMessageEvent(message, type));
+
+			return true;
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_ACTIVATE_ABILITY_SUCCESS, opcodeArrLen))
+		{
+			const auto abilityId = args[0];
+
+			g_eventHandler.QueueEvent(new ActivateAbilitySuccessEvent(std::stoi(*abilityId)));
+
+			return true;
+		}
 		else
 		{
 			if (logMessages)
@@ -332,15 +351,19 @@ std::vector<Ability*>* SocketManager::BuildAbilityVector(std::string& abilityStr
 	std::string abilityId = "";
 	std::string name = "";
 	std::string spriteId = "";
+	std::string toggled = "";
+	std::string targeted = "";
 	for (auto i = 0; i < abilityString.length(); i++)
 	{
 		if (abilityString[i] == ';')
 		{
-			abilityList->push_back(new Ability(std::stoi(abilityId), name, std::stoi(spriteId)));
+			abilityList->push_back(new Ability(std::stoi(abilityId), name, std::stoi(spriteId), toggled == "1", targeted == "1"));
 			param = 0;
 			abilityId = "";
 			name = "";
 			spriteId = "";
+			toggled = "";
+			targeted = "";
 		}
 		else if (abilityString[i] == '%')
 			param++;
@@ -350,8 +373,12 @@ std::vector<Ability*>* SocketManager::BuildAbilityVector(std::string& abilityStr
 				abilityId += abilityString[i];
 			else if (param == 1)
 				name += abilityString[i];
-			else
+			else if (param == 2)
 				spriteId += abilityString[i];
+			else if (param == 3)
+				toggled += abilityString[i];
+			else
+				targeted += abilityString[i];
 		}
 	}
 	return abilityList;

@@ -20,6 +20,7 @@
 #include "EventHandling/Events/SetTargetEvent.h"
 #include "EventHandling/Events/SendChatMessage.h"
 #include "EventHandling/Events/PropagateChatMessage.h"
+#include "EventHandling/Events/ServerMessageEvent.h"
 
 SocketManager g_socketManager;
 unsigned int g_zIndex{ 0 };
@@ -38,23 +39,38 @@ Game::Game() noexcept(false)
 
 void Game::PublishEvents()
 {
+	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 	auto eventQueue = g_eventHandler.eventQueue;
 	while (!eventQueue->empty())
 	{
 		const auto event = eventQueue->front();
 		eventQueue->pop();
-		for (auto it = g_eventHandler.observers->begin(); it != g_eventHandler.observers->end(); it++)
-		{
-			const auto stopPropagation = (*it)->HandleEvent(event);
-			if (stopPropagation)
-				break;
-		}
+
+		// We pass events to the UIComponents first, because those are usually overlaid on top
+		// of 3D GameObjects, and therefore we want certain events like clicks, etc to hit
+		// the UIComponents first.
+		// There are times where we want to avoid having events propagate to GameObjects if they're
+		// handled by a UIComponent, so if any UIComponent returns true, we skip passing that event
+		// to the GameObjects and move to the next iteration of the while loop.
+		auto stopPropagation = false;
+
 		for (int i = (int)uiComponents.size() - 1; i >= 0; i--)
 		{
-			const auto stopPropagation = uiComponents.at(i)->HandleEvent(event);
+			stopPropagation = uiComponents.at(i)->HandleEvent(event);
 			if (stopPropagation)
 				break;
 		}
+
+		if (stopPropagation)
+			continue;
+
+		for (auto it = g_eventHandler.observers->begin(); it != g_eventHandler.observers->end(); it++)
+		{
+			stopPropagation = (*it)->HandleEvent(event);
+			if (stopPropagation)
+				break;
+		}
+		
 	}
 }
 
@@ -735,7 +751,7 @@ void Game::InitializePanels()
 	abilitiesPanelHeader->SetText("Abilities");
 	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
 
-	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, d2dContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
+	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, d2dContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
 	abilitiesPanel->AddChildComponent(*abilitiesContainer);
 }
 
@@ -1153,6 +1169,15 @@ const bool Game::HandleEvent(const Event* const event)
 			const auto derivedEvent = (PropagateChatMessage*)event;
 
 			std::string* msg = new std::string("(" + *derivedEvent->senderName + ") " + *derivedEvent->message);
+			textWindow->AddMessage(msg);
+
+			break;
+		}
+		case EventType::ServerMessage:
+		{
+			const auto derivedEvent = (ServerMessageEvent*)event;
+
+			std::string* msg = new std::string(*derivedEvent->message);
 			textWindow->AddMessage(msg);
 
 			break;

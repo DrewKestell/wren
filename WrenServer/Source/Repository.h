@@ -18,6 +18,7 @@ public:
     std::vector<std::string> ListCharacters(const int accountId);
 	void DeleteCharacter(const std::string& characterName);
 	Character* GetCharacter(const std::string& characterName);
-	std::vector<Skill> ListSkills(const int characterId);
-	std::vector<Ability> ListAbilities(const int characterId);
+	std::vector<Skill> ListCharacterSkills(const int characterId);
+	std::vector<Ability> ListCharacterAbilities(const int characterId);
+	std::vector<Ability> ListAbilities();
 };

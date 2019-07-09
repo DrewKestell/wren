@@ -36,6 +36,7 @@
   <ItemGroup>
     <ClInclude Include="Source\Constants.h" />
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
+    <ClInclude Include="Source\EventHandling\Events\ActivateAbilitySuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\ChangeActiveLayerEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateAccountFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterFailedEvent.h" />
@@ -55,6 +56,7 @@
     <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\PropagateChatMessage.h" />
     <ClInclude Include="Source\EventHandling\Events\SendChatMessage.h" />
+    <ClInclude Include="Source\EventHandling\Events\ServerMessageEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SetTargetEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\StartDraggingUIAbilityEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
