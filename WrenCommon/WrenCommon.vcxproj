@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Components\StatsComponent.cpp" />
+    <ClCompile Include="Source\Components\StatsComponentManager.cpp" />
     <ClCompile Include="Source\dllmain.cpp" />
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
@@ -28,12 +30,16 @@
     <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\PlayerController.cpp" />
     <ClCompile Include="Source\PlayerUpdate.cpp" />
+    <ClCompile Include="Source\Repository.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Source\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\sqlite3.h" />
+    <ClInclude Include="Source\Components\StatsComponent.h" />
+    <ClInclude Include="Source\Components\StatsComponentManager.h" />
     <ClInclude Include="Source\Constants.h" />
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
     <ClInclude Include="Source\EventHandling\Events\ActivateAbilitySuccessEvent.h" />
@@ -72,6 +78,7 @@
     <ClInclude Include="Source\OpCodes.h" />
     <ClInclude Include="Source\PlayerController.h" />
     <ClInclude Include="Source\PlayerUpdate.h" />
+    <ClInclude Include="Source\Repository.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\Utility.h" />
@@ -130,7 +137,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(ProjectDir)Source;$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(ProjectDir)Source;$(WindowsSDK_IncludePath);$(ProjectDir)Include;</IncludePath>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

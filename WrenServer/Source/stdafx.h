@@ -26,6 +26,7 @@
 #include <queue>
 #include <map>
 #include <DirectXMath.h>
+#include <random>
 
 using namespace DirectX;
 

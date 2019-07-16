@@ -29,7 +29,8 @@ extern EventHandler g_eventHandler;
 
 bool CompareUIComponents(UIComponent* a, UIComponent* b) { return (a->zIndex < b->zIndex); }
 
-Game::Game() noexcept(false)
+Game::Game(ClientRepository repository) noexcept(false)
+	: repository{ repository }
 {
 	deviceResources = std::make_unique<DX::DeviceResources>();
 	deviceResources->RegisterDeviceNotify(this);
@@ -275,6 +276,7 @@ void Game::OnWindowSizeChanged(int width, int height)
 // These are the resources that depend on the device.
 void Game::CreateDeviceDependentResources()
 {
+	InitializeNpcs();
 	InitializeBrushes();
 	InitializeTextFormats();
 	InitializeInputs();
@@ -381,6 +383,11 @@ ShaderBuffer Game::LoadShader(const std::wstring filename)
 		throw std::exception("Critical error: Unable to open the compiled shader object!");
 
 	return sb;
+}
+
+void Game::InitializeNpcs()
+{
+	npcs = repository.ListNpcs();
 }
 
 void Game::InitializeBrushes()
@@ -1043,17 +1050,15 @@ const bool Game::HandleEvent(const Event* const event)
 			const auto gameObjectId = derivedEvent->characterId;
 			const auto pos = XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ };
 			const auto mov = XMFLOAT3{ derivedEvent->movX, derivedEvent->movY, derivedEvent->movZ };
-			const auto modelId = derivedEvent->modelId;
-			const auto textureId = derivedEvent->textureId;
-			auto name = derivedEvent->name;
 
+			auto npc = *find_if(npcs->begin(), npcs->end(), [&gameObjectId](Npc* npc) { return npc->GetId() == gameObjectId; });
 			if (!objectManager.GameObjectExists(gameObjectId))
 			{
 				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, gameObjectId);
 				obj.movementVector = mov;
-				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
+				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[npc->GetModelId()].get(), vertexShader.Get(), pixelShader.Get(), textures[npc->GetTextureId()].Get());
 				obj.renderComponentId = sphereRenderComponent.GetId();
-				StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, name);
+				StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, npc->GetName());
 				obj.statsComponentId = statsComponent.id;
 			}
 			else

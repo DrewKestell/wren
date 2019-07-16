@@ -3,11 +3,33 @@
 #include <ObjectManager.h>
 #include "SocketManager.h"
 #include <GameTimer.h>
+#include <Components/StatsComponentManager.h>
+#include "Components/AIComponentManager.h"
+
+static const auto CLIENT_UPDATE_FREQUENCY = 0.1f;
 
 ObjectManager g_objectManager;
 GameTimer m_timer;
+EventHandler g_eventHandler;
+StatsComponentManager g_statsComponentManager{ g_objectManager };
+AIComponentManager g_aiComponentManager{ g_objectManager };
 
-static const auto CLIENT_UPDATE_FREQUENCY = 0.1f;
+void PublishEvents()
+{
+	auto eventQueue = g_eventHandler.eventQueue;
+	while (!eventQueue->empty())
+	{
+		const auto event = eventQueue->front();
+		eventQueue->pop();
+
+		for (auto it = g_eventHandler.observers->begin(); it != g_eventHandler.observers->end(); it++)
+		{
+			if ((*it)->HandleEvent(event))
+				break;
+		}
+
+	}
+}
 
 int main()
 {
@@ -15,7 +37,7 @@ int main()
     MoveWindow(consoleWindow, 810, 0, 800, 800, TRUE);
     std::cout << "WrenServer initialized.\n\n";
 
-    Repository repository;
+	ServerRepository repository{ "WrenServer.db" };
     SocketManager socketManager{ repository };
 
 	auto updateTimer{ 0.0f };
@@ -36,6 +58,9 @@ int main()
 		if (updateTimer >= UPDATE_FREQUENCY)
 		{
 			g_objectManager.Update();
+			g_aiComponentManager.Update();
+
+			PublishEvents();
 
 			updateTimer -= UPDATE_FREQUENCY;
 		}

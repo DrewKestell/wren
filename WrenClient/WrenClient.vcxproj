@@ -20,10 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Camera.cpp" />
-    <ClCompile Include="Source\Components\StatsComponentManager.cpp" />
+    <ClCompile Include="Source\ClientRepository.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
     <ClCompile Include="Source\DeviceResources.cpp" />
     <ClInclude Include="Source\Camera.h" />
+    <ClInclude Include="Source\ClientRepository.h" />
     <ClInclude Include="Source\DeviceResources.h" />
     <ClInclude Include="Source\EventHandling\Events\LeftMouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
@@ -35,11 +36,16 @@
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\Components\RenderComponent.cpp" />
     <ClCompile Include="Source\Components\RenderComponentManager.cpp" />
+    <ClCompile Include="Source\Models\Npc.cpp" />
     <ClCompile Include="Source\Sprite.cpp" />
-    <ClCompile Include="Source\Components\StatsComponent.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Source\ThirdParty\sqlite3.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Source\UI\UIAbilitiesContainer.cpp" />
     <ClCompile Include="Source\UI\UIAbility.cpp" />
@@ -163,11 +169,10 @@
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Source\Components\RenderComponent.h" />
     <ClInclude Include="Source\Components\RenderComponentManager.h" />
+    <ClInclude Include="Source\Models\Npc.h" />
     <ClInclude Include="Source\ShaderBuffer.h" />
     <ClInclude Include="Source\Sprite.h" />
     <ClInclude Include="Source\SpriteVertex.h" />
-    <ClInclude Include="Source\Components\StatsComponent.h" />
-    <ClInclude Include="Source\Components\StatsComponentManager.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
@@ -315,7 +320,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)Include;$(SolutionDir)WrenCommon\Source;$(ProjectDir)Source;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Include;$(SolutionDir)WrenCommon\Source;$(SolutionDir)WrenCommon\Include;$(ProjectDir)Source;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)Lib;$(LibraryPath);$(SolutionDir)$(Platform)\$(Configuration)\</LibraryPath>
     <SourcePath>$(ProjectDir)ThirdParty;$(SourcePath)</SourcePath>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>

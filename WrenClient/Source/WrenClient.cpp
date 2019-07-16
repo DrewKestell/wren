@@ -9,6 +9,7 @@ static wchar_t szWindowClass[] = L"win32app";
 static wchar_t szTitle[] = L"Wren Client";
 
 EventHandler g_eventHandler;
+ClientRepository repository{ "WrenClient.db" };
 
 namespace
 {
@@ -26,7 +27,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	if (FAILED(hr))
 		return 1;
 
-	g_game = std::make_unique<Game>();
+	g_game = std::make_unique<Game>(repository);
 
 	// Allocate Console
 #ifdef _DEBUG

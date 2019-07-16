@@ -20,17 +20,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\sodium.h" />
-    <ClInclude Include="Include\sqlite3.h" />
+    <ClInclude Include="Source\Components\AIComponent.h" />
+    <ClInclude Include="Source\Components\AIComponentManager.h" />
     <ClInclude Include="Source\Models\Account.h" />
     <ClInclude Include="Source\Models\Character.h" />
     <ClInclude Include="Source\Player.h" />
-    <ClInclude Include="Source\Repository.h" />
+    <ClInclude Include="Source\ServerRepository.h" />
     <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Repository.cpp" />
+    <ClCompile Include="Source\Components\AIComponent.cpp" />
+    <ClCompile Include="Source\Components\AIComponentManager.cpp" />
+    <ClCompile Include="Source\ServerRepository.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -99,7 +102,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(ProjectDir)Lib;$(LibraryPath);$(SolutionDir)$(Platform)\$(Configuration)\</LibraryPath>
-    <IncludePath>$(ProjectDir)Include;$(SolutionDir)WrenCommon\Source;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Include;$(SolutionDir)WrenCommon\Source;$(SolutionDir)WrenCommon\Include;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)ThirdParty;$(SourcePath)</SourcePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
   </PropertyGroup>

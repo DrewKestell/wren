@@ -21,6 +21,7 @@
 #include <windowsx.h>
 #include <wrl/client.h>
 
+#include <sqlite3.h>
 #include <string>
 #include <iostream>
 #include <exception>

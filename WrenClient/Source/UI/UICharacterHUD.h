@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Components/StatsComponent.h"
+#include <Components/StatsComponent.h>
 #include "UIComponent.h"
 
 class UICharacterHUD : public UIComponent

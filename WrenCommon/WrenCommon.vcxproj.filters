@@ -40,6 +40,15 @@
     <ClCompile Include="Source\PlayerController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Components\StatsComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Components\StatsComponentManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Repository.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -89,5 +98,9 @@
     <ClInclude Include="Source\EventHandling\Events\PropagateChatMessage.h" />
     <ClInclude Include="Source\EventHandling\Events\ServerMessageEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\ActivateAbilitySuccessEvent.h" />
+    <ClInclude Include="Source\Components\StatsComponent.h" />
+    <ClInclude Include="Source\Components\StatsComponentManager.h" />
+    <ClInclude Include="Source\Repository.h" />
+    <ClInclude Include="Include\sqlite3.h" />
   </ItemGroup>
 </Project>

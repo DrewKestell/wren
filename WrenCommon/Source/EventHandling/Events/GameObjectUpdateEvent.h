@@ -8,17 +8,11 @@ public:
 	GameObjectUpdateEvent(
 		const int characterId,
 		const float posX, const float posY, const float posZ,
-		const float movX, const float movY, const float movZ,
-		const int modelId,
-		const int textureId,
-		std::string* name)
+		const float movX, const float movY, const float movZ)
 		: Event(EventType::GameObjectUpdate),
 		  characterId{ characterId },
 		  posX{ posX }, posY{ posY }, posZ{ posZ },
-		  movX{ movX }, movY{ movY }, movZ{ movZ },
-		  modelId{ modelId },
-		  textureId{ textureId },
-		  name{ name }
+		  movX{ movX }, movY{ movY }, movZ{ movZ }
 	{
 	}
 	const int characterId;
@@ -28,7 +22,4 @@ public:
 	const float movX;
 	const float movY;
 	const float movZ;
-	const int modelId;
-	const int textureId;
-	std::string* name;
 };

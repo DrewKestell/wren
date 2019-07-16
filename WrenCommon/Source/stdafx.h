@@ -13,6 +13,7 @@
 
 // reference additional headers your program requires here
 
+#include <sqlite3.h>
 #include <string>
 #include <vector>
 #include <map>

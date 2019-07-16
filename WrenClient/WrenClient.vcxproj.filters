@@ -26,10 +26,11 @@
     <ClCompile Include="Source\UI\UICharacterHUD.cpp" />
     <ClCompile Include="Source\Components\RenderComponent.cpp" />
     <ClCompile Include="Source\Components\RenderComponentManager.cpp" />
-    <ClCompile Include="Source\Components\StatsComponent.cpp" />
-    <ClCompile Include="Source\Components\StatsComponentManager.cpp" />
     <ClCompile Include="Source\UI\UITargetHUD.cpp" />
     <ClCompile Include="Source\UI\UITextWindow.cpp" />
+    <ClCompile Include="Source\Models\Npc.cpp" />
+    <ClCompile Include="Source\ClientRepository.cpp" />
+    <ClCompile Include="Source\ThirdParty\sqlite3.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
@@ -160,10 +161,10 @@
     <ClInclude Include="Source\Events\UIAbilityDroppedEvent.h" />
     <ClInclude Include="Source\Components\RenderComponent.h" />
     <ClInclude Include="Source\Components\RenderComponentManager.h" />
-    <ClInclude Include="Source\Components\StatsComponent.h" />
-    <ClInclude Include="Source\Components\StatsComponentManager.h" />
     <ClInclude Include="Source\UI\UITargetHUD.h" />
     <ClInclude Include="Source\UI\UITextWindow.h" />
+    <ClInclude Include="Source\Models\Npc.h" />
+    <ClInclude Include="Source\ClientRepository.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

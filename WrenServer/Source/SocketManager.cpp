@@ -2,6 +2,8 @@
 #include <OpCodes.h>
 #include <ObjectManager.h>
 #include "SocketManager.h"
+#include <Components/StatsComponentManager.h>
+#include "Components/AIComponentManager.h"
 
 constexpr auto PLAYER_NOT_FOUND = "Player not found.";
 constexpr auto SOCKET_INIT_FAILED = "Failed to initialize sockets.";
@@ -18,8 +20,10 @@ constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
 constexpr auto PORT_NUMBER = 27016;
 
 extern ObjectManager g_objectManager;
+extern StatsComponentManager g_statsComponentManager;
+extern AIComponentManager g_aiComponentManager;
 
-SocketManager::SocketManager(Repository& repository)
+SocketManager::SocketManager(ServerRepository& repository)
 	: repository(repository)
 {
     sodium_init();
@@ -440,8 +444,12 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
 	SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 9, std::to_string(charId), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(character->GetModelId()), std::to_string(character->GetTextureId()), ListSkills(charId), ListAbilities(charId), character->GetName());
 
 	// test
-	std::string name{ "Dummy" };
-	SendPacket((*it)->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 10, std::to_string(50), std::to_string(30.0f), std::to_string(0.0f), std::to_string(30.0f), std::to_string(0.0f), std::to_string(0.0f), std::to_string(0.0f), std::to_string(2), std::to_string(4), name);
+	auto dummyName = new std::string( "Dummy" );
+	GameObject& dummyGameObject = g_objectManager.CreateGameObject(XMFLOAT3{ 30.0f, 0.0f, 30.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 1, false, 2, 4);
+	auto dummyAIComponent = g_aiComponentManager.CreateAIComponent(dummyGameObject.id);
+	dummyGameObject.aiComponentId = dummyAIComponent.id;
+	StatsComponent& dummyStatsComponent = g_statsComponentManager.CreateStatsComponent(dummyGameObject.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, dummyName);
+	dummyGameObject.statsComponentId = dummyStatsComponent.id;	
 }
 
 void SocketManager::DeleteCharacter(const std::string& token, const std::string& characterName)
@@ -491,26 +499,30 @@ void SocketManager::PlayerUpdate(
 
 void SocketManager::UpdateClients()
 {
+	auto gameObjectLength = g_objectManager.GetGameObjectIndex();
+	auto gameObjects = g_objectManager.GetGameObjects();
+
 	for (auto i = 0; i < players.size(); i++)
 	{
 		auto playerToUpdate = players.at(i);
 
+		// skip players that have logged in, but haven't selected a character and entered the game yet
 		if (playerToUpdate->characterId == 0)
 			continue;
 
-		for (auto j = 0; j < players.size(); j++)
+		// for each player, send them an update for every non-static game object
+		for (auto j = 0; j < gameObjectLength; j++)
 		{
-			auto otherPlayer = players.at(j);
-			const auto otherCharacterId = otherPlayer->characterId;
-			if (playerToUpdate->GetAccountId() == otherPlayer->GetAccountId() || otherCharacterId == 0) // FIXME: certainly there's a better way than checking > 0. won't have a characterId until they select a character and enter game.
+			auto gameObject = gameObjects[j];
+
+			// skip sending an update if the game object is the player receiving the update
+			if (playerToUpdate->characterId == gameObject.id)
 				continue;
 
-			auto character = g_objectManager.GetGameObjectById(otherCharacterId);
+			auto pos = gameObject.GetWorldPosition();
+			auto mov = gameObject.movementVector;
 
-			auto pos = character.GetWorldPosition();
-			auto mov = character.movementVector;
-
-			SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 10, std::to_string(character.id), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z), std::to_string(otherPlayer->modelId), std::to_string(otherPlayer->textureId), otherPlayer->characterName);
+			SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 7, std::to_string(gameObject.id), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z));
 		}
 	}
 }

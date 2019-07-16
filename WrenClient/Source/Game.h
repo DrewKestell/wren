@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ClientRepository.h"
 #include <Models/Skill.h>
 #include <PlayerController.h>
 #include <Constants.h>
@@ -14,6 +15,7 @@
 #include "SocketManager.h"
 #include "GameMap/GameMap.h"
 #include "Sprite.h"
+#include "Models/Npc.h"
 #include "UI/UICharacterListing.h"
 #include "UI/UIInput.h"
 #include "UI/UIInputGroup.h"
@@ -31,7 +33,7 @@
 class Game : public DX::IDeviceNotify, public Observer
 {
 public:
-	Game() noexcept(false) ;
+	Game(ClientRepository repository) noexcept(false) ;
 
 	void Initialize(HWND window, int width, int height);
 	void Tick();
@@ -66,6 +68,7 @@ private:
 	XMMATRIX viewTransform{ XMMatrixIdentity() };
 	XMMATRIX projectionTransform{ XMMatrixIdentity() };
 	Layer activeLayer{ Login };
+	ClientRepository repository;
 	std::unique_ptr<DX::DeviceResources> deviceResources;
 	ObjectManager objectManager;
 	RenderComponentManager renderComponentManager{ objectManager };
@@ -87,6 +90,7 @@ private:
 	std::vector<Ability*>* abilities;
 	unsigned int* textWindowMessageIndex = new unsigned int{ 0 };
 	std::string* textWindowMessages[MESSAGE_BUFFER_SIZE];
+	std::vector<Npc*>* npcs;
 
 	void Render(const float updateTimer);
 	void Clear();
@@ -99,6 +103,7 @@ private:
 	void PublishEvents();
 	void QuitGame();
 
+	void InitializeNpcs();
 	void InitializeBrushes();
 	void InitializeTextFormats();
 	void InitializeInputs();

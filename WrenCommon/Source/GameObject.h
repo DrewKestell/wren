@@ -7,7 +7,7 @@ class GameObject
 	GameObject* parent{ nullptr };
 	std::vector<GameObject*> children{ nullptr };
 	
-	void Initialize(const long id, const XMFLOAT3 localPosition, const XMFLOAT3 scale);
+	void Initialize(const long id, const XMFLOAT3 localPosition, const XMFLOAT3 scale, const bool isStatic, const int modelId, const int textureId);
 
 	friend class ObjectManager;
 public:
@@ -25,8 +25,14 @@ public:
 	XMFLOAT3 localPosition{ 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 scale{ 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 movementVector{ 0.0f, 0.0f, 0.0f };
+	bool isStatic{ false };
+
+	// only really needed on the server. separate component?
+	int modelId{ -1 };
+	int textureId{ -1 };
 
 	// components. i think this should be a map or vector? map<ComponentType, unsigned int>
 	unsigned int statsComponentId{ 0 };
 	unsigned int renderComponentId{ 0 };
+	unsigned int aiComponentId{ 0 };
 };

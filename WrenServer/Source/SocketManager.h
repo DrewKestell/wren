@@ -2,12 +2,12 @@
 
 #include <PlayerController.h>
 #include "Player.h"
-#include "Repository.h"
+#include "ServerRepository.h"
 
 class SocketManager
 {
 private:
-    Repository repository;
+    ServerRepository repository;
     std::vector<Player*> players;
 	std::vector<Ability> abilities;
 	std::vector<PlayerController> playerControllers;
@@ -33,7 +33,7 @@ private:
 	void PropagateChatMessage(const std::string& senderName, const std::string& message);
 	void ActivateAbility(Player* player, Ability& ability);
 public:
-    SocketManager(Repository& repository);
+    SocketManager(ServerRepository& repository);
     bool TryRecieveMessage();
     void CloseSockets();
     void HandleTimeout();

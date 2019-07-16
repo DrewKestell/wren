@@ -2,20 +2,23 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="Include\sodium.h" />
-    <ClInclude Include="Include\sqlite3.h" />
     <ClInclude Include="Source\Player.h" />
-    <ClInclude Include="Source\Repository.h" />
     <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\Models\Account.h" />
     <ClInclude Include="Source\Models\Character.h" />
+    <ClInclude Include="Source\Components\AIComponent.h" />
+    <ClInclude Include="Source\Components\AIComponentManager.h" />
+    <ClInclude Include="Source\ServerRepository.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Repository.cpp" />
     <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\WrenServer.cpp" />
     <ClCompile Include="Source\stdafx.cpp" />
     <ClCompile Include="Source\ThirdParty\sqlite3.c" />
+    <ClCompile Include="Source\Components\AIComponent.cpp" />
+    <ClCompile Include="Source\Components\AIComponentManager.cpp" />
+    <ClCompile Include="Source\ServerRepository.cpp" />
   </ItemGroup>
 </Project>
