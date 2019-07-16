@@ -102,5 +102,7 @@
     <ClInclude Include="Source\Components\StatsComponentManager.h" />
     <ClInclude Include="Source\Repository.h" />
     <ClInclude Include="Include\sqlite3.h" />
+    <ClInclude Include="Source\GameObjectType.h" />
+    <ClInclude Include="Source\EventHandling\Events\OtherPlayerUpdateEvent.h" />
   </ItemGroup>
 </Project>

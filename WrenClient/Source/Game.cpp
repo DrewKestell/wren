@@ -16,6 +16,7 @@
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
 #include "EventHandling/Events/GameObjectUpdateEvent.h"
+#include "EventHandling/Events/OtherPlayerUpdateEvent.h"
 #include "EventHandling/Events/ActivateAbilityEvent.h"
 #include "EventHandling/Events/SetTargetEvent.h"
 #include "EventHandling/Events/SendChatMessage.h"
@@ -296,7 +297,7 @@ void Game::CreateDeviceDependentResources()
 	gameMap = std::make_unique<GameMap>(d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures[2].Get());
 
 	// initialize tree. TODO: game world needs to be stored on disk somewhere and initialized on startup
-	GameObject& tree = objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f });
+	GameObject& tree = objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::StaticObject);
 	auto treeRenderComponent = renderComponentManager.CreateRenderComponent(tree.id, meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
 	tree.renderComponentId = treeRenderComponent.GetId();
 	std::string* treeName = new std::string("Tree");
@@ -1006,7 +1007,7 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (EnterWorldSuccessEvent*)event;
 
-			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)derivedEvent->characterId);
+			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::Player, (long)derivedEvent->characterId);
 			this->player = &player;
 			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(player.id, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.renderComponentId = sphereRenderComponent.GetId();
@@ -1048,17 +1049,57 @@ const bool Game::HandleEvent(const Event* const event)
 			const auto derivedEvent = (GameObjectUpdateEvent*)event;
 
 			const auto gameObjectId = derivedEvent->characterId;
+			const auto type = derivedEvent->type;
 			const auto pos = XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ };
 			const auto mov = XMFLOAT3{ derivedEvent->movX, derivedEvent->movY, derivedEvent->movZ };
 
-			auto npc = *find_if(npcs->begin(), npcs->end(), [&gameObjectId](Npc* npc) { return npc->GetId() == gameObjectId; });
+			int modelId{ 0 };
+			int textureId{ 0 };
+			std::string* name{ nullptr };
+			if (type == GameObjectType::Npc)
+			{
+				auto npc = *find_if(npcs->begin(), npcs->end(), [&gameObjectId](Npc* npc) { return npc->GetId() == gameObjectId; });
+				modelId = npc->GetModelId();
+				textureId = npc->GetTextureId();
+				name = npc->GetName();
+			}
 			if (!objectManager.GameObjectExists(gameObjectId))
 			{
-				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, gameObjectId);
+				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, type, gameObjectId);
 				obj.movementVector = mov;
-				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[npc->GetModelId()].get(), vertexShader.Get(), pixelShader.Get(), textures[npc->GetTextureId()].Get());
+				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
 				obj.renderComponentId = sphereRenderComponent.GetId();
-				StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, npc->GetName());
+				StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, name);
+				obj.statsComponentId = statsComponent.id;
+			}
+			else
+			{
+				GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->characterId);
+				gameObject.localPosition = pos;
+				gameObject.movementVector = mov;
+			}
+
+			break;
+		}
+		case EventType::OtherPlayerUpdate:
+		{
+			const auto derivedEvent = (OtherPlayerUpdateEvent*)event;
+
+			const auto gameObjectId = derivedEvent->characterId;
+			const auto type = derivedEvent->type;
+			const auto pos = XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ };
+			const auto mov = XMFLOAT3{ derivedEvent->movX, derivedEvent->movY, derivedEvent->movZ };
+			const auto modelId = derivedEvent->modelId;
+			const auto textureId = derivedEvent->textureId;
+			const auto name = derivedEvent->name;
+			
+			if (!objectManager.GameObjectExists(gameObjectId))
+			{
+				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::Player, gameObjectId);
+				obj.movementVector = mov;
+				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
+				obj.renderComponentId = sphereRenderComponent.GetId();
+				StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, name);
 				obj.statsComponentId = statsComponent.id;
 			}
 			else

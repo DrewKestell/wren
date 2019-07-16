@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SocketManager.h"
 #include <OpCodes.h>
+#include <GameObjectType.h>
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -10,6 +11,7 @@
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
 #include "EventHandling/Events/GameObjectUpdateEvent.h"
+#include "EventHandling/Events/OtherPlayerUpdateEvent.h"
 #include "EventHandling/Events/PlayerCorrectionEvent.h"
 #include "EventHandling/Events/PropagateChatMessage.h"
 #include "EventHandling/Events/ServerMessageEvent.h"
@@ -251,8 +253,25 @@ bool SocketManager::TryRecieveMessage()
 			const auto movX = args[4];
 			const auto movY = args[5];
 			const auto movZ = args[6];
+			const auto type = args[7];
 
-			g_eventHandler.QueueEvent(new GameObjectUpdateEvent{ std::stol(*characterId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ) });
+			g_eventHandler.QueueEvent(new GameObjectUpdateEvent{ std::stol(*characterId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), static_cast<GameObjectType>(std::stoi(*type)) });
+			return true;
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_OTHER_PLAYER_UPDATE, opcodeArrLen))
+		{
+			const auto characterId = args[0];
+			const auto posX = args[1];
+			const auto posY = args[2];
+			const auto posZ = args[3];
+			const auto movX = args[4];
+			const auto movY = args[5];
+			const auto movZ = args[6];
+			const auto modelId = args[7];
+			const auto textureId = args[8];
+			const auto name = args[9];
+
+			g_eventHandler.QueueEvent(new OtherPlayerUpdateEvent{ std::stol(*characterId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), std::stoi(*modelId), std::stoi(*textureId), name });
 			return true;
 		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_PROPAGATE_CHAT_MESSAGE, opcodeArrLen))

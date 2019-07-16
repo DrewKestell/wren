@@ -6,7 +6,7 @@
 #include <Components/StatsComponentManager.h>
 #include "Components/AIComponentManager.h"
 
-static const auto CLIENT_UPDATE_FREQUENCY = 0.1f;
+static const auto CLIENT_UPDATE_FREQUENCY = 0.05f;
 
 ObjectManager g_objectManager;
 GameTimer m_timer;

@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Utility.h"
+#include "GameObjectType.h"
 
 class GameObject
 {
 	GameObject* parent{ nullptr };
 	std::vector<GameObject*> children{ nullptr };
 	
-	void Initialize(const long id, const XMFLOAT3 localPosition, const XMFLOAT3 scale, const bool isStatic, const int modelId, const int textureId);
+	void Initialize(const long id, GameObjectType type, const XMFLOAT3 localPosition, const XMFLOAT3 scale, const bool isStatic, const int modelId, const int textureId);
 
 	friend class ObjectManager;
 public:
@@ -20,6 +21,7 @@ public:
     XMFLOAT3 GetWorldPosition() const;
 
 	long id{ 0 };
+	GameObjectType type;
 
 	// physics component?
 	XMFLOAT3 localPosition{ 0.0f, 0.0f, 0.0f };

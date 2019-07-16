@@ -1,21 +1,24 @@
 #pragma once
 
 #include "Event.h"
-#include <GameObjectType.h>
 
-class GameObjectUpdateEvent : public Event
+class OtherPlayerUpdateEvent : public Event
 {
 public:
-	GameObjectUpdateEvent(
+	OtherPlayerUpdateEvent(
 		const int characterId,
 		const float posX, const float posY, const float posZ,
 		const float movX, const float movY, const float movZ,
-		const GameObjectType type)
-		: Event(EventType::GameObjectUpdate),
+		const int modelId,
+		const int textureId,
+		std::string* name)
+		: Event(EventType::OtherPlayerUpdate),
 		  characterId{ characterId },
 		  posX{ posX }, posY{ posY }, posZ{ posZ },
 		  movX{ movX }, movY{ movY }, movZ{ movZ },
-		  type{ type }
+		  modelId{ modelId },
+		  textureId{ textureId },
+		  name{ name }
 	{
 	}
 	const int characterId;
@@ -25,5 +28,7 @@ public:
 	const float movX;
 	const float movY;
 	const float movZ;
-	const GameObjectType type;
+	const int modelId;
+	const int textureId;
+	std::string* name;
 };

@@ -26,6 +26,7 @@ enum class EventType
 	PlayerCorrection,
 	DeleteGameObject,
 	GameObjectUpdate,
+	OtherPlayerUpdate,
 	UIAbilityDropped,
 	ActivateAbility,
 	StartDraggingUIAbility,

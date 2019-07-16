@@ -437,7 +437,7 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
 	(*it)->modelId = character->GetModelId();
 	(*it)->textureId = character->GetTextureId();
 	(*it)->characterName = character->GetName();
-	GameObject& characterGameObject = g_objectManager.CreateGameObject(character->GetPosition(), XMFLOAT3{ 14.0f, 14.0f, 14.0f }, (long)character->GetId());
+	GameObject& characterGameObject = g_objectManager.CreateGameObject(character->GetPosition(), XMFLOAT3{ 14.0f, 14.0f, 14.0f },GameObjectType::Player, (long)character->GetId());
 	(*it)->playerController = std::make_unique<PlayerController>(characterGameObject);
 	const auto pos = character->GetPosition();
 	const auto charId = character->GetId();
@@ -445,7 +445,7 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
 
 	// test
 	auto dummyName = new std::string( "Dummy" );
-	GameObject& dummyGameObject = g_objectManager.CreateGameObject(XMFLOAT3{ 30.0f, 0.0f, 30.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 1, false, 2, 4);
+	GameObject& dummyGameObject = g_objectManager.CreateGameObject(XMFLOAT3{ 30.0f, 0.0f, 30.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::Npc, 1, false, 2, 4);
 	auto dummyAIComponent = g_aiComponentManager.CreateAIComponent(dummyGameObject.id);
 	dummyGameObject.aiComponentId = dummyAIComponent.id;
 	StatsComponent& dummyStatsComponent = g_statsComponentManager.CreateStatsComponent(dummyGameObject.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, dummyName);
@@ -522,7 +522,14 @@ void SocketManager::UpdateClients()
 			auto pos = gameObject.GetWorldPosition();
 			auto mov = gameObject.movementVector;
 
-			SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 7, std::to_string(gameObject.id), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z));
+			if (gameObject.type == GameObjectType::Npc)
+				SendPacket(playerToUpdate->GetSockAddr(), OPCODE_GAMEOBJECT_UPDATE, 8, std::to_string(gameObject.id), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z), std::to_string(static_cast<int>(GameObjectType::Npc)));
+			else if (gameObject.type == GameObjectType::Player)
+			{
+				auto characterId = gameObject.id;
+				const auto otherPlayer = *find_if(players.begin(), players.end(), [&characterId](Player* player) { return player->characterId == characterId; });
+				SendPacket(playerToUpdate->GetSockAddr(), OPCODE_OTHER_PLAYER_UPDATE, 10, std::to_string(gameObject.id), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(mov.x), std::to_string(mov.y), std::to_string(mov.z), std::to_string(otherPlayer->modelId), std::to_string(otherPlayer->textureId), otherPlayer->characterName);
+			}
 		}
 	}
 }
