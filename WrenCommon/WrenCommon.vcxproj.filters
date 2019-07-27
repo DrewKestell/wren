@@ -49,6 +49,18 @@
     <ClCompile Include="Source\Repository.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\GameMap\GameMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameMap\GameMapTile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\CommonRepository.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Models\StaticObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -104,5 +116,10 @@
     <ClInclude Include="Include\sqlite3.h" />
     <ClInclude Include="Source\GameObjectType.h" />
     <ClInclude Include="Source\EventHandling\Events\OtherPlayerUpdateEvent.h" />
+    <ClInclude Include="Source\GameMap\GameMap.h" />
+    <ClInclude Include="Source\GameMap\GameMapTile.h" />
+    <ClInclude Include="Source\GameMap\TerrainType.h" />
+    <ClInclude Include="Source\CommonRepository.h" />
+    <ClInclude Include="Source\Models\StaticObject.h" />
   </ItemGroup>
 </Project>

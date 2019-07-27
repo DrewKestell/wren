@@ -1,12 +1,14 @@
 #include "stdafx.h"
+#include <Constants.h>
 #include <OpCodes.h>
 #include "PlayerController.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/PlayerCorrectionEvent.h"
 
-PlayerController::PlayerController(GameObject& player)
-	: player{ player }
+PlayerController::PlayerController(GameObject& player, GameMap& gameMap)
+	: player{ player },
+	  gameMap{ gameMap }
 {
 	clientWidth = 800;
 	clientHeight = 600;
@@ -58,8 +60,9 @@ void PlayerController::OnMouseMoveEvent(MouseEvent* event)
 void PlayerController::Update()
 {
 	const auto playerPos = player.GetWorldPosition();
+	const auto destination = player.destination;
 
-	if (isMoving)
+	if (player.isMoving)
 	{
 		// if target is reached
 		auto deltaX = std::abs(playerPos.x - destination.x);
@@ -68,32 +71,50 @@ void PlayerController::Update()
 		if (deltaX < 1.0f && deltaZ < 1.0f)
 		{
 			player.localPosition = XMFLOAT3{ destination.x, 0.0f, destination.z };
-			if (!isRightClickHeld)
+			const auto proposedDestination = GetDestinationVector(player.localPosition);
+
+			if (!isRightClickHeld || Utility::CheckOutOfBounds(proposedDestination) || gameMap.IsTileOccupied(proposedDestination))
 			{
-				isMoving = false;
-				player.movementVector = XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+				player.isMoving = false;
+				player.movementVector = VEC_ZERO;
 			}
 			else
 			{
 				player.movementVector = currentMouseDirection;
 				SetDestination(playerPos);
+
+				gameMap.SetTileOccupied(player.localPosition, false);
+				gameMap.SetTileOccupied(player.destination, true);
 			}
 		}
 	}
-	if (!isMoving && isRightClickHeld)
+	if (!player.isMoving && isRightClickHeld)
 	{
-		isMoving = true;
+		const auto proposedDestination = GetDestinationVector(player.localPosition);
+		if (Utility::CheckOutOfBounds(proposedDestination) || gameMap.IsTileOccupied(proposedDestination))
+			return;
+
+		player.isMoving = true;
 		player.movementVector = currentMouseDirection;
 		SetDestination(playerPos);
+
+		gameMap.SetTileOccupied(player.localPosition, false);
+		gameMap.SetTileOccupied(player.destination, true);
 	}
+}
+
+const XMFLOAT3 PlayerController::GetDestinationVector(const XMFLOAT3 playerPos) const
+{
+	const auto vec = XMLoadFloat3(&currentMouseDirection);
+	const auto currentPos = XMLoadFloat3(&playerPos);
+	XMFLOAT3 destinationVector;
+	XMStoreFloat3(&destinationVector, currentPos + (vec * TILE_SIZE));
+	return destinationVector;
 }
 
 void PlayerController::SetDestination(const XMFLOAT3 playerPos)
 {
-	const auto tileSize = 30.0f;
-	const auto vec = XMLoadFloat3(&currentMouseDirection);
-	const auto currentPos = XMLoadFloat3(&playerPos);
-	XMStoreFloat3(&destination, currentPos + (vec * tileSize));
+	player.destination = GetDestinationVector(playerPos);
 }
 
 void PlayerController::UpdateCurrentMouseDirection(const float mousePosX, const float mousePosY)
@@ -107,38 +128,7 @@ void PlayerController::UpdateCurrentMouseDirection(const float mousePosX, const 
 	XMStoreFloat4(&angleFloat, angleVec);
 	auto z = XMConvertToDegrees(angleFloat.z) + 180.0f;
 
-	if (z >= 337.5 || z <= 22.5)
-	{
-		currentMouseDirection = XMFLOAT3{ -1.0f, 0.0f, -1.0f };
-	}
-	else if (z > 22.5 && z < 67.5)
-	{
-		currentMouseDirection = XMFLOAT3{ 0.0f, 0.0f, -1.0f };
-	}
-	else if (z > 67.5 && z < 112.5)
-	{
-		currentMouseDirection = XMFLOAT3{ 1.0f, 0.0f, -1.0f };
-	}
-	else if (z > 112.5 && z < 157.5)
-	{
-		currentMouseDirection = XMFLOAT3{ 1.0f, 0.0f, 0.0f };
-	}
-	else if (z > 157.5 && z < 202.5)
-	{
-		currentMouseDirection = XMFLOAT3{ 1.0f, 0.0f, 1.0f };
-	}
-	else if (z > 202.5 && z < 247.5)
-	{
-		currentMouseDirection = XMFLOAT3{ 0.0f, 0.0f, 1.0f };
-	}
-	else if (z > 247.5 && z < 292.5)
-	{
-		currentMouseDirection = XMFLOAT3{ -1.0f, 0.0f, 1.0f };
-	}
-	else
-	{
-		currentMouseDirection = XMFLOAT3{ -1.0f, 0.0f, 0.0f };
-	}
+	currentMouseDirection = Utility::AngleToDirection(z);
 }
 
 PlayerUpdate* PlayerController::GeneratePlayerUpdate()

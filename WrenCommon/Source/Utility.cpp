@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <Constants.h>
 #include "Utility.h"
 
 XMFLOAT3 Utility::XMFLOAT3Sum(const XMFLOAT3 l, const XMFLOAT3 r)
@@ -35,4 +36,32 @@ const char Utility::GetHotbarIndex(const float clientHeight, const float mousePo
 		return -1;
 
 	return (char)((mousePosX - 5) / 40);
+}
+
+const XMFLOAT3 Utility::AngleToDirection(const float angle)
+{
+	if (angle >= 337.5 || angle <= 22.5)
+		return VEC_SOUTHWEST;
+	else if (angle > 22.5 && angle < 67.5)
+		return VEC_SOUTH;
+	else if (angle > 67.5 && angle < 112.5)
+		return VEC_SOUTHEAST;
+	else if (angle > 112.5 && angle < 157.5)
+		return VEC_EAST;
+	else if (angle > 157.5 && angle < 202.5)
+		return VEC_NORTHEAST;
+	else if (angle > 202.5 && angle < 247.5)
+		return VEC_NORTH;
+	else if (angle > 247.5 && angle < 292.5)
+		return VEC_NORTHWEST;
+	else
+		return VEC_WEST;
+}
+
+const bool Utility::CheckOutOfBounds(const XMFLOAT3 pos)
+{
+	const auto maxX = TILE_SIZE * MAP_WIDTH - 1;
+	const auto maxZ = TILE_SIZE * MAP_HEIGHT - 1;
+
+	return pos.x < 0.0f || pos.z < 0.0f || pos.x > maxX || pos.z > maxZ;
 }

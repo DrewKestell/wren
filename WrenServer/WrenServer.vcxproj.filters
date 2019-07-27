@@ -11,6 +11,8 @@
     <ClInclude Include="Source\Components\AIComponent.h" />
     <ClInclude Include="Source\Components\AIComponentManager.h" />
     <ClInclude Include="Source\ServerRepository.h" />
+    <ClInclude Include="Source\Components\PlayerComponent.h" />
+    <ClInclude Include="Source\Components\PlayerComponentManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\SocketManager.cpp" />
@@ -20,5 +22,7 @@
     <ClCompile Include="Source\Components\AIComponent.cpp" />
     <ClCompile Include="Source\Components\AIComponentManager.cpp" />
     <ClCompile Include="Source\ServerRepository.cpp" />
+    <ClCompile Include="Source\Components\PlayerComponent.cpp" />
+    <ClCompile Include="Source\Components\PlayerComponentManager.cpp" />
   </ItemGroup>
 </Project>

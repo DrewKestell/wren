@@ -1,14 +1,26 @@
 #include "stdafx.h"
+#include <Utility.h>
 #include "AIComponentManager.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
-#include <Constants.h>
-#include <Utility.h>
 
 extern EventHandler g_eventHandler;
 
-AIComponentManager::AIComponentManager(ObjectManager& objectManager)
-	: objectManager{ objectManager }
+static constexpr XMFLOAT3 DIRECTIONS[8]
+{
+	VEC_SOUTHWEST,
+	VEC_SOUTH,
+	VEC_SOUTHEAST,
+	VEC_EAST,
+	VEC_NORTHEAST,
+	VEC_NORTH,
+	VEC_NORTHWEST,
+	VEC_WEST
+};
+
+AIComponentManager::AIComponentManager(ObjectManager& objectManager, GameMap& gameMap)
+	: objectManager{ objectManager },
+	  gameMap{ gameMap }
 {
 	g_eventHandler.Subscribe(*this);
 }
@@ -16,7 +28,7 @@ AIComponentManager::AIComponentManager(ObjectManager& objectManager)
 AIComponent& AIComponentManager::CreateAIComponent(const long gameObjectId)
 {
 	if (aiComponentIndex == MAX_AICOMPONENTS_SIZE)
-		throw std::exception("Max RenderComponents exceeded!");
+		throw std::exception("Max AIComponents exceeded!");
 
 	aiComponents[aiComponentIndex].Initialize(aiComponentIndex, gameObjectId);
 	idIndexMap[aiComponentIndex] = aiComponentIndex;
@@ -25,12 +37,12 @@ AIComponent& AIComponentManager::CreateAIComponent(const long gameObjectId)
 
 void AIComponentManager::DeleteAIComponent(const unsigned int aiComponentId)
 {
-	// first copy the last RenderComponent into the index that was deleted
+	// first copy the last AIComponent into the index that was deleted
 	auto aiComponentToDeleteIndex = idIndexMap[aiComponentId];
 	auto lastAIComponentIndex = --aiComponentIndex;
 	memcpy(&aiComponents[aiComponentToDeleteIndex], &aiComponents[lastAIComponentIndex], sizeof(AIComponent));
 
-	// then update the index of the moved RenderComponent
+	// then update the index of the moved AIComponent
 	auto lastAIComponentId = aiComponents[aiComponentToDeleteIndex].id;
 	idIndexMap[lastAIComponentId] = aiComponentToDeleteIndex;
 }
@@ -46,13 +58,13 @@ const bool AIComponentManager::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
-	case EventType::DeleteGameObject:
-	{
-		const auto derivedEvent = (DeleteGameObjectEvent*)event;
-		const auto gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-		DeleteAIComponent(gameObject.aiComponentId);
-		break;
-	}
+		case EventType::DeleteGameObject:
+		{
+			const auto derivedEvent = (DeleteGameObjectEvent*)event;
+			const auto gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
+			DeleteAIComponent(gameObject.aiComponentId);
+			break;
+		}
 	}
 	return false;
 }
@@ -66,48 +78,55 @@ void AIComponentManager::Update()
 
 	for (unsigned int i = 0; i < aiComponentIndex; i++)
 	{
-		auto comp = aiComponents[i];
+		AIComponent& comp = aiComponents[i];
 		int rnd;
-		if (!comp.isMoving)
+
+		GameObject& gameObject = objectManager.GetGameObjectById(comp.gameObjectId);
+		auto pos = gameObject.GetWorldPosition();
+		auto destination = gameObject.destination;
+
+		if (gameObject.isMoving)
+		{
+			// if target is reached
+			auto deltaX = std::abs(pos.x - destination.x);
+			auto deltaZ = std::abs(pos.z - destination.z);
+
+			if (deltaX < 1.0f && deltaZ < 1.0f)
+			{
+				gameObject.localPosition = XMFLOAT3{ destination.x, 0.0f, destination.z };
+				gameObject.movementVector = VEC_ZERO;
+				gameObject.isMoving = false;
+			}
+		}
+		
+		if (!gameObject.isMoving)
 		{
 			rnd = dist100(rng);
 			if (rnd == 0)
 			{
-				comp.isMoving = true;
-
 				rnd = dist8(rng);
 
-				if (rnd == 0)
-					comp.movementVector = XMFLOAT3{ -1.0f, 0.0f, -1.0f };
-				else if (rnd == 1)
-					comp.movementVector = XMFLOAT3{ 0.0f, 0.0f, -1.0f };
-				else if (rnd == 2)
-					comp.movementVector = XMFLOAT3{ 0.0f, 0.0f, -1.0f };
-				else if (rnd == 3)
-					comp.movementVector = XMFLOAT3{ 0.0f, 0.0f, -1.0f };
-				else if (rnd == 4)
-					comp.movementVector = XMFLOAT3{ 0.0f, 0.0f, -1.0f };
-				else if (rnd == 5)
-					comp.movementVector = XMFLOAT3{ 0.0f, 0.0f, -1.0f };
-				else if (rnd == 6)
-					comp.movementVector = XMFLOAT3{ 0.0f, 0.0f, -1.0f };
-				else
-					comp.movementVector = XMFLOAT3{ 0.0f, 0.0f, -1.0f };
+				const auto vec = DIRECTIONS[rnd];
+				const auto movementVector = XMFLOAT3{ vec.x * TILE_SIZE, vec.y * TILE_SIZE, vec.z * TILE_SIZE };
+				const auto proposedPos = Utility::XMFLOAT3Sum(gameObject.localPosition, movementVector);
 
-				auto gameObject = objectManager.GetGameObjectById(comp.gameObjectId);
-				auto pos = gameObject.GetWorldPosition();
-				comp.destination = XMFLOAT3
+				if (Utility::CheckOutOfBounds(proposedPos) || gameMap.IsTileOccupied(proposedPos))
+					return;
+
+				gameObject.isMoving = true;
+
+				gameObject.movementVector = vec;
+
+				gameObject.destination = XMFLOAT3
 				{
-					pos.x + (comp.movementVector.x * TILE_SIZE),
-					pos.y + (comp.movementVector.y * TILE_SIZE),
-					pos.z + (comp.movementVector.z * TILE_SIZE)
+					pos.x + (gameObject.movementVector.x * TILE_SIZE),
+					pos.y + (gameObject.movementVector.y * TILE_SIZE),
+					pos.z + (gameObject.movementVector.z * TILE_SIZE)
 				};
+
+				gameMap.SetTileOccupied(gameObject.localPosition, false);
+				gameMap.SetTileOccupied(proposedPos, true);
 			}
-		}
-
-		if (comp.isMoving)
-		{
-
 		}
 	}
 }

@@ -3,8 +3,8 @@
 #include "GameObject.h"
 #include "Mesh.h"
 
-static const unsigned int STRIDE{ sizeof(Vertex) };
-static const unsigned int OFFSET{ 0 };
+static constexpr unsigned int STRIDE = sizeof(Vertex);
+static constexpr unsigned int OFFSET = 0;
 
 class RenderComponent
 {

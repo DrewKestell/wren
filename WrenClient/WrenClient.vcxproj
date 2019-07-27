@@ -21,18 +21,18 @@
   <ItemGroup>
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\ClientRepository.cpp" />
+    <ClCompile Include="Source\Components\GameMapRenderComponent.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
     <ClCompile Include="Source\DeviceResources.cpp" />
     <ClInclude Include="Source\Camera.h" />
     <ClInclude Include="Source\ClientRepository.h" />
+    <ClInclude Include="Source\Components\GameMapRenderComponent.h" />
     <ClInclude Include="Source\DeviceResources.h" />
     <ClInclude Include="Source\EventHandling\Events\LeftMouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RightMouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RigthMouseUpEvent.h" />
     <ClCompile Include="Source\Game.cpp" />
-    <ClCompile Include="Source\GameMap\GameMap.cpp" />
-    <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\Components\RenderComponent.cpp" />
     <ClCompile Include="Source\Components\RenderComponentManager.cpp" />
@@ -162,9 +162,6 @@
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
     <ClInclude Include="Source\Events\UIAbilityDroppedEvent.h" />
     <ClInclude Include="Source\Game.h" />
-    <ClInclude Include="Source\GameMap\GameMap.h" />
-    <ClInclude Include="Source\GameMap\GameMapTile.h" />
-    <ClInclude Include="Source\GameMap\TerrainType.h" />
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Source\Components\RenderComponent.h" />

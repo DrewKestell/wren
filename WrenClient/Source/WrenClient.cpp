@@ -10,6 +10,7 @@ static wchar_t szTitle[] = L"Wren Client";
 
 EventHandler g_eventHandler;
 ClientRepository repository{ "WrenClient.db" };
+CommonRepository commonRepository{ "WrenCommon.db" };
 
 namespace
 {
@@ -27,7 +28,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	if (FAILED(hr))
 		return 1;
 
-	g_game = std::make_unique<Game>(repository);
+	g_game = std::make_unique<Game>(repository, commonRepository);
 
 	// Allocate Console
 #ifdef _DEBUG

@@ -6,9 +6,9 @@
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
 
-static const int MESSAGES_PER_PAGE = 13;
-static const float TEXT_WINDOW_HEIGHT = 220.0f;
-static const float TEXT_WINDOW_WIDTH = 600.0f;
+static constexpr int MESSAGES_PER_PAGE = 13;
+static constexpr float TEXT_WINDOW_HEIGHT = 220.0f;
+static constexpr float TEXT_WINDOW_WIDTH = 600.0f;
 
 class UITextWindow : public UIComponent
 {

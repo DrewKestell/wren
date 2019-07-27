@@ -25,12 +25,16 @@
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
+    <ClCompile Include="Source\GameMap\GameMap.cpp" />
+    <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
     <ClCompile Include="Source\GameObject.cpp" />
     <ClCompile Include="Source\GameTimer.cpp" />
+    <ClCompile Include="Source\Models\StaticObject.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
     <ClCompile Include="Source\PlayerController.cpp" />
     <ClCompile Include="Source\PlayerUpdate.cpp" />
     <ClCompile Include="Source\Repository.cpp" />
+    <ClCompile Include="Source\CommonRepository.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
@@ -70,17 +74,22 @@
     <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
+    <ClInclude Include="Source\GameMap\GameMap.h" />
+    <ClInclude Include="Source\GameMap\GameMapTile.h" />
+    <ClInclude Include="Source\GameMap\TerrainType.h" />
     <ClInclude Include="Source\GameObject.h" />
     <ClInclude Include="Source\GameObjectType.h" />
     <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\Layer.h" />
     <ClInclude Include="Source\Models\Ability.h" />
     <ClInclude Include="Source\Models\Skill.h" />
+    <ClInclude Include="Source\Models\StaticObject.h" />
     <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\OpCodes.h" />
     <ClInclude Include="Source\PlayerController.h" />
     <ClInclude Include="Source\PlayerUpdate.h" />
     <ClInclude Include="Source\Repository.h" />
+    <ClInclude Include="Source\CommonRepository.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\Utility.h" />

@@ -4,7 +4,7 @@
 #include "ObjectManager.h"
 #include "EventHandling/Observer.h"
 
-static const unsigned int MAX_RENDERCOMPONENTS_SIZE = 100000;
+static constexpr unsigned int MAX_RENDERCOMPONENTS_SIZE = 100000;
 
 class RenderComponentManager : public Observer
 {

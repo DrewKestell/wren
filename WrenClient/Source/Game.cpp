@@ -30,8 +30,9 @@ extern EventHandler g_eventHandler;
 
 bool CompareUIComponents(UIComponent* a, UIComponent* b) { return (a->zIndex < b->zIndex); }
 
-Game::Game(ClientRepository repository) noexcept(false)
-	: repository{ repository }
+Game::Game(ClientRepository repository, CommonRepository commonRepository) noexcept(false)
+	: repository{ repository },
+	  commonRepository{ commonRepository }
 {
 	deviceResources = std::make_unique<DX::DeviceResources>();
 	deviceResources->RegisterDeviceNotify(this);
@@ -49,11 +50,9 @@ void Game::PublishEvents()
 		eventQueue->pop();
 
 		// We pass events to the UIComponents first, because those are usually overlaid on top
-		// of 3D GameObjects, and therefore we want certain events like clicks, etc to hit
-		// the UIComponents first.
-		// There are times where we want to avoid having events propagate to GameObjects if they're
-		// handled by a UIComponent, so if any UIComponent returns true, we skip passing that event
-		// to the GameObjects and move to the next iteration of the while loop.
+		//   of 3D GameObjects, and therefore we want certain events like clicks, etc to hit
+		//   the UIComponents first.
+		// These UIComponents are sorted in ascending order of their z-index.
 		auto stopPropagation = false;
 
 		for (int i = (int)uiComponents.size() - 1; i >= 0; i--)
@@ -63,12 +62,15 @@ void Game::PublishEvents()
 				break;
 		}
 
+		// There are times where we want to avoid having events propagate to GameObjects if they're
+		//   handled by a UIComponent, so if any UIComponent returns true, we skip passing that event
+		//   to the GameObjects and move to the next iteration of the while loop.
 		if (stopPropagation)
 			continue;
 
-		for (auto it = g_eventHandler.observers->begin(); it != g_eventHandler.observers->end(); it++)
+		for (auto observer : *g_eventHandler.observers)
 		{
-			stopPropagation = (*it)->HandleEvent(event);
+			stopPropagation = observer->HandleEvent(event);
 			if (stopPropagation)
 				break;
 		}
@@ -186,7 +188,7 @@ void Game::Render(const float updateTimer)
 		d3dContext->RSSetState(solidRasterState.Get());
 		//d3dContext->RSSetState(wireframeRasterState);
 
-		gameMap->Draw(d3dContext, viewTransform, projectionTransform);
+		gameMapRenderComponent->Draw(d3dContext, viewTransform, projectionTransform);
 
 		renderComponentManager.Render(d3dContext, viewTransform, projectionTransform, updateTimer);
 	}
@@ -277,7 +279,6 @@ void Game::OnWindowSizeChanged(int width, int height)
 // These are the resources that depend on the device.
 void Game::CreateDeviceDependentResources()
 {
-	InitializeNpcs();
 	InitializeBrushes();
 	InitializeTextFormats();
 	InitializeInputs();
@@ -286,6 +287,8 @@ void Game::CreateDeviceDependentResources()
 	InitializeShaders();
 	InitializeBuffers();
 	InitializeMeshes();
+	InitializeNpcs();
+	InitializeStaticObjects();
 	InitializeRasterStates();
 	InitializeSprites();
 	
@@ -294,15 +297,7 @@ void Game::CreateDeviceDependentResources()
 	auto d2dFactory = deviceResources->GetD2DFactory();
 	auto writeFactory = deviceResources->GetWriteFactory();
 
-	gameMap = std::make_unique<GameMap>(d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures[2].Get());
-
-	// initialize tree. TODO: game world needs to be stored on disk somewhere and initialized on startup
-	GameObject& tree = objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::StaticObject);
-	auto treeRenderComponent = renderComponentManager.CreateRenderComponent(tree.id, meshes[1].get(), vertexShader.Get(), pixelShader.Get(), textures[1].Get());
-	tree.renderComponentId = treeRenderComponent.GetId();
-	std::string* treeName = new std::string("Tree");
-	StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(tree.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, treeName);
-	tree.statsComponentId = statsComponent.id;
+	gameMapRenderComponent = std::make_unique<GameMapRenderComponent>(d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures[2].Get());
 
 	// init targetHUD
 	targetHUD = std::make_unique<UITargetHUD>(uiComponents, XMFLOAT2{ 260.0f, 12.0f }, InGame, 0, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
@@ -389,6 +384,24 @@ ShaderBuffer Game::LoadShader(const std::wstring filename)
 void Game::InitializeNpcs()
 {
 	npcs = repository.ListNpcs();
+}
+
+void Game::InitializeStaticObjects()
+{
+	auto staticObjects = commonRepository.ListStaticObjects();
+
+	for (auto staticObject : staticObjects)
+	{
+		const auto pos = staticObject->GetPosition();
+		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::StaticObject, 0, true);
+		auto renderComponent = renderComponentManager.CreateRenderComponent(gameObject.id, meshes[staticObject->GetModelId()].get(), vertexShader.Get(), pixelShader.Get(), textures[staticObject->GetTextureId()].Get());
+		gameObject.renderComponentId = renderComponent.GetId();
+		StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObject.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, staticObject->GetName());
+		gameObject.statsComponentId = statsComponent.id;
+		gameMap.SetTileOccupied(gameObject.localPosition, true);
+
+		delete staticObject;
+	}	
 }
 
 void Game::InitializeBrushes()
@@ -1013,7 +1026,8 @@ const bool Game::HandleEvent(const Event* const event)
 			player.renderComponentId = sphereRenderComponent.GetId();
 			StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(player.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, derivedEvent->name);
 			player.statsComponentId = statsComponent.id;
-			playerController = std::make_unique<PlayerController>(player);
+			playerController = std::make_unique<PlayerController>(player, gameMap);
+			gameMap.SetTileOccupied(player.localPosition, true);
 
 			auto d2dFactory = deviceResources->GetD2DFactory();
 			auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
@@ -1071,10 +1085,16 @@ const bool Game::HandleEvent(const Event* const event)
 				obj.renderComponentId = sphereRenderComponent.GetId();
 				StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, name);
 				obj.statsComponentId = statsComponent.id;
+				gameMap.SetTileOccupied(obj.localPosition, true);
 			}
 			else
 			{
 				GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->characterId);
+
+				// TODO: this might not be right. "pos" may not correctly refer to the destination tile.
+				gameMap.SetTileOccupied(gameObject.localPosition, false);
+				gameMap.SetTileOccupied(pos, true);
+
 				gameObject.localPosition = pos;
 				gameObject.movementVector = mov;
 			}

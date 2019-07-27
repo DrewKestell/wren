@@ -9,4 +9,6 @@ public:
 	static std::string ws2s(const std::wstring& wstr);
 	static void PrintXMFLOAT3(const XMFLOAT3 vec);
 	static const char GetHotbarIndex(const float clientHeight, const float mousePosX, const float mousePosY);
+	static const XMFLOAT3 AngleToDirection(const float angle);
+	static const bool CheckOutOfBounds(const XMFLOAT3 pos);
 };

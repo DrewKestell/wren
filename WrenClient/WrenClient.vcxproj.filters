@@ -10,8 +10,6 @@
     <ClCompile Include="Source\UI\UIPanel.cpp" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
-    <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
-    <ClCompile Include="Source\GameMap\GameMap.cpp" />
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
     <ClCompile Include="Source\stdafx.cpp" />
@@ -31,6 +29,7 @@
     <ClCompile Include="Source\Models\Npc.cpp" />
     <ClCompile Include="Source\ClientRepository.cpp" />
     <ClCompile Include="Source\ThirdParty\sqlite3.c" />
+    <ClCompile Include="Source\Components\GameMapRenderComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
@@ -57,9 +56,6 @@
     <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\CreateCharacterSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\DeleteCharacterSuccessEvent.h" />
-    <ClInclude Include="Source\GameMap\GameMap.h" />
-    <ClInclude Include="Source\GameMap\GameMapTile.h" />
-    <ClInclude Include="Source\GameMap\TerrainType.h" />
     <ClInclude Include="Include\assimp\ai_assert.h" />
     <ClInclude Include="Include\assimp\anim.h" />
     <ClInclude Include="Include\assimp\BaseImporter.h" />
@@ -165,6 +161,7 @@
     <ClInclude Include="Source\UI\UITextWindow.h" />
     <ClInclude Include="Source\Models\Npc.h" />
     <ClInclude Include="Source\ClientRepository.h" />
+    <ClInclude Include="Source\Components\GameMapRenderComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

@@ -5,6 +5,7 @@
 #include <GameTimer.h>
 #include <Components/StatsComponentManager.h>
 #include "Components/AIComponentManager.h"
+#include "Components/PlayerComponentManager.h"
 
 static const auto CLIENT_UPDATE_FREQUENCY = 0.05f;
 
@@ -12,7 +13,9 @@ ObjectManager g_objectManager;
 GameTimer m_timer;
 EventHandler g_eventHandler;
 StatsComponentManager g_statsComponentManager{ g_objectManager };
-AIComponentManager g_aiComponentManager{ g_objectManager };
+GameMap g_gameMap;
+AIComponentManager g_aiComponentManager{ g_objectManager, g_gameMap };
+PlayerComponentManager g_playerComponentManager{ g_objectManager };
 
 void PublishEvents()
 {
@@ -27,7 +30,6 @@ void PublishEvents()
 			if ((*it)->HandleEvent(event))
 				break;
 		}
-
 	}
 }
 
@@ -38,7 +40,8 @@ int main()
     std::cout << "WrenServer initialized.\n\n";
 
 	ServerRepository repository{ "WrenServer.db" };
-    SocketManager socketManager{ repository };
+	CommonRepository commonRepository{ "WrenCommon.db " };
+    SocketManager socketManager{ repository, commonRepository };
 
 	auto updateTimer{ 0.0f };
 	auto clientUpdateTimer{ 0.0f };
@@ -59,6 +62,7 @@ int main()
 		{
 			g_objectManager.Update();
 			g_aiComponentManager.Update();
+			g_playerComponentManager.Update();
 
 			PublishEvents();
 

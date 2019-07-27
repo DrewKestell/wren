@@ -7,6 +7,8 @@ class GameMapTile
 {
 	TerrainType terrainType;
 public:
+	bool isOccupied{ false };
+
 	GameMapTile(TerrainType terrainType)
 		: terrainType{ terrainType }
 	{

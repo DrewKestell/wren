@@ -3,7 +3,7 @@
 #include "GameObject.h"
 #include "EventHandling/EventHandler.h"
 
-static const unsigned int MAX_GAMEOBJECTS_SIZE = 100000;
+static constexpr unsigned int MAX_GAMEOBJECTS_SIZE = 100000;
 
 class ObjectManager
 {

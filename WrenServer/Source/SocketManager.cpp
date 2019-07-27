@@ -4,6 +4,7 @@
 #include "SocketManager.h"
 #include <Components/StatsComponentManager.h>
 #include "Components/AIComponentManager.h"
+#include "Components/PlayerComponentManager.h"
 
 constexpr auto PLAYER_NOT_FOUND = "Player not found.";
 constexpr auto SOCKET_INIT_FAILED = "Failed to initialize sockets.";
@@ -12,8 +13,8 @@ constexpr auto INCORRECT_PASSWORD = "Incorrect Password.";
 constexpr auto ACCOUNT_ALREADY_EXISTS = "Account already exists.";
 constexpr auto LIBSODIUM_MEMORY_ERROR = "Ran out of memory while hashing password.";
 constexpr auto CHARACTER_ALREADY_EXISTS = "Character already exists.";
-constexpr auto INVALID_ATTACK_TARGET = "You can't attack that.";
-constexpr auto NO_ATTACK_TARGET = "You need a target before attacking.";
+constexpr auto INVALID_ATTACK_TARGET = "You can't attack that!";
+constexpr auto NO_ATTACK_TARGET = "You need a target before attacking!";
 constexpr auto MESSAGE_TYPE_ERROR = "ERROR";
 
 constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
@@ -22,9 +23,12 @@ constexpr auto PORT_NUMBER = 27016;
 extern ObjectManager g_objectManager;
 extern StatsComponentManager g_statsComponentManager;
 extern AIComponentManager g_aiComponentManager;
+extern PlayerComponentManager g_playerComponentManager;
+extern GameMap g_gameMap;
 
-SocketManager::SocketManager(ServerRepository& repository)
-	: repository(repository)
+SocketManager::SocketManager(ServerRepository& repository, CommonRepository& commonRepository)
+	: repository{ repository },
+	  commonRepository{ commonRepository }
 {
     sodium_init();
 
@@ -47,15 +51,30 @@ SocketManager::SocketManager(ServerRepository& repository)
     DWORD nonBlocking = 1;
     ioctlsocket(socketS, FIONBIO, &nonBlocking);
 
+	// initialize Abilities
 	abilities = repository.ListAbilities();
-}
 
-std::vector<Player*>::iterator SocketManager::GetPlayer(const std::string& token)
-{
-	const auto it = find_if(players.begin(), players.end(), [&token](Player* player) { return player->GetToken() == token; });
-	if (it == players.end())
-		throw std::exception(PLAYER_NOT_FOUND);
-	return it;
+	// initialize StaticObjects
+	auto staticObjects = commonRepository.ListStaticObjects();
+
+	for (auto staticObject : staticObjects)
+	{
+		const auto pos = staticObject->GetPosition();
+		GameObject& gameObject = g_objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::StaticObject, 0, true);
+		g_gameMap.SetTileOccupied(gameObject.localPosition, true);
+
+		delete staticObject;
+	}
+
+	// initialize test dummy
+	// test
+	auto dummyName = new std::string("Dummy");
+	GameObject& dummyGameObject = g_objectManager.CreateGameObject(XMFLOAT3{ 30.0f, 0.0f, 30.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::Npc, 1, false, 2, 4);
+	auto dummyAIComponent = g_aiComponentManager.CreateAIComponent(dummyGameObject.id);
+	dummyGameObject.aiComponentId = dummyAIComponent.id;
+	StatsComponent& dummyStatsComponent = g_statsComponentManager.CreateStatsComponent(dummyGameObject.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, dummyName);
+	dummyGameObject.statsComponentId = dummyStatsComponent.id;
+	g_gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
 }
 
 bool SocketManager::MessagePartsEqual(const char* first, const char* second, const int length)
@@ -91,15 +110,9 @@ void SocketManager::Login(const std::string& accountName, const std::string& pas
 				guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
 			const std::string token = std::string(guid_cstr);
 
-			auto player = new Player
-			{
-				account->GetId(),
-				token,
-				ipAndPort,
-				GetTickCount(),
-				from
-			};
-			players.push_back(player);
+			GameObject& playerGameObject = g_objectManager.CreateGameObject(VEC_ZERO, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::Player, (long)account->GetId());
+
+			g_playerComponentManager.CreatePlayerComponent()
             
 			SendPacket(from, OPCODE_LOGIN_SUCCESSFUL, 2, token, ListCharacters(player->GetAccountId()));
 			std::cout << "AccountId " << account->GetId() << " connected to the server.\n\n";
@@ -369,16 +382,29 @@ bool SocketManager::TryRecieveMessage()
 			const auto it = GetPlayer(token); // this is here to validate token
 
 			PropagateChatMessage(senderName, message);
+
+			return true;
 		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_SET_TARGET, opcodeArrLen))
 		{
 			const auto token = args[0];
 			const auto targetId = args[1];
 
-			const auto it = GetPlayer(token);
-			(*it)->targetId = std::stol(targetId);
+			const auto player = *GetPlayer(token);
+			player->targetId = std::stol(targetId);
 
-			std::cout << (*it)->targetId << std::endl;
+			const auto gameObject = g_objectManager.GetGameObjectById(player->targetId);
+
+			// Toggle off Auto-Attack on the server and the client if the player switches to an invalid target.
+			if (gameObject.isStatic && player->autoAttackOn)
+			{
+				player->autoAttackOn = false;
+				SendPacket(player->GetSockAddr(), OPCODE_SERVER_MESSAGE, 2, std::string(INVALID_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR));
+				const std::string autoAttackAbilityId = "1";
+				SendPacket(player->GetSockAddr(), OPCODE_ACTIVATE_ABILITY_SUCCESS, 1, autoAttackAbilityId);
+			}
+
+			return true;
 		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_UNSET_TARGET, opcodeArrLen))
 		{
@@ -387,7 +413,7 @@ bool SocketManager::TryRecieveMessage()
 			const auto it = GetPlayer(token);
 			(*it)->targetId = -1;
 
-			std::cout << (*it)->targetId << std::endl;
+			return true;
 		}
 	}
 
@@ -437,19 +463,11 @@ void SocketManager::EnterWorld(const std::string& token, const std::string& char
 	(*it)->modelId = character->GetModelId();
 	(*it)->textureId = character->GetTextureId();
 	(*it)->characterName = character->GetName();
-	GameObject& characterGameObject = g_objectManager.CreateGameObject(character->GetPosition(), XMFLOAT3{ 14.0f, 14.0f, 14.0f },GameObjectType::Player, (long)character->GetId());
-	(*it)->playerController = std::make_unique<PlayerController>(characterGameObject);
+	(*it)->playerController = std::make_unique<PlayerController>(characterGameObject, g_gameMap);
 	const auto pos = character->GetPosition();
 	const auto charId = character->GetId();
 	SendPacket((*it)->GetSockAddr(), OPCODE_ENTER_WORLD_SUCCESSFUL, 9, std::to_string(charId), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(character->GetModelId()), std::to_string(character->GetTextureId()), ListSkills(charId), ListAbilities(charId), character->GetName());
-
-	// test
-	auto dummyName = new std::string( "Dummy" );
-	GameObject& dummyGameObject = g_objectManager.CreateGameObject(XMFLOAT3{ 30.0f, 0.0f, 30.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::Npc, 1, false, 2, 4);
-	auto dummyAIComponent = g_aiComponentManager.CreateAIComponent(dummyGameObject.id);
-	dummyGameObject.aiComponentId = dummyAIComponent.id;
-	StatsComponent& dummyStatsComponent = g_statsComponentManager.CreateStatsComponent(dummyGameObject.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, dummyName);
-	dummyGameObject.statsComponentId = dummyStatsComponent.id;	
+	g_gameMap.SetTileOccupied(pos, true);
 }
 
 void SocketManager::DeleteCharacter(const std::string& token, const std::string& characterName)
@@ -544,13 +562,18 @@ void SocketManager::PropagateChatMessage(const std::string& senderName, const st
 	}
 }
 
-void SocketManager::ActivateAbility(Player* player, Ability& ability)
+void SocketManager::ActivateAbility(PlayerComponent* player, Ability& ability)
 {
 	if (ability.name == "Auto Attack")
 	{
 		if (!player->autoAttackOn && player->targetId == -1)
 		{
-			SendPacket(player->GetSockAddr(), OPCODE_SERVER_MESSAGE, 2, std::string(NO_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR));
+			SendPacket(player->fromSockAddr, OPCODE_SERVER_MESSAGE, 2, std::string(NO_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR));
+			return;
+		}
+		else if (!player->autoAttackOn && g_objectManager.GetGameObjectById(player->targetId).isStatic)
+		{
+			SendPacket(player->fromSockAddr, OPCODE_SERVER_MESSAGE, 2, std::string(INVALID_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR));
 			return;
 		}
 		else
@@ -567,5 +590,5 @@ void SocketManager::ActivateAbility(Player* player, Ability& ability)
 
 	}
 
-	SendPacket(player->GetSockAddr(), OPCODE_ACTIVATE_ABILITY_SUCCESS, 1, std::to_string(ability.abilityId));
+	SendPacket(player->fromSockAddr, OPCODE_ACTIVATE_ABILITY_SUCCESS, 1, std::to_string(ability.abilityId));
 }

@@ -10,8 +10,4 @@ class AIComponent
 public:
 	unsigned int id{ 0 };
 	long gameObjectId{ 0 };
-
-	bool isMoving{ false };
-	XMFLOAT3 destination{ 0.0f, 0.0f, 0.0f };
-	XMFLOAT3 movementVector{ 0.0f, 0.0f, 0.0f };
 };

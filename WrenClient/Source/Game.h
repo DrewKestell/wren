@@ -1,9 +1,12 @@
 #pragma once
 
+#include <CommonRepository.h>
 #include "ClientRepository.h"
 #include <Models/Skill.h>
+#include <Models/StaticObject.h>
 #include <PlayerController.h>
 #include <Constants.h>
+#include <GameMap/GameMap.h>
 #include "DeviceResources.h"
 #include "GameTimer.h"
 #include "Camera.h"
@@ -13,7 +16,7 @@
 #include "Components/RenderComponentManager.h"
 #include "Components/StatsComponentManager.h"
 #include "SocketManager.h"
-#include "GameMap/GameMap.h"
+#include "Components/GameMapRenderComponent.h"
 #include "Sprite.h"
 #include "Models/Npc.h"
 #include "UI/UICharacterListing.h"
@@ -33,7 +36,7 @@
 class Game : public DX::IDeviceNotify, public Observer
 {
 public:
-	Game(ClientRepository repository) noexcept(false) ;
+	Game(ClientRepository repository, CommonRepository commonRepository) noexcept(false) ;
 
 	void Initialize(HWND window, int width, int height);
 	void Tick();
@@ -69,13 +72,15 @@ private:
 	XMMATRIX projectionTransform{ XMMatrixIdentity() };
 	Layer activeLayer{ Login };
 	ClientRepository repository;
+	CommonRepository commonRepository;
 	std::unique_ptr<DX::DeviceResources> deviceResources;
 	ObjectManager objectManager;
 	RenderComponentManager renderComponentManager{ objectManager };
 	StatsComponentManager statsComponentManager{ objectManager };
 	GameTimer timer;
 	Camera camera;
-	std::unique_ptr<GameMap> gameMap;
+	GameMap gameMap;
+	std::unique_ptr<GameMapRenderComponent> gameMapRenderComponent;
 	std::unique_ptr<PlayerController> playerController;
 	GameObject* player;
 	std::vector<UIComponent*> uiComponents; // TODO: i think these should use smart pointers
@@ -104,6 +109,7 @@ private:
 	void QuitGame();
 
 	void InitializeNpcs();
+	void InitializeStaticObjects();
 	void InitializeBrushes();
 	void InitializeTextFormats();
 	void InitializeInputs();

@@ -2,12 +2,12 @@
 
 #include "GameTimer.h"
 
-static const float ACCELERATION = 0.02f;
-static const float MIN_SPEED = 0.02f;
-static const float MAX_SPEED = 0.00005f;
-static const float OFFSET_X = 500.0f;
-static const float OFFSET_Y = 700.0f;
-static const float OFFSET_Z = -500.0f;
+static constexpr float ACCELERATION = 0.02f;
+static constexpr float MIN_SPEED = 0.02f;
+static constexpr float MAX_SPEED = 0.00005f;
+static constexpr float OFFSET_X = 500.0f;
+static constexpr float OFFSET_Y = 700.0f;
+static constexpr float OFFSET_Z = -500.0f;
 
 class Camera
 {

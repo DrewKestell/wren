@@ -2,8 +2,8 @@
 
 #include "SpriteVertex.h"
 
-const unsigned int SPRITE_STRIDE{ sizeof(SpriteVertex) };
-const unsigned int SPRITE_OFFSET{ 0 };
+static constexpr unsigned int SPRITE_STRIDE = sizeof(SpriteVertex);
+static constexpr unsigned int SPRITE_OFFSET = 0;
 
 class Sprite
 {

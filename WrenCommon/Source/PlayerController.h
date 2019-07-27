@@ -3,26 +3,27 @@
 #include "GameTimer.h"
 #include "PlayerUpdate.h"
 #include "GameObject.h"
+#include "GameMap/GameMap.h"
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/PlayerCorrectionEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
 
-static const int BUFFER_SIZE = 120;
+static constexpr int BUFFER_SIZE = 120;
 
 class PlayerController
 {
 	float clientWidth{ 0.0f };
 	float clientHeight{ 0.0f };
-	bool isMoving{ false };
-	XMFLOAT3 destination{ 0.0f, 0.0f, 0.0f };
 	GameObject& player;
+	GameMap& gameMap;
 	std::unique_ptr<PlayerUpdate> playerUpdates[BUFFER_SIZE];
 	int playerUpdateIdCounter{ 0 };
 
+	const XMFLOAT3 GetDestinationVector(const XMFLOAT3 playerPos) const;
 	void SetDestination(const XMFLOAT3 playerPos);
 	void UpdateCurrentMouseDirection(const float mousePosX, const float mousePosY);
 public:
-	PlayerController(GameObject& player);
+	PlayerController(GameObject& player, GameMap& gameMap);
 	void Update();
 	void SetClientDimensions(const int width, const int height) { clientWidth = (float)width; clientHeight = (float)height; }
 	PlayerUpdate* GeneratePlayerUpdate();

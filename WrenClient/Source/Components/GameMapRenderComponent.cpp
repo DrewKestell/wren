@@ -1,15 +1,12 @@
 #include "stdafx.h"
-#include "GameMap.h"
+#include "GameMapRenderComponent.h"
 #include "../ConstantBufferPerObject.h"
 
-const unsigned int TILE_WIDTH = 30;
-const unsigned int TILE_HEIGHT = 30;
-
 // this can be optimized. there are more shared vertices here (between tiles).
-GameMap::GameMap(ID3D11Device* device, const BYTE* vertexShaderBuffer, const int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
+GameMapRenderComponent::GameMapRenderComponent(ID3D11Device* device, const BYTE* vertexShaderBuffer, const int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
 	: vertexShader{ vertexShader },
-	  pixelShader{ pixelShader }, 
-	  texture{ texture }
+	pixelShader{ pixelShader },
+	texture{ texture }
 {
 	std::vector<Vertex> vertices = std::vector<Vertex>(MAP_SIZE * 4);
 	std::vector<unsigned int> indices = std::vector<unsigned int>(MAP_SIZE * 6, 0);
@@ -19,8 +16,8 @@ GameMap::GameMap(ID3D11Device* device, const BYTE* vertexShaderBuffer, const int
 		const auto row = i / MAP_HEIGHT;
 		const auto col = i % MAP_WIDTH;
 
-		const float x = (col * TILE_WIDTH) - (float)TILE_WIDTH / 2;
-		const float z = (row * TILE_HEIGHT) - (float)TILE_HEIGHT / 2;
+		const float x = (col * TILE_SIZE) - (float)TILE_SIZE / 2;
+		const float z = (row * TILE_SIZE) - (float)TILE_SIZE / 2;
 
 		const auto bottomLeft = i * 4;
 		const auto topLeft = (i * 4) + 1;
@@ -28,9 +25,9 @@ GameMap::GameMap(ID3D11Device* device, const BYTE* vertexShaderBuffer, const int
 		const auto bottomRight = (i * 4) + 3;
 
 		vertices[bottomLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{0.0f, 0.0f} };
-		vertices[topLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z + TILE_HEIGHT }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{1.0f, 0.0f} };
-		vertices[topRight] = Vertex{ XMFLOAT3{ x + TILE_WIDTH, 0.0f, z + TILE_HEIGHT }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{1.0f, 1.0f} };
-		vertices[bottomRight] = Vertex{ XMFLOAT3{ x + TILE_WIDTH, 0.0f, z }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{0.0f, 1.0f} };
+		vertices[topLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z + TILE_SIZE }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{1.0f, 0.0f} };
+		vertices[topRight] = Vertex{ XMFLOAT3{ x + TILE_SIZE, 0.0f, z + TILE_SIZE }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{1.0f, 1.0f} };
+		vertices[bottomRight] = Vertex{ XMFLOAT3{ x + TILE_SIZE, 0.0f, z }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{0.0f, 1.0f} };
 
 		indices[i * 6] = bottomLeft;
 		indices[(i * 6) + 1] = topLeft;
@@ -100,12 +97,7 @@ GameMap::GameMap(ID3D11Device* device, const BYTE* vertexShaderBuffer, const int
 	device->CreateInputLayout(ied, ARRAYSIZE(ied), vertexShaderBuffer, vertexShaderSize, inputLayout.ReleaseAndGetAddressOf());
 }
 
-GameMapTile& GameMap::GetTile(int row, int col)
-{
-	return mapTiles[(row * MAP_WIDTH) + col];
-}
-
-void GameMap::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform)
+void GameMapRenderComponent::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform)
 {
 	// set InputLayout
 	immediateContext->IASetInputLayout(inputLayout.Get());
