@@ -52,7 +52,7 @@ int main()
 		while (socketManager.TryRecieveMessage()) {}
 
 		// turn this off for debugging
-        //socketManager.HandleTimeout();
+		//socketManager.HandleTimeout();
 
 		m_timer.Tick();
 		auto deltaTime = m_timer.DeltaTime();

@@ -26,7 +26,6 @@
     <ClInclude Include="Source\Components\PlayerComponentManager.h" />
     <ClInclude Include="Source\Models\Account.h" />
     <ClInclude Include="Source\Models\Character.h" />
-    <ClInclude Include="Source\Player.h" />
     <ClInclude Include="Source\ServerRepository.h" />
     <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\stdafx.h" />

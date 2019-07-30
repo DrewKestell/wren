@@ -1,9 +1,10 @@
 #pragma once
 
-static constexpr float UPDATE_FREQUENCY = 0.01666666666f;
-static constexpr float PLAYER_SPEED = 60.0f;
-static constexpr int MESSAGE_BUFFER_SIZE = 100;
-static constexpr float TILE_SIZE = 30.0f;
+static constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
+static constexpr auto UPDATE_FREQUENCY = 0.01666666666f;
+static constexpr auto PLAYER_SPEED = 60.0f;
+static constexpr auto MESSAGE_BUFFER_SIZE = 100;
+static constexpr auto TILE_SIZE = 30.0f;
 static constexpr unsigned int MAP_WIDTH = 100;
 static constexpr unsigned int MAP_HEIGHT = 100;
 static constexpr unsigned int MAP_SIZE = MAP_WIDTH * MAP_HEIGHT;

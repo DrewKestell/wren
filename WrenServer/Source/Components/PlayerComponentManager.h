@@ -15,10 +15,12 @@ class PlayerComponentManager : public Observer
 	ObjectManager& objectManager;
 public:
 	PlayerComponentManager(ObjectManager& objectManager);
-	PlayerComponent& CreatePlayerComponent(const long gameObjectId);
+	PlayerComponent& CreatePlayerComponent(const long gameObjectId, const std::string token, const std::string ipAndPort, const sockaddr_in fromSockAddr, const DWORD lastHeartbeat);
 	void DeletePlayerComponent(const unsigned int playerComponentId);
 	PlayerComponent& GetPlayerComponentById(const unsigned int playerComponentId);
 	virtual const bool HandleEvent(const Event* const event);
 	void Update();
+	PlayerComponent* GetPlayerComponents();
+	const unsigned int GetPlayerComponentIndex();
 	~PlayerComponentManager();
 };

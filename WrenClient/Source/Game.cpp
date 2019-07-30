@@ -393,7 +393,7 @@ void Game::InitializeStaticObjects()
 	for (auto staticObject : staticObjects)
 	{
 		const auto pos = staticObject->GetPosition();
-		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::StaticObject, 0, true);
+		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::StaticObject, staticObject->GetId(), true);
 		auto renderComponent = renderComponentManager.CreateRenderComponent(gameObject.id, meshes[staticObject->GetModelId()].get(), vertexShader.Get(), pixelShader.Get(), textures[staticObject->GetTextureId()].Get());
 		gameObject.renderComponentId = renderComponent.GetId();
 		StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObject.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, staticObject->GetName());
@@ -1020,7 +1020,7 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (EnterWorldSuccessEvent*)event;
 
-			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::Player, (long)derivedEvent->characterId);
+			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::Player, (long)derivedEvent->accountId);
 			this->player = &player;
 			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(player.id, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.renderComponentId = sphereRenderComponent.GetId();

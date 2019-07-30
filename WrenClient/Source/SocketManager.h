@@ -6,6 +6,7 @@
 class SocketManager
 {
 private:
+	std::string accountId{ "" };
 	std::string token{ "" };
     sockaddr_in local;
     sockaddr_in to;

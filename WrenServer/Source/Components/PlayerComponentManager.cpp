@@ -12,12 +12,12 @@ PlayerComponentManager::PlayerComponentManager(ObjectManager& objectManager)
 	g_eventHandler.Subscribe(*this);
 }
 
-PlayerComponent& PlayerComponentManager::CreatePlayerComponent(const long gameObjectId)
+PlayerComponent& PlayerComponentManager::CreatePlayerComponent(const long gameObjectId, const std::string token, const std::string ipAndPort, const sockaddr_in fromSockAddr, const DWORD lastHeartbeat)
 {
 	if (playerComponentIndex == MAX_PLAYERCOMPONENTS_SIZE)
 		throw std::exception("Max PlayerComponents exceeded!");
 
-	playerComponents[playerComponentIndex].Initialize(playerComponentIndex, gameObjectId);
+	playerComponents[playerComponentIndex].Initialize(playerComponentIndex, gameObjectId, token, ipAndPort, fromSockAddr, lastHeartbeat);
 	idIndexMap[playerComponentIndex] = playerComponentIndex;
 	return playerComponents[playerComponentIndex++];
 }
@@ -62,7 +62,18 @@ void PlayerComponentManager::Update()
 	{
 		PlayerComponent& comp = playerComponents[i];
 
+		// combat stuff here!
 	}
+}
+
+PlayerComponent* PlayerComponentManager::GetPlayerComponents()
+{
+	return playerComponents;
+}
+
+const unsigned int PlayerComponentManager::GetPlayerComponentIndex()
+{
+	return playerComponentIndex;
 }
 
 PlayerComponentManager::~PlayerComponentManager()

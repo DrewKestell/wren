@@ -11,9 +11,9 @@ using namespace DirectX;
 class EnterWorldSuccessEvent : public Event
 {
 public:
-	EnterWorldSuccessEvent(const int characterId, const XMFLOAT3 position, const int modelId, const int textureId, std::vector<Skill*>* skills, std::vector<Ability*>* abilities, std::string* name)
+	EnterWorldSuccessEvent(const int accountId, const XMFLOAT3 position, const int modelId, const int textureId, std::vector<Skill*>* skills, std::vector<Ability*>* abilities, std::string* name)
 		: Event(EventType::EnterWorldSuccess),
-		  characterId{ characterId },
+		  accountId{ accountId },
 		  position{ position },
 		  modelId{ modelId },
 		  textureId{ textureId },
@@ -22,7 +22,7 @@ public:
 		  name{ name }
 	{
 	}
-	const int characterId;
+	const int accountId;
 	const XMFLOAT3 position;
 	const int modelId;
 	const int textureId;

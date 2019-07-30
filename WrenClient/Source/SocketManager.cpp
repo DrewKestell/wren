@@ -62,6 +62,8 @@ void SocketManager::SendPacket(const std::string& opcode, const int argCount, ..
 {
     std::string packet = std::string(CHECKSUM) + opcode;
 
+	if (accountId != "")
+		packet += accountId + "|";
 	if (token != "")
 		packet += token + "|";
 
@@ -82,6 +84,7 @@ void SocketManager::SendPacket(const std::string& opcode, const int argCount, ..
 	{
 		if (opcode == std::string(OPCODE_DISCONNECT))
 		{
+			accountId = "";
 			token = "";
 		}
 	}
@@ -89,7 +92,7 @@ void SocketManager::SendPacket(const std::string& opcode, const int argCount, ..
 
 bool SocketManager::Connected()
 {
-	return token != "";
+	return accountId != "" && token != "";
 }
 
 void SocketManager::CloseSockets()
@@ -170,10 +173,12 @@ bool SocketManager::TryRecieveMessage()
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_LOGIN_SUCCESSFUL, opcodeArrLen))
         {
-            const auto token = args[0];
-            const auto characterString = args[1];
+			const auto accountId = args[0];
+            const auto token = args[1];
+            const auto characterString = args[2];
             const auto characterList = BuildCharacterVector(characterString);
 
+			this->accountId = *accountId;
 			this->token = *token;
 
 			if (logMessages)
@@ -209,7 +214,7 @@ bool SocketManager::TryRecieveMessage()
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_ENTER_WORLD_SUCCESSFUL, opcodeArrLen))
         {
-			const auto id = args[0];
+			const auto accountId = args[0];
 			const auto positionX = args[1];
 			const auto positionY = args[2];
 			const auto positionZ = args[3];
@@ -221,7 +226,7 @@ bool SocketManager::TryRecieveMessage()
 
 			if (logMessages)
 				std::cout << "Connected to game world!\n";
-			g_eventHandler.QueueEvent(new EnterWorldSuccessEvent(std::stoi(*id), XMFLOAT3{ std::stof(*positionX), std::stof(*positionY), std::stof(*positionZ) }, std::stoi(*modelId), std::stoi(*textureId), BuildSkillVector(*skillString), BuildAbilityVector(*abilityString), name));
+			g_eventHandler.QueueEvent(new EnterWorldSuccessEvent(std::stoi(*accountId), XMFLOAT3{ std::stof(*positionX), std::stof(*positionY), std::stof(*positionZ) }, std::stoi(*modelId), std::stoi(*textureId), BuildSkillVector(*skillString), BuildAbilityVector(*abilityString), name));
 			return true;
         }
 		else if (MessagePartsEqual(opcodeArr, OPCODE_DELETE_CHARACTER_SUCCESSFUL, opcodeArrLen))
@@ -402,5 +407,6 @@ std::vector<Ability*>* SocketManager::BuildAbilityVector(std::string& abilityStr
 
 void SocketManager::Logout()
 {
+	accountId = "";
 	token = "";
 }
