@@ -2,3 +2,7 @@
 x64
 WrenClient/x64
 WrenServer/x64
+
+!x64/Debug/WrenClient.db
+!x64/Debug/WrenCommon.db
+!x64/Debug/WrenServer.db
