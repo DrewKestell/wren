@@ -5,18 +5,19 @@
 void GameObject::Update()
 {
 	auto movementVec = XMLoadFloat3(&movementVector);
-	movementVec *= PLAYER_SPEED * UPDATE_FREQUENCY;
+	movementVec *= speed * UPDATE_FREQUENCY;
 	
 	auto positionVec = XMLoadFloat3(&localPosition);
 	XMStoreFloat3(&localPosition, movementVec + positionVec);
 }
 
-void GameObject::Initialize(const long id, GameObjectType type, const XMFLOAT3 localPosition, const XMFLOAT3 scale, const bool isStatic, const int modelId, const int textureId)
+void GameObject::Initialize(const long id, GameObjectType type, const XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, const bool isStatic, const int modelId, const int textureId)
 {
 	this->id = id;
 	this->type = type;
 	this->localPosition = localPosition;
 	this->scale = scale;
+	this->speed = speed;
 	this->isStatic = isStatic;
 	this->modelId = modelId;
 	this->textureId = textureId;

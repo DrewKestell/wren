@@ -19,7 +19,6 @@ private:
 
 	const bool ValidateToken(const int accountId, const std::string token); // this should probably return a PlayerComponent to improve performance
 	PlayerComponent& GetPlayerComponent(const int accountId);
-	void SendPacket(sockaddr_in from, const std::string& opcode, const int argCount = 0, ...);
 	bool MessagePartsEqual(const char* first, const char* second, const int length);
 	void Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, sockaddr_in from);
 	void CreateAccount(const std::string& accountName, const std::string& password, sockaddr_in from);
@@ -40,4 +39,7 @@ public:
     void CloseSockets();
 	void HandleTimeout();
 	void UpdateClients();
+	void SendPacket(const std::string& opcode, std::string args[], const int argCount);
+	void SendPacket(sockaddr_in from, const std::string& opcode);
+	void SendPacket(sockaddr_in from, const std::string& opcode, std::string args[], const int argCount);
 };

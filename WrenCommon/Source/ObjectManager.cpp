@@ -12,13 +12,13 @@ void ObjectManager::Update()
 // For now, make id optional, and default to the gameObjectIndex it one isn't passed in
 // On the client, all object creation should be triggered by an event from the server,
 // so we should have an id in that case.
-GameObject& ObjectManager::CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, GameObjectType type, const long id, const bool isStatic, const int modelId, const int textureId)
+GameObject& ObjectManager::CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, GameObjectType type, const long id, const bool isStatic, const int modelId, const int textureId)
 {
 	if (gameObjectIndex == MAX_GAMEOBJECTS_SIZE)
 		throw std::exception("Max GameObjects exceeded!");
 
 	auto gameObjectId = id == 0 ? gameObjectIndex : id;
-	gameObjects[gameObjectIndex].Initialize(gameObjectId, type, localPosition, scale, isStatic, modelId, textureId);
+	gameObjects[gameObjectIndex].Initialize(gameObjectId, type, localPosition, scale, speed, isStatic, modelId, textureId);
 	idIndexMap[gameObjectId] = gameObjectIndex;
 	return gameObjects[gameObjectIndex++];
 }

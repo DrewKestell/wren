@@ -28,3 +28,5 @@ constexpr char OPCODE_UNSET_TARGET[2] = { '2', '2' };
 constexpr char OPCODE_SERVER_MESSAGE[2] = { '2', '3' };
 constexpr char OPCODE_ACTIVATE_ABILITY_SUCCESS[2] = { '2', '4' };
 constexpr char OPCODE_OTHER_PLAYER_UPDATE[2] = { '2', '5' };
+constexpr char OPCODE_ATTACK_HIT[2] = { '2', '6' };
+constexpr char OPCODE_ATTACK_MISS[2] = { '2', '7' };

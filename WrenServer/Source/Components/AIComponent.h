@@ -10,4 +10,7 @@ class AIComponent
 public:
 	unsigned int id{ 0 };
 	long gameObjectId{ 0 };
+
+	long targetId{ -1 };
+	float swingTimer{ 0.0f };
 };

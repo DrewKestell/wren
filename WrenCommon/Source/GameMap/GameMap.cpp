@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "GameMap.h"
+#include <Utility.h>
 
 GameMapTile& GameMap::GetTileByPos(const XMFLOAT3 pos)
 {
-	const auto row = (int)pos.x / (int)TILE_SIZE;
-	const auto col = (int)pos.z / (int)TILE_SIZE;
+	int row, col;
+	Utility::GetMapTileXYFromPos(pos, row, col);
 
 	return mapTiles[(row * MAP_WIDTH) + col];
 }

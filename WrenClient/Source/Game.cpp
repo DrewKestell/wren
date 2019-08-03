@@ -5,6 +5,7 @@
 #include "Components/RenderComponent.h"
 #include <OpCodes.h>
 #include "Events/UIAbilityDroppedEvent.h"
+#include "Events/AttackHitEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -113,19 +114,8 @@ void Game::Tick()
 			{
 				auto playerUpdate = playerController->GeneratePlayerUpdate();
 
-				g_socketManager.SendPacket(
-					OPCODE_PLAYER_UPDATE,
-					9,
-					std::to_string(playerUpdate->id),
-					std::to_string(player->id),
-					std::to_string(playerUpdate->position.x),
-					std::to_string(playerUpdate->position.y),
-					std::to_string(playerUpdate->position.z),
-					std::to_string(playerUpdate->isRightClickHeld),
-					std::to_string(playerUpdate->currentMouseDirection.x),
-					std::to_string(playerUpdate->currentMouseDirection.y),
-					std::to_string(playerUpdate->currentMouseDirection.z)
-				);
+				std::string args[]{ std::to_string(playerUpdate->id), std::to_string(player->id), std::to_string(playerUpdate->position.x), std::to_string(playerUpdate->position.y), std::to_string(playerUpdate->position.z), std::to_string(playerUpdate->isRightClickHeld), std::to_string(playerUpdate->currentMouseDirection.x), std::to_string(playerUpdate->currentMouseDirection.y), std::to_string(playerUpdate->currentMouseDirection.z) };
+				g_socketManager.SendPacket(OPCODE_PLAYER_UPDATE, args, 9);
 			}
 			textWindow->Update(timer.DeltaTime()); // this should be handled by objectManager.Update()...
 			objectManager.Update();
@@ -303,6 +293,14 @@ void Game::CreateDeviceDependentResources()
 	targetHUD = std::make_unique<UITargetHUD>(uiComponents, XMFLOAT2{ 260.0f, 12.0f }, InGame, 0, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
 }
 
+void Game::CreatePlayerDependentResources()
+{
+	// i think you need to move certain things into here (ui elements that depend on the player existing, etc)
+	// you should call this when receiving the EnterWorldSuccess event, and also conditionally when
+	// calling CreateDeviceResources, call this IF the player exists (this will happen when resizing the window
+	// after entering the game)
+}
+
 // Allocate all memory resources that change on a window SizeChanged event.
 void Game::CreateWindowSizeDependentResources()
 {
@@ -345,15 +343,6 @@ void Game::OnDeviceRestored()
 }
 #pragma endregion
 
-#pragma region Properties
-void Game::GetDefaultSize(int& width, int& height) const
-{
-	// TODO: Change to desired default window size (note minimum size is 320x200).
-	width = 800;
-	height = 600;
-}
-#pragma endregion
-
 ShaderBuffer Game::LoadShader(const std::wstring filename)
 {
 	// load precompiled shaders from .cso objects
@@ -393,7 +382,7 @@ void Game::InitializeStaticObjects()
 	for (auto staticObject : staticObjects)
 	{
 		const auto pos = staticObject->GetPosition();
-		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::StaticObject, staticObject->GetId(), true);
+		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetId(), true);
 		auto renderComponent = renderComponentManager.CreateRenderComponent(gameObject.id, meshes[staticObject->GetModelId()].get(), vertexShader.Get(), pixelShader.Get(), textures[staticObject->GetTextureId()].Get());
 		gameObject.renderComponentId = renderComponent.GetId();
 		StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObject.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, staticObject->GetName());
@@ -533,7 +522,8 @@ void Game::InitializeButtons()
 			return;
 		}
 
-		g_socketManager.SendPacket(OPCODE_CONNECT, 2, accountName, password);
+		std::string args[]{ accountName, password };
+		g_socketManager.SendPacket(OPCODE_CONNECT, args, 2);
 		SetActiveLayer(Connecting);
 	};
 
@@ -572,7 +562,8 @@ void Game::InitializeButtons()
 			return;
 		}
 
-		g_socketManager.SendPacket(OPCODE_CREATE_ACCOUNT, 2, accountName, password);
+		std::string args[]{ accountName, password };
+		g_socketManager.SendPacket(OPCODE_CREATE_ACCOUNT, args, 2);
 	};
 
 	const auto onClickCreateAccountCancelButton = [this]()
@@ -605,7 +596,8 @@ void Game::InitializeButtons()
 			characterSelect_errorMessageLabel->SetText("You must select a character before entering the game.");
 		else
 		{
-			g_socketManager.SendPacket(OPCODE_ENTER_WORLD, 1, characterInput->GetName());
+			std::string args[]{ characterInput->GetName() };
+			g_socketManager.SendPacket(OPCODE_ENTER_WORLD, args, 1);
 			SetActiveLayer(EnteringWorld);
 		}
 	};
@@ -650,7 +642,8 @@ void Game::InitializeButtons()
 			return;
 		}
 
-		g_socketManager.SendPacket(OPCODE_CREATE_CHARACTER, 1, characterName);
+		std::string args[]{ characterName };
+		g_socketManager.SendPacket(OPCODE_CREATE_CHARACTER, args, 1);
 	};
 
 	const auto onClickCreateCharacterBackButton = [this]()
@@ -666,7 +659,8 @@ void Game::InitializeButtons()
 	// DeleteCharacter
 	const auto onClickDeleteCharacterConfirm = [this]()
 	{
-		g_socketManager.SendPacket(OPCODE_DELETE_CHARACTER, 1, characterNamePendingDeletion);
+		std::string args[]{ characterNamePendingDeletion };
+		g_socketManager.SendPacket(OPCODE_DELETE_CHARACTER, args, 1);
 	};
 
 	const auto onClickDeleteCharacterCancel = [this]()
@@ -1020,7 +1014,7 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (EnterWorldSuccessEvent*)event;
 
-			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::Player, (long)derivedEvent->accountId);
+			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, (long)derivedEvent->accountId);
 			this->player = &player;
 			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(player.id, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.renderComponentId = sphereRenderComponent.GetId();
@@ -1070,16 +1064,18 @@ const bool Game::HandleEvent(const Event* const event)
 			int modelId{ 0 };
 			int textureId{ 0 };
 			std::string* name{ nullptr };
+			float speed{ 0.0f };
 			if (type == GameObjectType::Npc)
 			{
 				auto npc = *find_if(npcs->begin(), npcs->end(), [&gameObjectId](Npc* npc) { return npc->GetId() == gameObjectId; });
 				modelId = npc->GetModelId();
 				textureId = npc->GetTextureId();
 				name = npc->GetName();
+				speed = npc->GetSpeed();
 			}
 			if (!objectManager.GameObjectExists(gameObjectId))
 			{
-				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, type, gameObjectId);
+				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, speed, type, gameObjectId);
 				obj.movementVector = mov;
 				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
 				obj.renderComponentId = sphereRenderComponent.GetId();
@@ -1115,7 +1111,7 @@ const bool Game::HandleEvent(const Event* const event)
 			
 			if (!objectManager.GameObjectExists(gameObjectId))
 			{
-				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, GameObjectType::Player, gameObjectId);
+				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, gameObjectId);
 				obj.movementVector = mov;
 				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
 				obj.renderComponentId = sphereRenderComponent.GetId();
@@ -1135,7 +1131,8 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (ActivateAbilityEvent*)event;
 
-			g_socketManager.SendPacket(OPCODE_ACTIVATE_ABILITY, 1, std::to_string(derivedEvent->abilityId));
+			std::string args[]{ std::to_string(derivedEvent->abilityId) };
+			g_socketManager.SendPacket(OPCODE_ACTIVATE_ABILITY, args, 1);
 
 			break;
 		}
@@ -1209,7 +1206,8 @@ const bool Game::HandleEvent(const Event* const event)
 				StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(clickedGameObject->statsComponentId);
 				g_eventHandler.QueueEvent(new SetTargetEvent{ clickedGameObject->id, &statsComponent });
 				playerStats.targetId = clickedGameObject->id;
-				g_socketManager.SendPacket(OPCODE_SET_TARGET, 1, std::to_string(clickedGameObject->id));
+				std::string args[]{ std::to_string(clickedGameObject->id) };
+				g_socketManager.SendPacket(OPCODE_SET_TARGET, args, 1);
 			}
 			else
 			{
@@ -1226,7 +1224,8 @@ const bool Game::HandleEvent(const Event* const event)
 
 			auto statsComponent = statsComponentManager.GetStatsComponentById(player->statsComponentId);
 
-			g_socketManager.SendPacket(OPCODE_SEND_CHAT_MESSAGE, 2, statsComponent.name, *derivedEvent->message);
+			std::string args[]{ *statsComponent.name, *derivedEvent->message };
+			g_socketManager.SendPacket(OPCODE_SEND_CHAT_MESSAGE, args, 2);
 
 			break;
 		}
@@ -1245,6 +1244,16 @@ const bool Game::HandleEvent(const Event* const event)
 
 			std::string* msg = new std::string(*derivedEvent->message);
 			textWindow->AddMessage(msg);
+
+			break;
+		}
+		case EventType::AttackHit:
+		{
+			const auto derivedEvent = (AttackHitEvent*)event;
+
+			const auto gameObject = objectManager.GetGameObjectById(derivedEvent->targetId);
+			StatsComponent& comp = statsComponentManager.GetStatsComponentById(gameObject.statsComponentId);
+			comp.health -= derivedEvent->damage;
 
 			break;
 		}

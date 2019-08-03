@@ -12,8 +12,8 @@ static constexpr int BUFFER_SIZE = 120;
 
 class PlayerController
 {
-	float clientWidth{ 0.0f };
-	float clientHeight{ 0.0f };
+	float clientWidth{ CLIENT_WIDTH };
+	float clientHeight{ CLIENT_HEIGHT };
 	GameObject& player;
 	GameMap& gameMap;
 	std::unique_ptr<PlayerUpdate> playerUpdates[BUFFER_SIZE];

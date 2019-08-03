@@ -160,6 +160,8 @@
     <ClInclude Include="Source\EventHandling\Events\MouseMoveEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
+    <ClInclude Include="Source\Events\AttackHitEvent.h" />
+    <ClInclude Include="Source\Events\AttackMissEvent.h" />
     <ClInclude Include="Source\Events\UIAbilityDroppedEvent.h" />
     <ClInclude Include="Source\Game.h" />
     <ClInclude Include="Source\LoginState.h" />

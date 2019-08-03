@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ClientRepository.h"
 
-const auto LIST_NPCS_QUERY = "SELECT id, name, model_id, texture_id FROM Npcs;";
+const auto LIST_NPCS_QUERY = "SELECT id, name, model_id, texture_id, speed FROM Npcs;";
 
 std::vector<Npc*>* ClientRepository::ListNpcs()
 {
@@ -24,7 +24,8 @@ std::vector<Npc*>* ClientRepository::ListNpcs()
 			const unsigned char *name = sqlite3_column_text(statement, 1);
 			const unsigned int modelId = sqlite3_column_int(statement, 2);
 			const unsigned int textureId = sqlite3_column_int(statement, 3);
-			npcs->push_back(new Npc(id, new std::string(reinterpret_cast<const char*>(name)), modelId, textureId));
+			const auto speed = (float)sqlite3_column_double(statement, 4);
+			npcs->push_back(new Npc(id, new std::string(reinterpret_cast<const char*>(name)), modelId, textureId, speed));
 			result = sqlite3_step(statement);
 		}
 		sqlite3_finalize(statement);

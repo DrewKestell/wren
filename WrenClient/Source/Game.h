@@ -53,17 +53,14 @@ public:
 	void OnWindowMoved();
 	void OnWindowSizeChanged(int width, int height);
 
-	// Properties
-	void GetDefaultSize(int& width, int& height) const;
-
 	~Game();
 
 private:
 	float updateTimer{ 0.0f };
 	float mousePosX{ 0.0f };
 	float mousePosY{ 0.0f };
-	int clientWidth{ 800 };
-	int clientHeight{ 600 };
+	int clientWidth{ CLIENT_WIDTH };
+	int clientHeight{ CLIENT_HEIGHT };
 	std::vector<std::unique_ptr<UICharacterListing>> characterList;
 	std::map<int, std::unique_ptr<UISkillListing>> skillList;
 	std::string characterNamePendingDeletion{};
@@ -101,6 +98,7 @@ private:
 	void Clear();
 	void CreateDeviceDependentResources();
 	void CreateWindowSizeDependentResources();
+	void CreatePlayerDependentResources();
 
 	ShaderBuffer LoadShader(const std::wstring filename);
 	virtual const bool HandleEvent(const Event* const event);

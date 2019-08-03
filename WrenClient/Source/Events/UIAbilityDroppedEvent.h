@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <EventHandling/Events/MouseEvent.h>
 #include "../UI/UIAbility.h"
 

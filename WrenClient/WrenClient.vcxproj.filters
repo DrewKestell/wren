@@ -162,6 +162,8 @@
     <ClInclude Include="Source\Models\Npc.h" />
     <ClInclude Include="Source\ClientRepository.h" />
     <ClInclude Include="Source\Components\GameMapRenderComponent.h" />
+    <ClInclude Include="Source\Events\AttackHitEvent.h" />
+    <ClInclude Include="Source\Events\AttackMissEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

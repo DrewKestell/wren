@@ -10,8 +10,6 @@ PlayerController::PlayerController(GameObject& player, GameMap& gameMap)
 	: player{ player },
 	  gameMap{ gameMap }
 {
-	clientWidth = 800;
-	clientHeight = 600;
 }
 
 void PlayerController::OnPlayerCorrectionEvent(PlayerCorrectionEvent* event)

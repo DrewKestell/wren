@@ -54,11 +54,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		return 1;
 
 	// Create window
-	int w;
-	int h;
-	g_game->GetDefaultSize(w, h);
-
-	RECT rc = { 0, 0, static_cast<long>(w), static_cast<long>(h) };
+	RECT rc = { 0, 0, static_cast<long>(CLIENT_WIDTH), static_cast<long>(CLIENT_HEIGHT) };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 	// TODO: Change to CreateWindowExW(WS_EX_TOPMOST, L"Direct3D_Win32_Game1WindowClass", L"Direct3D Win32 Game1", WS_POPUP,
@@ -291,14 +287,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
 				SetWindowLongPtr(hWnd, GWL_EXSTYLE, 0);
 
-				int width = 800;
-				int height = 600;
-				if (game)
-					game->GetDefaultSize(width, height);
-
 				ShowWindow(hWnd, SW_SHOWNORMAL);
 
-				SetWindowPos(hWnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+				SetWindowPos(hWnd, HWND_TOP, 0, 0, CLIENT_WIDTH, CLIENT_HEIGHT, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
 			}
 			else
 			{

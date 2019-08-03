@@ -1,10 +1,13 @@
 #include "stdafx.h"
+#include <OpCodes.h>
 #include <Utility.h>
 #include "AIComponentManager.h"
+#include "../SocketManager.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 
 extern EventHandler g_eventHandler;
+extern SocketManager g_socketManager;
 
 static constexpr XMFLOAT3 DIRECTIONS[8]
 {
@@ -79,12 +82,11 @@ void AIComponentManager::Update()
 	for (unsigned int i = 0; i < aiComponentIndex; i++)
 	{
 		AIComponent& comp = aiComponents[i];
-		int rnd;
-
 		GameObject& gameObject = objectManager.GetGameObjectById(comp.gameObjectId);
 		auto pos = gameObject.GetWorldPosition();
 		auto destination = gameObject.destination;
 
+		// handle movement
 		if (gameObject.isMoving)
 		{
 			// if target is reached
@@ -98,34 +100,102 @@ void AIComponentManager::Update()
 				gameObject.isMoving = false;
 			}
 		}
-		
-		if (!gameObject.isMoving)
+		else
 		{
-			rnd = dist100(rng);
-			if (rnd == 0)
-			{
-				rnd = dist8(rng);
+			auto movementVec = VEC_ZERO;
 
-				const auto vec = DIRECTIONS[rnd];
-				const auto movementVector = XMFLOAT3{ vec.x * TILE_SIZE, vec.y * TILE_SIZE, vec.z * TILE_SIZE };
+			if (comp.targetId >= 0)
+			{
+				const auto target = objectManager.GetGameObjectById(comp.targetId);
+
+				const auto npcPosVec = XMLoadFloat3(&pos);
+				const auto targetPosVec = XMLoadFloat3(&target.localPosition);
+
+				float shortestDistance = FLT_MAX;
+				for (auto i = 0; i < 8; i++)
+				{
+					const auto dirVec = XMLoadFloat3(&DIRECTIONS[i]);
+					const auto newVec = XMVectorAdd(npcPosVec, dirVec);
+					const auto npcToPlayerVec = XMVectorSubtract(newVec, targetPosVec);
+					const auto magnitudeVec = XMVector3Length(npcToPlayerVec);
+
+					XMFLOAT3 magnitudeStoredVec;
+					XMStoreFloat3(&magnitudeStoredVec, magnitudeVec);
+					
+					if (std::abs(magnitudeStoredVec.x) < shortestDistance)
+					{
+						shortestDistance = magnitudeStoredVec.x;
+						movementVec = DIRECTIONS[i];
+					}
+				}
+			}
+			else
+			{
+				auto rnd = dist100(rng);
+				if (rnd == 0)
+				{
+					rnd = dist8(rng);
+					movementVec = DIRECTIONS[rnd];
+				}
+			}
+
+			if (movementVec.x != 0.0f || movementVec.y != 0.0f || movementVec.z != 0.0f)
+			{
+				const auto movementVector = XMFLOAT3{ movementVec.x * TILE_SIZE, movementVec.y * TILE_SIZE, movementVec.z * TILE_SIZE };
 				const auto proposedPos = Utility::XMFLOAT3Sum(gameObject.localPosition, movementVector);
 
-				if (Utility::CheckOutOfBounds(proposedPos) || gameMap.IsTileOccupied(proposedPos))
-					return;
-
-				gameObject.isMoving = true;
-
-				gameObject.movementVector = vec;
-
-				gameObject.destination = XMFLOAT3
+				if (!Utility::CheckOutOfBounds(proposedPos) && !gameMap.IsTileOccupied(proposedPos))
 				{
-					pos.x + (gameObject.movementVector.x * TILE_SIZE),
-					pos.y + (gameObject.movementVector.y * TILE_SIZE),
-					pos.z + (gameObject.movementVector.z * TILE_SIZE)
-				};
+					gameObject.isMoving = true;
 
-				gameMap.SetTileOccupied(gameObject.localPosition, false);
-				gameMap.SetTileOccupied(proposedPos, true);
+					gameObject.movementVector = movementVec;
+
+					gameObject.destination = XMFLOAT3
+					{
+						pos.x + (gameObject.movementVector.x * TILE_SIZE),
+						pos.y + (gameObject.movementVector.y * TILE_SIZE),
+						pos.z + (gameObject.movementVector.z * TILE_SIZE)
+					};
+
+					gameMap.SetTileOccupied(gameObject.localPosition, false);
+					gameMap.SetTileOccupied(proposedPos, true);
+				}
+			}
+		}
+
+		// handle combat
+		const auto weaponSpeed = 5.0f;
+		const auto damageMin = 1;
+		const auto damageMax = 3;
+
+		if (comp.swingTimer < weaponSpeed)
+			comp.swingTimer += UPDATE_FREQUENCY;
+
+		if (comp.targetId >= 0)
+		{
+			const auto target = objectManager.GetGameObjectById(comp.targetId);
+
+			if (Utility::AreOnAdjacentOrDiagonalTiles(gameObject.localPosition, target.localPosition))
+			{
+				if (comp.swingTimer >= weaponSpeed)
+				{
+					comp.swingTimer = 0.0f;
+
+					const auto hit = dist100(rng) > 50;
+					if (hit)
+					{
+						std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);
+
+						const auto dmg = distDamage(rng);
+						std::string args[]{ std::to_string(gameObject.id), std::to_string(target.id), std::to_string(dmg) };
+						g_socketManager.SendPacket(OPCODE_ATTACK_HIT, args, 3);
+					}
+					else
+					{
+						std::string args[]{ std::to_string(gameObject.id), std::to_string(target.id)};
+						g_socketManager.SendPacket(OPCODE_ATTACK_MISS, args, 2);
+					}
+				}
 			}
 		}
 	}

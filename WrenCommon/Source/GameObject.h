@@ -5,10 +5,11 @@
 
 class GameObject
 {
+	float speed{ 0.0f };
 	GameObject* parent{ nullptr };
 	std::vector<GameObject*> children{ nullptr };
 	
-	void Initialize(const long id, GameObjectType type, const XMFLOAT3 localPosition, const XMFLOAT3 scale, const bool isStatic, const int modelId, const int textureId);
+	void Initialize(const long id, GameObjectType type, const XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, const bool isStatic, const int modelId, const int textureId);
 
 	friend class ObjectManager;
 public:

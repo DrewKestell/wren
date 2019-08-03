@@ -1,12 +1,15 @@
 #include "stdafx.h"
 #include "Layer.h"
 #include "UITextWindow.h"
-#include "EventHandling/EventHandler.h"
-#include "EventHandling/Events/MouseEvent.h"
-#include "EventHandling/Events/KeyDownEvent.h"
-#include "EventHandling/Events/SystemKeyDownEvent.h"
-#include "EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "EventHandling/Events/SendChatMessage.h"
+#include "../Events/AttackHitEvent.h"
+#include "../Events/AttackMissEvent.h"
+#include <EventHandling/EventHandler.h>
+#include <EventHandling/Events/MouseEvent.h>
+#include <EventHandling/Events/KeyDownEvent.h>
+#include <EventHandling/Events/SystemKeyDownEvent.h>
+#include <EventHandling/Events/ChangeActiveLayerEvent.h>
+#include <EventHandling/Events/SendChatMessage.h>
+#include <EventHandling/Events/EnterWorldSuccessEvent.h>
 
 using namespace DX;
 
@@ -33,21 +36,21 @@ UITextWindow::UITextWindow(
 	IDWriteTextFormat* textFormatInactive,
 	ID2D1Factory2* d2dFactory)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
-	messages{ messages },
-	messageIndex{ messageIndex },
-	backgroundBrush{ backgroundBrush },
-	borderBrush{ borderBrush },
-	inputBrush{ inputBrush },
-	inputTextBrush{ inputTextBrush },
-	inputTextBrushInactive{ inputTextBrushInactive },
-	textBrush{ textBrush },
-	scrollBarBackgroundBrush{ scrollBarBackgroundBrush },
-	scrollBarBrush{ scrollBarBrush },
-	d2dDeviceContext{ d2dDeviceContext },
-	writeFactory{ writeFactory },
-	textFormat{ textFormat },
-	textFormatInactive{ textFormatInactive },
-	d2dFactory{ d2dFactory }
+	  messages{ messages },
+	  messageIndex{ messageIndex },
+	  backgroundBrush{ backgroundBrush },
+	  borderBrush{ borderBrush },
+	  inputBrush{ inputBrush },
+	  inputTextBrush{ inputTextBrush },
+	  inputTextBrushInactive{ inputTextBrushInactive },
+	  textBrush{ textBrush },
+	  scrollBarBackgroundBrush{ scrollBarBackgroundBrush },
+	  scrollBarBrush{ scrollBarBrush },
+	  d2dDeviceContext{ d2dDeviceContext },
+	  writeFactory{ writeFactory },
+	  textFormat{ textFormat },
+	  textFormatInactive{ textFormatInactive },
+	  d2dFactory{ d2dFactory }
 {
 	UpdateMessages();
 
@@ -197,11 +200,33 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::LeftMouseUp:
+		case EventType::AttackHit:
 		{
-			const auto mouseUpEvent = (MouseEvent*)event;
+			const auto derivedEvent = (AttackHitEvent*)event;
 
+			if (derivedEvent->attackerId == playerId)
+			{
+				AddMessage(new std::string("You swing and hit Dummy for " + std::to_string(derivedEvent->damage) + " points of damage!"));
+			}
+			else if (derivedEvent->targetId == playerId)
+			{
+				AddMessage(new std::string("Dummy swings and hits you for " + std::to_string(derivedEvent->damage) + " points of damage!"));
+			}
 
+			break;
+		}
+		case EventType::AttackMiss:
+		{
+			const auto derivedEvent = (AttackMissEvent*)event;
+
+			if (derivedEvent->attackerId == playerId)
+			{
+				AddMessage(new std::string("You swing at Dummy and miss!"));
+			}
+			else if (derivedEvent->targetId == playerId)
+			{
+				AddMessage(new std::string("Dummy swings at you and misses!"));
+			}
 
 			break;
 		}
@@ -280,6 +305,14 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 				isVisible = true;
 			else
 				isVisible = false;
+
+			break;
+		}
+		case EventType::EnterWorldSuccess:
+		{
+			const auto derivedEvent = (EnterWorldSuccessEvent*)event;
+
+			playerId = derivedEvent->accountId;
 
 			break;
 		}

@@ -65,3 +65,20 @@ const bool Utility::CheckOutOfBounds(const XMFLOAT3 pos)
 
 	return pos.x < 0.0f || pos.z < 0.0f || pos.x > maxX || pos.z > maxZ;
 }
+
+void Utility::GetMapTileXYFromPos(const XMFLOAT3 pos, int& row, int& col)
+{
+	row = (int)pos.x / (int)TILE_SIZE;
+	col = (int)pos.z / (int)TILE_SIZE;
+}
+
+const bool Utility::AreOnAdjacentOrDiagonalTiles(const XMFLOAT3 pos1, const XMFLOAT3 pos2)
+{
+	int row1, col1;
+	Utility::GetMapTileXYFromPos(pos1, row1, col1);
+
+	int row2, col2;
+	Utility::GetMapTileXYFromPos(pos2, row2, col2);
+
+	return std::abs(row1 - row2) <= 1 && std::abs(col1 - col2) <= 1;
+}

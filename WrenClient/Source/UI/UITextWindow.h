@@ -12,6 +12,7 @@ static constexpr float TEXT_WINDOW_WIDTH = 600.0f;
 
 class UITextWindow : public UIComponent
 {
+	int playerId{ 0 };
 	bool inputActive{ false };
 	wchar_t inputValue[60];
 	int inputIndex{ 0 };

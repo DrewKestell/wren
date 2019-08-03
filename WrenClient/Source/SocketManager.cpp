@@ -2,6 +2,8 @@
 #include "SocketManager.h"
 #include <OpCodes.h>
 #include <GameObjectType.h>
+#include "Events/AttackHitEvent.h"
+#include "Events/AttackMissEvent.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -58,7 +60,13 @@ bool SocketManager::MessagePartsEqual(const char* first, const char* second, int
     return true;
 }
 
-void SocketManager::SendPacket(const std::string& opcode, const int argCount, ...)
+void SocketManager::SendPacket(const std::string& opcode)
+{
+	std::string args[]{ "" }; // this is janky
+	SendPacket(opcode, args, 0);
+}
+
+void SocketManager::SendPacket(const std::string& opcode, std::string args[], const int argCount)
 {
     std::string packet = std::string(CHECKSUM) + opcode;
 
@@ -67,12 +75,8 @@ void SocketManager::SendPacket(const std::string& opcode, const int argCount, ..
 	if (token != "")
 		packet += token + "|";
 
-    va_list args;
-    va_start(args, argCount);
-
-    for (auto i = 0; i < argCount; i++)
-        packet += (va_arg(args, std::string) + "|");
-    va_end(args);
+	for (auto i = 0; i < argCount; i++)
+		packet += args[i] + "|";
 
     char buffer[1024];
     ZeroMemory(buffer, sizeof(buffer));
@@ -302,6 +306,25 @@ bool SocketManager::TryRecieveMessage()
 			const auto abilityId = args[0];
 
 			g_eventHandler.QueueEvent(new ActivateAbilitySuccessEvent(std::stoi(*abilityId)));
+
+			return true;
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_ATTACK_HIT, opcodeArrLen))
+		{
+			const auto attackerId = args[0];
+			const auto targetId = args[1];
+			const auto damage = args[2];
+
+			g_eventHandler.QueueEvent(new AttackHitEvent(std::stoi(*attackerId), std::stoi(*targetId), std::stoi(*damage)));
+
+			return true;
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_ATTACK_MISS, opcodeArrLen))
+		{
+			const auto attackerId = args[0];
+			const auto targetId = args[1];
+
+			g_eventHandler.QueueEvent(new AttackMissEvent(std::stoi(*attackerId), std::stoi(*targetId)));
 
 			return true;
 		}

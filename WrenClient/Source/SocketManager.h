@@ -21,7 +21,8 @@ public:
 	SocketManager();
     bool TryRecieveMessage();
     void CloseSockets();
-    void SendPacket(const std::string& opcode, const int argCount = 0, ...);
+	void SendPacket(const std::string& opcode);
+    void SendPacket(const std::string& opcode, std::string args[], const int argCount);
 	bool Connected();
 	void Logout();
 };

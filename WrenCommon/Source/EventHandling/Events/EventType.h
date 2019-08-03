@@ -38,5 +38,7 @@ enum class EventType
 	SendChatMessage,
 	PropagateChatMessage,
 	ServerMessage,
-	ActivateAbilitySuccess
+	ActivateAbilitySuccess,
+	AttackHit,
+	AttackMiss
 };

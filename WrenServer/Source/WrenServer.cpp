@@ -7,7 +7,10 @@
 #include "Components/AIComponentManager.h"
 #include "Components/PlayerComponentManager.h"
 
-static const auto CLIENT_UPDATE_FREQUENCY = 0.05f;
+static constexpr auto CLIENT_UPDATE_FREQUENCY = 0.05f;
+
+static ServerRepository repository{ "WrenServer.db" };
+static CommonRepository commonRepository{ "WrenCommon.db " };
 
 ObjectManager g_objectManager;
 GameTimer m_timer;
@@ -16,6 +19,7 @@ StatsComponentManager g_statsComponentManager{ g_objectManager };
 GameMap g_gameMap;
 AIComponentManager g_aiComponentManager{ g_objectManager, g_gameMap };
 PlayerComponentManager g_playerComponentManager{ g_objectManager };
+SocketManager g_socketManager{ repository, commonRepository };
 
 void PublishEvents()
 {
@@ -39,17 +43,13 @@ int main()
     MoveWindow(consoleWindow, 810, 0, 800, 800, TRUE);
     std::cout << "WrenServer initialized.\n\n";
 
-	ServerRepository repository{ "WrenServer.db" };
-	CommonRepository commonRepository{ "WrenCommon.db " };
-    SocketManager socketManager{ repository, commonRepository };
-
 	auto updateTimer{ 0.0f };
 	auto clientUpdateTimer{ 0.0f };
 	m_timer.Reset();
 
     while (true)
     {
-		while (socketManager.TryRecieveMessage()) {}
+		while (g_socketManager.TryRecieveMessage()) {}
 
 		// turn this off for debugging
 		//socketManager.HandleTimeout();
@@ -72,13 +72,13 @@ int main()
 		clientUpdateTimer += deltaTime;
 		if (clientUpdateTimer >= CLIENT_UPDATE_FREQUENCY)
 		{
-			socketManager.UpdateClients();
+			g_socketManager.UpdateClients();
 
 			clientUpdateTimer -= CLIENT_UPDATE_FREQUENCY;
 		}
     }
     
-    socketManager.CloseSockets();    
+    g_socketManager.CloseSockets();    
 
     return 0;
 }
