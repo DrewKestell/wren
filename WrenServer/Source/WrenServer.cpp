@@ -9,8 +9,8 @@
 
 static constexpr auto CLIENT_UPDATE_FREQUENCY = 0.05f;
 
-static ServerRepository repository{ "WrenServer.db" };
-static CommonRepository commonRepository{ "WrenCommon.db " };
+static ServerRepository repository{ "..\\..\\Databases\\WrenServer.db" };
+static CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db " };
 
 ObjectManager g_objectManager;
 GameTimer m_timer;
