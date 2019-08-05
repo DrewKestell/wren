@@ -117,7 +117,7 @@ void Game::Tick()
 				std::string args[]{ std::to_string(playerUpdate->id), std::to_string(player->id), std::to_string(playerUpdate->position.x), std::to_string(playerUpdate->position.y), std::to_string(playerUpdate->position.z), std::to_string(playerUpdate->isRightClickHeld), std::to_string(playerUpdate->currentMouseDirection.x), std::to_string(playerUpdate->currentMouseDirection.y), std::to_string(playerUpdate->currentMouseDirection.z) };
 				g_socketManager.SendPacket(OPCODE_PLAYER_UPDATE, args, 9);
 			}
-			textWindow->Update(timer.DeltaTime()); // this should be handled by objectManager.Update()...
+			textWindow->Update(); // this should be handled by objectManager.Update()...
 			objectManager.Update();
 		}
 		
@@ -1142,6 +1142,15 @@ const bool Game::HandleEvent(const Event* const event)
 
 			if (playerController)
 				playerController->OnPlayerCorrectionEvent(derivedEvent);
+
+#ifdef _DEBUG
+			std::cout << "PlayerCorrection received from server:" << std::endl;
+			std::cout << " Player's current position on client: ";
+			Utility::PrintXMFLOAT3(player->localPosition);
+			std::cout << " Player's correcter position from server: ";
+			Utility::PrintXMFLOAT3(XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ });
+			std::cout << std::endl;
+#endif
 
 			break;
 		}

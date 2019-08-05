@@ -359,11 +359,11 @@ void UITextWindow::AddMessage(std::string* message)
 	UpdateMessages();
 }
 
-void UITextWindow::Update(const float deltaTime)
+void UITextWindow::Update()
 {
 	if (inputActive)
 	{
-		cursorTimer += deltaTime;
+		cursorTimer += UPDATE_FREQUENCY;
 
 		if (cursorTimer >= 0.5f)
 		{

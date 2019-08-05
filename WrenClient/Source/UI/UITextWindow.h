@@ -73,6 +73,6 @@ public:
 		ID2D1Factory2* d2dFactory);
 	virtual void Draw();
 	virtual const bool HandleEvent(const Event* const event);
-	void Update(const float deltaTime);
+	void Update();
 	void AddMessage(std::string* message);
 };

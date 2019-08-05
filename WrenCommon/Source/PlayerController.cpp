@@ -131,10 +131,8 @@ void PlayerController::UpdateCurrentMouseDirection(const float mousePosX, const 
 
 PlayerUpdate* PlayerController::GeneratePlayerUpdate()
 {
-	const auto position = player.GetWorldPosition();
-
+	const auto position = player.localPosition;
 	playerUpdates[playerUpdateIdCounter % BUFFER_SIZE] = std::make_unique<PlayerUpdate>(playerUpdateIdCounter, position, isRightClickHeld, currentMouseDirection);
-
 	playerUpdateIdCounter++;
 
 	return playerUpdates[(playerUpdateIdCounter - 1) % BUFFER_SIZE].get();

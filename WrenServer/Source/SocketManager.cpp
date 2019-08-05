@@ -600,7 +600,7 @@ void SocketManager::UpdateClients()
 			auto gameObject = gameObjects[j];
 
 			// skip sending an update if the game object is the player receiving the update
-			if (playerToUpdate.characterId == gameObject.id)
+			if (playerToUpdate.gameObjectId == gameObject.id)
 				continue;
 
 			auto pos = gameObject.GetWorldPosition();

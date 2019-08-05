@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <iomanip>
 #include <Constants.h>
 #include "Utility.h"
 
@@ -27,7 +28,7 @@ std::string Utility::ws2s(const std::wstring& wstr)
 
 void Utility::PrintXMFLOAT3(const XMFLOAT3 vec)
 {
-	std::cout << vec.x << ", " << vec.y << ", " << vec.z << "\n";
+	std::cout << std::fixed << std::setprecision(3) << vec.x << ", " << vec.y << ", " << vec.z << "\n";
 }
 
 const char Utility::GetHotbarIndex(const float clientHeight, const float mousePosX, const float mousePosY)
