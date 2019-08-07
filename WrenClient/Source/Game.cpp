@@ -110,13 +110,11 @@ void Game::Tick()
 		{
 			playerController->Update();
 			camera.Update(player->GetWorldPosition(), UPDATE_FREQUENCY);
-			if (g_socketManager.Connected())
-			{
-				auto playerUpdate = playerController->GeneratePlayerUpdate();
+			
+			auto playerUpdate = playerController->GeneratePlayerUpdate();
+			std::string args[]{ std::to_string(playerUpdate->id), std::to_string(player->id), std::to_string(playerUpdate->position.x), std::to_string(playerUpdate->position.y), std::to_string(playerUpdate->position.z), std::to_string(playerUpdate->isRightClickHeld), std::to_string(playerUpdate->currentMouseDirection.x), std::to_string(playerUpdate->currentMouseDirection.y), std::to_string(playerUpdate->currentMouseDirection.z) };
+			g_socketManager.SendPacket(OPCODE_PLAYER_UPDATE, args, 9);
 
-				std::string args[]{ std::to_string(playerUpdate->id), std::to_string(player->id), std::to_string(playerUpdate->position.x), std::to_string(playerUpdate->position.y), std::to_string(playerUpdate->position.z), std::to_string(playerUpdate->isRightClickHeld), std::to_string(playerUpdate->currentMouseDirection.x), std::to_string(playerUpdate->currentMouseDirection.y), std::to_string(playerUpdate->currentMouseDirection.z) };
-				g_socketManager.SendPacket(OPCODE_PLAYER_UPDATE, args, 9);
-			}
 			textWindow->Update(); // this should be handled by objectManager.Update()...
 			objectManager.Update();
 		}
