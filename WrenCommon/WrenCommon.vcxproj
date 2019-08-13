@@ -25,6 +25,7 @@
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
+    <ClCompile Include="Source\Extensions.cpp" />
     <ClCompile Include="Source\GameMap\GameMap.cpp" />
     <ClCompile Include="Source\GameMap\GameMapTile.cpp" />
     <ClCompile Include="Source\GameObject.cpp" />
@@ -74,6 +75,7 @@
     <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
+    <ClInclude Include="Source\Extensions.h" />
     <ClInclude Include="Source\GameMap\GameMap.h" />
     <ClInclude Include="Source\GameMap\GameMapTile.h" />
     <ClInclude Include="Source\GameMap\TerrainType.h" />

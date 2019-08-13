@@ -61,6 +61,9 @@
     <ClCompile Include="Source\Models\StaticObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Extensions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -121,5 +124,6 @@
     <ClInclude Include="Source\GameMap\TerrainType.h" />
     <ClInclude Include="Source\CommonRepository.h" />
     <ClInclude Include="Source\Models\StaticObject.h" />
+    <ClInclude Include="Source\Extensions.h" />
   </ItemGroup>
 </Project>
