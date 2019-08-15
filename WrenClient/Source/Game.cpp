@@ -1143,11 +1143,8 @@ const bool Game::HandleEvent(const Event* const event)
 
 #ifdef _DEBUG
 			std::cout << "PlayerCorrection received from server:" << std::endl;
-			std::cout << " Player's current position on client: ";
-			Utility::PrintXMFLOAT3(player->localPosition);
-			std::cout << " Player's correcter position from server: ";
-			Utility::PrintXMFLOAT3(XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ });
-			std::cout << std::endl;
+			std::cout << " Player's current position on client: " << player->localPosition << std::endl;
+			std::cout << " Player's correcter position from server: " << XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ } << std::endl;
 #endif
 
 			break;

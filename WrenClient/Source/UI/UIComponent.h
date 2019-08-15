@@ -16,7 +16,7 @@ public:
 	bool isVisible{ false };
 	unsigned int zIndex;
 	UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT2 localPosition, const Layer uiLayer, const unsigned int zIndex);
-	void Translate(XMFLOAT2 vector) { localPosition = Utility::XMFLOAT2Sum(localPosition, vector); }
+	void Translate(XMFLOAT2 vector) { localPosition = localPosition + vector; }
 	std::vector<UIComponent*>& GetChildren() { return children; }
 	XMFLOAT2 GetWorldPosition() const;
 	UIComponent* GetParent() const { return parent; }

@@ -45,6 +45,7 @@
 #include "DDSTextureLoader.h"
 #include <cmath>
 #include <memory>
+#include <Extensions.h>
 
 #ifdef _DEBUG
 #include <dxgidebug.h>

@@ -14,7 +14,7 @@ class GameObject
 	friend class ObjectManager;
 public:
 	void Update();
-    void Translate(XMFLOAT3 vector) { localPosition = Utility::XMFLOAT3Sum(localPosition, vector); }
+    void Translate(XMFLOAT3 vector) { localPosition = localPosition + vector; }
     GameObject* GetParent() const { return parent; }
     void SetParent(GameObject& parent) { /*delete(this->parent);*/ this->parent = &parent; } // TODO: i think parent should be a shared_pointer, because another gameobject could have a reference to it, and we can't delete it here.
     std::vector<GameObject*>& GetChildren() { return children; }

@@ -2,16 +2,7 @@
 #include <iomanip>
 #include <Constants.h>
 #include "Utility.h"
-
-XMFLOAT3 Utility::XMFLOAT3Sum(const XMFLOAT3 l, const XMFLOAT3 r)
-{
-    return XMFLOAT3(l.x + r.x, l.y + r.y, l.z + r.z);
-}
-
-XMFLOAT2 Utility::XMFLOAT2Sum(const XMFLOAT2 l, const XMFLOAT2 r)
-{
-	return XMFLOAT2(l.x + r.x, l.y + r.y);
-}
+#include "Extensions.h"
 
 bool Utility::DetectClick(const float topLeftX, const float topLeftY, const float bottomRightX, const float bottomRightY, const float mousePosX, const float mousePosY)
 {
@@ -24,11 +15,6 @@ std::string Utility::ws2s(const std::wstring& wstr)
 	std::wstring_convert<convert_typeX, wchar_t> converterX;
 
 	return converterX.to_bytes(wstr);
-}
-
-void Utility::PrintXMFLOAT3(const XMFLOAT3 vec)
-{
-	std::cout << std::fixed << std::setprecision(3) << vec.x << ", " << vec.y << ", " << vec.z << "\n";
 }
 
 const char Utility::GetHotbarIndex(const float clientHeight, const float mousePosX, const float mousePosY)

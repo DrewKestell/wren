@@ -142,7 +142,7 @@ void AIComponentManager::Update()
 			if (movementVec.x != 0.0f || movementVec.y != 0.0f || movementVec.z != 0.0f)
 			{
 				const auto movementVector = XMFLOAT3{ movementVec.x * TILE_SIZE, movementVec.y * TILE_SIZE, movementVec.z * TILE_SIZE };
-				const auto proposedPos = Utility::XMFLOAT3Sum(gameObject.localPosition, movementVector);
+				const auto proposedPos = gameObject.localPosition + movementVector;
 
 				if (!Utility::CheckOutOfBounds(proposedPos) && !gameMap.IsTileOccupied(proposedPos))
 				{

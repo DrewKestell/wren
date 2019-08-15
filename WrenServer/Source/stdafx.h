@@ -27,6 +27,7 @@
 #include <map>
 #include <DirectXMath.h>
 #include <random>
+#include <Extensions.h>
 
 using namespace DirectX;
 

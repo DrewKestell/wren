@@ -19,7 +19,7 @@ XMFLOAT2 UIComponent::GetWorldPosition() const
 	auto parentPtr = parent;
 	while (parentPtr != nullptr)
 	{
-		worldPosition = Utility::XMFLOAT2Sum(worldPosition, parentPtr->localPosition);
+		worldPosition = worldPosition + parentPtr->localPosition;
 		parentPtr = parentPtr->parent;
 	}
 

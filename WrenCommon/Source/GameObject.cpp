@@ -29,7 +29,7 @@ XMFLOAT3 GameObject::GetWorldPosition() const
     auto parentPtr = parent;
     while (parentPtr != nullptr)
     {
-        worldPosition = Utility::XMFLOAT3Sum(worldPosition, parentPtr->localPosition);
+        worldPosition = worldPosition + parentPtr->localPosition;
         parentPtr = parentPtr->parent;
     }
     
