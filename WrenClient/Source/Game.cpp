@@ -99,10 +99,22 @@ void Game::Initialize(HWND window, int width, int height)
 #pragma region Frame Update
 void Game::Tick()
 {
-	while (g_socketManager.TryRecieveMessage()) {}
-
 	timer.Tick();
 
+	while (g_socketManager.TryRecieveMessage()) {}
+
+	// to get an accurate ping, we should handle this outside of the main update loop which is locked at 60 updates / second
+	if (activeLayer == InGame)
+	{
+		if (pingStart == 0.0f)
+		{
+			pingStart = timer.TotalTime();
+
+			std::string args[]{ std::to_string(pingId) };
+			g_socketManager.SendPacket(OPCODE_PING, args, 1);
+		}
+	}
+	
 	updateTimer += timer.DeltaTime();
 	if (updateTimer >= UPDATE_FREQUENCY)
 	{
@@ -160,6 +172,10 @@ void Game::Render(const float updateTimer)
 		if (g_socketManager.Connected())
 			g_socketManager.SendPacket(OPCODE_HEARTBEAT);
 	}
+
+	// update ping
+	const auto pingText = "Ping: " + std::to_string(ping) + " ms";
+	pingTextLabel->SetText(pingText.c_str());
 
 	// update MousePos text
 	const auto mousePosText = "MousePosX: " + std::to_string((int)mousePosX) + ", MousePosY: " + std::to_string((int)mousePosY);
@@ -746,6 +762,9 @@ void Game::InitializePanels()
 	fpsTextLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 36.0f }, InGame, 2, 280.0f, blackBrush.Get(), textFormatFPS.Get(), d2dContext, writeFactory, d2dFactory);
 	diagnosticsPanel->AddChildComponent(*fpsTextLabel);
 
+	pingTextLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 50.0f }, InGame, 2, 280.0f, blackBrush.Get(), textFormatFPS.Get(), d2dContext, writeFactory, d2dFactory);
+	diagnosticsPanel->AddChildComponent(*pingTextLabel);
+
 	// Skills
 	const auto skillsPanelX = 200.0f;
 	const auto skillsPanelY = 200.0f;
@@ -1141,11 +1160,11 @@ const bool Game::HandleEvent(const Event* const event)
 			if (playerController)
 				playerController->OnPlayerCorrectionEvent(derivedEvent);
 
-#ifdef _DEBUG
-			std::cout << "PlayerCorrection received from server:" << std::endl;
-			std::cout << " Player's current position on client: " << player->localPosition << std::endl;
-			std::cout << " Player's correcter position from server: " << XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ } << std::endl;
-#endif
+//#ifdef _DEBUG
+//			std::cout << "PlayerCorrection received from server:" << std::endl;
+//			std::cout << " Player's current position on client: " << player->localPosition << std::endl;
+//			std::cout << " Player's correcter position from server: " << XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ } << std::endl;
+//#endif
 
 			break;
 		}
@@ -1310,4 +1329,13 @@ void Game::QuitGame()
 {
 	auto hWnd = deviceResources->GetWindow();
 	DestroyWindow(hWnd);
+}
+
+void Game::OnPong(unsigned int pingId)
+{
+	const auto delta = timer.TotalTime() - pingStart;
+	//std::cout << "Delta: " << delta << std::endl;
+	ping = (int)std::round(delta * 1000);
+	pingStart = 0.0f;
+	this->pingId++;
 }

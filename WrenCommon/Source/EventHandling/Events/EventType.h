@@ -40,5 +40,6 @@ enum class EventType
 	ServerMessage,
 	ActivateAbilitySuccess,
 	AttackHit,
-	AttackMiss
+	AttackMiss,
+	Pong
 };

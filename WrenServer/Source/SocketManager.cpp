@@ -112,7 +112,7 @@ void SocketManager::HandleTimeout()
 		PlayerComponent& comp = playerComponents[i];
 		if (GetTickCount() > comp.lastHeartbeat + TIMEOUT_DURATION)
 		{
-			std::cout << "AccountId " << comp.gameObjectId << " timed out." << "\n\n";
+			//std::cout << "AccountId " << comp.gameObjectId << " timed out." << "\n\n";
 			g_objectManager.DeleteGameObject(g_eventHandler, comp.gameObjectId);
 		}
 	}
@@ -120,7 +120,7 @@ void SocketManager::HandleTimeout()
 
 void SocketManager::Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, sockaddr_in from)
 {
-	std::cout << ipAndPort << std::endl;
+	//std::cout << ipAndPort << std::endl;
 
 	std::string error;
 	auto account = repository.GetAccount(accountName);
@@ -148,7 +148,7 @@ void SocketManager::Login(const std::string& accountName, const std::string& pas
             
 			std::string args[]{ std::to_string(accountId), token, ListCharacters(accountId) };
 			SendPacket(OPCODE_LOGIN_SUCCESSFUL, args , 3);
-			std::cout << "AccountId " << account->GetId() << " connected to the server.\n\n";
+			//std::cout << "AccountId " << account->GetId() << " connected to the server.\n\n";
 		}
 
 	}
@@ -274,7 +274,7 @@ bool SocketManager::TryRecieveMessage()
 		memcpy(&checksumArr[0], &buffer[0], checksumArrLen * sizeof(char));
 		if (!MessagePartsEqual(checksumArr, CHECKSUM.c_str(), checksumArrLen))
 		{
-			std::cout << "Wrong checksum. Ignoring packet.\n";
+			//std::cout << "Wrong checksum. Ignoring packet.\n";
 			return true;
 		}
 
@@ -287,11 +287,11 @@ bool SocketManager::TryRecieveMessage()
 			(opcodeArr[0] == '1' && opcodeArr[1] == '0'))   // Heartbeat
 			logMessage = false;
 
-		if (logMessage)
+		/*if (logMessage)
 		{
 			printf("Received message from %s:%i - %s\n", str, from.sin_port, buffer);
 			std::cout << "Opcode: " << opcodeArr[0] << opcodeArr[1] << "\n";
-		}
+		}*/
 
 		std::vector<std::string> args;
 		auto bufferLength = strlen(buffer);
@@ -309,12 +309,12 @@ bool SocketManager::TryRecieveMessage()
 					arg += buffer[i];
 			}
 
-			if (logMessage)
+			/*if (logMessage)
 			{
 				std::cout << "Args:\n";
 				for_each(args.begin(), args.end(), [](std::string str) { std::cout << "  " << str << "\n";  });
 				std::cout << "\n";
-			}
+			}*/
 		}
 
 		if (MessagePartsEqual(opcodeArr, OPCODE_CONNECT, opcodeArrLen))
@@ -473,6 +473,20 @@ bool SocketManager::TryRecieveMessage()
 
 			return true;
 		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_PING, opcodeArrLen))
+		{
+			const auto accountId = std::stoi(args[0]);
+			const auto token = args[1];
+			const auto pingId = args[2];
+
+			ValidateToken(accountId, token);
+
+			PlayerComponent& player = GetPlayerComponent(accountId);
+			std::string args[]{ pingId };
+			SendPacket(player.fromSockAddr, OPCODE_PONG, args, 1);
+
+			return true;
+		}
 	}
 
 	return false;
@@ -555,8 +569,8 @@ void SocketManager::PlayerUpdate(
 
 	const auto id = playerComponent.updateCounter;
 
-	if (id != std::stoi(idCounter))
-		std::cout << "UpdateIds don't match! Id from client: " << idCounter << ", Id on server: " << id << std::endl;
+	/*if (id != std::stoi(idCounter))
+		std::cout << "UpdateIds don't match! Id from client: " << idCounter << ", Id on server: " << id << std::endl;*/
 
 	GameObject& player = g_objectManager.GetGameObjectById(std::stol(characterId));
 

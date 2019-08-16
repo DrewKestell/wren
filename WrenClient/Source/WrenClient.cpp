@@ -8,14 +8,11 @@
 static wchar_t szWindowClass[] = L"win32app";
 static wchar_t szTitle[] = L"Wren Client";
 
+
 EventHandler g_eventHandler;
 ClientRepository repository{ "..\\..\\Databases\\WrenClient.db" };
 CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db" };
-
-namespace
-{
-	std::unique_ptr<Game> g_game;
-};
+std::unique_ptr<Game> g_game;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 

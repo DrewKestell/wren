@@ -364,7 +364,7 @@ void DeviceResources::Present()
 	// The first argument instructs DXGI to block until VSync, putting the application
 	// to sleep until the next VSync. This ensures we don't waste any cycles rendering
 	// frames that will never be displayed to the screen.
-	hr = swapChain->Present(1, 0);
+	hr = swapChain->Present(0, 0);
 
 	// Discard the contents of the render target.
 	// This is a valid operation only when the existing contents will be entirely

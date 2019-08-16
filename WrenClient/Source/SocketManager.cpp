@@ -2,6 +2,7 @@
 #include "SocketManager.h"
 #include <OpCodes.h>
 #include <GameObjectType.h>
+#include "Game.h"
 #include "Events/AttackHitEvent.h"
 #include "Events/AttackMissEvent.h"
 #include "EventHandling/EventHandler.h"
@@ -22,6 +23,7 @@
 constexpr auto SERVER_PORT_NUMBER = 27016;
 
 extern EventHandler g_eventHandler;
+extern std::unique_ptr<Game> g_game;
 
 static bool logMessages{ false };
 
@@ -125,8 +127,8 @@ bool SocketManager::TryRecieveMessage()
         memcpy(&checksumArr[0], &buffer[0], checksumArrLen * sizeof(char));
         if (!MessagePartsEqual(checksumArr, CHECKSUM.c_str(), checksumArrLen))
         {
-			if (logMessages)
-				std::cout << "Wrong checksum. Ignoring packet.\n";
+			/*if (logMessages)
+				std::cout << "Wrong checksum. Ignoring packet.\n";*/
 			g_eventHandler.QueueEvent(new Event{ EventType::WrongChecksum });
 			return true;
         }
@@ -152,12 +154,12 @@ bool SocketManager::TryRecieveMessage()
                     *arg += buffer[i];
             }
 
-			if (logMessages)
+			/*if (logMessages)
 			{
 				std::cout << "Args:\n";
 				for_each(args.begin(), args.end(), [](std::string* str) { std::cout << "  " << *str << "\n";  });
 				std::cout << "\n";
-			}
+			}*/
         }
 
         if (MessagePartsEqual(opcodeArr, OPCODE_CREATE_ACCOUNT_UNSUCCESSFUL, opcodeArrLen))
@@ -325,6 +327,14 @@ bool SocketManager::TryRecieveMessage()
 			const auto targetId = args[1];
 
 			g_eventHandler.QueueEvent(new AttackMissEvent(std::stoi(*attackerId), std::stoi(*targetId)));
+
+			return true;
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_PONG, opcodeArrLen))
+		{
+			const auto pingId = args[0];
+
+			g_game.get()->OnPong(std::stoul(*pingId));
 
 			return true;
 		}

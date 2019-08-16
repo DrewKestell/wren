@@ -52,10 +52,14 @@ public:
 	void OnResuming();
 	void OnWindowMoved();
 	void OnWindowSizeChanged(int width, int height);
+	void OnPong(unsigned int pingId);
 
 	~Game();
 
 private:
+	int ping{ 0 };
+	float pingStart{ 0.0f };
+	unsigned int pingId{ 0 };
 	float updateTimer{ 0.0f };
 	float mousePosX{ 0.0f };
 	float mousePosY{ 0.0f };
@@ -213,6 +217,7 @@ private:
 	std::unique_ptr<UILabel> deleteCharacter_headerLabel;
 	std::unique_ptr<UILabel> enteringWorld_statusLabel;
 	std::unique_ptr<UILabel> fpsTextLabel;
+	std::unique_ptr<UILabel> pingTextLabel;
 	std::unique_ptr<UILabel> mousePosLabel;
 	std::unique_ptr<UILabel> gameSettingsPanelHeader;
 	std::unique_ptr<UILabel> gameEditorPanelHeader;
