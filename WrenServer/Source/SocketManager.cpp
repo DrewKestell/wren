@@ -569,8 +569,8 @@ void SocketManager::PlayerUpdate(
 
 	const auto id = playerComponent.updateCounter;
 
-	/*if (id != std::stoi(idCounter))
-		std::cout << "UpdateIds don't match! Id from client: " << idCounter << ", Id on server: " << id << std::endl;*/
+	if (id != std::stoi(idCounter))
+		std::cout << "UpdateIds don't match! Id from client: " << idCounter << ", Id on server: " << id << std::endl;
 
 	GameObject& player = g_objectManager.GetGameObjectById(std::stol(characterId));
 

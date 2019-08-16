@@ -23,6 +23,12 @@ void PlayerController::OnPlayerCorrectionEvent(PlayerCorrectionEvent* event)
 	playerUpdates[updateId % BUFFER_SIZE] = std::make_unique<PlayerUpdate>(updateId, correctedPos, playerUpdates[updateId % BUFFER_SIZE]->isRightClickHeld, playerUpdates[updateId % BUFFER_SIZE]->currentMouseDirection);
 	player.localPosition = correctedPos;
 
+#ifdef _DEBUG
+	std::cout << "PlayerCorrection received from server:" << std::endl;
+	std::cout << " Player's current position on client: " << playerUpdates[updateId % BUFFER_SIZE]->position << std::endl;
+	std::cout << " Player's correcter position from server: " << correctedPos << std::endl;
+#endif
+
 	// now rerun the updates between the correction and current using the stored state
 	for (auto i = updateId + 1; i < playerUpdateIdCounter; i++)
 	{
