@@ -49,12 +49,13 @@ int main()
 
     while (true)
     {
+		m_timer.Tick();
+
 		while (g_socketManager.TryRecieveMessage()) {}
 
 		// turn this off for debugging
 		//socketManager.HandleTimeout();
 
-		m_timer.Tick();
 		auto deltaTime = m_timer.DeltaTime();
 
 		updateTimer += deltaTime;
