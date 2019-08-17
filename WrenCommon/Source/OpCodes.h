@@ -18,7 +18,7 @@ constexpr char OPCODE_ENTER_WORLD_SUCCESSFUL[2] = { '1', '2' };
 constexpr char OPCODE_DELETE_CHARACTER[2] = { '1', '3' };
 constexpr char OPCODE_DELETE_CHARACTER_SUCCESSFUL[2] = { '1', '4' };
 constexpr char OPCODE_PLAYER_UPDATE[2] = { '1', '5' };
-constexpr char OPCODE_PLAYER_CORRECTION[2] = { '1', '6' };
+
 constexpr char OPCODE_GAMEOBJECT_UPDATE[2] = { '1', '7' };
 constexpr char OPCODE_ACTIVATE_ABILITY[2] = { '1', '8' };
 constexpr char OPCODE_SEND_CHAT_MESSAGE[2] = { '1', '9' };
@@ -32,3 +32,6 @@ constexpr char OPCODE_ATTACK_HIT[2] = { '2', '6' };
 constexpr char OPCODE_ATTACK_MISS[2] = { '2', '7' };
 constexpr char OPCODE_PING[2] = { '2', '8' };
 constexpr char OPCODE_PONG[2] = { '2', '9' };
+constexpr char OPCODE_PLAYER_RIGHT_MOUSE_DOWN[2] = { '3', '0' };
+constexpr char OPCODE_PLAYER_RIGHT_MOUSE_UP[2] = { '3', '1' };
+constexpr char OPCODE_PLAYER_RIGHT_MOUSE_DOWN_DIR_CHANGE[2] = { '3', '2' };

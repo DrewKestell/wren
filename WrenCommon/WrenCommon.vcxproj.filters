@@ -31,13 +31,7 @@
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\PlayerUpdate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\GameTimer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\PlayerController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Components\StatsComponent.cpp">
@@ -91,14 +85,12 @@
     <ClInclude Include="Source\EventHandling\Events\LoginFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SystemKeyUpEvent.h" />
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
     <ClInclude Include="Source\Layer.h" />
-    <ClInclude Include="Source\PlayerUpdate.h" />
     <ClInclude Include="Source\EventHandling\Events\EnterWorldSuccessEvent.h" />
     <ClInclude Include="Source\GameTimer.h" />
     <ClInclude Include="Source\EventHandling\Events\GameObjectUpdateEvent.h" />
@@ -106,7 +98,6 @@
     <ClInclude Include="Source\Models\Ability.h" />
     <ClInclude Include="Source\EventHandling\Events\ActivateAbilityEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\StartDraggingUIAbilityEvent.h" />
-    <ClInclude Include="Source\PlayerController.h" />
     <ClInclude Include="Source\Constants.h" />
     <ClInclude Include="Source\EventHandling\Events\SetTargetEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SendChatMessage.h" />

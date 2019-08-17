@@ -4,7 +4,6 @@
 #include "ClientRepository.h"
 #include <Models/Skill.h>
 #include <Models/StaticObject.h>
-#include <PlayerController.h>
 #include <Constants.h>
 #include <GameMap/GameMap.h>
 #include "DeviceResources.h"
@@ -63,6 +62,7 @@ private:
 	float updateTimer{ 0.0f };
 	float mousePosX{ 0.0f };
 	float mousePosY{ 0.0f };
+	XMFLOAT3 rightMouseDownDir{ VEC_ZERO };
 	int clientWidth{ CLIENT_WIDTH };
 	int clientHeight{ CLIENT_HEIGHT };
 	std::vector<std::unique_ptr<UICharacterListing>> characterList;
@@ -82,7 +82,6 @@ private:
 	Camera camera;
 	GameMap gameMap;
 	std::unique_ptr<GameMapRenderComponent> gameMapRenderComponent;
-	std::unique_ptr<PlayerController> playerController;
 	GameObject* player;
 	std::vector<UIComponent*> uiComponents; // TODO: i think these should use smart pointers
 	std::vector<std::unique_ptr<Mesh>> meshes;

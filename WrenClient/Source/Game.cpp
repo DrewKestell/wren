@@ -120,13 +120,8 @@ void Game::Tick()
 	{
 		if (activeLayer == InGame)
 		{
-			playerController->Update();
 			camera.Update(player->GetWorldPosition(), UPDATE_FREQUENCY);
 			
-			auto playerUpdate = playerController->GeneratePlayerUpdate();
-			std::string args[]{ std::to_string(playerUpdate->id), std::to_string(player->id), std::to_string(playerUpdate->position.x), std::to_string(playerUpdate->position.y), std::to_string(playerUpdate->position.z), std::to_string(playerUpdate->isRightClickHeld), std::to_string(playerUpdate->currentMouseDirection.x), std::to_string(playerUpdate->currentMouseDirection.y), std::to_string(playerUpdate->currentMouseDirection.z) };
-			g_socketManager.SendPacket(OPCODE_PLAYER_UPDATE, args, 9);
-
 			textWindow->Update(); // this should be handled by objectManager.Update()...
 			objectManager.Update();
 		}
@@ -271,9 +266,6 @@ void Game::OnWindowSizeChanged(int width, int height)
 	abilitiesContainer->clientHeight = (float)height;
 
 	CreateWindowSizeDependentResources();
-
-	if (playerController)
-		playerController->SetClientDimensions(width, height);
 
 	SetActiveLayer(activeLayer);
 }
@@ -936,8 +928,11 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
-			if (playerController)
-				playerController->OnRightMouseDownEvent(derivedEvent);
+			const auto dir = Utility::MousePosToDirection(clientWidth, clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
+			std::string args[]{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
+			g_socketManager.SendPacket(OPCODE_PLAYER_RIGHT_MOUSE_DOWN, args, 3);
+
+			rightMouseDownDir = dir;
 
 			break;
 		}
@@ -945,8 +940,9 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
-			if (playerController)
-				playerController->OnRightMouseUpEvent(derivedEvent);
+			g_socketManager.SendPacket(OPCODE_PLAYER_RIGHT_MOUSE_UP);
+
+			rightMouseDownDir = VEC_ZERO;
 
 			break;
 		}
@@ -957,9 +953,17 @@ const bool Game::HandleEvent(const Event* const event)
 			mousePosX = derivedEvent->mousePosX;
 			mousePosY = derivedEvent->mousePosY;
 
-			if (playerController)
-				playerController->OnMouseMoveEvent(derivedEvent);
-
+			if (activeLayer == Layer::InGame && rightMouseDownDir != VEC_ZERO)
+			{
+				const auto dir = Utility::MousePosToDirection(clientWidth, clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
+				if (dir != rightMouseDownDir)
+				{
+					std::string args[]{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
+					g_socketManager.SendPacket(OPCODE_PLAYER_RIGHT_MOUSE_DOWN, args, 3);
+					rightMouseDownDir = dir;
+				}
+			}
+			
 			break;
 		}
 		case EventType::CreateAccountFailed:
@@ -1037,7 +1041,6 @@ const bool Game::HandleEvent(const Event* const event)
 			player.renderComponentId = sphereRenderComponent.GetId();
 			StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(player.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, derivedEvent->name);
 			player.statsComponentId = statsComponent.id;
-			playerController = std::make_unique<PlayerController>(player, gameMap);
 			gameMap.SetTileOccupied(player.localPosition, true);
 
 			auto d2dFactory = deviceResources->GetD2DFactory();
@@ -1150,15 +1153,6 @@ const bool Game::HandleEvent(const Event* const event)
 
 			std::string args[]{ std::to_string(derivedEvent->abilityId) };
 			g_socketManager.SendPacket(OPCODE_ACTIVATE_ABILITY, args, 1);
-
-			break;
-		}
-		case EventType::PlayerCorrection:
-		{
-			const auto derivedEvent = (PlayerCorrectionEvent*)event;
-
-			if (playerController)
-				playerController->OnPlayerCorrectionEvent(derivedEvent);
 
 			break;
 		}

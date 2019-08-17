@@ -1,7 +1,6 @@
 #pragma once
 
 #include <CommonRepository.h>
-#include <PlayerController.h>
 #include "Components/PlayerComponent.h"
 #include "ServerRepository.h"
 
@@ -11,7 +10,6 @@ private:
     ServerRepository& repository;
 	CommonRepository& commonRepository;
 	std::vector<Ability> abilities;
-	std::vector<PlayerController> playerControllers;
     sockaddr_in local;
     sockaddr_in from;
     int fromlen;
@@ -30,7 +28,6 @@ private:
 	std::string ListAbilities(const int characterId);
 	void EnterWorld(const int accountId, const std::string& characterName);
 	void DeleteCharacter(const int accountId, const std::string& characterName);
-	void PlayerUpdate(const int accountId, const std::string& idCounter, const std::string& characterId, const std::string& posX, const std::string& posY, const std::string& posZ, const std::string& isRightClickHeld, const std::string& mouseDirX, const std::string& mouseDirY, const std::string& mouseDirZ);
 	void PropagateChatMessage(const std::string& senderName, const std::string& message);
 	void ActivateAbility(PlayerComponent& player, Ability& ability);
 public:

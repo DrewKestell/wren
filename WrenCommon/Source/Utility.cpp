@@ -25,8 +25,17 @@ const char Utility::GetHotbarIndex(const float clientHeight, const float mousePo
 	return (char)((mousePosX - 5) / 40);
 }
 
-const XMFLOAT3 Utility::AngleToDirection(const float angle)
+const XMFLOAT3 Utility::MousePosToDirection(const float clientWidth, const float clientHeight, const float mouseX, const float mouseY)
 {
+	auto centerPoint = XMVECTOR{ clientWidth / 2, clientHeight / 2, 0.0f, 0.0f };
+	auto clickPoint = XMVECTOR{ mouseX, mouseY, 0.0f, 0.0f };
+	auto clickVec = XMVectorSubtract(centerPoint, clickPoint);
+	auto upVec = XMVECTOR{ 0.0f, 1.0f, 0.0f, 0.0f };
+	auto angleVec = XMVectorATan2(XMVector3Dot(upVec, clickVec), XMVector3Cross(upVec, clickVec));
+	XMFLOAT4 angleFloat;
+	XMStoreFloat4(&angleFloat, angleVec);
+	auto angle = XMConvertToDegrees(angleFloat.z) + 180.0f;
+
 	if (angle >= 337.5 || angle <= 22.5)
 		return VEC_SOUTHWEST;
 	else if (angle > 22.5 && angle < 67.5)

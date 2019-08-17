@@ -32,8 +32,6 @@
     <ClCompile Include="Source\GameTimer.cpp" />
     <ClCompile Include="Source\Models\StaticObject.cpp" />
     <ClCompile Include="Source\ObjectManager.cpp" />
-    <ClCompile Include="Source\PlayerController.cpp" />
-    <ClCompile Include="Source\PlayerUpdate.cpp" />
     <ClCompile Include="Source\Repository.cpp" />
     <ClCompile Include="Source\CommonRepository.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
@@ -65,7 +63,6 @@
     <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\OtherPlayerUpdateEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\PlayerCorrectionEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\PropagateChatMessage.h" />
     <ClInclude Include="Source\EventHandling\Events\SendChatMessage.h" />
     <ClInclude Include="Source\EventHandling\Events\ServerMessageEvent.h" />
@@ -88,8 +85,6 @@
     <ClInclude Include="Source\Models\StaticObject.h" />
     <ClInclude Include="Source\ObjectManager.h" />
     <ClInclude Include="Source\OpCodes.h" />
-    <ClInclude Include="Source\PlayerController.h" />
-    <ClInclude Include="Source\PlayerUpdate.h" />
     <ClInclude Include="Source\Repository.h" />
     <ClInclude Include="Source\CommonRepository.h" />
     <ClInclude Include="Source\stdafx.h" />

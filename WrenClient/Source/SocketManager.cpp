@@ -15,7 +15,6 @@
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
 #include "EventHandling/Events/GameObjectUpdateEvent.h"
 #include "EventHandling/Events/OtherPlayerUpdateEvent.h"
-#include "EventHandling/Events/PlayerCorrectionEvent.h"
 #include "EventHandling/Events/PropagateChatMessage.h"
 #include "EventHandling/Events/ServerMessageEvent.h"
 #include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
@@ -243,16 +242,6 @@ bool SocketManager::TryRecieveMessage()
 			if (logMessages)
 				std::cout << "Delete character successful.";
 			g_eventHandler.QueueEvent(new DeleteCharacterSuccessEvent{ characterList });
-			return true;
-		}
-		else if (MessagePartsEqual(opcodeArr, OPCODE_PLAYER_CORRECTION, opcodeArrLen))
-		{
-			const auto updateId = args[0];
-			const auto posX = args[1];
-			const auto posY = args[2];
-			const auto posZ = args[3];
-
-			g_eventHandler.QueueEvent(new PlayerCorrectionEvent{ std::stoi(*updateId), std::stof(*posX), std::stof(*posY), std::stof(*posZ) });
 			return true;
 		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_GAMEOBJECT_UPDATE, opcodeArrLen))

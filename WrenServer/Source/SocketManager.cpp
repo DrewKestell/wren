@@ -389,25 +389,6 @@ bool SocketManager::TryRecieveMessage()
 
 			return true;
 		}
-		else if (MessagePartsEqual(opcodeArr, OPCODE_PLAYER_UPDATE, opcodeArrLen))
-		{
-			const auto accountId = std::stoi(args[0]);
-			const auto token = args[1];
-			const auto idCounter = args[2];
-			const auto characterId = args[3];
-			const auto posX = args[4];
-			const auto posY = args[5];
-			const auto posZ = args[6];
-			const auto isRightClickHeld = args[7];
-			const auto mouseDirX = args[8];
-			const auto mouseDirY = args[9];
-			const auto mouseDirZ = args[10];
-
-			ValidateToken(accountId, token);
-			PlayerUpdate(accountId, idCounter, characterId, posX, posY, posZ, isRightClickHeld, mouseDirX, mouseDirY, mouseDirZ);
-
-			return true;
-		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_ACTIVATE_ABILITY, opcodeArrLen))
 		{
 			const auto accountId = std::stoi(args[0]);
@@ -487,6 +468,47 @@ bool SocketManager::TryRecieveMessage()
 
 			return true;
 		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_PLAYER_RIGHT_MOUSE_DOWN, opcodeArrLen))
+		{
+			const auto accountId = std::stoi(args[0]);
+			const auto token = args[1];
+			const auto dir = XMFLOAT3{ std::stof(args[2]), std::stof(args[3]), std::stof(args[4]) };
+
+			ValidateToken(accountId, token);
+
+			std::cout << "RightMouseDown event received. Dir: " << dir << std::endl;
+			PlayerComponent& player = GetPlayerComponent(accountId);
+			// set state based on input
+
+			return true;
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_PLAYER_RIGHT_MOUSE_UP, opcodeArrLen))
+		{
+			const auto accountId = std::stoi(args[0]);
+			const auto token = args[1];
+
+			ValidateToken(accountId, token);
+
+			std::cout << "RightMouseUp event received." << std::endl;
+			PlayerComponent& player = GetPlayerComponent(accountId);
+			// set state based on input
+
+			return true;
+		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_PLAYER_RIGHT_MOUSE_DOWN_DIR_CHANGE, opcodeArrLen))
+		{
+			const auto accountId = std::stoi(args[0]);
+			const auto token = args[1];
+			const auto dir = XMFLOAT3{ std::stof(args[2]), std::stof(args[3]), std::stof(args[4]) };
+
+			ValidateToken(accountId, token);
+
+			std::cout << "RightMouseDownDirChange event received. Dir: " << dir << std::endl;
+			PlayerComponent& player = GetPlayerComponent(accountId);
+			// set state based on input
+
+			return true;
+		}
 	}
 
 	return false;
@@ -537,7 +559,6 @@ void SocketManager::EnterWorld(const int accountId, const std::string& character
 	playerComponent.modelId = character->GetModelId();
 	playerComponent.textureId = character->GetTextureId();
 	playerComponent.characterName = character->GetName();
-	playerComponent.playerController = std::make_unique<PlayerController>(gameObject, g_gameMap);
 	const auto pos = character->GetPosition();
 	const auto charId = character->GetId();
 	std::string args[]{ std::to_string(accountId), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(character->GetModelId()), std::to_string(character->GetTextureId()), ListSkills(charId), ListAbilities(charId), character->GetName() };
@@ -551,45 +572,6 @@ void SocketManager::DeleteCharacter(const int accountId, const std::string& char
 	repository.DeleteCharacter(characterName);
 	std::string args[]{ ListCharacters(accountId) };
 	SendPacket(playerComponent.fromSockAddr , OPCODE_DELETE_CHARACTER_SUCCESSFUL, args, 1);
-}
-
-void SocketManager::PlayerUpdate(
-	const int accountId,
-	const std::string& idCounter,
-	const std::string& characterId,
-	const std::string& posX,
-	const std::string& posY,
-	const std::string& posZ,
-	const std::string& isRightClickHeld,
-	const std::string& mouseDirX,
-	const std::string& mouseDirY,
-	const std::string& mouseDirZ)
-{
-	PlayerComponent& playerComponent = GetPlayerComponent(accountId);
-
-	const auto id = playerComponent.updateCounter;
-
-	if (id != std::stoi(idCounter))
-		std::cout << "UpdateIds don't match! Id from client: " << idCounter << ", Id on server: " << id << std::endl;
-
-	GameObject& player = g_objectManager.GetGameObjectById(std::stol(characterId));
-
-	const auto clientPosX = std::stof(posX);
-	const auto clientPosY = std::stof(posY);
-	const auto clientPosZ = std::stof(posZ);
-	auto currentPos = player.GetWorldPosition();
-
-	if (currentPos.x != clientPosX || currentPos.y != clientPosY || currentPos.z != clientPosZ)
-	{
-		//std::cout << "Updates don't match. Need to send correction.\n";
-		std::string args[]{ std::to_string(id), std::to_string(currentPos.x), std::to_string(currentPos.y), std::to_string(currentPos.z) };
-		SendPacket(playerComponent.fromSockAddr, OPCODE_PLAYER_CORRECTION, args, 4);
-	}
-
-	playerComponent.playerController->isRightClickHeld = isRightClickHeld == "1";
-	playerComponent.playerController->currentMouseDirection = XMFLOAT3{ std::stof(mouseDirX), std::stof(mouseDirY), std::stof(mouseDirZ) };
-	playerComponent.playerController->Update();
-	playerComponent.updateCounter++;
 }
 
 void SocketManager::UpdateClients()

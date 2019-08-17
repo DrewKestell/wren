@@ -16,3 +16,13 @@ DirectX::XMFLOAT2 operator+ (const DirectX::XMFLOAT2& l, const DirectX::XMFLOAT2
 {
 	return XMFLOAT2{ l.x + r.x, l.y + r.y };
 }
+
+bool operator== (const DirectX::XMFLOAT3& l, const DirectX::XMFLOAT3& r)
+{
+	return l.x == r.x && l.y == r.y && l.z == r.z;
+}
+
+bool operator!= (const DirectX::XMFLOAT3& l, const DirectX::XMFLOAT3& r)
+{
+	return !(l == r);
+}

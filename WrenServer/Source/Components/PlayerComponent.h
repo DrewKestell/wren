@@ -1,6 +1,5 @@
 #pragma once
 
-#include <PlayerController.h>
 #include "GameObject.h"
 
 class PlayerComponent
@@ -14,14 +13,12 @@ public:
 	std::string token{ "" };
 	std::string ipAndPort{ "" };
 	sockaddr_in fromSockAddr;
-	int updateCounter{ 0 };
 	DWORD lastHeartbeat{ 0 };
 	
 	int characterId{ 0 };
 	std::string characterName{ "" };
 	int modelId{ 0 };
 	int textureId{ 0 };
-	std::unique_ptr<PlayerController> playerController;
 	long targetId{ -1 };
 	bool autoAttackOn{ false };
 	float swingTimer{ 0.0f };
