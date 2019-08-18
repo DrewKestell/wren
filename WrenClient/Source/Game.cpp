@@ -959,7 +959,7 @@ const bool Game::HandleEvent(const Event* const event)
 				if (dir != rightMouseDownDir)
 				{
 					std::string args[]{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
-					g_socketManager.SendPacket(OPCODE_PLAYER_RIGHT_MOUSE_DOWN, args, 3);
+					g_socketManager.SendPacket(OPCODE_PLAYER_RIGHT_MOUSE_DOWN_DIR_CHANGE, args, 3);
 					rightMouseDownDir = dir;
 				}
 			}

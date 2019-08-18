@@ -476,9 +476,8 @@ bool SocketManager::TryRecieveMessage()
 
 			ValidateToken(accountId, token);
 
-			std::cout << "RightMouseDown event received. Dir: " << dir << std::endl;
-			PlayerComponent& player = GetPlayerComponent(accountId);
-			// set state based on input
+			PlayerComponent& comp = GetPlayerComponent(accountId);
+			comp.rightMouseDownDir = dir;
 
 			return true;
 		}
@@ -489,9 +488,8 @@ bool SocketManager::TryRecieveMessage()
 
 			ValidateToken(accountId, token);
 
-			std::cout << "RightMouseUp event received." << std::endl;
-			PlayerComponent& player = GetPlayerComponent(accountId);
-			// set state based on input
+			PlayerComponent& comp = GetPlayerComponent(accountId);
+			comp.rightMouseDownDir = VEC_ZERO;
 
 			return true;
 		}
@@ -503,9 +501,8 @@ bool SocketManager::TryRecieveMessage()
 
 			ValidateToken(accountId, token);
 
-			std::cout << "RightMouseDownDirChange event received. Dir: " << dir << std::endl;
-			PlayerComponent& player = GetPlayerComponent(accountId);
-			// set state based on input
+			PlayerComponent& comp = GetPlayerComponent(accountId);
+			comp.rightMouseDownDir = dir;
 
 			return true;
 		}

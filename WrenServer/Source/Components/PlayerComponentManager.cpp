@@ -70,7 +70,14 @@ void PlayerComponentManager::Update()
 	for (unsigned int i = 0; i < playerComponentIndex; i++)
 	{
 		PlayerComponent& comp = playerComponents[i];
+		GameObject& player = objectManager.GetGameObjectById(comp.gameObjectId);
+		
+		// first handle movement
 
+		// i think the code that checks if the destination is reached should be in GameObject...
+		// it should be core to all units
+
+		// next handle combat
 		const auto weaponSpeed = 3.0f;
 		const auto damageMin = 2;
 		const auto damageMax = 8;

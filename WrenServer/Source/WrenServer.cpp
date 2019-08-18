@@ -49,6 +49,7 @@ int main()
 
     while (true)
     {
+		// do we want to Tick before handling socket messages? might throw off the timer...
 		m_timer.Tick();
 
 		while (g_socketManager.TryRecieveMessage()) {}
@@ -61,10 +62,10 @@ int main()
 		updateTimer += deltaTime;
 		if (updateTimer >= UPDATE_FREQUENCY)
 		{
-			g_objectManager.Update();
 			g_aiComponentManager.Update();
 			g_playerComponentManager.Update();
-
+			g_objectManager.Update();
+			
 			PublishEvents();
 
 			updateTimer -= UPDATE_FREQUENCY;

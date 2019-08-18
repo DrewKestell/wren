@@ -28,8 +28,6 @@ public:
 	XMFLOAT3 localPosition{ 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 scale{ 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 movementVector{ 0.0f, 0.0f, 0.0f };
-	XMFLOAT3 destination{ 0.0f, 0.0f, 0.0f };
-	bool isMoving{ false };
 	bool isStatic{ false };
 
 	// only really needed on the server. separate component?
