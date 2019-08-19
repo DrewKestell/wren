@@ -7,8 +7,6 @@
 #include "Components/AIComponentManager.h"
 #include "Components/PlayerComponentManager.h"
 
-static constexpr auto CLIENT_UPDATE_FREQUENCY = 0.03f;
-
 static ServerRepository repository{ "..\\..\\Databases\\WrenServer.db" };
 static CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db " };
 
@@ -44,7 +42,6 @@ int main()
     std::cout << "WrenServer initialized.\n\n";
 
 	auto updateTimer{ 0.0f };
-	auto clientUpdateTimer{ 0.0f };
 	m_timer.Reset();
 
     while (true)
@@ -67,15 +64,9 @@ int main()
 			
 			PublishEvents();
 
-			updateTimer -= UPDATE_FREQUENCY;
-		}
-		
-		clientUpdateTimer += deltaTime;
-		if (clientUpdateTimer >= CLIENT_UPDATE_FREQUENCY)
-		{
 			g_socketManager.UpdateClients();
 
-			clientUpdateTimer -= CLIENT_UPDATE_FREQUENCY;
+			updateTimer -= UPDATE_FREQUENCY;
 		}
     }
     

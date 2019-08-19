@@ -8,7 +8,6 @@
 static wchar_t szWindowClass[] = L"win32app";
 static wchar_t szTitle[] = L"Wren Client";
 
-
 EventHandler g_eventHandler;
 ClientRepository repository{ "..\\..\\Databases\\WrenClient.db" };
 CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db" };
