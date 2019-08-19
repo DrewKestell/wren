@@ -110,7 +110,7 @@ void SocketManager::HandleTimeout()
 	for (unsigned int i = 0; i < playerComponentIndex; i++)
 	{
 		PlayerComponent& comp = playerComponents[i];
-		if (GetTickCount() > comp.lastHeartbeat + TIMEOUT_DURATION)
+		if (GetTickCount64() > comp.lastHeartbeat + TIMEOUT_DURATION)
 		{
 			//std::cout << "AccountId " << comp.gameObjectId << " timed out." << "\n\n";
 			g_objectManager.DeleteGameObject(g_eventHandler, comp.gameObjectId);
@@ -132,7 +132,8 @@ void SocketManager::Login(const std::string& accountName, const std::string& pas
 		else
 		{
 			GUID guid;
-			CoCreateGuid(&guid);
+			if (FAILED(CoCreateGuid(&guid)))
+				throw new std::exception("Failed to create GUID.");
 			char guid_cstr[39];
 			snprintf(guid_cstr, sizeof(guid_cstr),
 				"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
@@ -143,12 +144,11 @@ void SocketManager::Login(const std::string& accountName, const std::string& pas
 
 			const auto accountId = account->GetId();
 			GameObject& playerGameObject = g_objectManager.CreateGameObject(VEC_ZERO, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, (long)accountId);
-			const PlayerComponent& playerComponent = g_playerComponentManager.CreatePlayerComponent(playerGameObject.id, token, ipAndPort, from, GetTickCount());
+			const PlayerComponent& playerComponent = g_playerComponentManager.CreatePlayerComponent(playerGameObject.id, token, ipAndPort, from, GetTickCount64());
 			playerGameObject.playerComponentId = playerComponent.id;
             
 			std::string args[]{ std::to_string(accountId), token, ListCharacters(accountId) };
 			SendPacket(OPCODE_LOGIN_SUCCESSFUL, args , 3);
-			//std::cout << "AccountId " << account->GetId() << " connected to the server.\n\n";
 		}
 
 	}
@@ -214,7 +214,7 @@ void SocketManager::CreateCharacter(const int accountId, const std::string& char
 void SocketManager::UpdateLastHeartbeat(const int accountId)
 {
 	PlayerComponent& playerComponent = GetPlayerComponent(accountId);
-	playerComponent.lastHeartbeat = GetTickCount();
+	playerComponent.lastHeartbeat = GetTickCount64();
 }
 
 void SocketManager::SendPacket(const std::string& opcode, std::string args[], const int argCount)
@@ -551,7 +551,7 @@ void SocketManager::EnterWorld(const int accountId, const std::string& character
 	auto character = repository.GetCharacter(characterName);
 	gameObject.localPosition = character->GetPosition();
 
-	playerComponent.lastHeartbeat = GetTickCount();
+	playerComponent.lastHeartbeat = GetTickCount64();
 	playerComponent.characterId = character->GetId();
 	playerComponent.modelId = character->GetModelId();
 	playerComponent.textureId = character->GetTextureId();

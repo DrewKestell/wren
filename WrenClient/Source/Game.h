@@ -35,7 +35,7 @@
 class Game : public DX::IDeviceNotify, public Observer
 {
 public:
-	Game(ClientRepository repository, CommonRepository commonRepository) noexcept(false) ;
+	Game(ClientRepository repository, CommonRepository commonRepository) noexcept(false);
 
 	void Initialize(HWND window, int width, int height);
 	void Tick();
