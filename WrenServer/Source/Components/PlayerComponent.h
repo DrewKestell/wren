@@ -23,5 +23,4 @@ public:
 	bool autoAttackOn{ false };
 	float swingTimer{ 0.0f };
 	XMFLOAT3 rightMouseDownDir{ VEC_ZERO };
-	XMFLOAT3 movementVector{ VEC_ZERO };
 };

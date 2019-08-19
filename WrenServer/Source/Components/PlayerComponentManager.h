@@ -2,6 +2,7 @@
 
 #include <Constants.h>
 #include <EventHandling/Observer.h>
+#include <GameMap/GameMap.h>
 #include "PlayerComponent.h"
 #include "ObjectManager.h"
 
@@ -13,8 +14,11 @@ class PlayerComponentManager : public Observer
 	PlayerComponent playerComponents[MAX_PLAYERCOMPONENTS_SIZE];
 	unsigned int playerComponentIndex{ 0 };
 	ObjectManager& objectManager;
+	GameMap& gameMap;
+
+	const XMFLOAT3 GetDestinationVector(const XMFLOAT3 rightMouseDownDir, const XMFLOAT3 playerPos) const;
 public:
-	PlayerComponentManager(ObjectManager& objectManager);
+	PlayerComponentManager(ObjectManager& objectManager, GameMap& gameMap);
 	PlayerComponent& CreatePlayerComponent(const long gameObjectId, const std::string token, const std::string ipAndPort, const sockaddr_in fromSockAddr, const DWORD lastHeartbeat);
 	void DeletePlayerComponent(const unsigned int playerComponentId);
 	PlayerComponent& GetPlayerComponentById(const unsigned int playerComponentId);

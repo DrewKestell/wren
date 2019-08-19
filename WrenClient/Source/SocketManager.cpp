@@ -246,7 +246,7 @@ bool SocketManager::TryRecieveMessage()
 		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_GAMEOBJECT_UPDATE, opcodeArrLen))
 		{
-			const auto characterId = args[0];
+			const auto gameObjectId = args[0];
 			const auto posX = args[1];
 			const auto posY = args[2];
 			const auto posZ = args[3];
@@ -255,12 +255,12 @@ bool SocketManager::TryRecieveMessage()
 			const auto movZ = args[6];
 			const auto type = args[7];
 
-			g_eventHandler.QueueEvent(new GameObjectUpdateEvent{ std::stol(*characterId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), static_cast<GameObjectType>(std::stoi(*type)) });
+			g_eventHandler.QueueEvent(new GameObjectUpdateEvent{ std::stol(*gameObjectId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), static_cast<GameObjectType>(std::stoi(*type)) });
 			return true;
 		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_OTHER_PLAYER_UPDATE, opcodeArrLen))
 		{
-			const auto characterId = args[0];
+			const auto accountId = args[0];
 			const auto posX = args[1];
 			const auto posY = args[2];
 			const auto posZ = args[3];
@@ -271,7 +271,7 @@ bool SocketManager::TryRecieveMessage()
 			const auto textureId = args[8];
 			const auto name = args[9];
 
-			g_eventHandler.QueueEvent(new OtherPlayerUpdateEvent{ std::stol(*characterId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), std::stoi(*modelId), std::stoi(*textureId), name });
+			g_eventHandler.QueueEvent(new OtherPlayerUpdateEvent{ std::stol(*accountId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), std::stoi(*modelId), std::stoi(*textureId), name });
 			return true;
 		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_PROPAGATE_CHAT_MESSAGE, opcodeArrLen))

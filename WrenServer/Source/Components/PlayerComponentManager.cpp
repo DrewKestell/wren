@@ -11,8 +11,9 @@ extern EventHandler g_eventHandler;
 extern AIComponentManager g_aiComponentManager;
 extern SocketManager g_socketManager;
 
-PlayerComponentManager::PlayerComponentManager(ObjectManager& objectManager)
-	: objectManager{ objectManager }
+PlayerComponentManager::PlayerComponentManager(ObjectManager& objectManager, GameMap& gameMap)
+	: objectManager{ objectManager },
+	  gameMap{ gameMap }
 {
 	g_eventHandler.Subscribe(*this);
 }
@@ -73,9 +74,20 @@ void PlayerComponentManager::Update()
 		GameObject& player = objectManager.GetGameObjectById(comp.gameObjectId);
 		
 		// first handle movement
+		if (player.movementVector == VEC_ZERO && comp.rightMouseDownDir != VEC_ZERO)
+		{
+			const auto delta = XMFLOAT3{ comp.rightMouseDownDir.x * TILE_SIZE, comp.rightMouseDownDir.y * TILE_SIZE, comp.rightMouseDownDir.z * TILE_SIZE };
+			const auto proposedPos = player.localPosition + delta;
 
-		// i think the code that checks if the destination is reached should be in GameObject...
-		// it should be core to all units
+			if (!Utility::CheckOutOfBounds(proposedPos) && !gameMap.IsTileOccupied(proposedPos))
+			{
+				player.movementVector = comp.rightMouseDownDir;
+				player.destination = proposedPos;
+
+				gameMap.SetTileOccupied(player.localPosition, false);
+				gameMap.SetTileOccupied(player.destination, true);
+			}
+		}
 
 		// next handle combat
 		const auto weaponSpeed = 3.0f;
@@ -119,6 +131,15 @@ void PlayerComponentManager::Update()
 			}
 		}
 	}
+}
+
+const XMFLOAT3 PlayerComponentManager::GetDestinationVector(const XMFLOAT3 rightMouseDownDir, const XMFLOAT3 playerPos) const
+{
+	const auto vec = XMLoadFloat3(&rightMouseDownDir);
+	const auto currentPos = XMLoadFloat3(&playerPos);
+	XMFLOAT3 destinationVector;
+	XMStoreFloat3(&destinationVector, currentPos + (vec * TILE_SIZE));
+	return destinationVector;
 }
 
 PlayerComponent* PlayerComponentManager::GetPlayerComponents()

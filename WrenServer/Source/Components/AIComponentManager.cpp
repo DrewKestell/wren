@@ -84,23 +84,9 @@ void AIComponentManager::Update()
 		AIComponent& comp = aiComponents[i];
 		GameObject& gameObject = objectManager.GetGameObjectById(comp.gameObjectId);
 		auto pos = gameObject.GetWorldPosition();
-		auto destination = gameObject.destination;
 
 		// handle movement
-		if (gameObject.isMoving)
-		{
-			// if target is reached
-			auto deltaX = std::abs(pos.x - destination.x);
-			auto deltaZ = std::abs(pos.z - destination.z);
-
-			if (deltaX < 1.0f && deltaZ < 1.0f)
-			{
-				gameObject.localPosition = XMFLOAT3{ destination.x, 0.0f, destination.z };
-				gameObject.movementVector = VEC_ZERO;
-				gameObject.isMoving = false;
-			}
-		}
-		else
+		if (gameObject.movementVector == VEC_ZERO)
 		{
 			auto movementVec = VEC_ZERO;
 
@@ -139,26 +125,18 @@ void AIComponentManager::Update()
 				}
 			}
 
-			if (movementVec.x != 0.0f || movementVec.y != 0.0f || movementVec.z != 0.0f)
+			if (movementVec != VEC_ZERO)
 			{
-				const auto movementVector = XMFLOAT3{ movementVec.x * TILE_SIZE, movementVec.y * TILE_SIZE, movementVec.z * TILE_SIZE };
-				const auto proposedPos = gameObject.localPosition + movementVector;
+				const auto delta = XMFLOAT3{ movementVec.x * TILE_SIZE, movementVec.y * TILE_SIZE, movementVec.z * TILE_SIZE };
+				const auto proposedPos = gameObject.localPosition + delta;
 
 				if (!Utility::CheckOutOfBounds(proposedPos) && !gameMap.IsTileOccupied(proposedPos))
 				{
-					gameObject.isMoving = true;
-
 					gameObject.movementVector = movementVec;
-
-					gameObject.destination = XMFLOAT3
-					{
-						pos.x + (gameObject.movementVector.x * TILE_SIZE),
-						pos.y + (gameObject.movementVector.y * TILE_SIZE),
-						pos.z + (gameObject.movementVector.z * TILE_SIZE)
-					};
+					gameObject.destination = proposedPos;
 
 					gameMap.SetTileOccupied(gameObject.localPosition, false);
-					gameMap.SetTileOccupied(proposedPos, true);
+					gameMap.SetTileOccupied(gameObject.destination, true);
 				}
 			}
 		}

@@ -6,14 +6,14 @@ class OtherPlayerUpdateEvent : public Event
 {
 public:
 	OtherPlayerUpdateEvent(
-		const int characterId,
+		const int accountId,
 		const float posX, const float posY, const float posZ,
 		const float movX, const float movY, const float movZ,
 		const int modelId,
 		const int textureId,
 		std::string* name)
 		: Event(EventType::OtherPlayerUpdate),
-		  characterId{ characterId },
+		  accountId{ accountId },
 		  posX{ posX }, posY{ posY }, posZ{ posZ },
 		  movX{ movX }, movY{ movY }, movZ{ movZ },
 		  modelId{ modelId },
@@ -21,7 +21,7 @@ public:
 		  name{ name }
 	{
 	}
-	const int characterId;
+	const int accountId;
 	const float posX;
 	const float posY;
 	const float posZ;

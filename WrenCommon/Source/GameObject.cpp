@@ -4,6 +4,22 @@
 
 void GameObject::Update()
 {
+	const auto position = GetWorldPosition();
+
+	if (movementVector != VEC_ZERO)
+	{
+		// if target is reached
+		auto deltaX = std::abs(position.x - destination.x);
+		auto deltaZ = std::abs(position.z - destination.z);
+
+		if (deltaX < 1.0f && deltaZ < 1.0f)
+		{
+			localPosition = destination;
+			movementVector = VEC_ZERO;
+			destination = VEC_ZERO;
+		}
+	}
+
 	auto movementVec = XMLoadFloat3(&movementVector);
 	movementVec *= speed * UPDATE_FREQUENCY;
 	

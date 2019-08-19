@@ -928,7 +928,7 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
-			const auto dir = Utility::MousePosToDirection(clientWidth, clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
+			const auto dir = Utility::MousePosToDirection((float)clientWidth, (float)clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
 			std::string args[]{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
 			g_socketManager.SendPacket(OPCODE_PLAYER_RIGHT_MOUSE_DOWN, args, 3);
 
@@ -955,7 +955,7 @@ const bool Game::HandleEvent(const Event* const event)
 
 			if (activeLayer == Layer::InGame && rightMouseDownDir != VEC_ZERO)
 			{
-				const auto dir = Utility::MousePosToDirection(clientWidth, clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
+				const auto dir = Utility::MousePosToDirection((float)clientWidth, (float)clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
 				if (dir != rightMouseDownDir)
 				{
 					std::string args[]{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
@@ -1076,7 +1076,7 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (GameObjectUpdateEvent*)event;
 
-			const auto gameObjectId = derivedEvent->characterId;
+			const auto gameObjectId = derivedEvent->gameObjectId;
 			const auto type = derivedEvent->type;
 			const auto pos = XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ };
 			const auto mov = XMFLOAT3{ derivedEvent->movX, derivedEvent->movY, derivedEvent->movZ };
@@ -1105,11 +1105,7 @@ const bool Game::HandleEvent(const Event* const event)
 			}
 			else
 			{
-				GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->characterId);
-
-				// TODO: this might not be right. "pos" may not correctly refer to the destination tile.
-				gameMap.SetTileOccupied(gameObject.localPosition, false);
-				gameMap.SetTileOccupied(pos, true);
+				GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
 
 				gameObject.localPosition = pos;
 				gameObject.movementVector = mov;
@@ -1121,7 +1117,7 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (OtherPlayerUpdateEvent*)event;
 
-			const auto gameObjectId = derivedEvent->characterId;
+			const auto gameObjectId = derivedEvent->accountId;
 			const auto type = derivedEvent->type;
 			const auto pos = XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ };
 			const auto mov = XMFLOAT3{ derivedEvent->movX, derivedEvent->movY, derivedEvent->movZ };
@@ -1140,7 +1136,8 @@ const bool Game::HandleEvent(const Event* const event)
 			}
 			else
 			{
-				GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->characterId);
+				GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->accountId);
+
 				gameObject.localPosition = pos;
 				gameObject.movementVector = mov;
 			}

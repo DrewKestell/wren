@@ -7,7 +7,7 @@
 #include "Components/AIComponentManager.h"
 #include "Components/PlayerComponentManager.h"
 
-static constexpr auto CLIENT_UPDATE_FREQUENCY = 0.05f;
+static constexpr auto CLIENT_UPDATE_FREQUENCY = 0.03f;
 
 static ServerRepository repository{ "..\\..\\Databases\\WrenServer.db" };
 static CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db " };
@@ -18,7 +18,7 @@ EventHandler g_eventHandler;
 StatsComponentManager g_statsComponentManager{ g_objectManager };
 GameMap g_gameMap;
 AIComponentManager g_aiComponentManager{ g_objectManager, g_gameMap };
-PlayerComponentManager g_playerComponentManager{ g_objectManager };
+PlayerComponentManager g_playerComponentManager{ g_objectManager, g_gameMap };
 SocketManager g_socketManager{ repository, commonRepository };
 
 void PublishEvents()
@@ -49,7 +49,6 @@ int main()
 
     while (true)
     {
-		// do we want to Tick before handling socket messages? might throw off the timer...
 		m_timer.Tick();
 
 		while (g_socketManager.TryRecieveMessage()) {}

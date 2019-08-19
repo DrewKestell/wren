@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Constants.h>
 #include "Utility.h"
 #include "GameObjectType.h"
 
@@ -27,8 +28,9 @@ public:
 	// physics component?
 	XMFLOAT3 localPosition{ 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 scale{ 0.0f, 0.0f, 0.0f };
-	XMFLOAT3 movementVector{ 0.0f, 0.0f, 0.0f };
 	bool isStatic{ false };
+	XMFLOAT3 movementVector{ VEC_ZERO };
+	XMFLOAT3 destination{ VEC_ZERO };
 
 	// only really needed on the server. separate component?
 	int modelId{ -1 };
