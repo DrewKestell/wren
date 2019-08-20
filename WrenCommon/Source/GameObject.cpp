@@ -6,9 +6,9 @@ void GameObject::Update()
 {
 	const auto position = GetWorldPosition();
 
+	// first check if the destination is reached
 	if (movementVector != VEC_ZERO)
 	{
-		// if target is reached
 		auto deltaX = std::abs(position.x - destination.x);
 		auto deltaZ = std::abs(position.z - destination.z);
 

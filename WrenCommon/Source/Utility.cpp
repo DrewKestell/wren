@@ -78,3 +78,11 @@ const bool Utility::AreOnAdjacentOrDiagonalTiles(const XMFLOAT3 pos1, const XMFL
 
 	return std::abs(row1 - row2) <= 1 && std::abs(col1 - col2) <= 1;
 }
+
+const float Utility::Max(const float l, const float r)
+{
+	if (r > l)
+		return r;
+
+	return l;
+}

@@ -19,7 +19,7 @@ class PlayerComponentManager : public Observer
 	const XMFLOAT3 GetDestinationVector(const XMFLOAT3 rightMouseDownDir, const XMFLOAT3 playerPos) const;
 public:
 	PlayerComponentManager(ObjectManager& objectManager, GameMap& gameMap);
-	PlayerComponent& CreatePlayerComponent(const long gameObjectId, const std::string token, const std::string ipAndPort, const sockaddr_in fromSockAddr, const DWORD lastHeartbeat);
+	PlayerComponent& CreatePlayerComponent(const long gameObjectId, const std::string token, const std::string ipAndPort, const sockaddr_in fromSockAddr, const unsigned __int64 lastHeartbeat);
 	void DeletePlayerComponent(const unsigned int playerComponentId);
 	PlayerComponent& GetPlayerComponentById(const unsigned int playerComponentId);
 	virtual const bool HandleEvent(const Event* const event);

@@ -18,7 +18,7 @@ PlayerComponentManager::PlayerComponentManager(ObjectManager& objectManager, Gam
 	g_eventHandler.Subscribe(*this);
 }
 
-PlayerComponent& PlayerComponentManager::CreatePlayerComponent(const long gameObjectId, const std::string token, const std::string ipAndPort, const sockaddr_in fromSockAddr, const DWORD lastHeartbeat)
+PlayerComponent& PlayerComponentManager::CreatePlayerComponent(const long gameObjectId, const std::string token, const std::string ipAndPort, const sockaddr_in fromSockAddr, const unsigned __int64 lastHeartbeat)
 {
 	if (playerComponentIndex == MAX_PLAYERCOMPONENTS_SIZE)
 		throw std::exception("Max PlayerComponents exceeded!");
@@ -91,8 +91,8 @@ void PlayerComponentManager::Update()
 
 		// next handle combat
 		const auto weaponSpeed = 3.0f;
-		const auto damageMin = 2;
-		const auto damageMax = 8;
+		const auto damageMin = 4;
+		const auto damageMax = 16;
 
 		if (comp.swingTimer < weaponSpeed)
 			comp.swingTimer += UPDATE_FREQUENCY;
