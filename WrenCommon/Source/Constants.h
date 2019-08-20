@@ -2,7 +2,7 @@
 
 static constexpr auto CLIENT_WIDTH = 1400;
 static constexpr auto CLIENT_HEIGHT = 900;
-static constexpr auto TIMEOUT_DURATION = 30000; // 30000ms == 30s
+static constexpr unsigned __int64 TIMEOUT_DURATION = 30000; // 30000ms == 30s
 static constexpr auto UPDATE_FREQUENCY = 0.01666666666f;
 static constexpr auto PLAYER_SPEED = 60.0f;
 static constexpr auto MESSAGE_BUFFER_SIZE = 100;

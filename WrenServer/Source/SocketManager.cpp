@@ -132,7 +132,8 @@ void SocketManager::Login(const std::string& accountName, const std::string& pas
 		else
 		{
 			GUID guid;
-			CoCreateGuid(&guid);
+			if (FAILED(CoCreateGuid(&guid)))
+				throw new std::exception("Failed to create GUID.");
 			char guid_cstr[39];
 			snprintf(guid_cstr, sizeof(guid_cstr),
 				"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
