@@ -41,5 +41,6 @@ enum class EventType
 	ActivateAbilitySuccess,
 	AttackHit,
 	AttackMiss,
-	Pong
+	Pong,
+	SkillIncrease
 };

@@ -5,6 +5,7 @@
 #include <Components/StatsComponentManager.h>
 #include "Components/AIComponentManager.h"
 #include "Components/PlayerComponentManager.h"
+#include "Components/SkillComponentManager.h"
 
 constexpr auto PLAYER_NOT_FOUND = "Player not found.";
 constexpr auto SOCKET_INIT_FAILED = "Failed to initialize sockets.";
@@ -23,6 +24,7 @@ extern ObjectManager g_objectManager;
 extern StatsComponentManager g_statsComponentManager;
 extern AIComponentManager g_aiComponentManager;
 extern PlayerComponentManager g_playerComponentManager;
+extern SkillComponentManager g_skillComponentManager;
 extern GameMap g_gameMap;
 extern EventHandler g_eventHandler;
 
@@ -550,12 +552,16 @@ void SocketManager::EnterWorld(const int accountId, const std::string& character
 	PlayerComponent& playerComponent = GetPlayerComponent(accountId);
 	auto character = repository.GetCharacter(characterName);
 	gameObject.localPosition = character->GetPosition();
-
 	playerComponent.lastHeartbeat = GetTickCount64();
 	playerComponent.characterId = character->GetId();
 	playerComponent.modelId = character->GetModelId();
 	playerComponent.textureId = character->GetTextureId();
 	playerComponent.characterName = character->GetName();
+
+	auto skills = repository.ListCharacterSkills(character->GetId());
+	const auto skillComponent = g_skillComponentManager.CreateSkillComponent(gameObject.id, skills);
+	gameObject.skillComponentId = skillComponent.id;
+
 	const auto pos = character->GetPosition();
 	const auto charId = character->GetId();
 	std::string args[]{ std::to_string(accountId), std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z), std::to_string(character->GetModelId()), std::to_string(character->GetTextureId()), ListSkills(charId), ListAbilities(charId), character->GetName() };

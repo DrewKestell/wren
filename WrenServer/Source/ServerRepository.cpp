@@ -221,7 +221,7 @@ Character* ServerRepository::GetCharacter(const std::string& characterName)
 	}
 }
 
-std::vector<Skill> ServerRepository::ListCharacterSkills(const int characterId)
+std::vector<WrenCommon::Skill> ServerRepository::ListCharacterSkills(const int characterId)
 {
 	auto dbConnection = GetConnection();
 
@@ -230,7 +230,7 @@ std::vector<Skill> ServerRepository::ListCharacterSkills(const int characterId)
 
 	auto statement = PrepareStatement(dbConnection, query);
 
-	std::vector<Skill> skills;
+	std::vector<WrenCommon::Skill> skills;
 	auto result = sqlite3_step(statement);
 	if (result == SQLITE_DONE)
 	{
@@ -244,7 +244,7 @@ std::vector<Skill> ServerRepository::ListCharacterSkills(const int characterId)
 			const auto skillId = sqlite3_column_int(statement, 0);
 			const unsigned char *skillName = sqlite3_column_text(statement, 1);
 			const auto value = sqlite3_column_int(statement, 2);
-			skills.push_back(Skill{ skillId, std::string(reinterpret_cast<const char*>(skillName)), value });
+			skills.push_back(WrenCommon::Skill{ skillId, std::string(reinterpret_cast<const char*>(skillName)), value });
 			result = sqlite3_step(statement);
 		}
 		sqlite3_finalize(statement);

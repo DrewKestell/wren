@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "Events/AttackHitEvent.h"
 #include "Events/AttackMissEvent.h"
+#include "Events/SkillIncreaseEvent.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -327,6 +328,15 @@ bool SocketManager::TryRecieveMessage()
 
 			return true;
 		}
+		else if (MessagePartsEqual(opcodeArr, OPCODE_SKILL_INCREASE, opcodeArrLen))
+		{
+			const auto skillId = args[0];
+			const auto newValue = args[1];
+
+			g_eventHandler.QueueEvent(new SkillIncreaseEvent(std::stoi(*skillId), std::stoi(*newValue)));
+
+			return true;
+		}
 		else
 		{
 			if (logMessages)
@@ -355,9 +365,9 @@ std::vector<std::string*>* SocketManager::BuildCharacterVector(std::string* char
     return characterList;
 }
 
-std::vector<Skill*>* SocketManager::BuildSkillVector(std::string& skillString)
+std::vector<WrenCommon::Skill*>* SocketManager::BuildSkillVector(std::string& skillString)
 {
-	std::vector<Skill*>* skillList = new std::vector<Skill*>;
+	std::vector<WrenCommon::Skill*>* skillList = new std::vector<WrenCommon::Skill*>;
 	char param = 0;
 	std::string skillId = "";
 	std::string name = "";
@@ -366,7 +376,7 @@ std::vector<Skill*>* SocketManager::BuildSkillVector(std::string& skillString)
 	{
 		if (skillString[i] == ';')
 		{
-			skillList->push_back(new Skill(std::stoi(skillId), name, std::stoi(value)));
+			skillList->push_back(new WrenCommon::Skill(std::stoi(skillId), name, std::stoi(value)));
 			param = 0;
 			skillId = "";
 			name = "";

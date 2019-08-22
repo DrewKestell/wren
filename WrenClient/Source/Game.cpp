@@ -6,6 +6,7 @@
 #include <OpCodes.h>
 #include "Events/UIAbilityDroppedEvent.h"
 #include "Events/AttackHitEvent.h"
+#include "Events/SkillIncreaseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -1263,6 +1264,22 @@ const bool Game::HandleEvent(const Event* const event)
 			StatsComponent& comp = statsComponentManager.GetStatsComponentById(gameObject.statsComponentId);
 			comp.health -= derivedEvent->damage;
 
+			break;
+		}
+		case EventType::SkillIncrease:
+		{
+			const auto derivedEvent = (SkillIncreaseEvent*)event;
+
+			// TODO: refactors skills on ClientSide to be somewhere easier to access, use array, etc.
+			for (auto skill : *skills)
+			{
+				if (skill->skillId == derivedEvent->skillId)
+				{
+					skill->value = derivedEvent->newValue;
+					const auto msg = new std::string("Your skill in " + skill->name + " has increased to " + std::to_string(derivedEvent->newValue));
+					textWindow->AddMessage(msg);
+				}
+			}
 			break;
 		}
 	}

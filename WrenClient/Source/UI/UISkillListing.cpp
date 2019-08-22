@@ -9,7 +9,7 @@ UISkillListing::UISkillListing(
 	const XMFLOAT2 position,
 	const Layer uiLayer,
 	const unsigned int zIndex,
-	Skill& skill,
+	WrenCommon::Skill& skill,
 	ID2D1SolidColorBrush* textBrush,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	IDWriteFactory2* writeFactory,

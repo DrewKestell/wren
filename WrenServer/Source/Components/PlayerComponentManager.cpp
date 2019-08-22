@@ -6,6 +6,8 @@
 #include "../SocketManager.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
+#include "../Events/AttackHitEvent.h"
+#include "../Events/AttackMissEvent.h"
 
 extern EventHandler g_eventHandler;
 extern AIComponentManager g_aiComponentManager;
@@ -117,13 +119,19 @@ void PlayerComponentManager::Update()
 					if (hit)
 					{
 						std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);
-
 						const auto dmg = distDamage(rng);
+
+						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
+						g_eventHandler.QueueEvent(new AttackHitEvent{ player.id, target.id, (int)dmg, weaponSkillIds, 2 });
+
 						std::string args[]{ std::to_string(player.id), std::to_string(target.id), std::to_string(dmg) };
 						g_socketManager.SendPacket(OPCODE_ATTACK_HIT, args, 3);
 					}
 					else
 					{
+						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
+						g_eventHandler.QueueEvent(new AttackMissEvent{ player.id, target.id, weaponSkillIds, 2 });
+
 						std::string args[]{ std::to_string(player.id), std::to_string(target.id) };
 						g_socketManager.SendPacket(OPCODE_ATTACK_MISS, args, 2);
 					}

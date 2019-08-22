@@ -18,7 +18,7 @@ constexpr char OPCODE_ENTER_WORLD_SUCCESSFUL[2] = { '1', '2' };
 constexpr char OPCODE_DELETE_CHARACTER[2] = { '1', '3' };
 constexpr char OPCODE_DELETE_CHARACTER_SUCCESSFUL[2] = { '1', '4' };
 constexpr char OPCODE_PLAYER_UPDATE[2] = { '1', '5' };
-
+constexpr char OPCODE_SKILL_INCREASE[2] = { '1', '6' };
 constexpr char OPCODE_GAMEOBJECT_UPDATE[2] = { '1', '7' };
 constexpr char OPCODE_ACTIVATE_ABILITY[2] = { '1', '8' };
 constexpr char OPCODE_SEND_CHAT_MESSAGE[2] = { '1', '9' };

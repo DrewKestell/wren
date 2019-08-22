@@ -6,6 +6,7 @@
 #include <Components/StatsComponentManager.h>
 #include "Components/AIComponentManager.h"
 #include "Components/PlayerComponentManager.h"
+#include "Components/SkillComponentManager.h"
 
 static ServerRepository repository{ "..\\..\\Databases\\WrenServer.db" };
 static CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db " };
@@ -17,6 +18,7 @@ StatsComponentManager g_statsComponentManager{ g_objectManager };
 GameMap g_gameMap;
 AIComponentManager g_aiComponentManager{ g_objectManager, g_gameMap };
 PlayerComponentManager g_playerComponentManager{ g_objectManager, g_gameMap };
+SkillComponentManager g_skillComponentManager{ g_objectManager };
 SocketManager g_socketManager{ repository, commonRepository };
 
 void PublishEvents()

@@ -37,8 +37,9 @@ public:
 	int textureId{ -1 };
 
 	// components. i think this should be a map or vector? map<ComponentType, unsigned int>
-	unsigned int statsComponentId{ 0 };
-	unsigned int renderComponentId{ 0 };
-	unsigned int aiComponentId{ 0 };
-	unsigned int playerComponentId{ 0 };
+	int statsComponentId{ -1 };
+	int renderComponentId{ -1 };
+	int aiComponentId{ -1 };
+	int playerComponentId{ -1 };
+	int skillComponentId{ -1 };
 };
