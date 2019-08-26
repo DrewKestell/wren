@@ -15,6 +15,7 @@ UISkillListing::UISkillListing(
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* textFormat)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	  value{ skill.value },
 	  textBrush{ textBrush },
 	  writeFactory{ writeFactory },
 	  textFormat{ textFormat },
@@ -53,12 +54,7 @@ const bool UISkillListing::HandleEvent(const Event* const event)
 	{
 		case EventType::ChangeActiveLayer:
 		{
-			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
-
-			if (derivedEvent->layer == uiLayer && GetParent() == nullptr)
-				isVisible = true;
-			else
-				isVisible = false;
+			isVisible = false;
 
 			break;
 		}

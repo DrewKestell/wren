@@ -108,7 +108,7 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 				const auto targetSkillComp = GetSkillComponentById(target.skillComponentId);
 				const auto targetPlayerComp = g_playerComponentManager.GetPlayerComponentById(target.playerComponentId);
 
-				const auto defenseSkillId = 3;
+				const auto defenseSkillId = 2;
 				WrenServer::Skill* defenseSkill = targetSkillComp.skills[defenseSkillId];
 
 				// 100 is the max skill level, so we skip this weapon skill in that case

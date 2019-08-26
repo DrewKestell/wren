@@ -27,6 +27,7 @@
 #include "UI/UISkillListing.h"
 #include "UI/UIHotbar.h"
 #include "UI/UIAbilitiesContainer.h"
+#include "UI/UISkillsContainer.h"
 #include "UI/UICharacterHUD.h"
 #include "UI/UITargetHUD.h"
 #include "UI/UITextWindow.h"
@@ -91,11 +92,11 @@ private:
 	std::unique_ptr<UITargetHUD> targetHUD;
 	std::unique_ptr<UICharacterHUD> characterHUD;
 	std::unique_ptr<UITextWindow> textWindow;
-	std::vector<WrenCommon::Skill*>* skills;
-	std::vector<Ability*>* abilities;
+	std::vector<WrenCommon::Skill*>* skills{ nullptr };
+	std::vector<Ability*>* abilities{ nullptr };
 	unsigned int* textWindowMessageIndex = new unsigned int{ 0 };
 	std::string* textWindowMessages[MESSAGE_BUFFER_SIZE];
-	std::vector<Npc*>* npcs;
+	std::vector<Npc*>* npcs{ nullptr };
 
 	void Render(const float updateTimer);
 	void Clear();
@@ -123,7 +124,6 @@ private:
 	void InitializeMeshes();
 	void InitializeRasterStates();
 	void InitializeSprites();
-	void InitializeSkills();
 	void InitializeAbilitiesContainer();
 	void RecreateCharacterListings(const std::vector<std::string*>* characterNames);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();
@@ -231,6 +231,7 @@ private:
 	std::unique_ptr<UIPanel> skillsPanel;
 	std::unique_ptr<UIPanel> abilitiesPanel;
 
-	// Abilities
+	// Containers
 	std::unique_ptr<UIAbilitiesContainer> abilitiesContainer;
+	std::unique_ptr<UISkillsContainer> skillsContainer;
 };

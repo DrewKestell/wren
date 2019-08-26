@@ -121,7 +121,7 @@ void PlayerComponentManager::Update()
 						std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);
 						const auto dmg = distDamage(rng);
 
-						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
+						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
 						g_eventHandler.QueueEvent(new AttackHitEvent{ player.id, target.id, (int)dmg, weaponSkillIds, 2 });
 
 						std::string args[]{ std::to_string(player.id), std::to_string(target.id), std::to_string(dmg) };
@@ -129,7 +129,7 @@ void PlayerComponentManager::Update()
 					}
 					else
 					{
-						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
+						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
 						g_eventHandler.QueueEvent(new AttackMissEvent{ player.id, target.id, weaponSkillIds, 2 });
 
 						std::string args[]{ std::to_string(player.id), std::to_string(target.id) };

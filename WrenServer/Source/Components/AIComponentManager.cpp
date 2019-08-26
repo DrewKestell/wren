@@ -168,14 +168,14 @@ void AIComponentManager::Update()
 				if (comp.swingTimer >= weaponSpeed)
 				{
 					comp.swingTimer = 0.0f;
-
+					
 					const auto hit = dist100(rng) > 50;
 					if (hit)
 					{
 						std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);
 						const auto dmg = distDamage(rng);
 
-						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
+						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
 						g_eventHandler.QueueEvent(new AttackHitEvent{ gameObject.id, target.id, (int)dmg, weaponSkillIds, 2 });
 
 						std::string args[]{ std::to_string(gameObject.id), std::to_string(target.id), std::to_string(dmg) };
@@ -183,7 +183,7 @@ void AIComponentManager::Update()
 					}
 					else
 					{
-						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
+						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
 						g_eventHandler.QueueEvent(new AttackMissEvent{ gameObject.id, target.id, weaponSkillIds, 2 });
 
 						std::string args[]{ std::to_string(gameObject.id), std::to_string(target.id)};

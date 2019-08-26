@@ -5,6 +5,7 @@
 
 class UISkillListing : public UIComponent
 {
+	int value;
 	ComPtr<IDWriteTextLayout> nameTextLayout;
 	ComPtr<IDWriteTextLayout> valueTextLayout;
 	ID2D1SolidColorBrush* textBrush;
