@@ -19,7 +19,7 @@ constexpr char OPCODE_DELETE_CHARACTER[2] = { '1', '3' };
 constexpr char OPCODE_DELETE_CHARACTER_SUCCESSFUL[2] = { '1', '4' };
 constexpr char OPCODE_PLAYER_UPDATE[2] = { '1', '5' };
 constexpr char OPCODE_SKILL_INCREASE[2] = { '1', '6' };
-constexpr char OPCODE_GAMEOBJECT_UPDATE[2] = { '1', '7' };
+constexpr char OPCODE_NPC_UPDATE[2] = { '1', '7' };
 constexpr char OPCODE_ACTIVATE_ABILITY[2] = { '1', '8' };
 constexpr char OPCODE_SEND_CHAT_MESSAGE[2] = { '1', '9' };
 constexpr char OPCODE_PROPAGATE_CHAT_MESSAGE[2] = { '2', '0' };
@@ -27,7 +27,7 @@ constexpr char OPCODE_SET_TARGET[2] = { '2', '1' };
 constexpr char OPCODE_UNSET_TARGET[2] = { '2', '2' };
 constexpr char OPCODE_SERVER_MESSAGE[2] = { '2', '3' };
 constexpr char OPCODE_ACTIVATE_ABILITY_SUCCESS[2] = { '2', '4' };
-constexpr char OPCODE_OTHER_PLAYER_UPDATE[2] = { '2', '5' };
+
 constexpr char OPCODE_ATTACK_HIT[2] = { '2', '6' };
 constexpr char OPCODE_ATTACK_MISS[2] = { '2', '7' };
 constexpr char OPCODE_PING[2] = { '2', '8' };

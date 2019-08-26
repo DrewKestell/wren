@@ -200,15 +200,36 @@ Character* ServerRepository::GetCharacter(const std::string& characterName)
 	auto statement = PrepareStatement(dbConnection, query);
 	if (sqlite3_step(statement) == SQLITE_ROW)
 	{
-		const int id = sqlite3_column_int(statement, 0);
-		const unsigned char *characterName = sqlite3_column_text(statement, 1);
-		const int accountId = sqlite3_column_int(statement, 2);
-		const double positionX = sqlite3_column_double(statement, 3);
-		const double positionY = sqlite3_column_double(statement, 4);
-		const double positionZ = sqlite3_column_double(statement, 5);
-		const int modelId = sqlite3_column_int(statement, 6);
-		const int textureId = sqlite3_column_int(statement, 7);
-		auto character = new Character(id, std::string(reinterpret_cast<const char*>(characterName)), accountId, XMFLOAT3{ (float)positionX, (float)positionY, (float)positionZ }, modelId, textureId);
+		auto i = 0;
+		const int id = sqlite3_column_int(statement, i++);
+		const unsigned char *characterName = sqlite3_column_text(statement, i++);
+		const int accountId = sqlite3_column_int(statement, i++);
+		const double positionX = sqlite3_column_double(statement, i++);
+		const double positionY = sqlite3_column_double(statement, i++);
+		const double positionZ = sqlite3_column_double(statement, i++);
+		const int modelId = sqlite3_column_int(statement, i++);
+		const int textureId = sqlite3_column_int(statement, i++);
+		const int agility = sqlite3_column_int(statement, i++);
+		const int strength = sqlite3_column_int(statement, i++);
+		const int wisdom = sqlite3_column_int(statement, i++);
+		const int intelligence = sqlite3_column_int(statement, i++);
+		const int charisma = sqlite3_column_int(statement, i++);
+		const int luck = sqlite3_column_int(statement, i++);
+		const int endurance = sqlite3_column_int(statement, i++);
+		const int health = sqlite3_column_int(statement, i++);
+		const int maxHealth = sqlite3_column_int(statement, i++);
+		const int mana = sqlite3_column_int(statement, i++);
+		const int maxMana = sqlite3_column_int(statement, i++);
+		const int stamina = sqlite3_column_int(statement, i++);
+		const int maxStamina = sqlite3_column_int(statement, i++);
+
+		auto character = new Character(
+			id, std::string(reinterpret_cast<const char*>(characterName)), accountId,
+			XMFLOAT3{ (float)positionX, (float)positionY, (float)positionZ },
+			modelId, textureId,
+			agility, strength, wisdom, intelligence, charisma, luck, endurance,
+			health, maxHealth, mana, maxMana, stamina, maxStamina
+		);
 
 		sqlite3_finalize(statement);
 		return character;

@@ -2,6 +2,8 @@
 #include <OpCodes.h>
 #include <Utility.h>
 #include "AIComponentManager.h"
+#include <Components/StatsComponent.h>
+#include <Components/StatsComponentManager.h>
 #include "../SocketManager.h"
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
@@ -10,6 +12,7 @@
 
 extern EventHandler g_eventHandler;
 extern SocketManager g_socketManager;
+extern StatsComponentManager g_statsComponentManager;
 
 static constexpr XMFLOAT3 DIRECTIONS[8]
 {
@@ -169,24 +172,29 @@ void AIComponentManager::Update()
 				{
 					comp.swingTimer = 0.0f;
 					
+					const auto gameObjectId = gameObject.GetId();
+					const auto targetId = target.GetId();
 					const auto hit = dist100(rng) > 50;
 					if (hit)
 					{
 						std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);
 						const auto dmg = distDamage(rng);
 
-						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
-						g_eventHandler.QueueEvent(new AttackHitEvent{ gameObject.id, target.id, (int)dmg, weaponSkillIds, 2 });
+						StatsComponent& statsComponent = g_statsComponentManager.GetStatsComponentById(target.statsComponentId);
+						statsComponent.health = Utility::Max(0, statsComponent.health - dmg);
 
-						std::string args[]{ std::to_string(gameObject.id), std::to_string(target.id), std::to_string(dmg) };
+						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
+						g_eventHandler.QueueEvent(new AttackHitEvent{ gameObjectId, targetId, (int)dmg, weaponSkillIds, 2 });
+
+						std::string args[]{ std::to_string(gameObjectId), std::to_string(targetId), std::to_string(dmg) };
 						g_socketManager.SendPacket(OPCODE_ATTACK_HIT, args, 3);
 					}
 					else
 					{
 						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
-						g_eventHandler.QueueEvent(new AttackMissEvent{ gameObject.id, target.id, weaponSkillIds, 2 });
+						g_eventHandler.QueueEvent(new AttackMissEvent{ gameObjectId, targetId, weaponSkillIds, 2 });
 
-						std::string args[]{ std::to_string(gameObject.id), std::to_string(target.id)};
+						std::string args[]{ std::to_string(gameObjectId), std::to_string(targetId)};
 						g_socketManager.SendPacket(OPCODE_ATTACK_MISS, args, 2);
 					}
 				}

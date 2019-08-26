@@ -2,33 +2,44 @@
 
 #include "Event.h"
 
-class OtherPlayerUpdateEvent : public Event
+class PlayerUpdateEvent : public Event
 {
 public:
-	OtherPlayerUpdateEvent(
+	PlayerUpdateEvent(
 		const int accountId,
-		const float posX, const float posY, const float posZ,
-		const float movX, const float movY, const float movZ,
+		const XMFLOAT3 pos,
+		const XMFLOAT3 mov,
 		const int modelId,
 		const int textureId,
-		std::string* name)
-		: Event(EventType::OtherPlayerUpdate),
+		std::string* name,
+		const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance,
+		const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina)
+		: Event(EventType::PlayerUpdate),
 		  accountId{ accountId },
-		  posX{ posX }, posY{ posY }, posZ{ posZ },
-		  movX{ movX }, movY{ movY }, movZ{ movZ },
-		  modelId{ modelId },
-		  textureId{ textureId },
-		  name{ name }
+		  pos{ pos }, mov{ mov },
+		  modelId{ modelId }, textureId{ textureId },
+		  name{ name },
+		  agility{ agility }, strength{ strength }, wisdom{ wisdom }, intelligence{ intelligence }, charisma{ charisma }, luck{ luck }, endurance{ endurance },
+		  health{ health }, maxHealth{ maxHealth }, mana{ mana }, maxMana{ maxMana }, stamina{ stamina }, maxStamina{ maxStamina }
 	{
 	}
 	const int accountId;
-	const float posX;
-	const float posY;
-	const float posZ;
-	const float movX;
-	const float movY;
-	const float movZ;
+	const XMFLOAT3 pos;
+	const XMFLOAT3 mov;
 	const int modelId;
 	const int textureId;
 	std::string* name;
+	const int agility;
+	const int strength;
+	const int wisdom;
+	const int intelligence;
+	const int charisma;
+	const int luck;
+	const int endurance;
+	const int health;
+	const int maxHealth;
+	const int mana;
+	const int maxMana;
+	const int stamina;
+	const int maxStamina;
 };

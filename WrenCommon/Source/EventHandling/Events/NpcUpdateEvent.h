@@ -1,41 +1,27 @@
 #pragma once
 
-#include <Models/Skill.h>
-#include <Models/Ability.h>
 #include "Event.h"
-#include "../../Layer.h"
-#include <DirectXMath.h>
+#include <GameObjectType.h>
 
-using namespace DirectX;
-
-class EnterWorldSuccessEvent : public Event
+class NpcUpdateEvent : public Event
 {
 public:
-	EnterWorldSuccessEvent(
-		const int accountId,
-		const XMFLOAT3 position,
-		const int modelId, const int textureId,
-		std::vector<WrenCommon::Skill*>* skills, std::vector<Ability*>* abilities,
-		std::string* name,
+	NpcUpdateEvent(
+		const int gameObjectId,
+		const XMFLOAT3 pos,
+		const XMFLOAT3 mov,
 		const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance,
 		const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina)
-		: Event(EventType::EnterWorldSuccess),
-		  accountId{ accountId },
-		  position{ position },
-		  modelId{ modelId }, textureId{ textureId },
-		  skills{ skills }, abilities{ abilities },
-		  name{ name },
+		: Event(EventType::NpcUpdate),
+		  gameObjectId{ gameObjectId },
+		  pos{ pos }, mov{ mov },
 		  agility{ agility }, strength{ strength }, wisdom{ wisdom }, intelligence{ intelligence }, charisma{ charisma }, luck{ luck }, endurance{ endurance },
 		  health{ health }, maxHealth{ maxHealth }, mana{ mana }, maxMana{ maxMana }, stamina{ stamina }, maxStamina{ maxStamina }
 	{
 	}
-	const int accountId;
-	const XMFLOAT3 position;
-	const int modelId;
-	const int textureId;
-	std::vector<WrenCommon::Skill*>* skills;
-	std::vector<Ability*>* abilities;
-	std::string* name;
+	const int gameObjectId;
+	const XMFLOAT3 pos;
+	const XMFLOAT3 mov;
 	const int agility;
 	const int strength;
 	const int wisdom;

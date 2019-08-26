@@ -16,7 +16,6 @@ public:
 	unsigned __int64 lastHeartbeat{ 0 };
 	
 	int characterId{ 0 };
-	std::string characterName{ "" };
 	int modelId{ 0 };
 	int textureId{ 0 };
 	long targetId{ -1 };

@@ -3,6 +3,8 @@
 #include <Utility.h>
 #include "PlayerComponentManager.h"
 #include "AIComponentManager.h"
+#include <Components/StatsComponent.h>
+#include <Components/StatsComponentManager.h>
 #include "../SocketManager.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
@@ -11,6 +13,7 @@
 
 extern EventHandler g_eventHandler;
 extern AIComponentManager g_aiComponentManager;
+extern StatsComponentManager g_statsComponentManager;
 extern SocketManager g_socketManager;
 
 PlayerComponentManager::PlayerComponentManager(ObjectManager& objectManager, GameMap& gameMap)
@@ -94,7 +97,7 @@ void PlayerComponentManager::Update()
 		// next handle combat
 		const auto weaponSpeed = 3.0f;
 		const auto damageMin = 4;
-		const auto damageMax = 16;
+		const auto damageMax = 10;
 
 		if (comp.swingTimer < weaponSpeed)
 			comp.swingTimer += UPDATE_FREQUENCY;
@@ -112,8 +115,11 @@ void PlayerComponentManager::Update()
 
 					AIComponent& targetAIComponent = g_aiComponentManager.GetAIComponentById(target.aiComponentId);
 
+					const auto playerId = player.GetId();
+					const auto targetId = target.GetId();
+
 					if (targetAIComponent.targetId == -1)
-						targetAIComponent.targetId = player.id;
+						targetAIComponent.targetId = playerId;
 
 					const auto hit = dist100(rng) > 30;
 					if (hit)
@@ -121,18 +127,21 @@ void PlayerComponentManager::Update()
 						std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);
 						const auto dmg = distDamage(rng);
 
-						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
-						g_eventHandler.QueueEvent(new AttackHitEvent{ player.id, target.id, (int)dmg, weaponSkillIds, 2 });
+						StatsComponent& statsComponent = g_statsComponentManager.GetStatsComponentById(target.statsComponentId);
+						statsComponent.health = Utility::Max(0, statsComponent.health - dmg);
 
-						std::string args[]{ std::to_string(player.id), std::to_string(target.id), std::to_string(dmg) };
+						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
+						g_eventHandler.QueueEvent(new AttackHitEvent{ playerId, targetId, (int)dmg, weaponSkillIds, 2 });
+
+						std::string args[]{ std::to_string(playerId), std::to_string(targetId), std::to_string(dmg) };
 						g_socketManager.SendPacket(OPCODE_ATTACK_HIT, args, 3);
 					}
 					else
 					{
 						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
-						g_eventHandler.QueueEvent(new AttackMissEvent{ player.id, target.id, weaponSkillIds, 2 });
+						g_eventHandler.QueueEvent(new AttackMissEvent{ playerId, targetId, weaponSkillIds, 2 });
 
-						std::string args[]{ std::to_string(player.id), std::to_string(target.id) };
+						std::string args[]{ std::to_string(playerId), std::to_string(targetId) };
 						g_socketManager.SendPacket(OPCODE_ATTACK_MISS, args, 2);
 					}
 				}

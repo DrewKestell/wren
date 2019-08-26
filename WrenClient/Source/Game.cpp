@@ -5,7 +5,6 @@
 #include "Components/RenderComponent.h"
 #include <OpCodes.h>
 #include "Events/UIAbilityDroppedEvent.h"
-#include "Events/AttackHitEvent.h"
 #include "Events/SkillIncreaseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
@@ -17,8 +16,8 @@
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
-#include "EventHandling/Events/GameObjectUpdateEvent.h"
-#include "EventHandling/Events/OtherPlayerUpdateEvent.h"
+#include "EventHandling/Events/NpcUpdateEvent.h"
+#include "EventHandling/Events/PlayerUpdateEvent.h"
 #include "EventHandling/Events/ActivateAbilityEvent.h"
 #include "EventHandling/Events/SetTargetEvent.h"
 #include "EventHandling/Events/SendChatMessage.h"
@@ -389,11 +388,12 @@ void Game::InitializeStaticObjects()
 	for (auto staticObject : staticObjects)
 	{
 		const auto pos = staticObject->GetPosition();
-		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetId(), true);
-		auto renderComponent = renderComponentManager.CreateRenderComponent(gameObject.id, meshes[staticObject->GetModelId()].get(), vertexShader.Get(), pixelShader.Get(), textures[staticObject->GetTextureId()].Get());
+		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true);
+		const auto gameObjectId = gameObject.GetId();
+		auto renderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[staticObject->GetModelId()].get(), vertexShader.Get(), pixelShader.Get(), textures[staticObject->GetTextureId()].Get());
 		gameObject.renderComponentId = renderComponent.GetId();
-		StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObject.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, staticObject->GetName());
-		gameObject.statsComponentId = statsComponent.id;
+		StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObjectId, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
+		gameObject.statsComponentId = statsComponent.GetId();
 		gameMap.SetTileOccupied(gameObject.localPosition, true);
 
 		delete staticObject;
@@ -1039,12 +1039,27 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (EnterWorldSuccessEvent*)event;
 
-			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, (long)derivedEvent->accountId);
+			const auto agility = derivedEvent->agility;
+			const auto strength = derivedEvent->strength;
+			const auto wisdom = derivedEvent->wisdom;
+			const auto intelligence = derivedEvent->intelligence;
+			const auto charisma = derivedEvent->charisma;
+			const auto luck = derivedEvent->luck;
+			const auto endurance = derivedEvent->endurance;
+			const auto health = derivedEvent->health;
+			const auto maxHealth = derivedEvent->maxHealth;
+			const auto mana = derivedEvent->mana;
+			const auto maxMana = derivedEvent->maxMana;
+			const auto stamina = derivedEvent->stamina;
+			const auto maxStamina = derivedEvent->maxStamina;
+
+			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, derivedEvent->name, (long)derivedEvent->accountId);
+			const auto playerId = player.GetId();
 			this->player = &player;
-			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(player.id, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
+			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(playerId, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 			player.renderComponentId = sphereRenderComponent.GetId();
-			StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(player.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, derivedEvent->name);
-			player.statsComponentId = statsComponent.id;
+			StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(playerId, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
+			player.statsComponentId = statsComponent.GetId();
 			gameMap.SetTileOccupied(player.localPosition, true);
 
 			auto d2dFactory = deviceResources->GetD2DFactory();
@@ -1072,35 +1087,43 @@ const bool Game::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::GameObjectUpdate:
+		case EventType::NpcUpdate:
 		{
-			const auto derivedEvent = (GameObjectUpdateEvent*)event;
+			const auto derivedEvent = (NpcUpdateEvent*)event;
 
 			const auto gameObjectId = derivedEvent->gameObjectId;
 			const auto type = derivedEvent->type;
-			const auto pos = XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ };
-			const auto mov = XMFLOAT3{ derivedEvent->movX, derivedEvent->movY, derivedEvent->movZ };
+			const auto pos = derivedEvent->pos;
+			const auto mov = derivedEvent->mov;
+			const auto agility = derivedEvent->agility;
+			const auto strength = derivedEvent->strength;
+			const auto wisdom = derivedEvent->wisdom;
+			const auto intelligence = derivedEvent->intelligence;
+			const auto charisma = derivedEvent->charisma;
+			const auto luck = derivedEvent->luck;
+			const auto endurance = derivedEvent->endurance;
+			const auto health = derivedEvent->health;
+			const auto maxHealth = derivedEvent->maxHealth;
+			const auto mana = derivedEvent->mana;
+			const auto maxMana = derivedEvent->maxMana;
+			const auto stamina = derivedEvent->stamina;
+			const auto maxStamina = derivedEvent->maxStamina;
 
-			int modelId{ 0 };
-			int textureId{ 0 };
-			std::string* name{ nullptr };
-			float speed{ 0.0f };
-			if (type == GameObjectType::Npc)
-			{
-				auto npc = *find_if(npcs->begin(), npcs->end(), [&gameObjectId](Npc* npc) { return npc->GetId() == gameObjectId; });
-				modelId = npc->GetModelId();
-				textureId = npc->GetTextureId();
-				name = npc->GetName();
-				speed = npc->GetSpeed();
-			}
+			auto npc = *find_if(npcs->begin(), npcs->end(), [&gameObjectId](Npc* npc) { return npc->GetId() == gameObjectId; });
+			const auto modelId = npc->GetModelId();
+			const auto textureId = npc->GetTextureId();
+			const auto name = npc->GetName();
+			const auto speed = npc->GetSpeed();
+
 			if (!objectManager.GameObjectExists(gameObjectId))
 			{
-				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, speed, type, gameObjectId);
+				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, speed, GameObjectType::Npc, name, gameObjectId);
 				obj.movementVector = mov;
 				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
 				obj.renderComponentId = sphereRenderComponent.GetId();
-				StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, name);
-				obj.statsComponentId = statsComponent.id;
+
+				StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.GetId(), agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
+				obj.statsComponentId = statsComponent.GetId();
 				gameMap.SetTileOccupied(obj.localPosition, true);
 			}
 			else
@@ -1109,37 +1132,81 @@ const bool Game::HandleEvent(const Event* const event)
 
 				gameObject.localPosition = pos;
 				gameObject.movementVector = mov;
+
+				StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(gameObject.statsComponentId);
+				statsComponent.agility = agility;
+				statsComponent.strength = strength;
+				statsComponent.wisdom = wisdom;
+				statsComponent.intelligence = intelligence;
+				statsComponent.charisma = charisma;
+				statsComponent.luck = luck;
+				statsComponent.endurance = endurance;
+				statsComponent.health = health;
+				statsComponent.maxHealth = maxHealth;
+				statsComponent.mana = mana;
+				statsComponent.maxMana = maxMana;
+				statsComponent.stamina = stamina;
+				statsComponent.maxStamina = maxStamina;
 			}
 
 			break;
 		}
-		case EventType::OtherPlayerUpdate:
+		case EventType::PlayerUpdate:
 		{
-			const auto derivedEvent = (OtherPlayerUpdateEvent*)event;
+			const auto derivedEvent = (PlayerUpdateEvent*)event;
 
 			const auto gameObjectId = derivedEvent->accountId;
 			const auto type = derivedEvent->type;
-			const auto pos = XMFLOAT3{ derivedEvent->posX, derivedEvent->posY, derivedEvent->posZ };
-			const auto mov = XMFLOAT3{ derivedEvent->movX, derivedEvent->movY, derivedEvent->movZ };
+			const auto pos = derivedEvent->pos;
+			const auto mov = derivedEvent->mov;
 			const auto modelId = derivedEvent->modelId;
 			const auto textureId = derivedEvent->textureId;
 			const auto name = derivedEvent->name;
+			const auto agility = derivedEvent->agility;
+			const auto strength = derivedEvent->strength;
+			const auto wisdom = derivedEvent->wisdom;
+			const auto intelligence = derivedEvent->intelligence;
+			const auto charisma = derivedEvent->charisma;
+			const auto luck = derivedEvent->luck;
+			const auto endurance = derivedEvent->endurance;
+			const auto health = derivedEvent->health;
+			const auto maxHealth = derivedEvent->maxHealth;
+			const auto mana = derivedEvent->mana;
+			const auto maxMana = derivedEvent->maxMana;
+			const auto stamina = derivedEvent->stamina;
+			const auto maxStamina = derivedEvent->maxStamina;
 			
 			if (!objectManager.GameObjectExists(gameObjectId))
 			{
-				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, gameObjectId);
+				GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, name, gameObjectId);
 				obj.movementVector = mov;
 				auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
 				obj.renderComponentId = sphereRenderComponent.GetId();
-				StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.id, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10, name);
-				obj.statsComponentId = statsComponent.id;
+
+				StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.GetId(), agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
+				obj.statsComponentId = statsComponent.GetId();
 			}
 			else
 			{
-				GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->accountId);
+				GameObject& obj = objectManager.GetGameObjectById(derivedEvent->accountId);
 
-				gameObject.localPosition = pos;
-				gameObject.movementVector = mov;
+				obj.localPosition = pos;
+				obj.movementVector = mov;
+
+				StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(obj.statsComponentId);
+				statsComponent.agility = agility;
+				statsComponent.strength = strength;
+				statsComponent.wisdom = wisdom;
+				statsComponent.intelligence = intelligence;
+				statsComponent.charisma = charisma;
+				statsComponent.luck = luck;
+				statsComponent.endurance = endurance;
+				statsComponent.health = health;
+				statsComponent.maxHealth = maxHealth;
+				statsComponent.mana = mana;
+				statsComponent.maxMana = maxMana;
+				statsComponent.stamina = stamina;
+				statsComponent.maxStamina = maxStamina;
 			}
 
 			break;
@@ -1191,8 +1258,8 @@ const bool Game::HandleEvent(const Event* const event)
 				while (i < indices.size())
 				{
 					auto ver1 = vertices[indices[i]];
-					auto ver2 = vertices[indices[i + 1]];
-					auto ver3 = vertices[indices[i + 2]];
+					auto ver2 = vertices[indices[i + 1u]];
+					auto ver3 = vertices[indices[i + 2u]];
 					XMVECTOR v1 = XMVectorSet(ver1.Position.x, ver1.Position.y, ver1.Position.z, 1.0f);
 					XMVECTOR v2 = XMVectorSet(ver2.Position.x, ver2.Position.y, ver2.Position.z, 1.0f);
 					XMVECTOR v3 = XMVectorSet(ver3.Position.x, ver3.Position.y, ver3.Position.z, 1.0f);
@@ -1211,16 +1278,15 @@ const bool Game::HandleEvent(const Event* const event)
 			StatsComponent& playerStats = statsComponentManager.GetStatsComponentById(player->statsComponentId);
 			if (clickedGameObject)
 			{
+				const auto objectId = clickedGameObject->GetId();
 				StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(clickedGameObject->statsComponentId);
-				g_eventHandler.QueueEvent(new SetTargetEvent{ clickedGameObject->id, &statsComponent });
-				playerStats.targetId = clickedGameObject->id;
-				std::string args[]{ std::to_string(clickedGameObject->id) };
+				g_eventHandler.QueueEvent(new SetTargetEvent{ objectId, clickedGameObject->name, &statsComponent });
+				std::string args[]{ std::to_string(objectId) };
 				g_socketManager.SendPacket(OPCODE_SET_TARGET, args, 1);
 			}
 			else
 			{
 				g_eventHandler.QueueEvent(new Event{ EventType::UnsetTarget });
-				playerStats.targetId = -1;
 				g_socketManager.SendPacket(OPCODE_UNSET_TARGET);
 			}
 
@@ -1232,7 +1298,7 @@ const bool Game::HandleEvent(const Event* const event)
 
 			auto statsComponent = statsComponentManager.GetStatsComponentById(player->statsComponentId);
 
-			std::string args[]{ *statsComponent.name, *derivedEvent->message };
+			std::string args[]{ *player->name, *derivedEvent->message };
 			g_socketManager.SendPacket(OPCODE_SEND_CHAT_MESSAGE, args, 2);
 
 			break;
@@ -1252,16 +1318,6 @@ const bool Game::HandleEvent(const Event* const event)
 
 			std::string* msg = new std::string(*derivedEvent->message);
 			textWindow->AddMessage(msg);
-
-			break;
-		}
-		case EventType::AttackHit:
-		{
-			const auto derivedEvent = (AttackHitEvent*)event;
-
-			const auto gameObject = objectManager.GetGameObjectById(derivedEvent->targetId);
-			StatsComponent& comp = statsComponentManager.GetStatsComponentById(gameObject.statsComponentId);
-			comp.health -= derivedEvent->damage;
 
 			break;
 		}

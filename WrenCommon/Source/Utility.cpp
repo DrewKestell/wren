@@ -86,3 +86,11 @@ const float Utility::Max(const float l, const float r)
 
 	return l;
 }
+
+const int Utility::Max(const int l, const int r)
+{
+	if (r > l)
+		return r;
+
+	return l;
+}

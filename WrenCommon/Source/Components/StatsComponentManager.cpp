@@ -11,12 +11,12 @@ StatsComponentManager::StatsComponentManager(ObjectManager& objectManager)
 	g_eventHandler.Subscribe(*this);
 }
 
-StatsComponent& StatsComponentManager::CreateStatsComponent(const long gameObjectId, const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina, const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance, std::string* name)
+StatsComponent& StatsComponentManager::CreateStatsComponent(const unsigned int gameObjectId, const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance, const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina)
 {
 	if (statsComponentIndex == MAX_STATSCOMPONENTS_SIZE)
 		throw std::exception("Max StatsComponents exceeded!");
 
-	statsComponents[statsComponentIndex].Initialize(statsComponentIndex, gameObjectId, health, maxHealth, mana, maxMana, stamina, maxStamina, agility, strength, wisdom, intelligence, charisma, luck, endurance, name);
+	statsComponents[statsComponentIndex].Initialize(statsComponentIndex, gameObjectId, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
 	idIndexMap[statsComponentIndex] = statsComponentIndex;
 	return statsComponents[statsComponentIndex++];
 }

@@ -6,6 +6,9 @@
 
 class SkillComponent
 {
+	unsigned int id{ 0 };
+	unsigned int gameObjectId{ 0 };
+
 	static constexpr unsigned int SKILL_COUNT = 100; // TODO: this count should probably come from the db
 	WrenServer::Skill* skills[SKILL_COUNT]; // TODO: records from db have PKs starting from 1, so the first element at index 0 will be empty
 
@@ -13,7 +16,6 @@ class SkillComponent
 
 	friend class SkillComponentManager;
 public:
-	unsigned int id{ 0 };
-	long gameObjectId{ 0 };
-
+	const unsigned int GetId() const;
+	const unsigned int GetGameObjectId() const;
 };

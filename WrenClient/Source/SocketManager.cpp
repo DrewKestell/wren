@@ -14,8 +14,8 @@
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
-#include "EventHandling/Events/GameObjectUpdateEvent.h"
-#include "EventHandling/Events/OtherPlayerUpdateEvent.h"
+#include "EventHandling/Events/NpcUpdateEvent.h"
+#include "EventHandling/Events/PlayerUpdateEvent.h"
 #include "EventHandling/Events/PropagateChatMessage.h"
 #include "EventHandling/Events/ServerMessageEvent.h"
 #include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
@@ -220,19 +220,41 @@ bool SocketManager::TryRecieveMessage()
         }
         else if (MessagePartsEqual(opcodeArr, OPCODE_ENTER_WORLD_SUCCESSFUL, opcodeArrLen))
         {
-			const auto accountId = args[0];
-			const auto positionX = args[1];
-			const auto positionY = args[2];
-			const auto positionZ = args[3];
-			const auto modelId = args[4];
-			const auto textureId = args[5];
-			const auto skillString = args[6];
-			const auto abilityString = args[7];
-			const auto name = args[8];
+			auto i = 0;
+			const auto accountId = args[i++];
+			const auto positionX = args[i++];
+			const auto positionY = args[i++];
+			const auto positionZ = args[i++];
+			const auto modelId = args[i++];
+			const auto textureId = args[i++];
+			const auto skillString = args[i++];
+			const auto abilityString = args[i++];
+			const auto name = args[i++];
+			const auto agility = args[i++];
+			const auto strength = args[i++];
+			const auto wisdom = args[i++];
+			const auto intelligence = args[i++];
+			const auto charisma = args[i++];
+			const auto luck = args[i++];
+			const auto endurance = args[i++];
+			const auto health = args[i++];
+			const auto maxHealth = args[i++];
+			const auto mana = args[i++];
+			const auto maxMana = args[i++];
+			const auto stamina = args[i++];
+			const auto maxStamina = args[i++];
 
-			if (logMessages)
-				std::cout << "Connected to game world!\n";
-			g_eventHandler.QueueEvent(new EnterWorldSuccessEvent(std::stoi(*accountId), XMFLOAT3{ std::stof(*positionX), std::stof(*positionY), std::stof(*positionZ) }, std::stoi(*modelId), std::stoi(*textureId), BuildSkillVector(*skillString), BuildAbilityVector(*abilityString), name));
+			const auto enterWorldSuccessEvent = new EnterWorldSuccessEvent
+			{
+				std::stoi(*accountId),
+				XMFLOAT3{ std::stof(*positionX), std::stof(*positionY), std::stof(*positionZ) },
+				std::stoi(*modelId), std::stoi(*textureId),
+				BuildSkillVector(*skillString), BuildAbilityVector(*abilityString),
+				name,
+				std::stoi(*agility), std::stoi(*strength), std::stoi(*wisdom), std::stoi(*intelligence), std::stoi(*charisma), std::stoi(*luck), std::stoi(*endurance),
+				std::stoi(*health), std::stoi(*maxHealth), std::stoi(*mana), std::stoi(*maxMana), std::stoi(*stamina), std::stoi(*maxStamina)
+			};
+			g_eventHandler.QueueEvent(enterWorldSuccessEvent);
 			return true;
         }
 		else if (MessagePartsEqual(opcodeArr, OPCODE_DELETE_CHARACTER_SUCCESSFUL, opcodeArrLen))
@@ -245,34 +267,77 @@ bool SocketManager::TryRecieveMessage()
 			g_eventHandler.QueueEvent(new DeleteCharacterSuccessEvent{ characterList });
 			return true;
 		}
-		else if (MessagePartsEqual(opcodeArr, OPCODE_GAMEOBJECT_UPDATE, opcodeArrLen))
+		else if (MessagePartsEqual(opcodeArr, OPCODE_NPC_UPDATE, opcodeArrLen))
 		{
-			const auto gameObjectId = args[0];
-			const auto posX = args[1];
-			const auto posY = args[2];
-			const auto posZ = args[3];
-			const auto movX = args[4];
-			const auto movY = args[5];
-			const auto movZ = args[6];
-			const auto type = args[7];
+			auto i = 0;
+			const auto gameObjectId = args[i++];
+			const auto posX = args[i++];
+			const auto posY = args[i++];
+			const auto posZ = args[i++];
+			const auto movX = args[i++];
+			const auto movY = args[i++];
+			const auto movZ = args[i++];
+			const auto agility = args[i++];
+			const auto strength = args[i++];
+			const auto wisdom = args[i++];
+			const auto intelligence = args[i++];
+			const auto charisma = args[i++];
+			const auto luck = args[i++];
+			const auto endurance = args[i++];
+			const auto health = args[i++];
+			const auto maxHealth = args[i++];
+			const auto mana = args[i++];
+			const auto maxMana = args[i++];
+			const auto stamina = args[i++];
+			const auto maxStamina = args[i++];
 
-			g_eventHandler.QueueEvent(new GameObjectUpdateEvent{ std::stol(*gameObjectId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), static_cast<GameObjectType>(std::stoi(*type)) });
+			const auto gameObjectUpdateEvent = new NpcUpdateEvent
+			{
+				std::stol(*gameObjectId),
+				XMFLOAT3{ std::stof(*posX), std::stof(*posY), std::stof(*posZ)}, XMFLOAT3{ std::stof(*movX), std::stof(*movY), std::stof(*movZ)},
+				std::stoi(*agility), std::stoi(*strength), std::stoi(*wisdom), std::stoi(*intelligence), std::stoi(*charisma), std::stoi(*luck), std::stoi(*endurance),
+				std::stoi(*health), std::stoi(*maxHealth), std::stoi(*mana), std::stoi(*maxMana), std::stoi(*stamina), std::stoi(*maxStamina)
+			};
+			g_eventHandler.QueueEvent(gameObjectUpdateEvent);
 			return true;
 		}
-		else if (MessagePartsEqual(opcodeArr, OPCODE_OTHER_PLAYER_UPDATE, opcodeArrLen))
+		else if (MessagePartsEqual(opcodeArr, OPCODE_PLAYER_UPDATE, opcodeArrLen))
 		{
-			const auto accountId = args[0];
-			const auto posX = args[1];
-			const auto posY = args[2];
-			const auto posZ = args[3];
-			const auto movX = args[4];
-			const auto movY = args[5];
-			const auto movZ = args[6];
-			const auto modelId = args[7];
-			const auto textureId = args[8];
-			const auto name = args[9];
+			auto i = 0;
+			const auto accountId = args[i++];
+			const auto posX = args[i++];
+			const auto posY = args[i++];
+			const auto posZ = args[i++];
+			const auto movX = args[i++];
+			const auto movY = args[i++];
+			const auto movZ = args[i++];
+			const auto modelId = args[i++];
+			const auto textureId = args[i++];
+			const auto name = args[i++];
+			const auto agility = args[i++];
+			const auto strength = args[i++];
+			const auto wisdom = args[i++];
+			const auto intelligence = args[i++];
+			const auto charisma = args[i++];
+			const auto luck = args[i++];
+			const auto endurance = args[i++];
+			const auto health = args[i++];
+			const auto maxHealth = args[i++];
+			const auto mana = args[i++];
+			const auto maxMana = args[i++];
+			const auto stamina = args[i++];
+			const auto maxStamina = args[i++];
 
-			g_eventHandler.QueueEvent(new OtherPlayerUpdateEvent{ std::stol(*accountId), std::stof(*posX), std::stof(*posY), std::stof(*posZ), std::stof(*movX), std::stof(*movY), std::stof(*movZ), std::stoi(*modelId), std::stoi(*textureId), name });
+			const auto playerUpdateEvent = new PlayerUpdateEvent
+			{
+				std::stol(*accountId),
+				XMFLOAT3{ std::stof(*posX), std::stof(*posY), std::stof(*posZ)}, XMFLOAT3{ std::stof(*movX), std::stof(*movY), std::stof(*movZ) },
+				std::stoi(*modelId), std::stoi(*textureId),
+				name,
+				std::stoi(*agility), std::stoi(*strength), std::stoi(*wisdom), std::stoi(*intelligence), std::stoi(*charisma), std::stoi(*luck), std::stoi(*endurance),
+				std::stoi(*health), std::stoi(*maxHealth), std::stoi(*mana), std::stoi(*maxMana), std::stoi(*stamina), std::stoi(*maxStamina)
+			};
+			g_eventHandler.QueueEvent(playerUpdateEvent);
 			return true;
 		}
 		else if (MessagePartsEqual(opcodeArr, OPCODE_PROPAGATE_CHAT_MESSAGE, opcodeArrLen))

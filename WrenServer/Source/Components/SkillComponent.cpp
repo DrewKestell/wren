@@ -12,3 +12,7 @@ void SkillComponent::Initialize(const unsigned int id, const long gameObjectId, 
 		this->skills[skill.skillId] = new WrenServer::Skill(skill.skillId, skill.value);
 	}
 }
+
+const unsigned int SkillComponent::GetId() const { return id; }
+
+const unsigned int SkillComponent::GetGameObjectId() const { return gameObjectId; }

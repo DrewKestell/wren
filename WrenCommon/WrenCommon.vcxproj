@@ -55,14 +55,14 @@
     <ClInclude Include="Source\EventHandling\Events\EnterWorldSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\Event.h" />
     <ClInclude Include="Source\EventHandling\Events\EventType.h" />
-    <ClInclude Include="Source\EventHandling\Events\GameObjectUpdateEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\NpcUpdateEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\ActivateAbilityEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\KeyDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\KeyPressEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\LoginFailedEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\OtherPlayerUpdateEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\PlayerUpdateEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\PropagateChatMessage.h" />
     <ClInclude Include="Source\EventHandling\Events\SendChatMessage.h" />
     <ClInclude Include="Source\EventHandling\Events\ServerMessageEvent.h" />
