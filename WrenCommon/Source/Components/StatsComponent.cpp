@@ -2,7 +2,7 @@
 #include "StatsComponent.h"
 
 void StatsComponent::Initialize(
-	const unsigned int id, const long gameObjectId,
+	const int id, const int gameObjectId,
 	const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance,
 	const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina)
 {
@@ -23,6 +23,6 @@ void StatsComponent::Initialize(
 	this->maxStamina = maxStamina;
 }
 
-const unsigned int StatsComponent::GetId() const { return id; }
+const int StatsComponent::GetId() const { return id; }
 
-const unsigned int StatsComponent::GetGameObjectId() const { return gameObjectId; }
+const int StatsComponent::GetGameObjectId() const { return gameObjectId; }

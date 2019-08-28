@@ -2,11 +2,11 @@
 
 class StatsComponent
 {
-	unsigned int id{ 0 };
-	unsigned int gameObjectId{ 0 };
+	int id{ 0 };
+	int gameObjectId{ 0 };
 
 	void Initialize(
-		const unsigned int id, const long gameObjectId,
+		const int id, const int gameObjectId,
 		const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance,
 		const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina);
 
@@ -26,6 +26,6 @@ public:
 	int stamina{ 0 };
 	int maxStamina{ 0 };
 
-	const unsigned int GetId() const;
-	const unsigned int GetGameObjectId() const;
+	const int GetId() const;
+	const int GetGameObjectId() const;
 };

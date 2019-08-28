@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "SkillComponent.h"
 
-void SkillComponent::Initialize(const unsigned int id, const long gameObjectId, std::vector<WrenCommon::Skill>& skills)
+void SkillComponent::Initialize(const int id, const int gameObjectId, std::vector<WrenCommon::Skill>& skills)
 {
 	this->id = id;
 	this->gameObjectId = gameObjectId;
@@ -13,6 +13,6 @@ void SkillComponent::Initialize(const unsigned int id, const long gameObjectId, 
 	}
 }
 
-const unsigned int SkillComponent::GetId() const { return id; }
+const int SkillComponent::GetId() const { return id; }
 
-const unsigned int SkillComponent::GetGameObjectId() const { return gameObjectId; }
+const int SkillComponent::GetGameObjectId() const { return gameObjectId; }

@@ -5,7 +5,7 @@
 class AttackMissEvent : public Event
 {
 public:
-	AttackMissEvent(const unsigned int attackerId, const unsigned int targetId, const int weaponSkillIds[], const int weaponSkillArrLen)
+	AttackMissEvent(const int attackerId, const int targetId, const int weaponSkillIds[], const int weaponSkillArrLen)
 		: Event(EventType::AttackMiss),
 		  attackerId{ attackerId },
 		  targetId{ targetId },
@@ -13,8 +13,8 @@ public:
 		  weaponSkillArrLen{ weaponSkillArrLen }
 	{
 	}
-	const unsigned int attackerId;
-	const unsigned int targetId;
+	const int attackerId;
+	const int targetId;
 	const int* weaponSkillIds;
 	const int weaponSkillArrLen;
 };

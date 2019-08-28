@@ -11,7 +11,10 @@ StatsComponentManager::StatsComponentManager(ObjectManager& objectManager)
 	g_eventHandler.Subscribe(*this);
 }
 
-StatsComponent& StatsComponentManager::CreateStatsComponent(const unsigned int gameObjectId, const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance, const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina)
+StatsComponent& StatsComponentManager::CreateStatsComponent(
+	const int gameObjectId,
+	const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance,
+	const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina)
 {
 	if (statsComponentIndex == MAX_STATSCOMPONENTS_SIZE)
 		throw std::exception("Max StatsComponents exceeded!");
@@ -21,7 +24,7 @@ StatsComponent& StatsComponentManager::CreateStatsComponent(const unsigned int g
 	return statsComponents[statsComponentIndex++];
 }
 
-void StatsComponentManager::DeleteStatsComponent(const unsigned int statsComponentId)
+void StatsComponentManager::DeleteStatsComponent(const int statsComponentId)
 {
 	// first copy the last StatsComponent into the index that was deleted
 	auto statsComponentToDeleteIndex = idIndexMap[statsComponentId];
@@ -33,7 +36,7 @@ void StatsComponentManager::DeleteStatsComponent(const unsigned int statsCompone
 	idIndexMap[lastStatsComponentId] = statsComponentToDeleteIndex;
 }
 
-StatsComponent& StatsComponentManager::GetStatsComponentById(const unsigned int statsComponentId)
+StatsComponent& StatsComponentManager::GetStatsComponentById(const int statsComponentId)
 {
 	const auto index = idIndexMap[statsComponentId];
 	return statsComponents[index];

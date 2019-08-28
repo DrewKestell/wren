@@ -21,7 +21,7 @@ void RenderComponentManager::Render(ID3D11DeviceContext* d3dContext, const XMMAT
 	}
 }
 
-RenderComponent& RenderComponentManager::CreateRenderComponent(const long gameObjectId, Mesh* mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
+RenderComponent& RenderComponentManager::CreateRenderComponent(const int gameObjectId, Mesh* mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
 {
 	if (renderComponentIndex == MAX_RENDERCOMPONENTS_SIZE)
 		throw std::exception("Max RenderComponents exceeded!");
@@ -31,7 +31,7 @@ RenderComponent& RenderComponentManager::CreateRenderComponent(const long gameOb
 	return renderComponents[renderComponentIndex++];
 }
 
-void RenderComponentManager::DeleteRenderComponent(const unsigned int renderComponentId)
+void RenderComponentManager::DeleteRenderComponent(const int renderComponentId)
 {
 	// first copy the last RenderComponent into the index that was deleted
 	auto renderComponentToDeleteIndex = idIndexMap[renderComponentId];
@@ -43,7 +43,7 @@ void RenderComponentManager::DeleteRenderComponent(const unsigned int renderComp
 	idIndexMap[lastRenderComponentId] = renderComponentToDeleteIndex;
 }
 
-RenderComponent& RenderComponentManager::GetRenderComponentById(const unsigned int renderComponentId)
+RenderComponent& RenderComponentManager::GetRenderComponentById(const int renderComponentId)
 {
 	const auto index = idIndexMap[renderComponentId];
 	return renderComponents[index];

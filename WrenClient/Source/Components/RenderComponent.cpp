@@ -2,7 +2,7 @@
 #include "RenderComponent.h"
 #include "ConstantBufferPerObject.h"
 
-void RenderComponent::Initialize(const unsigned int id, const long gameObjectId, Mesh* mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
+void RenderComponent::Initialize(const int id, const int gameObjectId, Mesh* mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
 {
 	this->id = id;
 	this->gameObjectId = gameObjectId;
@@ -50,4 +50,4 @@ void RenderComponent::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX
 	immediateContext->DrawIndexed(mesh->GetIndexCount(), 0, 0);
 }
 
-const unsigned int RenderComponent::GetId() const { return id; }
+const int RenderComponent::GetId() const { return id; }

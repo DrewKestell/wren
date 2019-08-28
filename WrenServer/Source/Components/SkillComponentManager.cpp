@@ -20,7 +20,7 @@ SkillComponentManager::SkillComponentManager(ObjectManager& objectManager)
 	g_eventHandler.Subscribe(*this);
 }
 
-SkillComponent& SkillComponentManager::CreateSkillComponent(const long gameObjectId, std::vector<WrenCommon::Skill>& skills)
+SkillComponent& SkillComponentManager::CreateSkillComponent(const int gameObjectId, std::vector<WrenCommon::Skill>& skills)
 {
 	if (skillComponentIndex == MAX_SKILLCOMPONENTS_SIZE)
 		throw std::exception("Max SkillComponents exceeded!");
@@ -30,7 +30,7 @@ SkillComponent& SkillComponentManager::CreateSkillComponent(const long gameObjec
 	return skillComponents[skillComponentIndex++];
 }
 
-void SkillComponentManager::DeleteSkillComponent(const unsigned int skillComponentId)
+void SkillComponentManager::DeleteSkillComponent(const int skillComponentId)
 {
 	// first copy the last SkillComponent into the index that was deleted
 	auto skillComponentToDeleteIndex = idIndexMap[skillComponentId];
@@ -42,7 +42,7 @@ void SkillComponentManager::DeleteSkillComponent(const unsigned int skillCompone
 	idIndexMap[lastSkillComponentId] = skillComponentToDeleteIndex;
 }
 
-SkillComponent& SkillComponentManager::GetSkillComponentById(const unsigned int skillComponentId)
+SkillComponent& SkillComponentManager::GetSkillComponentById(const int skillComponentId)
 {
 	const auto index = idIndexMap[skillComponentId];
 	return skillComponents[index];
