@@ -5,21 +5,24 @@
 
 #pragma once
 
+#include "targetver.h"
+
+// need this to make assimp play nicely with macros defined in windows headers
 #define NOMINMAX
 
-#include "targetver.h"
+// winsock need to be included before windows.h
+#include <winsock2.h>
+#include <Ws2tcpip.h>
+
+// Windows Header Files
+#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
+#include <windows.h>
+#include <windowsx.h>
+#include <wrl/client.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <winsock2.h>
-#include <Ws2tcpip.h>
-
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
-// Windows Header Files
-#include <windows.h>
-#include <windowsx.h>
-#include <wrl/client.h>
 
 #include <sqlite3.h>
 #include <string>

@@ -7,15 +7,16 @@
 
 #include "targetver.h"
 
+// winsock headers need to be included before windows.h
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files
+#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 #include <windows.h>
 
 #include <sqlite3.h>
-#include "Combaseapi.h"
+#include <Combaseapi.h>
 #include <sodium.h>
 #include <vector>
 #include <iostream>
@@ -30,5 +31,3 @@
 #include <Extensions.h>
 
 using namespace DirectX;
-
-// reference additional headers your program requires here
