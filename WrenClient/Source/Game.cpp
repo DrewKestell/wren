@@ -1053,7 +1053,7 @@ const bool Game::HandleEvent(const Event* const event)
 			const auto stamina = derivedEvent->stamina;
 			const auto maxStamina = derivedEvent->maxStamina;
 
-			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, derivedEvent->name, (long)derivedEvent->accountId);
+			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, derivedEvent->name, derivedEvent->accountId);
 			const auto playerId = player.GetId();
 			this->player = &player;
 			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(playerId, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());

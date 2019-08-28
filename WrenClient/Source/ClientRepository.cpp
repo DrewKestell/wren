@@ -20,10 +20,10 @@ std::vector<Npc*>* ClientRepository::ListNpcs()
 	{
 		while (result == SQLITE_ROW)
 		{
-			const unsigned int id = sqlite3_column_int(statement, 0);
+			const int id = sqlite3_column_int(statement, 0);
 			const unsigned char *name = sqlite3_column_text(statement, 1);
-			const unsigned int modelId = sqlite3_column_int(statement, 2);
-			const unsigned int textureId = sqlite3_column_int(statement, 3);
+			const int modelId = sqlite3_column_int(statement, 2);
+			const int textureId = sqlite3_column_int(statement, 3);
 			const auto speed = (float)sqlite3_column_double(statement, 4);
 			npcs->push_back(new Npc(id, new std::string(reinterpret_cast<const char*>(name)), modelId, textureId, speed));
 			result = sqlite3_step(statement);

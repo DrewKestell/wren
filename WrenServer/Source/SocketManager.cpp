@@ -110,7 +110,7 @@ void SocketManager::HandleTimeout()
 	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
 	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
 
-	for (unsigned int i = 0; i < playerComponentIndex; i++)
+	for (auto i = 0; i < playerComponentIndex; i++)
 	{
 		PlayerComponent& comp = playerComponents[i];
 		if (GetTickCount64() > comp.lastHeartbeat + TIMEOUT_DURATION)
@@ -145,7 +145,7 @@ void SocketManager::Login(const std::string& accountName, const std::string& pas
 
 			const auto accountId = account->GetId();
 			auto name = new std::string("");
-			GameObject& playerGameObject = g_objectManager.CreateGameObject(VEC_ZERO, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, name, (long)accountId);
+			GameObject& playerGameObject = g_objectManager.CreateGameObject(VEC_ZERO, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, name, accountId);
 			const auto playerId = playerGameObject.GetId();
 			const PlayerComponent& playerComponent = g_playerComponentManager.CreatePlayerComponent(playerId, token, ipAndPort, from, GetTickCount64());
 			playerGameObject.playerComponentId = playerComponent.id;
@@ -225,7 +225,7 @@ void SocketManager::SendPacket(const std::string& opcode, std::string args[], co
 	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
 	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
 
-	for (unsigned int i = 0; i < playerComponentIndex; i++)
+	for (auto i = 0; i < playerComponentIndex; i++)
 	{
 		PlayerComponent& player = playerComponents[i];
 		SendPacket(player.fromSockAddr, opcode, args, argCount);
@@ -618,7 +618,7 @@ void SocketManager::UpdateClients()
 	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
 	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
 
-	for (unsigned int i = 0; i < playerComponentIndex; i++)
+	for (auto i = 0; i < playerComponentIndex; i++)
 	{
 		PlayerComponent& playerToUpdate = playerComponents[i];
 
@@ -627,7 +627,7 @@ void SocketManager::UpdateClients()
 			continue;
 
 		// for each player, send them an update for every non-static game object
-		for (unsigned int j = 0; j < gameObjectLength; j++)
+		for (auto j = 0; j < gameObjectLength; j++)
 		{
 			auto gameObject = gameObjects[j];
 
@@ -695,7 +695,7 @@ void SocketManager::PropagateChatMessage(const std::string& senderName, const st
 	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
 	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
 
-	for (unsigned int i = 0; i < playerComponentIndex; i++)
+	for (auto i = 0; i < playerComponentIndex; i++)
 	{
 		PlayerComponent& playerToUpdate = playerComponents[i];
 		std::string args[]{ senderName, message };

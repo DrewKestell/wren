@@ -4,7 +4,7 @@
 
 void ObjectManager::Update()
 {
-	for (unsigned int i = 0; i < gameObjectIndex; i++)
+	for (auto i = 0; i < gameObjectIndex; i++)
 		gameObjects[i].Update();
 }
 

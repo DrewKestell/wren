@@ -9,7 +9,7 @@ static constexpr unsigned int OFFSET = 0;
 class RenderComponent
 {
 	int id{ 0 };
-	long gameObjectId{ 0 };
+	int gameObjectId{ 0 };
 	ID3D11VertexShader* vertexShader{ nullptr };
 	ID3D11PixelShader* pixelShader{ nullptr };
 	ID3D11ShaderResourceView* texture{ nullptr };

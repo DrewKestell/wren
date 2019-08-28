@@ -13,7 +13,7 @@ RenderComponentManager::RenderComponentManager(ObjectManager& objectManager)
 
 void RenderComponentManager::Render(ID3D11DeviceContext* d3dContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform, const float updateLag)
 {
-	for (unsigned int i = 0; i < renderComponentIndex; i++)
+	for (auto i = 0; i < renderComponentIndex; i++)
 	{
 		auto renderComponent = renderComponents[i];
 		auto gameObject = objectManager.GetGameObjectById(renderComponent.gameObjectId);

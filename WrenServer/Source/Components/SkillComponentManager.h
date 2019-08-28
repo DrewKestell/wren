@@ -11,7 +11,7 @@ class SkillComponentManager : public Observer
 {
 	std::map<int, int> idIndexMap;
 	SkillComponent skillComponents[MAX_SKILLCOMPONENTS_SIZE];
-	unsigned int skillComponentIndex{ 0 };
+	int skillComponentIndex{ 0 };
 	ObjectManager& objectManager;
 public:
 	SkillComponentManager(ObjectManager& objectManager);
