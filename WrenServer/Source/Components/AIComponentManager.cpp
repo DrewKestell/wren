@@ -183,7 +183,7 @@ void AIComponentManager::Update()
 						StatsComponent& statsComponent = g_statsComponentManager.GetStatsComponentById(target.statsComponentId);
 						statsComponent.health = Utility::Max(0, statsComponent.health - dmg);
 
-						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
+						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
 						g_eventHandler.QueueEvent(new AttackHitEvent{ gameObjectId, targetId, (int)dmg, weaponSkillIds, 2 });
 
 						std::string args[]{ std::to_string(gameObjectId), std::to_string(targetId), std::to_string(dmg) };
@@ -191,7 +191,7 @@ void AIComponentManager::Update()
 					}
 					else
 					{
-						const int* const weaponSkillIds = new int[2]{ 0, 1 }; // Hand-to-Hand Combat, Melee
+						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
 						g_eventHandler.QueueEvent(new AttackMissEvent{ gameObjectId, targetId, weaponSkillIds, 2 });
 
 						std::string args[]{ std::to_string(gameObjectId), std::to_string(targetId)};
