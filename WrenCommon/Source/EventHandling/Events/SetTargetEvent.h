@@ -7,7 +7,7 @@
 class SetTargetEvent : public Event
 {
 public:
-	SetTargetEvent(const unsigned int gameObjectId, std::string* targetName, StatsComponent* statsComponent)
+	SetTargetEvent(const int gameObjectId, std::string* targetName, StatsComponent* statsComponent)
 		: Event(EventType::SetTarget),
 		  gameObjectId{ gameObjectId },
 		  targetName{ targetName },
@@ -15,7 +15,7 @@ public:
 	{
 	}
 	~SetTargetEvent() { }
-	const unsigned int gameObjectId;
+	const int gameObjectId;
 	std::string* targetName;
 	StatsComponent* statsComponent;
 };

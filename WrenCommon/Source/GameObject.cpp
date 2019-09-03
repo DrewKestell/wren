@@ -27,7 +27,7 @@ void GameObject::Update()
 	XMStoreFloat3(&localPosition, movementVec + positionVec);
 }
 
-void GameObject::Initialize(const long id, GameObjectType type, std::string* name, XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, const bool isStatic, const int modelId, const int textureId)
+void GameObject::Initialize(const int id, GameObjectType type, std::string* name, XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, const bool isStatic, const int modelId, const int textureId)
 {
 	this->id = id;
 	this->type = type;
@@ -53,6 +53,6 @@ XMFLOAT3 GameObject::GetWorldPosition() const
     return worldPosition;
 }
 
-const unsigned int GameObject::GetId() const { return id; }
+const int GameObject::GetId() const { return id; }
 
 const GameObjectType GameObject::GetType() const { return type; }

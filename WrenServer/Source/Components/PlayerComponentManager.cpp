@@ -23,7 +23,7 @@ PlayerComponentManager::PlayerComponentManager(ObjectManager& objectManager, Gam
 	g_eventHandler.Subscribe(*this);
 }
 
-PlayerComponent& PlayerComponentManager::CreatePlayerComponent(const long gameObjectId, const std::string token, const std::string ipAndPort, const sockaddr_in fromSockAddr, const unsigned __int64 lastHeartbeat)
+PlayerComponent& PlayerComponentManager::CreatePlayerComponent(const int gameObjectId, const std::string token, const std::string ipAndPort, const sockaddr_in fromSockAddr, const unsigned __int64 lastHeartbeat)
 {
 	if (playerComponentIndex == MAX_PLAYERCOMPONENTS_SIZE)
 		throw std::exception("Max PlayerComponents exceeded!");
@@ -33,7 +33,7 @@ PlayerComponent& PlayerComponentManager::CreatePlayerComponent(const long gameOb
 	return playerComponents[playerComponentIndex++];
 }
 
-void PlayerComponentManager::DeletePlayerComponent(const unsigned int playerComponentId)
+void PlayerComponentManager::DeletePlayerComponent(const int playerComponentId)
 {
 	// first copy the last AIComponent into the index that was deleted
 	auto playerComponentToDeleteIndex = idIndexMap[playerComponentId];
@@ -45,7 +45,7 @@ void PlayerComponentManager::DeletePlayerComponent(const unsigned int playerComp
 	idIndexMap[lastAIComponentId] = playerComponentToDeleteIndex;
 }
 
-PlayerComponent& PlayerComponentManager::GetPlayerComponentById(const unsigned int playerComponentId)
+PlayerComponent& PlayerComponentManager::GetPlayerComponentById(const int playerComponentId)
 {
 	const auto index = idIndexMap[playerComponentId];
 	return playerComponents[index];
@@ -73,7 +73,7 @@ void PlayerComponentManager::Update()
 	std::mt19937 rng(dev());
 	std::uniform_int_distribution<std::mt19937::result_type> dist100(0, 99);
 
-	for (unsigned int i = 0; i < playerComponentIndex; i++)
+	for (auto i = 0; i < playerComponentIndex; i++)
 	{
 		PlayerComponent& comp = playerComponents[i];
 		GameObject& player = objectManager.GetGameObjectById(comp.gameObjectId);
@@ -164,7 +164,7 @@ PlayerComponent* PlayerComponentManager::GetPlayerComponents()
 	return playerComponents;
 }
 
-const unsigned int PlayerComponentManager::GetPlayerComponentIndex()
+const int PlayerComponentManager::GetPlayerComponentIndex()
 {
 	return playerComponentIndex;
 }

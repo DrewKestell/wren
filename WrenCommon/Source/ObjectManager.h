@@ -7,15 +7,15 @@ static constexpr unsigned int MAX_GAMEOBJECTS_SIZE = 100000;
 
 class ObjectManager
 {
-	std::map<long, unsigned int> idIndexMap;
+	std::map<int, int> idIndexMap;
 	GameObject gameObjects[MAX_GAMEOBJECTS_SIZE];
-	unsigned int gameObjectIndex{ 0 };
+	int gameObjectIndex{ 0 };
 public:
 	void Update();
-	GameObject& CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, GameObjectType type, std::string* name, const long id = 0, const bool isStatic = false, const int modelId = -1, const int textureId = -1);
-	void DeleteGameObject(EventHandler& eventHandler, const long gameObjectId);
-	GameObject& GetGameObjectById(const long gameObjectId);
-	const bool GameObjectExists(const long gameObjectId);
+	GameObject& CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, GameObjectType type, std::string* name, const int id = 0, const bool isStatic = false, const int modelId = -1, const int textureId = -1);
+	void DeleteGameObject(EventHandler& eventHandler, const int gameObjectId);
+	GameObject& GetGameObjectById(const int gameObjectId);
+	const bool GameObjectExists(const int gameObjectId);
 	GameObject* GetGameObjects();
-	const unsigned int GetGameObjectIndex();
+	const int GetGameObjectIndex();
 };

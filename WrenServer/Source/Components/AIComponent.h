@@ -4,13 +4,13 @@
 
 class AIComponent
 {
-	void Initialize(const unsigned int id, const long gameObjectId);
+	void Initialize(const int id, const int gameObjectId);
 
 	friend class AIComponentManager;
 public:
-	unsigned int id{ 0 };
-	long gameObjectId{ 0 };
+	int id{ 0 };
+	int gameObjectId{ 0 };
 
-	long targetId{ -1 };
+	int targetId{ -1 };
 	float swingTimer{ 0.0f };
 };

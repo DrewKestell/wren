@@ -33,7 +33,7 @@ AIComponentManager::AIComponentManager(ObjectManager& objectManager, GameMap& ga
 	g_eventHandler.Subscribe(*this);
 }
 
-AIComponent& AIComponentManager::CreateAIComponent(const long gameObjectId)
+AIComponent& AIComponentManager::CreateAIComponent(const int gameObjectId)
 {
 	if (aiComponentIndex == MAX_AICOMPONENTS_SIZE)
 		throw std::exception("Max AIComponents exceeded!");
@@ -43,7 +43,7 @@ AIComponent& AIComponentManager::CreateAIComponent(const long gameObjectId)
 	return aiComponents[aiComponentIndex++];
 }
 
-void AIComponentManager::DeleteAIComponent(const unsigned int aiComponentId)
+void AIComponentManager::DeleteAIComponent(const int aiComponentId)
 {
 	// first copy the last AIComponent into the index that was deleted
 	auto aiComponentToDeleteIndex = idIndexMap[aiComponentId];
@@ -55,7 +55,7 @@ void AIComponentManager::DeleteAIComponent(const unsigned int aiComponentId)
 	idIndexMap[lastAIComponentId] = aiComponentToDeleteIndex;
 }
 
-AIComponent& AIComponentManager::GetAIComponentById(const unsigned int aiComponentId)
+AIComponent& AIComponentManager::GetAIComponentById(const int aiComponentId)
 {
 	const auto index = idIndexMap[aiComponentId];
 	return aiComponents[index];
@@ -92,7 +92,7 @@ void AIComponentManager::Update()
 	std::uniform_int_distribution<std::mt19937::result_type> dist100(0, 99);
 	std::uniform_int_distribution<std::mt19937::result_type> dist8(0, 7);
 
-	for (unsigned int i = 0; i < aiComponentIndex; i++)
+	for (auto i = 0; i < aiComponentIndex; i++)
 	{
 		AIComponent& comp = aiComponents[i];
 		GameObject& gameObject = objectManager.GetGameObjectById(comp.gameObjectId);

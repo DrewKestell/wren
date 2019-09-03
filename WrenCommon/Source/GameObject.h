@@ -9,10 +9,10 @@ class GameObject
 	float speed{ 0.0f };
 	GameObject* parent{ nullptr };
 	std::vector<GameObject*> children;
-	unsigned int id{ 0 };
+	int id{ 0 };
 	GameObjectType type{ GameObjectType::Uninitialized };
 
-	void Initialize(const long id, GameObjectType type, std::string* name, const XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, const bool isStatic, const int modelId, const int textureId);
+	void Initialize(const int id, GameObjectType type, std::string* name, const XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, const bool isStatic, const int modelId, const int textureId);
 
 	friend class ObjectManager;
 public:
@@ -23,7 +23,7 @@ public:
     std::vector<GameObject*>& GetChildren() { return children; }
     void AddChildComponent(GameObject& child) { child.SetParent(*this); children.push_back(&child); }
     XMFLOAT3 GetWorldPosition() const;
-	const unsigned int GetId() const;
+	const int GetId() const;
 	const GameObjectType GetType() const;
 
 	std::string* name{ nullptr };

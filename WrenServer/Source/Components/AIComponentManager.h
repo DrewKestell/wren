@@ -10,16 +10,16 @@ static constexpr unsigned int MAX_AICOMPONENTS_SIZE = 100000;
 
 class AIComponentManager : public Observer
 {
-	std::map<unsigned int, unsigned int> idIndexMap;
+	std::map<int, int> idIndexMap;
 	AIComponent aiComponents[MAX_AICOMPONENTS_SIZE];
-	unsigned int aiComponentIndex{ 0 };
+	int aiComponentIndex{ 0 };
 	ObjectManager& objectManager;
 	GameMap& gameMap;
 public:
 	AIComponentManager(ObjectManager& objectManager, GameMap& gameMap);
-	AIComponent& CreateAIComponent(const long gameObjectId);
-	void DeleteAIComponent(const unsigned int aiComponentId);
-	AIComponent& GetAIComponentById(const unsigned int aiComponentId);
+	AIComponent& CreateAIComponent(const int gameObjectId);
+	void DeleteAIComponent(const int aiComponentId);
+	AIComponent& GetAIComponentById(const int aiComponentId);
 	virtual const bool HandleEvent(const Event* const event);
 	void Update();
 	~AIComponentManager();

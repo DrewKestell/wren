@@ -2,16 +2,16 @@
 
 class StaticObject
 {
-	const unsigned int id;
+	const int id;
 	std::string* name;
-	const unsigned int modelId;
-	const unsigned int textureId;
+	const int modelId;
+	const int textureId;
 	const XMFLOAT3 position;
 public:
-	StaticObject(const unsigned int id, std::string* name, const unsigned int modelId, const unsigned int textureId, const XMFLOAT3 position);
-	const unsigned int GetId() const;
+	StaticObject(const int id, std::string* name, const int modelId, const int textureId, const XMFLOAT3 position);
+	const int GetId() const;
 	std::string* GetName() const;
-	const unsigned int GetModelId() const;
-	const unsigned int GetTextureId() const;
+	const int GetModelId() const;
+	const int GetTextureId() const;
 	const XMFLOAT3 GetPosition() const;
 };

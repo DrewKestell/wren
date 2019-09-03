@@ -825,8 +825,8 @@ void Game::InitializeBuffers()
 	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bufferDesc.ByteWidth = sizeof(ConstantBufferOnce);
 
-	ID3D11Buffer* constantBufferOnce = nullptr;
-	d3dDevice->CreateBuffer(&bufferDesc, nullptr, &constantBufferOnce);
+	ID3D11Buffer* constantBufferOnce{ nullptr };
+	DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bufferDesc, nullptr, &constantBufferOnce));
 
 	// map ConstantBuffer
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -1053,7 +1053,7 @@ const bool Game::HandleEvent(const Event* const event)
 			const auto stamina = derivedEvent->stamina;
 			const auto maxStamina = derivedEvent->maxStamina;
 
-			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, derivedEvent->name, (long)derivedEvent->accountId);
+			GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, derivedEvent->name, derivedEvent->accountId);
 			const auto playerId = player.GetId();
 			this->player = &player;
 			auto sphereRenderComponent = renderComponentManager.CreateRenderComponent(playerId, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
@@ -1236,7 +1236,7 @@ const bool Game::HandleEvent(const Event* const event)
 			float smallestDist = FLT_MAX;
 
 			auto gameObjects = objectManager.GetGameObjects();
-			for (unsigned int j = 0; j < objectManager.GetGameObjectIndex(); j++)
+			for (auto j = 0; j < objectManager.GetGameObjectIndex(); j++)
 			{
 				GameObject& gameObject = gameObjects[j];
 				auto pos = gameObject.GetWorldPosition();
@@ -1258,8 +1258,8 @@ const bool Game::HandleEvent(const Event* const event)
 				while (i < indices.size())
 				{
 					auto ver1 = vertices[indices[i]];
-					auto ver2 = vertices[indices[i + 1u]];
-					auto ver3 = vertices[indices[i + 2u]];
+					auto ver2 = vertices[indices[i + 1]];
+					auto ver3 = vertices[indices[i + 2]];
 					XMVECTOR v1 = XMVectorSet(ver1.Position.x, ver1.Position.y, ver1.Position.z, 1.0f);
 					XMVECTOR v2 = XMVectorSet(ver2.Position.x, ver2.Position.y, ver2.Position.z, 1.0f);
 					XMVECTOR v3 = XMVectorSet(ver3.Position.x, ver3.Position.y, ver3.Position.z, 1.0f);
