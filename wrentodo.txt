@@ -1,0 +1,4 @@
+WREN todo:
+-UIAbilitiesPanel is broken after logging out / logging back in
+-Clicking certain UI elements causes UnsetTarget - scrollbar on text window for example
+-idea: each opcode is an integer, and it maps to an array index. then on client and server, you have an array of function pointers that will handle each opcode. for example, EnterWorldSuccess could be "0", and then array element at index 0 would be HandleEnterWorldSuccess.
