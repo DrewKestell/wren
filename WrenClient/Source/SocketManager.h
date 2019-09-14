@@ -1,12 +1,13 @@
 #pragma once
 
+#include <OpCodes.h>
 #include <Models/Skill.h>
 #include <Models/Ability.h>
 
 class SocketManager
 {
 private:
-	std::string accountId{ "" };
+	int accountId{ -1 };
 	std::string token{ "" };
     sockaddr_in local;
     sockaddr_in to;
@@ -21,8 +22,8 @@ public:
 	SocketManager();
     bool TryRecieveMessage();
     void CloseSockets();
-	void SendPacket(const std::string& opcode);
-    void SendPacket(const std::string& opcode, std::string args[], const int argCount);
+	void SendPacket(const OpCode opcode);
+    void SendPacket(const OpCode opcode, std::string args[], const int argCount);
 	bool Connected();
 	void Logout();
 };

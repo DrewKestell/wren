@@ -1,12 +1,12 @@
 #pragma once
 
+#include <OpCodes.h>
 #include <CommonRepository.h>
 #include "Components/PlayerComponent.h"
 #include "ServerRepository.h"
 
 class SocketManager
 {
-private:
     ServerRepository& repository;
 	CommonRepository& commonRepository;
 	std::vector<Ability> abilities;
@@ -17,8 +17,7 @@ private:
 
 	const bool ValidateToken(const int accountId, const std::string token); // this should probably return a PlayerComponent to improve performance
 	PlayerComponent& GetPlayerComponent(const int accountId);
-	bool MessagePartsEqual(const char* first, const char* second, const int length);
-	void Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, sockaddr_in from);
+	void Login(const char* accountName, const char* password, const std::string& ipAndPort, sockaddr_in from);
 	void CreateAccount(const std::string& accountName, const std::string& password, sockaddr_in from);
 	void Logout(const int accountId);
 	void CreateCharacter(const int accountId, const std::string& characterName);
@@ -36,7 +35,7 @@ public:
     void CloseSockets();
 	void HandleTimeout();
 	void UpdateClients();
-	void SendPacket(const std::string& opcode, std::string args[], const int argCount);
-	void SendPacket(sockaddr_in from, const std::string& opcode);
-	void SendPacket(sockaddr_in from, const std::string& opcode, std::string args[], const int argCount);
+	void SendPacket(const OpCode opCode, std::string args[], const int argCount);
+	void SendPacket(sockaddr_in from, const OpCode opCode);
+	void SendPacket(sockaddr_in from, const OpCode opCode, std::string args[], const int argCount);
 };

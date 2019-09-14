@@ -111,7 +111,7 @@ void Game::Tick()
 			pingStart = timer.TotalTime();
 
 			std::string args[]{ std::to_string(pingId) };
-			g_socketManager.SendPacket(OPCODE_PING, args, 1);
+			g_socketManager.SendPacket(OpCode::Ping, args, 1);
 		}
 	}
 	
@@ -165,7 +165,7 @@ void Game::Render(const float updateTimer)
 		timeElapsed += 1.0f;
 
 		if (g_socketManager.Connected())
-			g_socketManager.SendPacket(OPCODE_HEARTBEAT);
+			g_socketManager.SendPacket(OpCode::Heartbeat);
 	}
 
 	// update ping
@@ -530,7 +530,7 @@ void Game::InitializeButtons()
 		}
 
 		std::string args[]{ accountName, password };
-		g_socketManager.SendPacket(OPCODE_CONNECT, args, 2);
+		g_socketManager.SendPacket(OpCode::Connect, args, 2);
 		SetActiveLayer(Connecting);
 	};
 
@@ -570,7 +570,7 @@ void Game::InitializeButtons()
 		}
 
 		std::string args[]{ accountName, password };
-		g_socketManager.SendPacket(OPCODE_CREATE_ACCOUNT, args, 2);
+		g_socketManager.SendPacket(OpCode::CreateAccount, args, 2);
 	};
 
 	const auto onClickCreateAccountCancelButton = [this]()
@@ -604,7 +604,7 @@ void Game::InitializeButtons()
 		else
 		{
 			std::string args[]{ characterInput->GetName() };
-			g_socketManager.SendPacket(OPCODE_ENTER_WORLD, args, 1);
+			g_socketManager.SendPacket(OpCode::EnterWorld, args, 1);
 			SetActiveLayer(EnteringWorld);
 		}
 	};
@@ -650,7 +650,7 @@ void Game::InitializeButtons()
 		}
 
 		std::string args[]{ characterName };
-		g_socketManager.SendPacket(OPCODE_CREATE_CHARACTER, args, 1);
+		g_socketManager.SendPacket(OpCode::CreateCharacter, args, 1);
 	};
 
 	const auto onClickCreateCharacterBackButton = [this]()
@@ -667,7 +667,7 @@ void Game::InitializeButtons()
 	const auto onClickDeleteCharacterConfirm = [this]()
 	{
 		std::string args[]{ characterNamePendingDeletion };
-		g_socketManager.SendPacket(OPCODE_DELETE_CHARACTER, args, 1);
+		g_socketManager.SendPacket(OpCode::DeleteCharacter, args, 1);
 	};
 
 	const auto onClickDeleteCharacterCancel = [this]()
@@ -721,7 +721,7 @@ void Game::InitializePanels()
 	const auto gameSettingsPanelY = (clientHeight - 200.0f) / 2.0f;
 	const auto onClickGameSettingsLogoutButton = [this]()
 	{
-		g_socketManager.SendPacket(OPCODE_DISCONNECT);
+		g_socketManager.SendPacket(OpCode::Disconnect);
 
 		SetActiveLayer(Login);
 	};
@@ -934,7 +934,7 @@ const bool Game::HandleEvent(const Event* const event)
 
 			const auto dir = Utility::MousePosToDirection((float)clientWidth, (float)clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
 			std::string args[]{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
-			g_socketManager.SendPacket(OPCODE_PLAYER_RIGHT_MOUSE_DOWN, args, 3);
+			g_socketManager.SendPacket(OpCode::PlayerRightMouseDown, args, 3);
 
 			rightMouseDownDir = dir;
 
@@ -944,7 +944,7 @@ const bool Game::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
-			g_socketManager.SendPacket(OPCODE_PLAYER_RIGHT_MOUSE_UP);
+			g_socketManager.SendPacket(OpCode::PlayerRightMouseUp);
 
 			rightMouseDownDir = VEC_ZERO;
 
@@ -963,7 +963,7 @@ const bool Game::HandleEvent(const Event* const event)
 				if (dir != rightMouseDownDir)
 				{
 					std::string args[]{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
-					g_socketManager.SendPacket(OPCODE_PLAYER_RIGHT_MOUSE_DOWN_DIR_CHANGE, args, 3);
+					g_socketManager.SendPacket(OpCode::PlayerRightMouseDirChange, args, 3);
 					rightMouseDownDir = dir;
 				}
 			}
@@ -1216,7 +1216,7 @@ const bool Game::HandleEvent(const Event* const event)
 			const auto derivedEvent = (ActivateAbilityEvent*)event;
 
 			std::string args[]{ std::to_string(derivedEvent->abilityId) };
-			g_socketManager.SendPacket(OPCODE_ACTIVATE_ABILITY, args, 1);
+			g_socketManager.SendPacket(OpCode::ActivateAbility, args, 1);
 
 			break;
 		}
@@ -1282,12 +1282,12 @@ const bool Game::HandleEvent(const Event* const event)
 				StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(clickedGameObject->statsComponentId);
 				g_eventHandler.QueueEvent(new SetTargetEvent{ objectId, clickedGameObject->name, &statsComponent });
 				std::string args[]{ std::to_string(objectId) };
-				g_socketManager.SendPacket(OPCODE_SET_TARGET, args, 1);
+				g_socketManager.SendPacket(OpCode::SetTarget, args, 1);
 			}
 			else
 			{
 				g_eventHandler.QueueEvent(new Event{ EventType::UnsetTarget });
-				g_socketManager.SendPacket(OPCODE_UNSET_TARGET);
+				g_socketManager.SendPacket(OpCode::UnsetTarget);
 			}
 
 			break;
@@ -1299,7 +1299,7 @@ const bool Game::HandleEvent(const Event* const event)
 			auto statsComponent = statsComponentManager.GetStatsComponentById(player->statsComponentId);
 
 			std::string args[]{ *player->name, *derivedEvent->message };
-			g_socketManager.SendPacket(OPCODE_SEND_CHAT_MESSAGE, args, 2);
+			g_socketManager.SendPacket(OpCode::SendChatMessage, args, 2);
 
 			break;
 		}

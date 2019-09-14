@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpCodes.h>
+
 static constexpr auto CLIENT_WIDTH = 1400;
 static constexpr auto CLIENT_HEIGHT = 900;
 static constexpr unsigned __int64 TIMEOUT_DURATION = 30000; // 30000ms == 30s
@@ -20,3 +22,6 @@ static constexpr XMFLOAT3 VEC_NORTHEAST = XMFLOAT3{ 1.0f, 0.0f, 1.0f };
 static constexpr XMFLOAT3 VEC_NORTH     = XMFLOAT3{ 0.0f, 0.0f, 1.0f };
 static constexpr XMFLOAT3 VEC_NORTHWEST = XMFLOAT3{ -1.0f, 0.0f, 1.0f };
 static constexpr XMFLOAT3 VEC_WEST      = XMFLOAT3{ -1.0f, 0.0f, 0.0f };
+
+static const OpCode CHECKSUM{ OpCode::Checksum };
+static constexpr auto PACKET_SIZE = 1024;

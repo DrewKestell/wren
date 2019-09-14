@@ -134,7 +134,7 @@ void PlayerComponentManager::Update()
 						g_eventHandler.QueueEvent(new AttackHitEvent{ playerId, targetId, (int)dmg, weaponSkillIds, 2 });
 
 						std::string args[]{ std::to_string(playerId), std::to_string(targetId), std::to_string(dmg) };
-						g_socketManager.SendPacket(OPCODE_ATTACK_HIT, args, 3);
+						g_socketManager.SendPacket(OpCode::AttackHit, args, 3);
 					}
 					else
 					{
@@ -142,7 +142,7 @@ void PlayerComponentManager::Update()
 						g_eventHandler.QueueEvent(new AttackMissEvent{ playerId, targetId, weaponSkillIds, 2 });
 
 						std::string args[]{ std::to_string(playerId), std::to_string(targetId) };
-						g_socketManager.SendPacket(OPCODE_ATTACK_MISS, args, 2);
+						g_socketManager.SendPacket(OpCode::AttackMiss, args, 2);
 					}
 				}
 			}
