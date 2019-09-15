@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Components/RenderComponent.h"
 #include <OpCodes.h>
+#include "ClientSocketManager.h"
 #include "Events/UIAbilityDroppedEvent.h"
 #include "Events/SkillIncreaseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"

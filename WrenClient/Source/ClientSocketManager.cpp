@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "SocketManager.h"
+#include "ClientSocketManager.h"
 #include <OpCodes.h>
 #include <GameObjectType.h>
 #include "Game.h"

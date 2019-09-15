@@ -14,7 +14,6 @@
 #include "ObjectManager.h"
 #include "Components/RenderComponentManager.h"
 #include "Components/StatsComponentManager.h"
-#include "SocketManager.h"
 #include "Components/GameMapRenderComponent.h"
 #include "Sprite.h"
 #include "Models/Npc.h"

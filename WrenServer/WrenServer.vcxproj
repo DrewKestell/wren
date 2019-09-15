@@ -54,6 +54,11 @@
     </ClCompile>
     <ClCompile Include="Source\WrenServer.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WrenCommon\WrenCommon.vcxproj">
+      <Project>{9b91cec2-3797-40cf-8aba-0480f445e0d4}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{3F223549-4B3E-4DA1-9C62-CD3571158450}</ProjectGuid>
@@ -157,7 +162,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>wsock32.lib;ws2_32.lib;libsodium.lib;WrenCommon.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libsodium.lib;wsock32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
     </Link>
