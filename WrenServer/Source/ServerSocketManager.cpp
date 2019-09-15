@@ -1,6 +1,4 @@
 #include "stdafx.h"
-#include <OpCodes.h>
-#include <ObjectManager.h>
 #include "ServerSocketManager.h"
 #include <Components/StatsComponentManager.h>
 #include "Components/AIComponentManager.h"

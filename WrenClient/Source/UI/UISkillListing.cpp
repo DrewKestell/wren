@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "UISkillListing.h"
-#include "EventHandling/Events/ChangeActiveLayerEvent.h"
 
 using namespace DX;
 

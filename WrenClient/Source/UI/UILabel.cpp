@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "UILabel.h"
-#include "UIComponent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "Layer.h"
 
 using namespace DX;
 

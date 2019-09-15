@@ -1,14 +1,10 @@
 #include "stdafx.h"
-#include <OpCodes.h>
-#include <Utility.h>
 #include "SkillComponentManager.h"
 #include "PlayerComponentManager.h"
 #include "../ServerSocketManager.h"
-#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
-#include "../Models/Skill.h"
 
 extern EventHandler g_eventHandler;
 extern ServerSocketManager g_socketManager;

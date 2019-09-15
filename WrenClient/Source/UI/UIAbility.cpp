@@ -1,10 +1,7 @@
 #include "stdafx.h"
-#include <Utility.h>
 #include "UIAbility.h"
-#include "Layer.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/ActivateAbilityEvent.h"
 #include "EventHandling/Events/StartDraggingUIAbilityEvent.h"
 #include "EventHandling/Events/ActivateAbilitySuccessEvent.h"

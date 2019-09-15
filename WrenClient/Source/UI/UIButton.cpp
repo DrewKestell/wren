@@ -1,10 +1,7 @@
 #include "stdafx.h"
 #include "UIButton.h"
-#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "Utility.h"
-#include "Layer.h"
 
 using namespace DX;
 

@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include "UIAbilitiesContainer.h"
-#include "Layer.h"
-#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 
 using namespace DX;

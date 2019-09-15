@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Layer.h"
 #include "UITextWindow.h"
 #include "Events/AttackMissEvent.h"
 #include "Events/AttackHitEvent.h"

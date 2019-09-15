@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Camera.h"
-#include "Utility.h"
 
 void Camera::Update(XMFLOAT3 player, const float deltaTime)
 {

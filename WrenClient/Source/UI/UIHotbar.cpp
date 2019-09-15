@@ -1,7 +1,5 @@
 #include "stdafx.h"
-#include <Utility.h>
 #include "UIHotbar.h"
-#include "Layer.h"
 #include "Events/UIAbilityDroppedEvent.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"

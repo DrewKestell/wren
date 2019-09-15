@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "StatsComponentManager.h"
-#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 
 StatsComponentManager::StatsComponentManager(ObjectManager& objectManager, EventHandler& eventHandler)

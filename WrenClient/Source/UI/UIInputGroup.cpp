@@ -1,10 +1,8 @@
 #include "stdafx.h"
 #include "UIInputGroup.h"
-#include "UIInput.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
-#include "Layer.h"
 
 extern EventHandler g_eventHandler;
 

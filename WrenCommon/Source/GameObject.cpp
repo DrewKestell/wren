@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Constants.h"
 #include "GameObject.h"
 
 void GameObject::Update()

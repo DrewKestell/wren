@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include "Game.h"
 #include "ConstantBufferOnce.h"
-#include "Camera.h"
-#include "Components/RenderComponent.h"
-#include <OpCodes.h>
 #include "ClientSocketManager.h"
 #include "Events/UIAbilityDroppedEvent.h"
 #include "Events/SkillIncreaseEvent.h"
@@ -15,7 +12,6 @@
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
-#include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
 #include "EventHandling/Events/NpcUpdateEvent.h"
 #include "EventHandling/Events/PlayerUpdateEvent.h"

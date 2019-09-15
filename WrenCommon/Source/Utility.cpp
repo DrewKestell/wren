@@ -1,8 +1,6 @@
 #include "stdafx.h"
-#include <iomanip>
 #include <Constants.h>
 #include "Utility.h"
-#include "Extensions.h"
 
 bool Utility::DetectClick(const float topLeftX, const float topLeftY, const float bottomRightX, const float bottomRightY, const float mousePosX, const float mousePosY)
 {

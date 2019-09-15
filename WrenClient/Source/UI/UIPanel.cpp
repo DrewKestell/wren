@@ -1,13 +1,9 @@
 #include "stdafx.h"
 #include "UIPanel.h"
-#include "UIComponent.h"
 #include "EventHandling/EventHandler.h"
-#include "EventHandling/Observer.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
-#include "Utility.h"
-#include "Layer.h"
 
 extern unsigned int g_zIndex;
 extern EventHandler g_eventHandler;

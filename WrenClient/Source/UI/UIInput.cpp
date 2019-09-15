@@ -1,13 +1,9 @@
 #include "stdafx.h"
 #include "UIInput.h"
-#include "UIComponent.h"
-#include "EventHandling/Observer.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "Utility.h"
-#include "Layer.h"
 
 using namespace DX;
 

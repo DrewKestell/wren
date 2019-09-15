@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "GameMap.h"
-#include <Utility.h>
 
 GameMapTile& GameMap::GetTileByPos(const XMFLOAT3 pos)
 {

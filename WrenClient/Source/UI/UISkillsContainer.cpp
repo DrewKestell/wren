@@ -1,8 +1,5 @@
 #include "stdafx.h"
 #include "UISkillsContainer.h"
-#include "Layer.h"
-#include "EventHandling/EventHandler.h"
-#include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../Events/SkillIncreaseEvent.h"
 
 using namespace DX;

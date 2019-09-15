@@ -1,12 +1,8 @@
 #include "stdafx.h"
-#include <OpCodes.h>
-#include <Utility.h>
 #include "PlayerComponentManager.h"
 #include "AIComponentManager.h"
-#include <Components/StatsComponent.h>
 #include <Components/StatsComponentManager.h>
 #include "../ServerSocketManager.h"
-#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"

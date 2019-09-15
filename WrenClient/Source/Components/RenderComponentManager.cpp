@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "RenderComponentManager.h"
-#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 
 extern EventHandler g_eventHandler;
