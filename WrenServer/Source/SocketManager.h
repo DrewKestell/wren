@@ -20,7 +20,7 @@ class SocketManager
 
 	const bool ValidateToken(const int accountId, const std::string token); // this should probably return a PlayerComponent to improve performance
 	PlayerComponent& GetPlayerComponent(const int accountId);
-	void Login(const char* accountName, const char* password, const std::string& ipAndPort, sockaddr_in from);
+	void Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, sockaddr_in from);
 	void CreateAccount(const std::string& accountName, const std::string& password, sockaddr_in from);
 	void Logout(const int accountId);
 	void CreateCharacter(const int accountId, const std::string& characterName);

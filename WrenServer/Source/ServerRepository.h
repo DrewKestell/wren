@@ -13,7 +13,7 @@ public:
 	const bool CharacterExists(const std::string& characterName);
 	void CreateAccount(const std::string& accountName, const std::string& password);
 	void CreateCharacter(const std::string& characterName, const int accountId);
-	Account* GetAccount(const char* accountName);
+	Account* GetAccount(const std::string& accountName);
 	std::vector<std::string> ListCharacters(const int accountId);
 	void DeleteCharacter(const std::string& characterName);
 	Character* GetCharacter(const std::string& characterName);

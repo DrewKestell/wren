@@ -103,12 +103,12 @@ void ServerRepository::CreateCharacter(const std::string& characterName, const i
 	}
 }
 
-Account* ServerRepository::GetAccount(const char* accountName)
+Account* ServerRepository::GetAccount(const std::string& accountName)
 {
 	auto dbConnection = GetConnection();
 
 	char query[100];
-	sprintf_s(query, GET_ACCOUNT_QUERY, accountName);
+	sprintf_s(query, GET_ACCOUNT_QUERY, accountName.c_str());
 
 	auto statement = PrepareStatement(dbConnection, query);
 
@@ -117,7 +117,7 @@ Account* ServerRepository::GetAccount(const char* accountName)
 	{
 		const int id = sqlite3_column_int(statement, 0);
 		const unsigned char *hashedPassword = sqlite3_column_text(statement, 2);
-		auto account = new Account(id, accountName, reinterpret_cast<const char*>(hashedPassword));
+		auto account = new Account(id, accountName, std::string((reinterpret_cast<const char*>(hashedPassword))));
 		sqlite3_finalize(statement);
 		return account;
 	}

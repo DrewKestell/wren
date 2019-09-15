@@ -208,13 +208,13 @@ void SocketManager::HandleTimeout()
 	}
 }
 
-void SocketManager::Login(const char* accountName, const char* password, const std::string& ipAndPort, sockaddr_in from)
+void SocketManager::Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, sockaddr_in from)
 {
 	std::string error;
 	auto account = repository.GetAccount(accountName);
 	if (account)
 	{
-		if (crypto_pwhash_str_verify(account->GetPassword().c_str(), password, strlen(password)) != 0)
+		if (crypto_pwhash_str_verify(account->GetPassword().c_str(), password.c_str(), strlen(password.c_str())) != 0)
 			error = INCORRECT_PASSWORD;
 		else
 		{
@@ -549,7 +549,7 @@ void SocketManager::InitializeMessageHandlers()
 		inet_ntop(AF_INET, &(from.sin_addr), str, INET_ADDRSTRLEN);
 		const auto ipAndPort = std::string(str) + ":" + std::to_string(from.sin_port);
 
-		Login(accountName.c_str(), password.c_str(), ipAndPort, from);
+		Login(accountName, password, ipAndPort, from);
 	});
 
 	InitializeMessageHandler(OpCode::Disconnect, i, [this](const std::vector<std::string>& args)

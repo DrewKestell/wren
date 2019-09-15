@@ -5,7 +5,7 @@
 class Account
 {
 public:
-    Account(const int id, const char* accountName, const char* password)
+    Account(const int id, const std::string& accountName, const std::string& password)
 		: id{ id },
 		  accountName{ accountName },
 		  password{ password }
