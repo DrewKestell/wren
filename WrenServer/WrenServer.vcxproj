@@ -120,6 +120,7 @@
     <IncludePath>$(ProjectDir)Include;$(SolutionDir)WrenCommon\Source;$(SolutionDir)WrenCommon\Include;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)ThirdParty;$(SourcePath)</SourcePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
+    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
