@@ -29,5 +29,6 @@
 #include <DirectXMath.h>
 #include <random>
 #include <Extensions.h>
+#include <functional>
 
 using namespace DirectX;

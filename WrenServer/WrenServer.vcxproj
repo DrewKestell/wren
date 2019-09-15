@@ -32,7 +32,7 @@
     <ClInclude Include="Source\Models\Character.h" />
     <ClInclude Include="Source\Models\Skill.h" />
     <ClInclude Include="Source\ServerRepository.h" />
-    <ClInclude Include="Source\SocketManager.h" />
+    <ClInclude Include="Source\ServerSocketManager.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
   </ItemGroup>
@@ -44,7 +44,7 @@
     <ClCompile Include="Source\Components\SkillComponent.cpp" />
     <ClCompile Include="Source\Components\SkillComponentManager.cpp" />
     <ClCompile Include="Source\ServerRepository.cpp" />
-    <ClCompile Include="Source\SocketManager.cpp" />
+    <ClCompile Include="Source\ServerSocketManager.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

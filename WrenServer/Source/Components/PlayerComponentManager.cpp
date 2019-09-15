@@ -5,7 +5,7 @@
 #include "AIComponentManager.h"
 #include <Components/StatsComponent.h>
 #include <Components/StatsComponentManager.h>
-#include "../SocketManager.h"
+#include "../ServerSocketManager.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 #include "../Events/AttackHitEvent.h"
@@ -14,7 +14,7 @@
 extern EventHandler g_eventHandler;
 extern AIComponentManager g_aiComponentManager;
 extern StatsComponentManager g_statsComponentManager;
-extern SocketManager g_socketManager;
+extern ServerSocketManager g_socketManager;
 
 PlayerComponentManager::PlayerComponentManager(ObjectManager& objectManager, GameMap& gameMap)
 	: objectManager{ objectManager },

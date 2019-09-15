@@ -3,7 +3,7 @@
 #include <Utility.h>
 #include "SkillComponentManager.h"
 #include "PlayerComponentManager.h"
-#include "../SocketManager.h"
+#include "../ServerSocketManager.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 #include "../Events/AttackHitEvent.h"
@@ -11,7 +11,7 @@
 #include "../Models/Skill.h"
 
 extern EventHandler g_eventHandler;
-extern SocketManager g_socketManager;
+extern ServerSocketManager g_socketManager;
 extern PlayerComponentManager g_playerComponentManager;
 
 SkillComponentManager::SkillComponentManager(ObjectManager& objectManager)

@@ -12,8 +12,9 @@ class StatsComponentManager : public Observer
 	StatsComponent statsComponents[MAX_STATSCOMPONENTS_SIZE];
 	int statsComponentIndex{ 0 };
 	ObjectManager& objectManager;
+	EventHandler& eventHandler;
 public:
-	StatsComponentManager(ObjectManager& objectManager);
+	StatsComponentManager(ObjectManager& objectManager, EventHandler& eventHandler);
 	StatsComponent& CreateStatsComponent(
 		const int gameObjectId,
 		const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance,

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <Constants.h>
 #include <ObjectManager.h>
-#include "SocketManager.h"
+#include "ServerSocketManager.h"
 #include <GameTimer.h>
 #include <Components/StatsComponentManager.h>
 #include "Components/AIComponentManager.h"
@@ -14,12 +14,12 @@ static CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db " };
 ObjectManager g_objectManager;
 GameTimer m_timer;
 EventHandler g_eventHandler;
-StatsComponentManager g_statsComponentManager{ g_objectManager };
+StatsComponentManager g_statsComponentManager{ g_objectManager, g_eventHandler };
 GameMap g_gameMap;
 AIComponentManager g_aiComponentManager{ g_objectManager, g_gameMap };
 PlayerComponentManager g_playerComponentManager{ g_objectManager, g_gameMap };
 SkillComponentManager g_skillComponentManager{ g_objectManager };
-SocketManager g_socketManager{ repository, commonRepository };
+ServerSocketManager g_socketManager{ repository, commonRepository };
 
 void PublishEvents()
 {
@@ -50,7 +50,7 @@ int main()
     {
 		m_timer.Tick();
 
-		while (g_socketManager.TryRecieveMessage()) {}
+		g_socketManager.ProcessPackets();
 
 		// turn this off for debugging
 		//socketManager.HandleTimeout();

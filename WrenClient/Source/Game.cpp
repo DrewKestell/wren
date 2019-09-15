@@ -24,10 +24,8 @@
 #include "EventHandling/Events/PropagateChatMessageEvent.h"
 #include "EventHandling/Events/ServerMessageEvent.h"
 
-SocketManager g_socketManager;
+ClientSocketManager g_socketManager;
 unsigned int g_zIndex{ 0 };
-
-extern EventHandler g_eventHandler;
 
 bool CompareUIComponents(UIComponent* a, UIComponent* b) { return (a->zIndex < b->zIndex); }
 
@@ -101,7 +99,7 @@ void Game::Tick()
 {
 	timer.Tick();
 
-	while (g_socketManager.TryRecieveMessage()) {}
+	g_socketManager.ProcessPackets();
 
 	// to get an accurate ping, we should handle this outside of the main update loop which is locked at 60 updates / second
 	if (activeLayer == InGame)

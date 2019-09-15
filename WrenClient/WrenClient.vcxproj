@@ -54,7 +54,7 @@
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
     <ClCompile Include="Source\UI\UIPanel.cpp" />
-    <ClCompile Include="Source\SocketManager.cpp" />
+    <ClCompile Include="Source\ClientSocketManager.cpp" />
     <ClCompile Include="Source\UI\UIButton.cpp" />
     <ClCompile Include="Source\UI\UICharacterListing.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdafx.h</PrecompiledHeaderFile>
@@ -184,7 +184,7 @@
     <ClInclude Include="Source\UI\UIInputGroup.h" />
     <ClInclude Include="Source\UI\UIComponent.h" />
     <ClInclude Include="Source\UI\UIPanel.h" />
-    <ClInclude Include="Source\SocketManager.h" />
+    <ClInclude Include="Source\ClientSocketManager.h" />
     <ClInclude Include="Source\UI\UIButton.h" />
     <ClInclude Include="Source\UI\UICharacterListing.h" />
     <ClInclude Include="Source\UI\UIInput.h" />
@@ -267,6 +267,11 @@
     <Image Include="Textures\texture01.dds" />
     <Image Include="Textures\texture02.dds" />
     <Image Include="Textures\texture03.DDS" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WrenCommon\WrenCommon.vcxproj">
+      <Project>{9b91cec2-3797-40cf-8aba-0480f445e0d4}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

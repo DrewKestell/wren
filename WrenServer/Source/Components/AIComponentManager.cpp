@@ -4,14 +4,14 @@
 #include "AIComponentManager.h"
 #include <Components/StatsComponent.h>
 #include <Components/StatsComponentManager.h>
-#include "../SocketManager.h"
+#include "../ServerSocketManager.h"
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 
 extern EventHandler g_eventHandler;
-extern SocketManager g_socketManager;
+extern ServerSocketManager g_socketManager;
 extern StatsComponentManager g_statsComponentManager;
 
 static constexpr XMFLOAT3 DIRECTIONS[8]

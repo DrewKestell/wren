@@ -3,12 +3,11 @@
 #include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 
-extern EventHandler g_eventHandler;
-
-StatsComponentManager::StatsComponentManager(ObjectManager& objectManager)
-	: objectManager{ objectManager }
+StatsComponentManager::StatsComponentManager(ObjectManager& objectManager, EventHandler& eventHandler)
+	: objectManager{ objectManager },
+	  eventHandler{ eventHandler }
 {
-	g_eventHandler.Subscribe(*this);
+	eventHandler.Subscribe(*this);
 }
 
 StatsComponent& StatsComponentManager::CreateStatsComponent(
@@ -60,5 +59,5 @@ const bool StatsComponentManager::HandleEvent(const Event* const event)
 
 StatsComponentManager::~StatsComponentManager()
 {
-	g_eventHandler.Unsubscribe(*this);
+	eventHandler.Unsubscribe(*this);
 }

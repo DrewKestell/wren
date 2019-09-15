@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Source\WrenClient.cpp" />
-    <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\UI\UIButton.cpp" />
     <ClCompile Include="Source\UI\UICharacterListing.cpp" />
     <ClCompile Include="Source\UI\UIInput.cpp" />
@@ -31,10 +30,10 @@
     <ClCompile Include="Source\ThirdParty\sqlite3.c" />
     <ClCompile Include="Source\Components\GameMapRenderComponent.cpp" />
     <ClCompile Include="Source\UI\UISkillsContainer.cpp" />
+    <ClCompile Include="Source\ClientSocketManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
-    <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\UI\UIButton.h" />
     <ClInclude Include="Source\UI\UICharacterListing.h" />
     <ClInclude Include="Source\UI\UIInput.h" />
@@ -167,6 +166,7 @@
     <ClInclude Include="Source\Events\AttackHitEvent.h" />
     <ClInclude Include="Source\Events\SkillIncreaseEvent.h" />
     <ClInclude Include="Source\UI\UISkillsContainer.h" />
+    <ClInclude Include="Source\ClientSocketManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

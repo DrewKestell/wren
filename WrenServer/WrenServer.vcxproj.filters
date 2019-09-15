@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="Include\sodium.h" />
-    <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\Models\Account.h" />
@@ -17,9 +16,9 @@
     <ClInclude Include="Source\Models\Skill.h" />
     <ClInclude Include="Source\Events\AttackHitEvent.h" />
     <ClInclude Include="Source\Events\AttackMissEvent.h" />
+    <ClInclude Include="Source\ServerSocketManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\SocketManager.cpp" />
     <ClCompile Include="Source\WrenServer.cpp" />
     <ClCompile Include="Source\stdafx.cpp" />
     <ClCompile Include="Source\ThirdParty\sqlite3.c" />
@@ -30,5 +29,6 @@
     <ClCompile Include="Source\Components\PlayerComponentManager.cpp" />
     <ClCompile Include="Source\Components\SkillComponent.cpp" />
     <ClCompile Include="Source\Components\SkillComponentManager.cpp" />
+    <ClCompile Include="Source\ServerSocketManager.cpp" />
   </ItemGroup>
 </Project>

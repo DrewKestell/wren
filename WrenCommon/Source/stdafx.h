@@ -7,6 +7,10 @@
 
 #include "targetver.h"
 
+// winsock headers need to be included before windows.h
+#include <winsock2.h>
+#include <Ws2tcpip.h>
+
 // Windows Header Files
 #define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 #include <windows.h>
@@ -23,5 +27,6 @@
 #include <codecvt>
 #include <iostream>
 #include <Extensions.h>
+#include <functional>
 
 using namespace DirectX;

@@ -33,6 +33,8 @@
 #include "UI/UITextWindow.h"
 #include "EventHandling/EventHandler.h"
 
+extern EventHandler g_eventHandler;
+
 class Game : public DX::IDeviceNotify, public Observer
 {
 public:
@@ -78,7 +80,7 @@ private:
 	std::unique_ptr<DX::DeviceResources> deviceResources;
 	ObjectManager objectManager;
 	RenderComponentManager renderComponentManager{ objectManager };
-	StatsComponentManager statsComponentManager{ objectManager };
+	StatsComponentManager statsComponentManager{ objectManager, g_eventHandler };
 	GameTimer timer;
 	Camera camera;
 	GameMap gameMap;
@@ -110,6 +112,7 @@ private:
 	void PublishEvents();
 	void QuitGame();
 
+	void InitializeEventHandlers();
 	void InitializeNpcs();
 	void InitializeStaticObjects();
 	void InitializeBrushes();

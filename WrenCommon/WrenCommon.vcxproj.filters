@@ -58,6 +58,12 @@
     <ClCompile Include="Source\Extensions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\SocketManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ThirdParty\sqlite3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -116,5 +122,6 @@
     <ClInclude Include="Source\EventHandling\Events\PlayerUpdateEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\NpcUpdateEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\PropagateChatMessageEvent.h" />
+    <ClInclude Include="Source\SocketManager.h" />
   </ItemGroup>
 </Project>
