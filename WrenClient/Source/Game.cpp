@@ -21,7 +21,7 @@
 #include "EventHandling/Events/ActivateAbilityEvent.h"
 #include "EventHandling/Events/SetTargetEvent.h"
 #include "EventHandling/Events/SendChatMessage.h"
-#include "EventHandling/Events/PropagateChatMessage.h"
+#include "EventHandling/Events/PropagateChatMessageEvent.h"
 #include "EventHandling/Events/ServerMessageEvent.h"
 
 SocketManager g_socketManager;
@@ -1305,7 +1305,7 @@ const bool Game::HandleEvent(const Event* const event)
 		}
 		case EventType::PropagateChatMessage:
 		{
-			const auto derivedEvent = (PropagateChatMessage*)event;
+			const auto derivedEvent = (PropagateChatMessageEvent*)event;
 
 			std::string* msg = new std::string("(" + *derivedEvent->senderName + ") " + *derivedEvent->message);
 			textWindow->AddMessage(msg);

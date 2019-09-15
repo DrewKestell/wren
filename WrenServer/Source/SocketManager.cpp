@@ -33,6 +33,7 @@ SocketManager::SocketManager(ServerRepository& repository, CommonRepository& com
 	  commonRepository{ commonRepository }
 {
     sodium_init();
+	InitializeMessageHandlers();
 
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
@@ -78,6 +79,103 @@ SocketManager::SocketManager(ServerRepository& repository, CommonRepository& com
 	StatsComponent& dummyStatsComponent = g_statsComponentManager.CreateStatsComponent(dummyId, 10, 10, 10, 10, 10, 10, 10, 100, 100, 100, 100, 100, 100);
 	dummyGameObject.statsComponentId = dummyStatsComponent.GetId();
 	g_gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
+}
+
+void SocketManager::SendPacket(const OpCode opcode, std::string args[], const int argCount)
+{
+	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
+	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
+
+	for (auto i = 0; i < playerComponentIndex; i++)
+	{
+		PlayerComponent& player = playerComponents[i];
+		SendPacket(player.fromSockAddr, opcode, args, argCount);
+	}
+}
+
+void SocketManager::SendPacket(sockaddr_in from, const OpCode opCode)
+{
+	std::string args[]{ "" }; // this is janky
+	SendPacket(from, opCode, args, 0);
+}
+
+void SocketManager::SendPacket(sockaddr_in from, const OpCode opCode, std::string args[], const int argCount)
+{
+	char buffer[PACKET_SIZE];
+	memset(buffer, 0, sizeof(buffer));
+	int offset{ 0 };
+
+	memcpy(buffer, &CHECKSUM, sizeof(OpCode));
+	offset += (int)sizeof(OpCode);
+
+	memcpy(buffer + offset, &opCode, sizeof(OpCode));
+	offset += (int)sizeof(OpCode);
+
+	std::string packet{ "" };
+	for (auto i = 0; i < argCount; i++)
+		packet += args[i] + "|";
+
+	strcpy_s(buffer + offset, packet.length() + 1, packet.c_str());
+	auto sentBytes = sendto(socketS, buffer, sizeof(buffer), 0, (sockaddr*)& from, sizeof(from));
+	if (sentBytes != sizeof(buffer))
+		throw std::exception("Failed to send packet.");
+}
+
+bool SocketManager::TryRecieveMessage()
+{
+	char buffer[1024];
+	ZeroMemory(buffer, sizeof(buffer));
+	auto result = recvfrom(socketS, buffer, sizeof(buffer), 0, (sockaddr*)& from, &fromlen);
+	if (result == SOCKET_ERROR)
+	{
+		auto errorCode = WSAGetLastError();
+
+		if (errorCode == WSAEWOULDBLOCK)
+			return false;
+
+		throw new std::exception("WrenServer SocketManager error receiving packet. Error code: " + errorCode);
+	}
+	else
+	{
+		int offset{ 0 };
+
+		// if the checksum is wrong, ignore the packet
+		int checksum{ 0 };
+		memcpy(&checksum, buffer, sizeof(OpCode));
+		offset += sizeof(OpCode);
+		if (checksum != (int)OpCode::Checksum)
+			return true;
+
+		OpCode opCode{ -1 };
+		memcpy(&opCode, buffer + offset, sizeof(OpCode));
+		offset += sizeof(OpCode);
+
+		std::vector<std::string> args;
+		auto bufferLength = strlen(buffer + offset);
+		if (bufferLength > offset)
+		{
+			std::string arg = "";
+			for (unsigned int i = offset; i < offset + bufferLength; i++)
+			{
+				if (buffer[i] == '|')
+				{
+					args.push_back(arg);
+					arg = "";
+				}
+				else
+					arg += buffer[i];
+			}
+		}
+
+		const auto opCodeIndex = opCodeIndexMap[opCode];
+		if (opCodeIndex >= 0 && opCodeIndex < messageHandlers.size())
+		{
+			messageHandlers[opCodeIndex](args);
+			return true;
+		}
+
+		return false;
+	}
 }
 
 const bool SocketManager::ValidateToken(const int accountId, const std::string token)
@@ -209,292 +307,10 @@ void SocketManager::UpdateLastHeartbeat(const int accountId)
 	playerComponent.lastHeartbeat = GetTickCount64();
 }
 
-void SocketManager::SendPacket(const OpCode opcode, std::string args[], const int argCount)
-{
-	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
-	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
-
-	for (auto i = 0; i < playerComponentIndex; i++)
-	{
-		PlayerComponent& player = playerComponents[i];
-		SendPacket(player.fromSockAddr, opcode, args, argCount);
-	}
-}
-
-void SocketManager::SendPacket(sockaddr_in from, const OpCode opCode)
-{
-	std::string args[]{ "" }; // this is janky
-	SendPacket(from, opCode, args, 0);
-}
-
-void SocketManager::SendPacket(sockaddr_in from, const OpCode opCode, std::string args[], const int argCount)
-{
-	char buffer[PACKET_SIZE];
-	memset(buffer, 0, sizeof(buffer));
-	int offset{ 0 };
-
-	memcpy(buffer, &CHECKSUM, sizeof(OpCode));
-	offset += (int)sizeof(OpCode);
-
-	memcpy(buffer + offset, &opCode, sizeof(OpCode));
-	offset += (int)sizeof(OpCode);
-
-	std::string packet{ "" };
-	for (auto i = 0; i < argCount; i++)
-		packet += args[i] + "|";
-
-	strcpy_s(buffer + offset, packet.length() + 1, packet.c_str());
-	auto sentBytes = sendto(socketS, buffer, sizeof(buffer), 0, (sockaddr*)&from, sizeof(from));
-	if (sentBytes != sizeof(buffer))
-		throw std::exception("Failed to send packet.");
-}
-
 void SocketManager::CloseSockets()
 {
     closesocket(socketS);
     WSACleanup();
-}
-
-bool SocketManager::TryRecieveMessage()
-{
-	char buffer[1024];
-	char str[INET_ADDRSTRLEN];
-	ZeroMemory(buffer, sizeof(buffer));
-	ZeroMemory(str, sizeof(str));
-	auto result = recvfrom(socketS, buffer, sizeof(buffer), 0, (sockaddr*)&from, &fromlen);
-	int errorCode;
-	if (result == -1)
-		errorCode = WSAGetLastError();
-	if (result != SOCKET_ERROR)
-	{
-		inet_ntop(AF_INET, &(from.sin_addr), str, INET_ADDRSTRLEN);
-
-		int offset{ 0 };
-
-		// if the checksum is wrong, ignore the packet
-		int checksum{ 0 };
-		memcpy(&checksum, buffer, sizeof(OpCode));
-		offset += sizeof(OpCode);
-		if (checksum != (int)OpCode::Checksum)
-			return true;
-
-		OpCode opCode{ OpCode::Checksum };
-		memcpy(&opCode, buffer + offset, sizeof(OpCode));
-		offset += sizeof(OpCode);
-
-		std::vector<std::string> args;
-		auto bufferLength = strlen(buffer + offset);
-		if (bufferLength > offset)
-		{
-			std::string arg = "";
-			for (unsigned int i = offset; i < offset + bufferLength; i++)
-			{
-				if (buffer[i] == '|')
-				{
-					args.push_back(arg);
-					arg = "";
-				}
-				else
-					arg += buffer[i];
-			}
-		}
-
-		switch (opCode)
-		{
-			case OpCode::Connect:
-			{
-				const auto accountName = args[0];
-				const auto password = args[1];
-
-				const auto ipAndPort = std::string(str) + ":" + std::to_string(from.sin_port);
-
-				Login(accountName.c_str(), password.c_str(), ipAndPort, from);
-
-				return true;
-			}
-			case OpCode::Disconnect:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-
-				ValidateToken(accountId, token);
-				Logout(accountId);
-
-				return true;
-			}
-			case OpCode::CreateAccount:
-			{
-				const auto accountName = args[0];
-				const auto password = args[1];
-
-				CreateAccount(accountName, password, from);
-
-				return true;
-			}
-			case OpCode::CreateCharacter:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-				const auto characterName = args[2];
-
-				ValidateToken(accountId, token);
-				CreateCharacter(accountId, characterName);
-
-				return true;
-			}
-			case OpCode::Heartbeat:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-
-				ValidateToken(accountId, token);
-				UpdateLastHeartbeat(accountId);
-
-				return true;
-			}
-			case OpCode::EnterWorld:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-				const auto characterName = args[2];
-
-				ValidateToken(accountId, token);
-				EnterWorld(accountId, characterName);
-
-				return true;
-			}
-			case OpCode::DeleteCharacter:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-				const auto characterName = args[2];
-
-				ValidateToken(accountId, token);
-				DeleteCharacter(accountId, characterName);
-
-				return true;
-			}
-			case OpCode::ActivateAbility:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-				const auto abilityId = args[2];
-
-				ValidateToken(accountId, token);
-				PlayerComponent& playerComponent = GetPlayerComponent(accountId);
-
-				const auto abilityIt = find_if(abilities.begin(), abilities.end(), [&abilityId](Ability ability) { return ability.abilityId == std::stoi(abilityId); });
-				if (abilityIt == abilities.end())
-					return true;
-
-				ActivateAbility(playerComponent, *abilityIt);
-
-				return true;
-			}
-			case OpCode::SendChatMessage:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-				const auto message = args[2];
-				const auto senderName = args[3];
-
-				ValidateToken(accountId, token);
-				PropagateChatMessage(senderName, message);
-
-				return true;
-			}
-			case OpCode::SetTarget:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-				const auto targetId = args[2];
-
-				ValidateToken(accountId, token);
-				PlayerComponent& playerComponent = GetPlayerComponent(accountId);
-				playerComponent.targetId = std::stol(targetId);
-
-				const auto gameObject = g_objectManager.GetGameObjectById(playerComponent.targetId);
-
-				// Toggle off Auto-Attack on the server and the client if the player switches to an invalid target.
-				if (gameObject.isStatic && playerComponent.autoAttackOn)
-				{
-					playerComponent.autoAttackOn = false;
-					std::string args1[]{ std::string(INVALID_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
-					SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args1, 2);
-					const std::string autoAttackAbilityId = "1";
-					std::string args2[]{ autoAttackAbilityId };
-					SendPacket(playerComponent.fromSockAddr, OpCode::ActivateAbilitySuccess, args2, 1);
-				}
-
-				return true;
-			}
-			case OpCode::UnsetTarget:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-
-				ValidateToken(accountId, token);
-				PlayerComponent& playerComponent = GetPlayerComponent(accountId);
-				playerComponent.targetId = -1;
-
-				return true;
-			}
-			case OpCode::Ping:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-				const auto pingId = args[2];
-
-				ValidateToken(accountId, token);
-
-				PlayerComponent& player = GetPlayerComponent(accountId);
-				std::string args[]{ pingId };
-				SendPacket(player.fromSockAddr, OpCode::Pong, args, 1);
-
-				return true;
-			}
-			case OpCode::PlayerRightMouseDown:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-				const auto dir = XMFLOAT3{ std::stof(args[2]), std::stof(args[3]), std::stof(args[4]) };
-
-				ValidateToken(accountId, token);
-
-				PlayerComponent& comp = GetPlayerComponent(accountId);
-				comp.rightMouseDownDir = dir;
-
-				return true;
-			}
-			case OpCode::PlayerRightMouseUp:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-
-				ValidateToken(accountId, token);
-
-				PlayerComponent& comp = GetPlayerComponent(accountId);
-				comp.rightMouseDownDir = VEC_ZERO;
-
-				return true;
-			}
-			case OpCode::PlayerRightMouseDirChange:
-			{
-				const auto accountId = std::stoi(args[0]);
-				const auto token = args[1];
-				const auto dir = XMFLOAT3{ std::stof(args[2]), std::stof(args[3]), std::stof(args[4]) };
-
-				ValidateToken(accountId, token);
-
-				PlayerComponent& comp = GetPlayerComponent(accountId);
-				comp.rightMouseDownDir = dir;
-
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
 
 std::string SocketManager::ListCharacters(const int accountId)
@@ -718,4 +534,193 @@ void SocketManager::ActivateAbility(PlayerComponent& playerComponent, Ability& a
 
 	std::string args[]{ std::to_string(ability.abilityId) };
 	SendPacket(playerComponent.fromSockAddr, OpCode::ActivateAbilitySuccess, args, 1);
+}
+
+void SocketManager::InitializeMessageHandlers()
+{
+	auto i = 0;
+
+	InitializeMessageHandler(OpCode::Connect, i, [this](std::vector<std::string> args)
+	{
+		const auto accountName = args[0];
+		const auto password = args[1];
+
+		char str[INET_ADDRSTRLEN];
+		ZeroMemory(str, sizeof(str));
+		inet_ntop(AF_INET, &(from.sin_addr), str, INET_ADDRSTRLEN);
+		const auto ipAndPort = std::string(str) + ":" + std::to_string(from.sin_port);
+
+		Login(accountName.c_str(), password.c_str(), ipAndPort, from);
+	});
+
+	InitializeMessageHandler(OpCode::Disconnect, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+
+		ValidateToken(accountId, token);
+		Logout(accountId);
+	});
+	
+	InitializeMessageHandler(OpCode::CreateAccount, i, [this](std::vector<std::string> args)
+	{
+		const auto accountName = args[0];
+		const auto password = args[1];
+
+		CreateAccount(accountName, password, from);
+	});
+
+	InitializeMessageHandler(OpCode::CreateCharacter, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+		const auto characterName = args[2];
+
+		ValidateToken(accountId, token);
+		CreateCharacter(accountId, characterName);
+	});
+
+	InitializeMessageHandler(OpCode::Heartbeat, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+
+		ValidateToken(accountId, token);
+		UpdateLastHeartbeat(accountId);
+	});
+
+	InitializeMessageHandler(OpCode::EnterWorld, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+		const auto characterName = args[2];
+
+		ValidateToken(accountId, token);
+		EnterWorld(accountId, characterName);
+	});
+
+	InitializeMessageHandler(OpCode::DeleteCharacter, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+		const auto characterName = args[2];
+
+		ValidateToken(accountId, token);
+		DeleteCharacter(accountId, characterName);
+	});
+
+	InitializeMessageHandler(OpCode::ActivateAbility, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+		const auto abilityId = args[2];
+
+		ValidateToken(accountId, token);
+		PlayerComponent& playerComponent = GetPlayerComponent(accountId);
+
+		const auto abilityIt = find_if(abilities.begin(), abilities.end(), [&abilityId](Ability ability) { return ability.abilityId == std::stoi(abilityId); });
+		if (abilityIt == abilities.end())
+			return;
+
+		ActivateAbility(playerComponent, *abilityIt);
+	});
+
+	InitializeMessageHandler(OpCode::SendChatMessage, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+		const auto message = args[2];
+		const auto senderName = args[3];
+
+		ValidateToken(accountId, token);
+		PropagateChatMessage(senderName, message);
+	});
+
+	InitializeMessageHandler(OpCode::SetTarget, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+		const auto targetId = args[2];
+
+		ValidateToken(accountId, token);
+		PlayerComponent& playerComponent = GetPlayerComponent(accountId);
+		playerComponent.targetId = std::stol(targetId);
+
+		const auto gameObject = g_objectManager.GetGameObjectById(playerComponent.targetId);
+
+		// Toggle off Auto-Attack on the server and the client if the player switches to an invalid target.
+		if (gameObject.isStatic && playerComponent.autoAttackOn)
+		{
+			playerComponent.autoAttackOn = false;
+			std::string args1[]{ std::string(INVALID_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
+			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args1, 2);
+			const std::string autoAttackAbilityId = "1";
+			std::string args2[]{ autoAttackAbilityId };
+			SendPacket(playerComponent.fromSockAddr, OpCode::ActivateAbilitySuccess, args2, 1);
+		}
+	});
+
+	InitializeMessageHandler(OpCode::UnsetTarget, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+
+		ValidateToken(accountId, token);
+		PlayerComponent& playerComponent = GetPlayerComponent(accountId);
+		playerComponent.targetId = -1;
+	});
+
+	InitializeMessageHandler(OpCode::Ping, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+		const auto pingId = args[2];
+
+		ValidateToken(accountId, token);
+
+		PlayerComponent& player = GetPlayerComponent(accountId);
+		std::string outgoingArgs[]{ pingId };
+		SendPacket(player.fromSockAddr, OpCode::Pong, outgoingArgs, 1);
+	});
+
+	InitializeMessageHandler(OpCode::PlayerRightMouseDown, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+		const auto dir = XMFLOAT3{ std::stof(args[2]), std::stof(args[3]), std::stof(args[4]) };
+
+		ValidateToken(accountId, token);
+
+		PlayerComponent& comp = GetPlayerComponent(accountId);
+		comp.rightMouseDownDir = dir;
+	});
+
+	InitializeMessageHandler(OpCode::PlayerRightMouseUp, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+
+		ValidateToken(accountId, token);
+
+		PlayerComponent& comp = GetPlayerComponent(accountId);
+		comp.rightMouseDownDir = VEC_ZERO;
+	});
+
+	InitializeMessageHandler(OpCode::PlayerRightMouseDirChange, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = std::stoi(args[0]);
+		const auto token = args[1];
+		const auto dir = XMFLOAT3{ std::stof(args[2]), std::stof(args[3]), std::stof(args[4]) };
+
+		ValidateToken(accountId, token);
+
+		PlayerComponent& comp = GetPlayerComponent(accountId);
+		comp.rightMouseDownDir = dir;
+	});
+}
+
+void SocketManager::InitializeMessageHandler(const OpCode opCode, int& index, std::function<void(std::vector<std::string> args)> function)
+{
+	opCodeIndexMap[opCode] = index++;
+	messageHandlers.push_back(function);
 }

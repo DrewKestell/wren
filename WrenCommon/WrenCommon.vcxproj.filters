@@ -100,7 +100,6 @@
     <ClInclude Include="Source\Constants.h" />
     <ClInclude Include="Source\EventHandling\Events\SetTargetEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SendChatMessage.h" />
-    <ClInclude Include="Source\EventHandling\Events\PropagateChatMessage.h" />
     <ClInclude Include="Source\EventHandling\Events\ServerMessageEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\ActivateAbilitySuccessEvent.h" />
     <ClInclude Include="Source\Components\StatsComponent.h" />
@@ -116,5 +115,6 @@
     <ClInclude Include="Source\Extensions.h" />
     <ClInclude Include="Source\EventHandling\Events\PlayerUpdateEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\NpcUpdateEvent.h" />
+    <ClInclude Include="Source\EventHandling\Events\PropagateChatMessageEvent.h" />
   </ItemGroup>
 </Project>

@@ -16,7 +16,7 @@
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
 #include "EventHandling/Events/NpcUpdateEvent.h"
 #include "EventHandling/Events/PlayerUpdateEvent.h"
-#include "EventHandling/Events/PropagateChatMessage.h"
+#include "EventHandling/Events/PropagateChatMessageEvent.h"
 #include "EventHandling/Events/ServerMessageEvent.h"
 #include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
 
@@ -29,6 +29,8 @@ static bool logMessages{ false };
 
 SocketManager::SocketManager()
 {
+	InitializeMessageHandlers();
+
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
         throw new std::exception("Failed to initialize sockets.");
@@ -50,16 +52,6 @@ SocketManager::SocketManager()
 
     DWORD nonBlocking = 1;
     ioctlsocket(socketC, FIONBIO, &nonBlocking);
-}
-
-bool SocketManager::MessagePartsEqual(const char* first, const char* second, int length) const
-{
-    for (auto i = 0; i < length; i++)
-    {
-        if (first[i] != second[i])
-            return false;
-    }
-    return true;
 }
 
 void SocketManager::SendPacket(const OpCode opcode)
@@ -103,6 +95,63 @@ void SocketManager::SendPacket(const OpCode opCode, std::string args[], const in
 	}
 }
 
+bool SocketManager::TryRecieveMessage()
+{
+	char buffer[1024];
+	ZeroMemory(buffer, sizeof(buffer));
+	auto result = recvfrom(socketC, buffer, sizeof(buffer), 0, (sockaddr*)& to, &toLen);
+	if (result == SOCKET_ERROR)
+	{
+		auto errorCode = WSAGetLastError();
+
+		if (errorCode == WSAEWOULDBLOCK)
+			return false;
+
+		throw new std::exception("WrenClient SocketManager error receiving packet. Error code: " + errorCode);
+	}
+	else
+	{
+		int offset{ 0 };
+
+		// if the checksum is wrong, ignore the packet
+		int checksum{ 0 };
+		memcpy(&checksum, buffer, sizeof(OpCode));
+		offset += sizeof(OpCode);
+		if (checksum != (int)OpCode::Checksum)
+			return true;
+
+		OpCode opCode{ -1 };
+		memcpy(&opCode, buffer + offset, sizeof(OpCode));
+		offset += sizeof(OpCode);
+
+		std::vector<std::string> args;
+		auto bufferLength = strlen(buffer + offset);
+		if (bufferLength > 0)
+		{
+			std::string arg = "";
+			for (unsigned int i = offset; i < offset + bufferLength; i++)
+			{
+				if (buffer[i] == '|')
+				{
+					args.push_back(arg);
+					arg = "";
+				}
+				else
+					arg += buffer[i];
+			}
+		}
+
+		const auto opCodeIndex = opCodeIndexMap[opCode];
+		if (opCodeIndex >= 0 && opCodeIndex < messageHandlers.size())
+		{
+			messageHandlers[opCodeIndex](args);
+			return true;
+		}
+
+		return false;
+	}
+}
+
 bool SocketManager::Connected()
 {
 	return accountId != -1 && token != "";
@@ -114,327 +163,24 @@ void SocketManager::CloseSockets()
     WSACleanup();
 }
 
-bool SocketManager::TryRecieveMessage()
-{
-    char buffer[1024];
-    char str[INET_ADDRSTRLEN];
-    ZeroMemory(buffer, sizeof(buffer));
-    ZeroMemory(str, sizeof(str));
-    auto result = recvfrom(socketC, buffer, sizeof(buffer), 0, (sockaddr*)&to, &toLen);
-    int errorCode;
-    if (result == -1)
-        errorCode = WSAGetLastError();
-    if (result != SOCKET_ERROR)
-    {
-		if (logMessages)
-			printf("Received message from server.\n");
-
-        const auto checksumArrLen = 8;
-        char checksumArr[checksumArrLen];
-        memcpy(&checksumArr[0], &buffer[0], checksumArrLen * sizeof(char));
-   //     if (!MessagePartsEqual(checksumArr, CHECKSUM.c_str(), checksumArrLen))
-   //     {
-			///*if (logMessages)
-			//	std::cout << "Wrong checksum. Ignoring packet.\n";*/
-			//g_eventHandler.QueueEvent(new Event{ EventType::WrongChecksum });
-			//return true;
-   //     }
-
-        const auto opcodeArrLen = 2;
-        char opcodeArr[opcodeArrLen];
-        memcpy(&opcodeArr[0], &buffer[8], opcodeArrLen * sizeof(char));
-
-        std::vector<std::string*> args;
-        auto bufferLength = strlen(buffer);
-        if (bufferLength > 10)
-        {
-			auto arg = new std::string;
-            for (unsigned int i = 10; i < bufferLength; i++)
-            {
-				
-                if (buffer[i] == '|')
-                {
-                    args.push_back(arg);
-					arg = new std::string;
-                }
-                else
-                    *arg += buffer[i];
-            }
-        }
-
-		OpCode opCode = OpCode::ActivateAbility; // TODO
-		switch (opCode)
-		{
-			case OpCode::CreateAccountFailure:
-			{
-				const auto error = args[0];
-				if (logMessages)
-					std::cout << "Failed to create account. Reason: " + *error + "\n";
-				g_eventHandler.QueueEvent(new CreateAccountFailedEvent{ error });
-				return true;
-			}
-			case OpCode::CreateAccountSuccess:
-			{
-				if (logMessages)
-					std::cout << "Successfully created account.\n";
-				g_eventHandler.QueueEvent(new Event{ EventType::CreateAccountSuccess });
-				return true;
-			}
-			case OpCode::LoginSuccess:
-			{
-				const auto accountId = args[0];
-				const auto token = args[1];
-				const auto characterString = args[2];
-				const auto characterList = BuildCharacterVector(characterString);
-
-				this->accountId = std::stoi(*accountId);
-				this->token = *token;
-
-				if (logMessages)
-					std::cout << "Login successful. Token received: " + *token + "\n";
-				g_eventHandler.QueueEvent(new LoginSuccessEvent{ characterList });
-				return true;
-			}
-			case OpCode::LoginFailure:
-			{
-				const auto error = args[0];
-				if (logMessages)
-					std::cout << "Login failed. Reason: " + *error + "\n";
-				g_eventHandler.QueueEvent(new LoginFailedEvent{ error });
-				return true;
-			}
-			case OpCode::CreateCharacterSuccess:
-			{
-				const auto characterString = args[0];
-				const auto characterList = BuildCharacterVector(characterString);
-
-				if (logMessages)
-					std::cout << "Character creation successful.";
-				g_eventHandler.QueueEvent(new CreateCharacterSuccessEvent{ characterList });
-				return true;
-			}
-			case OpCode::CreateCharacterFailure:
-			{
-				const auto error = args[0];
-				if (logMessages)
-					std::cout << "Character creation failed. Reason: " + *error + "\n";
-				g_eventHandler.QueueEvent(new CreateCharacterFailedEvent{ error });
-				return true;
-			}
-			case OpCode::EnterWorldSuccess:
-			{
-				auto i = 0;
-				const auto accountId = args[i++];
-				const auto positionX = args[i++];
-				const auto positionY = args[i++];
-				const auto positionZ = args[i++];
-				const auto modelId = args[i++];
-				const auto textureId = args[i++];
-				const auto skillString = args[i++];
-				const auto abilityString = args[i++];
-				const auto name = args[i++];
-				const auto agility = args[i++];
-				const auto strength = args[i++];
-				const auto wisdom = args[i++];
-				const auto intelligence = args[i++];
-				const auto charisma = args[i++];
-				const auto luck = args[i++];
-				const auto endurance = args[i++];
-				const auto health = args[i++];
-				const auto maxHealth = args[i++];
-				const auto mana = args[i++];
-				const auto maxMana = args[i++];
-				const auto stamina = args[i++];
-				const auto maxStamina = args[i++];
-
-				const auto enterWorldSuccessEvent = new EnterWorldSuccessEvent
-				{
-					std::stoi(*accountId),
-					XMFLOAT3{ std::stof(*positionX), std::stof(*positionY), std::stof(*positionZ) },
-					std::stoi(*modelId), std::stoi(*textureId),
-					BuildSkillVector(*skillString), BuildAbilityVector(*abilityString),
-					name,
-					std::stoi(*agility), std::stoi(*strength), std::stoi(*wisdom), std::stoi(*intelligence), std::stoi(*charisma), std::stoi(*luck), std::stoi(*endurance),
-					std::stoi(*health), std::stoi(*maxHealth), std::stoi(*mana), std::stoi(*maxMana), std::stoi(*stamina), std::stoi(*maxStamina)
-				};
-				g_eventHandler.QueueEvent(enterWorldSuccessEvent);
-				return true;
-			}
-			case OpCode::DeleteCharacterSuccess:
-			{
-				const auto characterString = args[0];
-				const auto characterList = BuildCharacterVector(characterString);
-
-				if (logMessages)
-					std::cout << "Delete character successful.";
-				g_eventHandler.QueueEvent(new DeleteCharacterSuccessEvent{ characterList });
-				return true;
-			}
-			case OpCode::NpcUpdate:
-			{
-				auto i = 0;
-				const auto gameObjectId = args[i++];
-				const auto posX = args[i++];
-				const auto posY = args[i++];
-				const auto posZ = args[i++];
-				const auto movX = args[i++];
-				const auto movY = args[i++];
-				const auto movZ = args[i++];
-				const auto agility = args[i++];
-				const auto strength = args[i++];
-				const auto wisdom = args[i++];
-				const auto intelligence = args[i++];
-				const auto charisma = args[i++];
-				const auto luck = args[i++];
-				const auto endurance = args[i++];
-				const auto health = args[i++];
-				const auto maxHealth = args[i++];
-				const auto mana = args[i++];
-				const auto maxMana = args[i++];
-				const auto stamina = args[i++];
-				const auto maxStamina = args[i++];
-
-				const auto gameObjectUpdateEvent = new NpcUpdateEvent
-				{
-					std::stol(*gameObjectId),
-					XMFLOAT3{ std::stof(*posX), std::stof(*posY), std::stof(*posZ)}, XMFLOAT3{ std::stof(*movX), std::stof(*movY), std::stof(*movZ)},
-					std::stoi(*agility), std::stoi(*strength), std::stoi(*wisdom), std::stoi(*intelligence), std::stoi(*charisma), std::stoi(*luck), std::stoi(*endurance),
-					std::stoi(*health), std::stoi(*maxHealth), std::stoi(*mana), std::stoi(*maxMana), std::stoi(*stamina), std::stoi(*maxStamina)
-				};
-				g_eventHandler.QueueEvent(gameObjectUpdateEvent);
-				return true;
-			}
-			case OpCode::PlayerUpdate:
-			{
-				auto i = 0;
-				const auto accountId = args[i++];
-				const auto posX = args[i++];
-				const auto posY = args[i++];
-				const auto posZ = args[i++];
-				const auto movX = args[i++];
-				const auto movY = args[i++];
-				const auto movZ = args[i++];
-				const auto modelId = args[i++];
-				const auto textureId = args[i++];
-				const auto name = args[i++];
-				const auto agility = args[i++];
-				const auto strength = args[i++];
-				const auto wisdom = args[i++];
-				const auto intelligence = args[i++];
-				const auto charisma = args[i++];
-				const auto luck = args[i++];
-				const auto endurance = args[i++];
-				const auto health = args[i++];
-				const auto maxHealth = args[i++];
-				const auto mana = args[i++];
-				const auto maxMana = args[i++];
-				const auto stamina = args[i++];
-				const auto maxStamina = args[i++];
-
-				const auto playerUpdateEvent = new PlayerUpdateEvent
-				{
-					std::stol(*accountId),
-					XMFLOAT3{ std::stof(*posX), std::stof(*posY), std::stof(*posZ)}, XMFLOAT3{ std::stof(*movX), std::stof(*movY), std::stof(*movZ) },
-					std::stoi(*modelId), std::stoi(*textureId),
-					name,
-					std::stoi(*agility), std::stoi(*strength), std::stoi(*wisdom), std::stoi(*intelligence), std::stoi(*charisma), std::stoi(*luck), std::stoi(*endurance),
-					std::stoi(*health), std::stoi(*maxHealth), std::stoi(*mana), std::stoi(*maxMana), std::stoi(*stamina), std::stoi(*maxStamina)
-				};
-				g_eventHandler.QueueEvent(playerUpdateEvent);
-				return true;
-			}
-			case OpCode::PropagateChatMessage:
-			{
-				const auto message = args[0];
-				const auto senderName = args[1];
-
-				g_eventHandler.QueueEvent(new PropagateChatMessage(senderName, message));
-
-				return true;
-			}
-			case OpCode::ServerMessage:
-			{
-				const auto message = args[0];
-				const auto type = args[1];
-
-				g_eventHandler.QueueEvent(new ServerMessageEvent(message, type));
-
-				return true;
-			}
-			case OpCode::ActivateAbilitySuccess:
-			{
-				const auto abilityId = args[0];
-
-				g_eventHandler.QueueEvent(new ActivateAbilitySuccessEvent(std::stoi(*abilityId)));
-
-				return true;
-			}
-			case OpCode::AttackHit:
-			{
-				const auto attackerId = args[0];
-				const auto targetId = args[1];
-				const auto damage = args[2];
-
-				g_eventHandler.QueueEvent(new AttackHitEvent(std::stoi(*attackerId), std::stoi(*targetId), std::stoi(*damage)));
-
-				return true;
-			}
-			case OpCode::AttackMiss:
-			{
-				const auto attackerId = args[0];
-				const auto targetId = args[1];
-
-				g_eventHandler.QueueEvent(new AttackMissEvent(std::stoi(*attackerId), std::stoi(*targetId)));
-
-				return true;
-			}
-			case OpCode::Pong:
-			{
-				const auto pingId = args[0];
-
-				g_game.get()->OnPong(std::stoul(*pingId));
-
-				return true;
-			}
-			case OpCode::SkillIncrease:
-			{
-				const auto skillId = args[0];
-				const auto newValue = args[1];
-
-				g_eventHandler.QueueEvent(new SkillIncreaseEvent(std::stoi(*skillId), std::stoi(*newValue)));
-
-				return true;
-			}
-			default:
-			{
-				if (logMessages)
-					std::cout << "Opcode not implemented.\n";
-				g_eventHandler.QueueEvent(new Event{ EventType::OpcodeNotImplemented });
-				return true;
-			}
-		}
-    }
-	return false;
-}
-
-std::vector<std::string*>* SocketManager::BuildCharacterVector(std::string* characterString)
+std::vector<std::string*>* SocketManager::BuildCharacterVector(const std::string& characterString)
 {
     std::vector<std::string*>* characterList = new std::vector<std::string*>;
 	auto arg = new std::string;
-    for (auto i = 0; i < characterString->length(); i++)
+    for (auto i = 0; i < characterString.length(); i++)
     {
-        if ((*characterString)[i] == ';')
+        if (characterString[i] == ';')
         {
             characterList->push_back(arg);
 			arg = new std::string;
         }
         else
-            *arg += (*characterString)[i];
+            *arg += characterString[i];
     }
     return characterList;
 }
 
-std::vector<WrenCommon::Skill*>* SocketManager::BuildSkillVector(std::string& skillString)
+std::vector<WrenCommon::Skill*>* SocketManager::BuildSkillVector(const std::string& skillString)
 {
 	std::vector<WrenCommon::Skill*>* skillList = new std::vector<WrenCommon::Skill*>;
 	char param = 0;
@@ -466,7 +212,7 @@ std::vector<WrenCommon::Skill*>* SocketManager::BuildSkillVector(std::string& sk
 	return skillList;
 }
 
-std::vector<Ability*>* SocketManager::BuildAbilityVector(std::string& abilityString)
+std::vector<Ability*>* SocketManager::BuildAbilityVector(const std::string& abilityString)
 {
 	std::vector<Ability*>* abilityList = new std::vector<Ability*>;
 	char param = 0;
@@ -510,4 +256,244 @@ void SocketManager::Logout()
 {
 	accountId = -1;
 	token = "";
+}
+
+void SocketManager::InitializeMessageHandlers()
+{
+	auto i = 0;
+
+	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](std::vector<std::string> args)
+	{
+		const auto error = args[0];
+
+		g_eventHandler.QueueEvent(new CreateAccountFailedEvent{ new std::string(error)});
+	});
+
+	InitializeMessageHandler(OpCode::CreateAccountSuccess, i, [this](std::vector<std::string> args)
+	{
+		g_eventHandler.QueueEvent(new Event{ EventType::CreateAccountSuccess });
+	});
+
+	InitializeMessageHandler(OpCode::LoginFailure, i, [this](std::vector<std::string> args)
+	{
+		const auto error = args[0];
+		
+		g_eventHandler.QueueEvent(new LoginFailedEvent{ new std::string(error) });
+	});
+
+	InitializeMessageHandler(OpCode::LoginSuccess, i, [this](std::vector<std::string> args)
+	{
+		const auto accountId = args[0];
+		const auto token = args[1];
+		const auto characterString = args[2];
+		const auto characterList = BuildCharacterVector(characterString);
+
+		this->accountId = std::stoi(accountId);
+		this->token = std::string(token);
+
+		g_eventHandler.QueueEvent(new LoginSuccessEvent{ characterList });
+	});
+
+	InitializeMessageHandler(OpCode::CreateCharacterFailure, i, [this](std::vector<std::string> args)
+	{
+		const auto error = args[0];
+
+		g_eventHandler.QueueEvent(new CreateCharacterFailedEvent{ new std::string(error) });
+	});
+
+	InitializeMessageHandler(OpCode::CreateCharacterSuccess, i, [this](std::vector<std::string> args)
+	{
+		const auto characterString = args[0];
+		const auto characterList = BuildCharacterVector(characterString);
+
+		g_eventHandler.QueueEvent(new CreateCharacterSuccessEvent{ characterList });
+	});
+
+	InitializeMessageHandler(OpCode::EnterWorldSuccess, i, [this](std::vector<std::string> args)
+	{
+		auto j = 0;
+		const auto accountId = args[j++];
+		const auto positionX = args[j++];
+		const auto positionY = args[j++];
+		const auto positionZ = args[j++];
+		const auto modelId = args[j++];
+		const auto textureId = args[j++];
+		const auto skillString = args[j++];
+		const auto abilityString = args[j++];
+		const auto name = args[j++];
+		const auto agility = args[j++];
+		const auto strength = args[j++];
+		const auto wisdom = args[j++];
+		const auto intelligence = args[j++];
+		const auto charisma = args[j++];
+		const auto luck = args[j++];
+		const auto endurance = args[j++];
+		const auto health = args[j++];
+		const auto maxHealth = args[j++];
+		const auto mana = args[j++];
+		const auto maxMana = args[j++];
+		const auto stamina = args[j++];
+		const auto maxStamina = args[j++];
+
+		const auto enterWorldSuccessEvent = new EnterWorldSuccessEvent
+		{
+			std::stoi(accountId),
+			XMFLOAT3{ std::stof(positionX), std::stof(positionY), std::stof(positionZ) },
+			std::stoi(modelId), std::stoi(textureId),
+			BuildSkillVector(skillString), BuildAbilityVector(abilityString),
+			new std::string(name),
+			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
+			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
+		};
+		g_eventHandler.QueueEvent(enterWorldSuccessEvent);
+	});
+
+	InitializeMessageHandler(OpCode::NpcUpdate, i, [this](std::vector<std::string> args)
+	{
+		auto j = 0;
+		const auto gameObjectId = args[j++];
+		const auto posX = args[j++];
+		const auto posY = args[j++];
+		const auto posZ = args[j++];
+		const auto movX = args[j++];
+		const auto movY = args[j++];
+		const auto movZ = args[j++];
+		const auto agility = args[j++];
+		const auto strength = args[j++];
+		const auto wisdom = args[j++];
+		const auto intelligence = args[j++];
+		const auto charisma = args[j++];
+		const auto luck = args[j++];
+		const auto endurance = args[j++];
+		const auto health = args[j++];
+		const auto maxHealth = args[j++];
+		const auto mana = args[j++];
+		const auto maxMana = args[j++];
+		const auto stamina = args[j++];
+		const auto maxStamina = args[j++];
+
+		const auto gameObjectUpdateEvent = new NpcUpdateEvent
+		{
+			std::stol(gameObjectId),
+			XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ)}, XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ)},
+			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
+			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
+		};
+		g_eventHandler.QueueEvent(gameObjectUpdateEvent);
+	});
+
+	InitializeMessageHandler(OpCode::PlayerUpdate, i, [this](std::vector<std::string> args)
+	{
+		auto j = 0;
+		const auto accountId = args[j++];
+		const auto posX = args[j++];
+		const auto posY = args[j++];
+		const auto posZ = args[j++];
+		const auto movX = args[j++];
+		const auto movY = args[j++];
+		const auto movZ = args[j++];
+		const auto modelId = args[j++];
+		const auto textureId = args[j++];
+		const auto name = args[j++];
+		const auto agility = args[j++];
+		const auto strength = args[j++];
+		const auto wisdom = args[j++];
+		const auto intelligence = args[j++];
+		const auto charisma = args[j++];
+		const auto luck = args[j++];
+		const auto endurance = args[j++];
+		const auto health = args[j++];
+		const auto maxHealth = args[j++];
+		const auto mana = args[j++];
+		const auto maxMana = args[j++];
+		const auto stamina = args[j++];
+		const auto maxStamina = args[j++];
+
+		const auto playerUpdateEvent = new PlayerUpdateEvent
+		{
+			std::stol(accountId),
+			XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ)}, XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ) },
+			std::stoi(modelId), std::stoi(textureId),
+			new std::string(name),
+			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
+			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
+		};
+		g_eventHandler.QueueEvent(playerUpdateEvent);
+	});
+
+	InitializeMessageHandler(OpCode::PropagateChatMessage, i, [this](std::vector<std::string> args)
+	{
+		const auto message = args[0];
+		const auto senderName = args[1];
+
+		g_eventHandler.QueueEvent(new PropagateChatMessageEvent(new std::string(senderName), new std::string(message)));
+	});
+
+	InitializeMessageHandler(OpCode::ServerMessage, i, [this](std::vector<std::string> args)
+	{
+		const auto message = args[0];
+		const auto type = args[1];
+
+		g_eventHandler.QueueEvent(new ServerMessageEvent(new std::string(message), new std::string(type)));
+	});
+
+	InitializeMessageHandler(OpCode::AttackHit, i, [this](std::vector<std::string> args)
+	{
+		const auto attackerId = args[0];
+		const auto targetId = args[1];
+		const auto damage = args[2];
+
+		g_eventHandler.QueueEvent(new AttackHitEvent(std::stoi(attackerId), std::stoi(targetId), std::stoi(damage)));
+	});
+
+	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](std::vector<std::string> args)
+	{
+		const auto attackerId = args[0];
+		const auto targetId = args[1];
+
+		g_eventHandler.QueueEvent(new AttackMissEvent(std::stoi(attackerId), std::stoi(targetId)));
+	});
+
+	InitializeMessageHandler(OpCode::ActivateAbilitySuccess, i, [this](std::vector<std::string> args)
+	{
+		const auto abilityId = args[0];
+
+		g_eventHandler.QueueEvent(new ActivateAbilitySuccessEvent(std::stoi(abilityId)));
+	});
+
+	InitializeMessageHandler(OpCode::Pong, i, [this](std::vector<std::string> args)
+	{
+		const auto pingId = args[0];
+
+		g_game.get()->OnPong(std::stoul(pingId));
+	});
+
+	InitializeMessageHandler(OpCode::SkillIncrease, i, [this](std::vector<std::string> args)
+	{
+		const auto skillId = args[0];
+		const auto newValue = args[1];
+
+		g_eventHandler.QueueEvent(new SkillIncreaseEvent(std::stoi(skillId), std::stoi(newValue)));
+	});
+
+	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](std::vector<std::string> args)
+	{
+		
+	});
+
+	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](std::vector<std::string> args)
+	{
+		
+	});
+
+	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](std::vector<std::string> args)
+	{
+		
+	});
+}
+
+void SocketManager::InitializeMessageHandler(const OpCode opCode, int& index, std::function<void(std::vector<std::string> args)> function)
+{
+	opCodeIndexMap[opCode] = index++;
+	messageHandlers.push_back(function);
 }

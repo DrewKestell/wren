@@ -63,7 +63,7 @@
     <ClInclude Include="Source\EventHandling\Events\LoginSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\MouseEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\PlayerUpdateEvent.h" />
-    <ClInclude Include="Source\EventHandling\Events\PropagateChatMessage.h" />
+    <ClInclude Include="Source\EventHandling\Events\PropagateChatMessageEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SendChatMessage.h" />
     <ClInclude Include="Source\EventHandling\Events\ServerMessageEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\SetTargetEvent.h" />

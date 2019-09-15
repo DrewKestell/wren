@@ -2,16 +2,16 @@
 
 #include "Event.h"
 
-class PropagateChatMessage : public Event
+class PropagateChatMessageEvent : public Event
 {
 public:
-	PropagateChatMessage(std::string* senderName, std::string* message)
+	PropagateChatMessageEvent(std::string* senderName, std::string* message)
 		: Event(EventType::PropagateChatMessage),
 		  senderName{ senderName },
 		  message{ message }
 	{
 	}
-	~PropagateChatMessage() { delete message; }
+	~PropagateChatMessageEvent() { delete message; }
 	std::string* senderName;
 	std::string* message;
 };
