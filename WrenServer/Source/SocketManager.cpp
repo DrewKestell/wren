@@ -203,7 +203,6 @@ void SocketManager::HandleTimeout()
 		PlayerComponent& comp = playerComponents[i];
 		if (GetTickCount64() > comp.lastHeartbeat + TIMEOUT_DURATION)
 		{
-			//std::cout << "AccountId " << comp.gameObjectId << " timed out." << "\n\n";
 			g_objectManager.DeleteGameObject(g_eventHandler, comp.gameObjectId);
 		}
 	}
@@ -540,7 +539,7 @@ void SocketManager::InitializeMessageHandlers()
 {
 	auto i = 0;
 
-	InitializeMessageHandler(OpCode::Connect, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::Connect, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountName = args[0];
 		const auto password = args[1];
@@ -553,7 +552,7 @@ void SocketManager::InitializeMessageHandlers()
 		Login(accountName.c_str(), password.c_str(), ipAndPort, from);
 	});
 
-	InitializeMessageHandler(OpCode::Disconnect, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::Disconnect, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -562,7 +561,7 @@ void SocketManager::InitializeMessageHandlers()
 		Logout(accountId);
 	});
 	
-	InitializeMessageHandler(OpCode::CreateAccount, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::CreateAccount, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountName = args[0];
 		const auto password = args[1];
@@ -570,7 +569,7 @@ void SocketManager::InitializeMessageHandlers()
 		CreateAccount(accountName, password, from);
 	});
 
-	InitializeMessageHandler(OpCode::CreateCharacter, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::CreateCharacter, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -580,7 +579,7 @@ void SocketManager::InitializeMessageHandlers()
 		CreateCharacter(accountId, characterName);
 	});
 
-	InitializeMessageHandler(OpCode::Heartbeat, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::Heartbeat, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -589,7 +588,7 @@ void SocketManager::InitializeMessageHandlers()
 		UpdateLastHeartbeat(accountId);
 	});
 
-	InitializeMessageHandler(OpCode::EnterWorld, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::EnterWorld, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -599,7 +598,7 @@ void SocketManager::InitializeMessageHandlers()
 		EnterWorld(accountId, characterName);
 	});
 
-	InitializeMessageHandler(OpCode::DeleteCharacter, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::DeleteCharacter, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -609,7 +608,7 @@ void SocketManager::InitializeMessageHandlers()
 		DeleteCharacter(accountId, characterName);
 	});
 
-	InitializeMessageHandler(OpCode::ActivateAbility, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::ActivateAbility, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -625,7 +624,7 @@ void SocketManager::InitializeMessageHandlers()
 		ActivateAbility(playerComponent, *abilityIt);
 	});
 
-	InitializeMessageHandler(OpCode::SendChatMessage, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::SendChatMessage, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -636,7 +635,7 @@ void SocketManager::InitializeMessageHandlers()
 		PropagateChatMessage(senderName, message);
 	});
 
-	InitializeMessageHandler(OpCode::SetTarget, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::SetTarget, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -660,7 +659,7 @@ void SocketManager::InitializeMessageHandlers()
 		}
 	});
 
-	InitializeMessageHandler(OpCode::UnsetTarget, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::UnsetTarget, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -670,7 +669,7 @@ void SocketManager::InitializeMessageHandlers()
 		playerComponent.targetId = -1;
 	});
 
-	InitializeMessageHandler(OpCode::Ping, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::Ping, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -683,7 +682,7 @@ void SocketManager::InitializeMessageHandlers()
 		SendPacket(player.fromSockAddr, OpCode::Pong, outgoingArgs, 1);
 	});
 
-	InitializeMessageHandler(OpCode::PlayerRightMouseDown, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::PlayerRightMouseDown, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -695,7 +694,7 @@ void SocketManager::InitializeMessageHandlers()
 		comp.rightMouseDownDir = dir;
 	});
 
-	InitializeMessageHandler(OpCode::PlayerRightMouseUp, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::PlayerRightMouseUp, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -706,7 +705,7 @@ void SocketManager::InitializeMessageHandlers()
 		comp.rightMouseDownDir = VEC_ZERO;
 	});
 
-	InitializeMessageHandler(OpCode::PlayerRightMouseDirChange, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::PlayerRightMouseDirChange, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = std::stoi(args[0]);
 		const auto token = args[1];
@@ -719,7 +718,7 @@ void SocketManager::InitializeMessageHandlers()
 	});
 }
 
-void SocketManager::InitializeMessageHandler(const OpCode opCode, int& index, std::function<void(std::vector<std::string> args)> function)
+void SocketManager::InitializeMessageHandler(const OpCode opCode, int& index, const std::function<void(const std::vector<std::string>& args)> function)
 {
 	opCodeIndexMap[opCode] = index++;
 	messageHandlers.push_back(function);

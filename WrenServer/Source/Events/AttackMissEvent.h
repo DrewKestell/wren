@@ -17,4 +17,6 @@ public:
 	const int targetId;
 	const int* weaponSkillIds;
 	const int weaponSkillArrLen;
+
+	~AttackMissEvent() { delete[] weaponSkillIds; }
 };

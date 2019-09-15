@@ -262,26 +262,26 @@ void SocketManager::InitializeMessageHandlers()
 {
 	auto i = 0;
 
-	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](const std::vector<std::string>& args)
 	{
 		const auto error = args[0];
 
 		g_eventHandler.QueueEvent(new CreateAccountFailedEvent{ new std::string(error)});
 	});
 
-	InitializeMessageHandler(OpCode::CreateAccountSuccess, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::CreateAccountSuccess, i, [this](const std::vector<std::string>& args)
 	{
 		g_eventHandler.QueueEvent(new Event{ EventType::CreateAccountSuccess });
 	});
 
-	InitializeMessageHandler(OpCode::LoginFailure, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::LoginFailure, i, [this](const std::vector<std::string>& args)
 	{
 		const auto error = args[0];
 		
 		g_eventHandler.QueueEvent(new LoginFailedEvent{ new std::string(error) });
 	});
 
-	InitializeMessageHandler(OpCode::LoginSuccess, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::LoginSuccess, i, [this](const std::vector<std::string>& args)
 	{
 		const auto accountId = args[0];
 		const auto token = args[1];
@@ -294,14 +294,14 @@ void SocketManager::InitializeMessageHandlers()
 		g_eventHandler.QueueEvent(new LoginSuccessEvent{ characterList });
 	});
 
-	InitializeMessageHandler(OpCode::CreateCharacterFailure, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::CreateCharacterFailure, i, [this](const std::vector<std::string>& args)
 	{
 		const auto error = args[0];
 
 		g_eventHandler.QueueEvent(new CreateCharacterFailedEvent{ new std::string(error) });
 	});
 
-	InitializeMessageHandler(OpCode::CreateCharacterSuccess, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::CreateCharacterSuccess, i, [this](const std::vector<std::string>& args)
 	{
 		const auto characterString = args[0];
 		const auto characterList = BuildCharacterVector(characterString);
@@ -309,7 +309,7 @@ void SocketManager::InitializeMessageHandlers()
 		g_eventHandler.QueueEvent(new CreateCharacterSuccessEvent{ characterList });
 	});
 
-	InitializeMessageHandler(OpCode::EnterWorldSuccess, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::EnterWorldSuccess, i, [this](const std::vector<std::string>& args)
 	{
 		auto j = 0;
 		const auto accountId = args[j++];
@@ -348,7 +348,7 @@ void SocketManager::InitializeMessageHandlers()
 		g_eventHandler.QueueEvent(enterWorldSuccessEvent);
 	});
 
-	InitializeMessageHandler(OpCode::NpcUpdate, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::NpcUpdate, i, [this](const std::vector<std::string>& args)
 	{
 		auto j = 0;
 		const auto gameObjectId = args[j++];
@@ -382,7 +382,7 @@ void SocketManager::InitializeMessageHandlers()
 		g_eventHandler.QueueEvent(gameObjectUpdateEvent);
 	});
 
-	InitializeMessageHandler(OpCode::PlayerUpdate, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::PlayerUpdate, i, [this](const std::vector<std::string>& args)
 	{
 		auto j = 0;
 		const auto accountId = args[j++];
@@ -421,7 +421,7 @@ void SocketManager::InitializeMessageHandlers()
 		g_eventHandler.QueueEvent(playerUpdateEvent);
 	});
 
-	InitializeMessageHandler(OpCode::PropagateChatMessage, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::PropagateChatMessage, i, [this](const std::vector<std::string>& args)
 	{
 		const auto message = args[0];
 		const auto senderName = args[1];
@@ -429,7 +429,7 @@ void SocketManager::InitializeMessageHandlers()
 		g_eventHandler.QueueEvent(new PropagateChatMessageEvent(new std::string(senderName), new std::string(message)));
 	});
 
-	InitializeMessageHandler(OpCode::ServerMessage, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::ServerMessage, i, [this](const std::vector<std::string>& args)
 	{
 		const auto message = args[0];
 		const auto type = args[1];
@@ -437,7 +437,7 @@ void SocketManager::InitializeMessageHandlers()
 		g_eventHandler.QueueEvent(new ServerMessageEvent(new std::string(message), new std::string(type)));
 	});
 
-	InitializeMessageHandler(OpCode::AttackHit, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::AttackHit, i, [this](const std::vector<std::string>& args)
 	{
 		const auto attackerId = args[0];
 		const auto targetId = args[1];
@@ -446,7 +446,7 @@ void SocketManager::InitializeMessageHandlers()
 		g_eventHandler.QueueEvent(new AttackHitEvent(std::stoi(attackerId), std::stoi(targetId), std::stoi(damage)));
 	});
 
-	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](const std::vector<std::string>& args)
 	{
 		const auto attackerId = args[0];
 		const auto targetId = args[1];
@@ -454,45 +454,30 @@ void SocketManager::InitializeMessageHandlers()
 		g_eventHandler.QueueEvent(new AttackMissEvent(std::stoi(attackerId), std::stoi(targetId)));
 	});
 
-	InitializeMessageHandler(OpCode::ActivateAbilitySuccess, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::ActivateAbilitySuccess, i, [this](const std::vector<std::string>& args)
 	{
 		const auto abilityId = args[0];
 
 		g_eventHandler.QueueEvent(new ActivateAbilitySuccessEvent(std::stoi(abilityId)));
 	});
 
-	InitializeMessageHandler(OpCode::Pong, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::Pong, i, [this](const std::vector<std::string>& args)
 	{
 		const auto pingId = args[0];
 
 		g_game.get()->OnPong(std::stoul(pingId));
 	});
 
-	InitializeMessageHandler(OpCode::SkillIncrease, i, [this](std::vector<std::string> args)
+	InitializeMessageHandler(OpCode::SkillIncrease, i, [this](const std::vector<std::string>& args)
 	{
 		const auto skillId = args[0];
 		const auto newValue = args[1];
 
 		g_eventHandler.QueueEvent(new SkillIncreaseEvent(std::stoi(skillId), std::stoi(newValue)));
 	});
-
-	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](std::vector<std::string> args)
-	{
-		
-	});
-
-	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](std::vector<std::string> args)
-	{
-		
-	});
-
-	InitializeMessageHandler(OpCode::CreateAccountFailure, i, [this](std::vector<std::string> args)
-	{
-		
-	});
 }
 
-void SocketManager::InitializeMessageHandler(const OpCode opCode, int& index, std::function<void(std::vector<std::string> args)> function)
+void SocketManager::InitializeMessageHandler(const OpCode opCode, int& index, const std::function<void(const std::vector<std::string>& args)> function)
 {
 	opCodeIndexMap[opCode] = index++;
 	messageHandlers.push_back(function);

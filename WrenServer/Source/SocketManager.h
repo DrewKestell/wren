@@ -8,7 +8,7 @@
 
 class SocketManager
 {
-	std::vector<std::function<void(std::vector<std::string> args)>> messageHandlers;
+	std::vector<std::function<void(const std::vector<std::string>& args)>> messageHandlers;
 	std::map<OpCode, int> opCodeIndexMap;
     ServerRepository& repository;
 	CommonRepository& commonRepository;
@@ -33,7 +33,7 @@ class SocketManager
 	void PropagateChatMessage(const std::string& senderName, const std::string& message);
 	void ActivateAbility(PlayerComponent& player, Ability& ability);
 	void InitializeMessageHandlers();
-	void InitializeMessageHandler(const OpCode opCode, int& index, std::function<void(std::vector<std::string> args)> function);
+	void InitializeMessageHandler(const OpCode opCode, int& index, const std::function<void(const std::vector<std::string>& args)> function);
 public:
     SocketManager(ServerRepository& repository, CommonRepository& commonRepository);
     bool TryRecieveMessage();

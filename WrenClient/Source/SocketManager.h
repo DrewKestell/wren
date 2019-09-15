@@ -7,7 +7,7 @@
 class SocketManager
 {
 private:
-	std::vector<std::function<void(std::vector<std::string> args)>> messageHandlers;
+	std::vector<std::function<void(std::vector<std::string>& args)>> messageHandlers;
 	std::map<OpCode, int> opCodeIndexMap;
 	int accountId{ -1 };
 	std::string token{ "" };
@@ -20,7 +20,7 @@ private:
 	std::vector<WrenCommon::Skill*>* BuildSkillVector(const std::string& skillString);
 	std::vector<Ability*>* BuildAbilityVector(const std::string& abilityString);
 	void InitializeMessageHandlers();
-	void InitializeMessageHandler(const OpCode opCode, int& index, std::function<void(std::vector<std::string> args)> function);
+	void InitializeMessageHandler(const OpCode opCode, int& index, const std::function<void(const std::vector<std::string>& args)> function);
 public:
 	SocketManager();
     bool TryRecieveMessage();

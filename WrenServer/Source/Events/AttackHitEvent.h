@@ -21,5 +21,4 @@ public:
 	const int weaponSkillArrLen;
 
 	~AttackHitEvent() { delete[] weaponSkillIds; }
-
 };
