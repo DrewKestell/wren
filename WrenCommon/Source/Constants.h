@@ -25,3 +25,5 @@ static constexpr XMFLOAT3 VEC_WEST      = XMFLOAT3{ -1.0f, 0.0f, 0.0f };
 
 static const OpCode CHECKSUM{ OpCode::Checksum };
 static constexpr auto PACKET_SIZE = 1024;
+static constexpr auto SERVER_IP_ADDRESS = "127.0.0.1";
+static constexpr auto SERVER_PORT_NUMBER = 27016;

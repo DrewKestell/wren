@@ -183,7 +183,7 @@ void AIComponentManager::Update()
 						g_eventHandler.QueueEvent(new AttackHitEvent{ gameObjectId, targetId, (int)dmg, weaponSkillIds, 2 });
 
 						std::string args[]{ std::to_string(gameObjectId), std::to_string(targetId), std::to_string(dmg) };
-						g_socketManager.SendPacket(OpCode::AttackHit, args, 3);
+						g_socketManager.SendPacketToAllClients(OpCode::AttackHit, args, 3);
 					}
 					else
 					{
@@ -191,7 +191,7 @@ void AIComponentManager::Update()
 						g_eventHandler.QueueEvent(new AttackMissEvent{ gameObjectId, targetId, weaponSkillIds, 2 });
 
 						std::string args[]{ std::to_string(gameObjectId), std::to_string(targetId)};
-						g_socketManager.SendPacket(OpCode::AttackMiss, args, 2);
+						g_socketManager.SendPacketToAllClients(OpCode::AttackMiss, args, 2);
 					}
 				}
 			}

@@ -717,7 +717,7 @@ void Game::InitializePanels()
 	const auto onClickGameSettingsLogoutButton = [this]()
 	{
 		g_socketManager.SendPacket(OpCode::Disconnect);
-
+		g_socketManager.Logout();
 		SetActiveLayer(Login);
 	};
 	gameSettingsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ gameSettingsPanelX, gameSettingsPanelY }, InGame, 1, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);

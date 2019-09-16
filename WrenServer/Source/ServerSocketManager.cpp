@@ -6,7 +6,6 @@
 #include "Components/SkillComponentManager.h"
 
 constexpr auto PLAYER_NOT_FOUND = "Player not found.";
-constexpr auto SOCKET_INIT_FAILED = "Failed to initialize sockets.";
 constexpr auto INCORRECT_USERNAME = "Incorrect Username.";
 constexpr auto INCORRECT_PASSWORD = "Incorrect Password.";
 constexpr auto ACCOUNT_ALREADY_EXISTS = "Account already exists.";
@@ -15,8 +14,6 @@ constexpr auto CHARACTER_ALREADY_EXISTS = "Character already exists.";
 constexpr auto INVALID_ATTACK_TARGET = "You can't attack that!";
 constexpr auto NO_ATTACK_TARGET = "You need a target before attacking!";
 constexpr auto MESSAGE_TYPE_ERROR = "ERROR";
-
-constexpr auto PORT_NUMBER = 27016;
 
 extern ObjectManager g_objectManager;
 extern StatsComponentManager g_statsComponentManager;
@@ -27,30 +24,14 @@ extern GameMap g_gameMap;
 extern EventHandler g_eventHandler;
 
 ServerSocketManager::ServerSocketManager(ServerRepository& repository, CommonRepository& commonRepository)
-	: repository{ repository },
+	: SocketManager{ SERVER_PORT_NUMBER },
+	  repository{ repository },
 	  commonRepository{ commonRepository }
 {
-    sodium_init();
 	InitializeMessageHandlers();
 
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
-        throw new std::exception(SOCKET_INIT_FAILED);
-
-    local.sin_family = AF_INET;
-    local.sin_port = htons(PORT_NUMBER);
-    local.sin_addr.s_addr = INADDR_ANY;
-
-	fromlen = sizeof(from);
-
-    sock = socket(AF_INET, SOCK_DGRAM, 0);
-    int error;
-    if (sock == INVALID_SOCKET)
-        error = WSAGetLastError();
-    bind(sock, (sockaddr*)&local, sizeof(local));
-
-    DWORD nonBlocking = 1;
-    ioctlsocket(sock, FIONBIO, &nonBlocking);
+	// initialize LibSodium
+	sodium_init();
 
 	// initialize Abilities
 	abilities = repository.ListAbilities();
@@ -79,7 +60,18 @@ ServerSocketManager::ServerSocketManager(ServerRepository& repository, CommonRep
 	g_gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
 }
 
-void ServerSocketManager::SendPacket(const OpCode opcode, std::string args[], const int argCount)
+void ServerSocketManager::SendPacket(sockaddr_in to, const OpCode opCode)
+{
+	std::string args[]{ "" }; // this is janky
+	SocketManager::SendPacket(to, opCode, args, 0);
+}
+
+void ServerSocketManager::SendPacket(sockaddr_in to, const OpCode opCode, std::string* args, const int argCount)
+{
+	SocketManager::SendPacket(to, opCode, args, argCount);
+}
+
+void ServerSocketManager::SendPacketToAllClients(const OpCode opcode, std::string* args, const int argCount)
 {
 	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
 	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
@@ -89,34 +81,6 @@ void ServerSocketManager::SendPacket(const OpCode opcode, std::string args[], co
 		PlayerComponent& player = playerComponents[i];
 		SendPacket(player.fromSockAddr, opcode, args, argCount);
 	}
-}
-
-void ServerSocketManager::SendPacket(sockaddr_in from, const OpCode opCode)
-{
-	std::string args[]{ "" }; // this is janky
-	SendPacket(from, opCode, args, 0);
-}
-
-void ServerSocketManager::SendPacket(sockaddr_in from, const OpCode opCode, std::string args[], const int argCount)
-{
-	char buffer[PACKET_SIZE];
-	memset(buffer, 0, sizeof(buffer));
-	int offset{ 0 };
-
-	memcpy(buffer, &CHECKSUM, sizeof(OpCode));
-	offset += (int)sizeof(OpCode);
-
-	memcpy(buffer + offset, &opCode, sizeof(OpCode));
-	offset += (int)sizeof(OpCode);
-
-	std::string packet{ "" };
-	for (auto i = 0; i < argCount; i++)
-		packet += args[i] + "|";
-
-	strcpy_s(buffer + offset, packet.length() + 1, packet.c_str());
-	auto sentBytes = sendto(sock, buffer, sizeof(buffer), 0, (sockaddr*)& from, sizeof(from));
-	if (sentBytes != sizeof(buffer))
-		throw std::exception("Failed to send packet.");
 }
 
 const bool ServerSocketManager::ValidateToken(const int accountId, const std::string token)
@@ -178,7 +142,7 @@ void ServerSocketManager::Login(const std::string& accountName, const std::strin
 			playerGameObject.playerComponentId = playerComponent.id;
             
 			std::string args[]{ std::to_string(accountId), token, ListCharacters(accountId) };
-			SendPacket(OpCode::LoginSuccess, args , 3);
+			SendPacket(from, OpCode::LoginSuccess, args, 3);
 		}
 
 	}

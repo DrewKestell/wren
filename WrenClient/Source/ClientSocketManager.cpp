@@ -16,8 +16,6 @@
 #include "EventHandling/Events/ServerMessageEvent.h"
 #include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
 
-constexpr auto SERVER_PORT_NUMBER = 27016;
-
 extern EventHandler g_eventHandler;
 extern std::unique_ptr<Game> g_game;
 
@@ -27,68 +25,20 @@ ClientSocketManager::ClientSocketManager()
 {
 	InitializeMessageHandlers();
 
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
-        throw new std::exception("Failed to initialize sockets.");
-
-    local.sin_family = AF_INET;
-    inet_pton(AF_INET, "127.0.0.1", &local.sin_addr);
-
     from.sin_family = AF_INET;
+	inet_pton(AF_INET, SERVER_IP_ADDRESS, &from.sin_addr);
     from.sin_port = htons(SERVER_PORT_NUMBER);
-    inet_pton(AF_INET, "127.0.0.1", &from.sin_addr);
-
-    fromlen = sizeof(from);
-
-    sock = socket(AF_INET, SOCK_DGRAM, 0);
-    int error;
-    if (sock == INVALID_SOCKET)
-        error = WSAGetLastError();
-    bind(sock, (sockaddr*)&local, sizeof(local));
-
-    DWORD nonBlocking = 1;
-    ioctlsocket(sock, FIONBIO, &nonBlocking);
 }
 
-void ClientSocketManager::SendPacket(const OpCode opcode)
+void ClientSocketManager::SendPacket(const OpCode opCode)
 {
 	std::string args[]{ "" }; // this is janky
-	SendPacket(opcode, args, 0);
+	SendPacket(opCode, args, 0);
 }
 
-void ClientSocketManager::SendPacket(const OpCode opCode, std::string args[], const int argCount)
+void ClientSocketManager::SendPacket(const OpCode opCode, std::string* args, const int argCount)
 {
-    char buffer[PACKET_SIZE];
-    memset(buffer, 0, sizeof(buffer));
-	int offset{ 0 };
-
-	memcpy(buffer, &CHECKSUM, sizeof(OpCode));
-	offset += (int)sizeof(OpCode);
-
-	memcpy(buffer + offset, &opCode, sizeof(OpCode));
-	offset += (int)sizeof(OpCode);
-
-	std::string packet{ "" };
-	if (accountId != -1)
-		packet += std::to_string(accountId) + "|";
-	if (token != "")
-		packet += token + "|";
-	for (auto i = 0; i < argCount; i++)
-		packet += args[i] + "|";
-	strcpy_s(buffer + offset, packet.length() + 1, packet.c_str());
-
-    auto sentBytes = sendto(sock, buffer, sizeof(buffer), 0, (sockaddr*)&from, sizeof(from));
-    if (sentBytes != sizeof(buffer))
-        throw std::exception("Failed to send packet.");
-	else
-	{
-		// if Disconnect packet was sent successfully, update Client state
-		if (opCode == OpCode::Disconnect)
-		{
-			accountId = -1;
-			token = "";
-		}
-	}
+	SocketManager::SendPacket(from, opCode, args, argCount, accountId, token);
 }
 
 bool ClientSocketManager::Connected()

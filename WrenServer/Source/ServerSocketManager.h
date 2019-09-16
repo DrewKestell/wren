@@ -5,15 +5,13 @@
 #include <CommonRepository.h>
 #include "Components/PlayerComponent.h"
 #include "ServerRepository.h"
-#include <functional>
 
 class ServerSocketManager : public SocketManager
 {
-    ServerRepository& repository;
+	ServerRepository& repository;
 	CommonRepository& commonRepository;
 	std::vector<Ability> abilities;
-    sockaddr_in local;
-    
+
 	const bool ValidateToken(const int accountId, const std::string token); // this should probably return a PlayerComponent to improve performance
 	PlayerComponent& GetPlayerComponent(const int accountId);
 	void Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, sockaddr_in from);
@@ -31,10 +29,11 @@ class ServerSocketManager : public SocketManager
 	virtual void InitializeMessageHandlers();
 
 public:
-    ServerSocketManager(ServerRepository& repository, CommonRepository& commonRepository);
+	ServerSocketManager(ServerRepository& repository, CommonRepository& commonRepository);
+
 	void HandleTimeout();
 	void UpdateClients();
-	void SendPacket(const OpCode opCode, std::string args[], const int argCount);
-	void SendPacket(sockaddr_in from, const OpCode opCode);
-	void SendPacket(sockaddr_in from, const OpCode opCode, std::string args[], const int argCount);
+	void SendPacket(sockaddr_in, const OpCode opCode);
+	void SendPacket(sockaddr_in to, const OpCode opCode, std::string* args, const int argCount);
+	void SendPacketToAllClients(const OpCode opCode, std::string* args, const int argCount);
 };

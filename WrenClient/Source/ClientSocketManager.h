@@ -10,7 +10,6 @@ class ClientSocketManager : public SocketManager
 private:
 	int accountId{ -1 };
 	std::string token{ "" };
-    sockaddr_in local;
 
     std::vector<std::string*>* BuildCharacterVector(const std::string& characterString);
 	std::vector<WrenCommon::Skill*>* BuildSkillVector(const std::string& skillString);
@@ -21,7 +20,7 @@ public:
 	ClientSocketManager();
     
 	void SendPacket(const OpCode opcode);
-    void SendPacket(const OpCode opcode, std::string args[], const int argCount);
+    void SendPacket(const OpCode opcode, std::string* args, const int argCount);
 	bool Connected();
 	void Logout();
 };
