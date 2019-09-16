@@ -19,8 +19,8 @@ private:
 public:
 	ClientSocketManager();
     
-	void SendPacket(const OpCode opcode);
-    void SendPacket(const OpCode opcode, std::string* args, const int argCount);
+	void SendPacket(const OpCode opCode);
+	void SendPacket(const OpCode opcode, std::vector<std::string>& args);
 	bool Connected();
 	void Logout();
 };

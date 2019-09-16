@@ -82,13 +82,7 @@ bool SocketManager::TryRecieveMessage()
 	}
 }
 
-void SocketManager::SendPacket(sockaddr_in to, const OpCode opCode)
-{
-	std::string args[]{ "" }; // this is janky
-	SendPacket(to, opCode, args, 0);
-}
-
-void SocketManager::SendPacket(sockaddr_in to, const OpCode opCode, std::string* args, const int argCount, const int accountId, const std::string& token)
+void SocketManager::SendPacket(sockaddr_in to, const OpCode opCode, const std::vector<std::string>& args)
 {
 	char buffer[PACKET_SIZE];
 	memset(buffer, 0, sizeof(buffer));
@@ -101,11 +95,7 @@ void SocketManager::SendPacket(sockaddr_in to, const OpCode opCode, std::string*
 	offset += (int)sizeof(OpCode);
 
 	std::string packet{ "" };
-	if (accountId >= 0)
-		packet += std::to_string(accountId) + "|";
-	if (token != "")
-		packet += token + "|";
-	for (auto i = 0; i < argCount; i++)
+	for (auto i = 0; i < args.size(); i++)
 		packet += args[i] + "|";
 
 	strcpy_s(buffer + offset, packet.length() + 1, packet.c_str());

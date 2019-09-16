@@ -60,18 +60,12 @@ ServerSocketManager::ServerSocketManager(ServerRepository& repository, CommonRep
 	g_gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
 }
 
-void ServerSocketManager::SendPacket(sockaddr_in to, const OpCode opCode)
+void ServerSocketManager::SendPacket(sockaddr_in to, const OpCode opCode, const std::vector<std::string>& args)
 {
-	std::string args[]{ "" }; // this is janky
-	SocketManager::SendPacket(to, opCode, args, 0);
+	SocketManager::SendPacket(to, opCode, args);
 }
 
-void ServerSocketManager::SendPacket(sockaddr_in to, const OpCode opCode, std::string* args, const int argCount)
-{
-	SocketManager::SendPacket(to, opCode, args, argCount);
-}
-
-void ServerSocketManager::SendPacketToAllClients(const OpCode opcode, std::string* args, const int argCount)
+void ServerSocketManager::SendPacketToAllClients(const OpCode opcode, const std::vector<std::string>& args)
 {
 	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
 	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
@@ -79,7 +73,7 @@ void ServerSocketManager::SendPacketToAllClients(const OpCode opcode, std::strin
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
 		PlayerComponent& player = playerComponents[i];
-		SendPacket(player.fromSockAddr, opcode, args, argCount);
+		SendPacket(player.fromSockAddr, opcode, args);
 	}
 }
 
@@ -141,8 +135,8 @@ void ServerSocketManager::Login(const std::string& accountName, const std::strin
 			const PlayerComponent& playerComponent = g_playerComponentManager.CreatePlayerComponent(playerId, token, ipAndPort, from, GetTickCount64());
 			playerGameObject.playerComponentId = playerComponent.id;
             
-			std::string args[]{ std::to_string(accountId), token, ListCharacters(accountId) };
-			SendPacket(from, OpCode::LoginSuccess, args, 3);
+			std::vector<std::string> args{ std::to_string(accountId), token, ListCharacters(accountId) };
+			SendPacket(from, OpCode::LoginSuccess, args);
 		}
 
 	}
@@ -151,8 +145,8 @@ void ServerSocketManager::Login(const std::string& accountName, const std::strin
 
 	if (error != "")
 	{
-		std::string args[]{ error };
-		SendPacket(from, OpCode::LoginFailure, args, 1);
+		std::vector<std::string> args{ error };
+		SendPacket(from, OpCode::LoginFailure, args);
 	}
 }
 
@@ -166,8 +160,8 @@ void ServerSocketManager::CreateAccount(const std::string& accountName, const st
 	if (repository.AccountExists(accountName))
 	{
 		const std::string error = ACCOUNT_ALREADY_EXISTS;
-		std::string args[]{ error };
-		SendPacket(from, OpCode::CreateAccountFailure, args, 1);
+		std::vector<std::string> args{ error };
+		SendPacket(from, OpCode::CreateAccountFailure, args);
 	}
 	else
 	{
@@ -194,14 +188,14 @@ void ServerSocketManager::CreateCharacter(const int accountId, const std::string
 	if (repository.CharacterExists(characterName))
 	{
 		const std::string error = CHARACTER_ALREADY_EXISTS;
-		std::string args[]{ error };
-		SendPacket(playerComponent.fromSockAddr, OpCode::CreateCharacterFailure, args, 1);
+		std::vector<std::string> args{ error };
+		SendPacket(playerComponent.fromSockAddr, OpCode::CreateCharacterFailure, args);
 	}
 	else
 	{
 		repository.CreateCharacter(characterName, accountId);
-		std::string args[]{ ListCharacters(accountId) };
-		SendPacket(playerComponent.fromSockAddr, OpCode::CreateCharacterSuccess, args, 1);
+		std::vector<std::string> args{ ListCharacters(accountId) };
+		SendPacket(playerComponent.fromSockAddr, OpCode::CreateCharacterSuccess, args);
 	}
 }
 
@@ -285,7 +279,7 @@ void ServerSocketManager::EnterWorld(const int accountId, const std::string& cha
 
 	const auto pos = character->GetPosition();
 	const auto charId = character->GetId();
-	std::string args[]
+	std::vector<std::string> args
 	{
 		std::to_string(accountId),
 		std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z),
@@ -295,7 +289,7 @@ void ServerSocketManager::EnterWorld(const int accountId, const std::string& cha
 		std::to_string(agility), std::to_string(strength), std::to_string(wisdom), std::to_string(intelligence), std::to_string(charisma), std::to_string(luck), std::to_string(endurance),
 		std::to_string(health), std::to_string(maxHealth), std::to_string(mana), std::to_string(maxMana), std::to_string(stamina), std::to_string(maxStamina),
 	};
-	SendPacket(playerComponent.fromSockAddr, OpCode::EnterWorldSuccess, args, 22);
+	SendPacket(playerComponent.fromSockAddr, OpCode::EnterWorldSuccess, args);
 	g_gameMap.SetTileOccupied(pos, true);
 }
 
@@ -303,8 +297,8 @@ void ServerSocketManager::DeleteCharacter(const int accountId, const std::string
 {
 	const PlayerComponent& playerComponent = GetPlayerComponent(accountId);
 	repository.DeleteCharacter(characterName);
-	std::string args[]{ ListCharacters(accountId) };
-	SendPacket(playerComponent.fromSockAddr , OpCode::DeleteCharacterSuccess, args, 1);
+	std::vector<std::string> args{ ListCharacters(accountId) };
+	SendPacket(playerComponent.fromSockAddr , OpCode::DeleteCharacterSuccess, args);
 }
 
 void ServerSocketManager::UpdateClients()
@@ -358,8 +352,8 @@ void ServerSocketManager::UpdateClients()
 				const auto stamina = std::to_string(stats.stamina);
 				const auto maxStamina = std::to_string(stats.maxStamina);
 
-				std::string args[]{ id, posX, posY, posZ, movX, movY, movZ, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina };
-				SendPacket(playerToUpdate.fromSockAddr, OpCode::NpcUpdate, args, 20);
+				std::vector<std::string> args{ id, posX, posY, posZ, movX, movY, movZ, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina };
+				SendPacket(playerToUpdate.fromSockAddr, OpCode::NpcUpdate, args);
 			}
 			else if (type == GameObjectType::Player)
 			{
@@ -380,8 +374,8 @@ void ServerSocketManager::UpdateClients()
 				const auto maxStamina = std::to_string(stats.maxStamina);
 
 				const PlayerComponent& otherPlayer = g_playerComponentManager.GetPlayerComponentById(gameObject.playerComponentId);
-				std::string args[]{ id, posX, posY, posZ, movX, movY, movZ, std::to_string(otherPlayer.modelId), std::to_string(otherPlayer.textureId), *gameObject.name, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina };
-				SendPacket(playerToUpdate.fromSockAddr, OpCode::PlayerUpdate, args, 23);
+				std::vector<std::string> args{ id, posX, posY, posZ, movX, movY, movZ, std::to_string(otherPlayer.modelId), std::to_string(otherPlayer.textureId), *gameObject.name, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina };
+				SendPacket(playerToUpdate.fromSockAddr, OpCode::PlayerUpdate, args);
 			}
 		}
 	}
@@ -395,8 +389,8 @@ void ServerSocketManager::PropagateChatMessage(const std::string& senderName, co
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
 		PlayerComponent& playerToUpdate = playerComponents[i];
-		std::string args[]{ senderName, message };
-		SendPacket(playerToUpdate.fromSockAddr, OpCode::PropagateChatMessage, args, 2);
+		std::vector<std::string> args{ senderName, message };
+		SendPacket(playerToUpdate.fromSockAddr, OpCode::PropagateChatMessage, args);
 	}
 }
 
@@ -406,14 +400,14 @@ void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, Abil
 	{
 		if (!playerComponent.autoAttackOn && playerComponent.targetId == -1)
 		{
-			std::string args[]{ std::string(NO_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
-			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args, 2);
+			std::vector<std::string> args{ std::string(NO_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
+			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args);
 			return;
 		}
 		else if (!playerComponent.autoAttackOn && g_objectManager.GetGameObjectById(playerComponent.targetId).isStatic)
 		{
-			std::string args[]{ std::string(INVALID_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
-			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args, 2);
+			std::vector<std::string> args{ std::string(INVALID_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
+			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args);
 			return;
 		}
 		else
@@ -430,8 +424,8 @@ void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, Abil
 
 	}
 
-	std::string args[]{ std::to_string(ability.abilityId) };
-	SendPacket(playerComponent.fromSockAddr, OpCode::ActivateAbilitySuccess, args, 1);
+	std::vector<std::string> args{ std::to_string(ability.abilityId) };
+	SendPacket(playerComponent.fromSockAddr, OpCode::ActivateAbilitySuccess, args);
 }
 
 void ServerSocketManager::InitializeMessageHandlers()
@@ -548,11 +542,11 @@ void ServerSocketManager::InitializeMessageHandlers()
 		if (gameObject.isStatic && playerComponent.autoAttackOn)
 		{
 			playerComponent.autoAttackOn = false;
-			std::string args1[]{ std::string(INVALID_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
-			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args1, 2);
+			std::vector<std::string> args1{ std::string(INVALID_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
+			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args1);
 			const std::string autoAttackAbilityId = "1";
-			std::string args2[]{ autoAttackAbilityId };
-			SendPacket(playerComponent.fromSockAddr, OpCode::ActivateAbilitySuccess, args2, 1);
+			std::vector<std::string> args2{ autoAttackAbilityId };
+			SendPacket(playerComponent.fromSockAddr, OpCode::ActivateAbilitySuccess, args2);
 		}
 	};
 
@@ -575,8 +569,8 @@ void ServerSocketManager::InitializeMessageHandlers()
 		ValidateToken(accountId, token);
 
 		PlayerComponent& player = GetPlayerComponent(accountId);
-		std::string outgoingArgs[]{ pingId };
-		SendPacket(player.fromSockAddr, OpCode::Pong, outgoingArgs, 1);
+		std::vector<std::string> outgoingArgs{ pingId };
+		SendPacket(player.fromSockAddr, OpCode::Pong, outgoingArgs);
 	};
 
 	messageHandlers[OpCode::PlayerRightMouseDown] = [this](const std::vector<std::string>& args)

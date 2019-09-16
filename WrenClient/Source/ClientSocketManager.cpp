@@ -32,13 +32,16 @@ ClientSocketManager::ClientSocketManager()
 
 void ClientSocketManager::SendPacket(const OpCode opCode)
 {
-	std::string args[]{ "" }; // this is janky
-	SendPacket(opCode, args, 0);
+	std::vector<std::string> args;
+	SendPacket(opCode, args);
 }
 
-void ClientSocketManager::SendPacket(const OpCode opCode, std::string* args, const int argCount)
+void ClientSocketManager::SendPacket(const OpCode opCode, std::vector<std::string>& args)
 {
-	SocketManager::SendPacket(from, opCode, args, argCount, accountId, token);
+	if (Connected())
+		args.insert(args.begin(), { std::to_string(accountId), token });
+
+	SocketManager::SendPacket(from, opCode, args);
 }
 
 bool ClientSocketManager::Connected()

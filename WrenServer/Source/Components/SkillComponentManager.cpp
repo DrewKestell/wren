@@ -89,8 +89,8 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 						{
 							weaponSkill->value++;
 
-							std::string args[]{ std::to_string(weaponSkillId), std::to_string(weaponSkill->value) };
-							g_socketManager.SendPacket(attackerPlayerComp.fromSockAddr, OpCode::SkillIncrease, args, 2);
+							std::vector<std::string> args{ std::to_string(weaponSkillId), std::to_string(weaponSkill->value) };
+							g_socketManager.SendPacket(attackerPlayerComp.fromSockAddr, OpCode::SkillIncrease, args);
 						}
 					}
 				}
@@ -115,8 +115,8 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 					{
 						defenseSkill->value++;
 
-						std::string args[]{ std::to_string(defenseSkillId), std::to_string(defenseSkill->value) };
-						g_socketManager.SendPacket(targetPlayerComp.fromSockAddr, OpCode::SkillIncrease, args, 2);
+						std::vector<std::string> args{ std::to_string(defenseSkillId), std::to_string(defenseSkill->value) };
+						g_socketManager.SendPacket(targetPlayerComp.fromSockAddr, OpCode::SkillIncrease, args);
 					}
 				}
 			}

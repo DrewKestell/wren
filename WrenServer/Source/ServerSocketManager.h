@@ -33,7 +33,6 @@ public:
 
 	void HandleTimeout();
 	void UpdateClients();
-	void SendPacket(sockaddr_in, const OpCode opCode);
-	void SendPacket(sockaddr_in to, const OpCode opCode, std::string* args, const int argCount);
-	void SendPacketToAllClients(const OpCode opCode, std::string* args, const int argCount);
+	void SendPacket(sockaddr_in to, const OpCode opCode, const std::vector<std::string>& args = std::vector<std::string>{});
+	void SendPacketToAllClients(const OpCode opCode, const std::vector<std::string>& args = std::vector<std::string>{});
 };
