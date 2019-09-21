@@ -32,5 +32,5 @@ public:
 		IDWriteTextFormat* textFormat);
 	virtual void Draw();
 	virtual const bool HandleEvent(const Event* const event);
-	void Initialize(std::vector<WrenCommon::Skill*>* skills);
+	void Initialize(const std::vector<std::unique_ptr<WrenCommon::Skill>>& skills);
 };

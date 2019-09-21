@@ -93,8 +93,8 @@ private:
 	std::unique_ptr<UITargetHUD> targetHUD;
 	std::unique_ptr<UICharacterHUD> characterHUD;
 	std::unique_ptr<UITextWindow> textWindow;
-	std::vector<WrenCommon::Skill*>* skills{ nullptr };
-	std::vector<Ability*>* abilities{ nullptr };
+	std::vector<std::unique_ptr<WrenCommon::Skill>> skills;
+	std::vector<std::unique_ptr<Ability>> abilities;
 	unsigned int* textWindowMessageIndex = new unsigned int{ 0 };
 	std::string* textWindowMessages[MESSAGE_BUFFER_SIZE];
 	std::vector<std::unique_ptr<Npc>> npcs;

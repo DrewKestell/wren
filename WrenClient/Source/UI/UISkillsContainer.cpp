@@ -55,16 +55,16 @@ const bool UISkillsContainer::HandleEvent(const Event* const event)
 	return false;
 }
 
-void UISkillsContainer::Initialize(std::vector<WrenCommon::Skill*>* skills)
+void UISkillsContainer::Initialize(const std::vector<std::unique_ptr<WrenCommon::Skill>>& skills)
 {
 	delete[] skillListings;
 
-	skillListings = new std::unique_ptr<UISkillListing>[skills->size()];
-	for (auto i = 0; i < skills->size(); i++)
+	skillListings = new std::unique_ptr<UISkillListing>[skills.size()];
+	for (auto i = 0; i < skills.size(); i++)
 	{
 		const auto posX = 2.0f;
 		const auto posY = (14.0f * i) + 22.0f;
-		skillListings[i] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT2{ posX, posY }, InGame, 3, *skills->at(i), brush, d2dDeviceContext, writeFactory, textFormat);
+		skillListings[i] = std::make_unique<UISkillListing>(uiComponents, XMFLOAT2{ posX, posY }, InGame, 3, skills.at(i).get(), brush, d2dDeviceContext, writeFactory, textFormat);
 		this->AddChildComponent(*skillListings[i].get());
 	}
 }

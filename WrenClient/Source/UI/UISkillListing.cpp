@@ -8,23 +8,23 @@ UISkillListing::UISkillListing(
 	const XMFLOAT2 position,
 	const Layer uiLayer,
 	const unsigned int zIndex,
-	WrenCommon::Skill& skill,
+	WrenCommon::Skill* skill,
 	ID2D1SolidColorBrush* textBrush,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* textFormat)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
-	  value{ skill.value },
+	  value{ skill->value },
 	  textBrush{ textBrush },
 	  writeFactory{ writeFactory },
 	  textFormat{ textFormat },
 	  d2dDeviceContext{ d2dDeviceContext }
 {
 	std::wostringstream nameOutText;
-	nameOutText << skill.name.c_str();
+	nameOutText << skill->name.c_str();
 	ThrowIfFailed(writeFactory->CreateTextLayout(nameOutText.str().c_str(), (UINT32)nameOutText.str().size(), textFormat, 140.0f, 20.0f, nameTextLayout.ReleaseAndGetAddressOf()));
 
-	SetValue(skill.value);
+	SetValue(skill->value);
 }
 
 void UISkillListing::Draw()

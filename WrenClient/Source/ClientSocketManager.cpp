@@ -67,52 +67,55 @@ std::vector<std::unique_ptr<std::string>> ClientSocketManager::BuildCharacterVec
     return characterList;
 }
 
-std::vector<WrenCommon::Skill*>* ClientSocketManager::BuildSkillVector(const std::string& skillString)
+std::vector<std::unique_ptr<WrenCommon::Skill>> ClientSocketManager::BuildSkillVector(const std::string& skillString)
 {
-	std::vector<WrenCommon::Skill*>* skillList = new std::vector<WrenCommon::Skill*>;
+	std::vector<std::unique_ptr<WrenCommon::Skill>> skillList;
 	char param = 0;
 	std::string skillId = "";
 	std::string name = "";
 	std::string value = "";
+
 	for (auto i = 0; i < skillString.length(); i++)
 	{
-		if (skillString[i] == ';')
+		if (skillString.at(i) == ';')
 		{
-			skillList->push_back(new WrenCommon::Skill(std::stoi(skillId), name, std::stoi(value)));
+			skillList.push_back(std::make_unique<WrenCommon::Skill>(std::stoi(skillId), name, std::stoi(value)));
 			param = 0;
 			skillId = "";
 			name = "";
 			value = "";
 		}
-		else if (skillString[i] == '%')
+		else if (skillString.at(i) == '%')
 				param++;
 		else
 		{
 			if (param == 0)
-				skillId += skillString[i];
+				skillId += skillString.at(i);
 			else if (param == 1)
-				name += skillString[i];
+				name += skillString.at(i);
 			else
-				value += skillString[i];
+				value += skillString.at(i);
 		}
 	}
+
 	return skillList;
 }
 
-std::vector<Ability*>* ClientSocketManager::BuildAbilityVector(const std::string& abilityString)
+std::vector<std::unique_ptr<Ability>> ClientSocketManager::BuildAbilityVector(const std::string& abilityString)
 {
-	std::vector<Ability*>* abilityList = new std::vector<Ability*>;
+	std::vector<std::unique_ptr<Ability>> abilityList;
 	char param = 0;
 	std::string abilityId = "";
 	std::string name = "";
 	std::string spriteId = "";
 	std::string toggled = "";
 	std::string targeted = "";
+
 	for (auto i = 0; i < abilityString.length(); i++)
 	{
-		if (abilityString[i] == ';')
+		if (abilityString.at(i) == ';')
 		{
-			abilityList->push_back(new Ability(std::stoi(abilityId), name, std::stoi(spriteId), toggled == "1", targeted == "1"));
+			abilityList.push_back(std::make_unique<Ability>(std::stoi(abilityId), name, std::stoi(spriteId), toggled == "1", targeted == "1"));
 			param = 0;
 			abilityId = "";
 			name = "";
@@ -120,22 +123,23 @@ std::vector<Ability*>* ClientSocketManager::BuildAbilityVector(const std::string
 			toggled = "";
 			targeted = "";
 		}
-		else if (abilityString[i] == '%')
+		else if (abilityString.at(i) == '%')
 			param++;
 		else
 		{
 			if (param == 0)
-				abilityId += abilityString[i];
+				abilityId += abilityString.at(i);
 			else if (param == 1)
-				name += abilityString[i];
+				name += abilityString.at(i);
 			else if (param == 2)
-				spriteId += abilityString[i];
+				spriteId += abilityString.at(i);
 			else if (param == 3)
-				toggled += abilityString[i];
+				toggled += abilityString.at(i);
 			else
-				targeted += abilityString[i];
+				targeted += abilityString.at(i);
 		}
 	}
+
 	return abilityList;
 }
 
@@ -205,35 +209,35 @@ void ClientSocketManager::InitializeMessageHandlers()
 	messageHandlers[OpCode::EnterWorldSuccess] = [this](const std::vector<std::string>& args)
 	{
 		auto j = 0;
-		const auto accountId = args[j++];
-		const auto positionX = args[j++];
-		const auto positionY = args[j++];
-		const auto positionZ = args[j++];
-		const auto modelId = args[j++];
-		const auto textureId = args[j++];
-		const auto skillString = args[j++];
-		const auto abilityString = args[j++];
-		const auto name = args[j++];
-		const auto agility = args[j++];
-		const auto strength = args[j++];
-		const auto wisdom = args[j++];
-		const auto intelligence = args[j++];
-		const auto charisma = args[j++];
-		const auto luck = args[j++];
-		const auto endurance = args[j++];
-		const auto health = args[j++];
-		const auto maxHealth = args[j++];
-		const auto mana = args[j++];
-		const auto maxMana = args[j++];
-		const auto stamina = args[j++];
-		const auto maxStamina = args[j++];
+		const auto accountId = args.at(j++);
+		const auto positionX = args.at(j++);
+		const auto positionY = args.at(j++);
+		const auto positionZ = args.at(j++);
+		const auto modelId = args.at(j++);
+		const auto textureId = args.at(j++);
+		auto skillVector = BuildSkillVector(args.at(j++));
+		auto abilityVector = BuildAbilityVector(args.at(j++));
+		const auto name = args.at(j++);
+		const auto agility = args.at(j++);
+		const auto strength = args.at(j++);
+		const auto wisdom = args.at(j++);
+		const auto intelligence = args.at(j++);
+		const auto charisma = args.at(j++);
+		const auto luck = args.at(j++);
+		const auto endurance = args.at(j++);
+		const auto health = args.at(j++);
+		const auto maxHealth = args.at(j++);
+		const auto mana = args.at(j++);
+		const auto maxMana = args.at(j++);
+		const auto stamina = args.at(j++);
+		const auto maxStamina = args.at(j++);
 
 		const auto enterWorldSuccessEvent = new EnterWorldSuccessEvent
 		{
 			std::stoi(accountId),
 			XMFLOAT3{ std::stof(positionX), std::stof(positionY), std::stof(positionZ) },
 			std::stoi(modelId), std::stoi(textureId),
-			BuildSkillVector(skillString), BuildAbilityVector(abilityString),
+			skillVector, abilityVector,
 			name,
 			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)

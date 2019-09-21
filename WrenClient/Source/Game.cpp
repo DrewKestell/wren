@@ -320,10 +320,10 @@ void Game::CreateWindowSizeDependentResources()
 	// init textWindow
 	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, textWindowMessages, textWindowMessageIndex, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
 
-	if (skills)
+	if (skills.size() > 0)
 		skillsContainer->Initialize(skills);
 
-	if (abilities)
+	if (abilities.size() > 0)
 		InitializeAbilitiesContainer();
 
 	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
@@ -934,9 +934,9 @@ Game::~Game()
 void Game::InitializeAbilitiesContainer()
 {
 	abilitiesContainer->ClearAbilities();
-	for (auto i = 0; i < abilities->size(); i++)
+	for (auto i = 0; i < abilities.size(); i++)
 	{
-		auto ability = abilities->at(i);
+		Ability* ability = abilities.at(i).get();
 		abilitiesContainer->AddAbility(ability, textures[ability->spriteId].Get());
 	}
 }
@@ -1084,14 +1084,14 @@ void Game::InitializeEventHandlers()
 		auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
 		auto writeFactory = deviceResources->GetWriteFactory();
 
-		if (skills)
-			skills->clear();
-		skills = derivedEvent->skills;
+		if (skills.size() > 0)
+			skills.clear();
+		skills = std::move(derivedEvent->skills);
 		skillsContainer->Initialize(skills);
 
-		if (abilities)
-			abilities->clear();
-		abilities = derivedEvent->abilities;
+		if (abilities.size() > 0)
+			abilities.clear();
+		abilities = std::move(derivedEvent->abilities);
 		InitializeAbilitiesContainer();
 
 		// init characterHUD
@@ -1336,8 +1336,10 @@ void Game::InitializeEventHandlers()
 		const auto derivedEvent = (SkillIncreaseEvent*)event;
 
 		// TODO: refactors skills on ClientSide to be somewhere easier to access, use array, etc.
-		for (auto skill : *skills)
+		for (auto i = 0; i < skills.size(); i++)
 		{
+			WrenCommon::Skill* skill = skills.at(i).get();
+
 			if (skill->skillId == derivedEvent->skillId)
 			{
 				skill->value = derivedEvent->newValue;
