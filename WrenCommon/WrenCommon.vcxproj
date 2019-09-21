@@ -102,6 +102,9 @@
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\Utility.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Wren.ruleset" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{9B91CEC2-3797-40CF-8ABA-0480F445E0D4}</ProjectGuid>
@@ -158,18 +161,21 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(ProjectDir)Source;$(WindowsSDK_IncludePath);$(ProjectDir)Include;</IncludePath>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>Wren.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>WrenCommon.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>WrenCommon.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(ProjectDir)Source;$(WindowsSDK_IncludePath);$(ProjectDir)Include;</IncludePath>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>WrenCommon.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

@@ -124,4 +124,7 @@
     <ClInclude Include="Source\EventHandling\Events\PropagateChatMessageEvent.h" />
     <ClInclude Include="Source\SocketManager.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Wren.ruleset" />
+  </ItemGroup>
 </Project>

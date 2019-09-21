@@ -39,18 +39,17 @@ ServerSocketManager::ServerSocketManager(ServerRepository& repository, CommonRep
 	// initialize StaticObjects
 	auto staticObjects = commonRepository.ListStaticObjects();
 
-	for (auto staticObject : staticObjects)
+	for (auto i = 0; i < staticObjects.size(); i++)
 	{
+		const StaticObject* staticObject = staticObjects.at(i).get();
 		const auto pos = staticObject->GetPosition();
-		GameObject& gameObject = g_objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true);
+		const GameObject& gameObject = g_objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true);
 		g_gameMap.SetTileOccupied(gameObject.localPosition, true);
-
-		delete staticObject;
 	}
 
 	// initialize test dummy
 	// we need to move ListNpcs to CommonRepository
-	auto dummyName = new std::string("Dummy");
+	const std::string dummyName{ "Dummy" };
 	GameObject& dummyGameObject = g_objectManager.CreateGameObject(XMFLOAT3{ 30.0f, 0.0f, 30.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 30.0f, GameObjectType::Npc, dummyName, 101, false, 2, 4);
 	const auto dummyId = dummyGameObject.GetId();
 	auto dummyAIComponent = g_aiComponentManager.CreateAIComponent(dummyId);
@@ -129,7 +128,7 @@ void ServerSocketManager::Login(const std::string& accountName, const std::strin
 			const std::string token = std::string(guid_cstr);
 
 			const auto accountId = account->GetId();
-			auto name = new std::string("");
+			const std::string name{ "" };
 			GameObject& playerGameObject = g_objectManager.CreateGameObject(VEC_ZERO, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, name, accountId);
 			const auto playerId = playerGameObject.GetId();
 			const PlayerComponent& playerComponent = g_playerComponentManager.CreatePlayerComponent(playerId, token, ipAndPort, from, GetTickCount64());
@@ -241,7 +240,7 @@ std::string ServerSocketManager::ListAbilities(const int characterId)
 void ServerSocketManager::EnterWorld(const int accountId, const std::string& characterName)
 {
 	GameObject& gameObject = g_objectManager.GetGameObjectById(accountId);
-	gameObject.name = new std::string(characterName);
+	gameObject.name = characterName;
 
 	PlayerComponent& playerComponent = GetPlayerComponent(accountId);
 	auto character = repository.GetCharacter(characterName);
@@ -374,7 +373,7 @@ void ServerSocketManager::UpdateClients()
 				const auto maxStamina = std::to_string(stats.maxStamina);
 
 				const PlayerComponent& otherPlayer = g_playerComponentManager.GetPlayerComponentById(gameObject.playerComponentId);
-				std::vector<std::string> args{ id, posX, posY, posZ, movX, movY, movZ, std::to_string(otherPlayer.modelId), std::to_string(otherPlayer.textureId), *gameObject.name, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina };
+				std::vector<std::string> args{ id, posX, posY, posZ, movX, movY, movZ, std::to_string(otherPlayer.modelId), std::to_string(otherPlayer.textureId), gameObject.name, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina };
 				SendPacket(playerToUpdate.fromSockAddr, OpCode::PlayerUpdate, args);
 			}
 		}

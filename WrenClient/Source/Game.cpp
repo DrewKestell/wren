@@ -380,8 +380,9 @@ void Game::InitializeStaticObjects()
 {
 	auto staticObjects = commonRepository.ListStaticObjects();
 
-	for (auto staticObject : staticObjects)
+	for (auto i = 0; i < staticObjects.size(); i++)
 	{
+		const StaticObject* staticObject = staticObjects.at(i).get();
 		const auto pos = staticObject->GetPosition();
 		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true);
 		const auto gameObjectId = gameObject.GetId();
@@ -390,8 +391,6 @@ void Game::InitializeStaticObjects()
 		StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObjectId, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
 		gameObject.statsComponentId = statsComponent.GetId();
 		gameMap.SetTileOccupied(gameObject.localPosition, true);
-
-		delete staticObject;
 	}	
 }
 
@@ -1096,7 +1095,7 @@ void Game::InitializeEventHandlers()
 		InitializeAbilitiesContainer();
 
 		// init characterHUD
-		characterHUD = std::make_unique<UICharacterHUD>(uiComponents, XMFLOAT2{ 10.0f, 12.0f }, InGame, 0, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, statsComponent, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get(), derivedEvent->name->c_str());
+		characterHUD = std::make_unique<UICharacterHUD>(uiComponents, XMFLOAT2{ 10.0f, 12.0f }, InGame, 0, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, statsComponent, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get(), derivedEvent->name.c_str());
 
 		std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 
@@ -1127,11 +1126,11 @@ void Game::InitializeEventHandlers()
 		const auto stamina = derivedEvent->stamina;
 		const auto maxStamina = derivedEvent->maxStamina;
 
-		auto npc = *find_if(npcs->begin(), npcs->end(), [&gameObjectId](Npc* npc) { return npc->GetId() == gameObjectId; });
-		const auto modelId = npc->GetModelId();
-		const auto textureId = npc->GetTextureId();
-		const auto name = npc->GetName();
-		const auto speed = npc->GetSpeed();
+		auto npc = find_if(npcs.begin(), npcs.end(), [&gameObjectId](std::unique_ptr<Npc>& npc) { return npc->GetId() == gameObjectId; });
+		const auto modelId = npc->get()->GetModelId();
+		const auto textureId = npc->get()->GetTextureId();
+		const auto name = npc->get()->GetName();
+		const auto speed = npc->get()->GetSpeed();
 
 		if (!objectManager.GameObjectExists(gameObjectId))
 		{
@@ -1312,7 +1311,7 @@ void Game::InitializeEventHandlers()
 
 		auto statsComponent = statsComponentManager.GetStatsComponentById(player->statsComponentId);
 
-		std::vector<std::string> args{ *player->name, *derivedEvent->message };
+		std::vector<std::string> args{ player->name, derivedEvent->message };
 		g_socketManager.SendPacket(OpCode::SendChatMessage, args);
 	};
 

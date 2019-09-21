@@ -26,7 +26,7 @@ void GameObject::Update()
 	XMStoreFloat3(&localPosition, movementVec + positionVec);
 }
 
-void GameObject::Initialize(const int id, GameObjectType type, std::string* name, XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, const bool isStatic, const int modelId, const int textureId)
+void GameObject::Initialize(const int id, GameObjectType type, const std::string& name, XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, const bool isStatic, const int modelId, const int textureId)
 {
 	this->id = id;
 	this->type = type;

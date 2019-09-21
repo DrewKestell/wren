@@ -97,7 +97,7 @@ private:
 	std::vector<Ability*>* abilities{ nullptr };
 	unsigned int* textWindowMessageIndex = new unsigned int{ 0 };
 	std::string* textWindowMessages[MESSAGE_BUFFER_SIZE];
-	std::vector<Npc*>* npcs{ nullptr };
+	std::vector<std::unique_ptr<Npc>> npcs;
 	std::map<EventType, std::function<void(const Event* const event)>> eventHandlers;
 
 	void Render(const float updateTimer);

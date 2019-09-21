@@ -276,7 +276,7 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 							wcstombs_s(&i, str, 60, inputValue, 60);
 
 							// convert inputValue to const char * or std::string, then send the message
-							g_eventHandler.QueueEvent(new SendChatMessage(new std::string(str)));
+							g_eventHandler.QueueEvent(new SendChatMessage(std::string(str)));
 
 							while (inputIndex > 0)
 							{

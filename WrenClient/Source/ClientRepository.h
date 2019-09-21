@@ -6,5 +6,5 @@
 class ClientRepository : public Repository
 {
 public:
-	std::vector<Npc*>* ListNpcs();
+	std::vector<std::unique_ptr<Npc>> ListNpcs();
 };

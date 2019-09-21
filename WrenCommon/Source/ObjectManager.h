@@ -12,7 +12,7 @@ class ObjectManager
 	int gameObjectIndex{ 0 };
 public:
 	void Update();
-	GameObject& CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, GameObjectType type, std::string* name, const int id = 0, const bool isStatic = false, const int modelId = -1, const int textureId = -1);
+	GameObject& CreateGameObject(const XMFLOAT3 localPosition, const XMFLOAT3 scale, const float speed, GameObjectType type, const std::string& name, const int id = 0, const bool isStatic = false, const int modelId = -1, const int textureId = -1);
 	void DeleteGameObject(EventHandler& eventHandler, const int gameObjectId);
 	GameObject& GetGameObjectById(const int gameObjectId);
 	const bool GameObjectExists(const int gameObjectId);

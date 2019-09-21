@@ -5,11 +5,10 @@
 class SendChatMessage : public Event
 {
 public:
-	SendChatMessage(const std::string* message)
+	SendChatMessage(const std::string& message)
 		: Event(EventType::SendChatMessage),
 		  message{ message }
 	{
 	}
-	~SendChatMessage() { delete message; }
-	const std::string* message;
+	const std::string message;
 };

@@ -225,7 +225,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 			XMFLOAT3{ std::stof(positionX), std::stof(positionY), std::stof(positionZ) },
 			std::stoi(modelId), std::stoi(textureId),
 			BuildSkillVector(skillString), BuildAbilityVector(abilityString),
-			new std::string(name),
+			name,
 			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
 		};
@@ -298,7 +298,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 			std::stol(accountId),
 			XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ)}, XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ) },
 			std::stoi(modelId), std::stoi(textureId),
-			new std::string(name),
+			name,
 			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
 		};

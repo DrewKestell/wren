@@ -20,7 +20,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	if (!XMVerifyCPUSupport())
 		return 1;
 
-	HRESULT hr = CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
+	const HRESULT hr = CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);
 	if (FAILED(hr))
 		return 1;
 

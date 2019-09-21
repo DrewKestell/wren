@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Npc.h"
 
-Npc::Npc(const int id, std::string* name, const int modelId, const int textureId, const float speed)
+Npc::Npc(const int id, const char* name, const int modelId, const int textureId, const float speed)
 	: id{ id },
 	  name{ name },
 	  modelId{ modelId },
@@ -11,7 +11,7 @@ Npc::Npc(const int id, std::string* name, const int modelId, const int textureId
 }
 
 const int Npc::GetId() const { return id; }
-std::string* Npc::GetName() const { return name; }
+const std::string Npc::GetName() const { return name; }
 const int Npc::GetModelId() const { return modelId; }
 const int Npc::GetTextureId() const { return textureId; }
 const float Npc::GetSpeed() const { return speed; }

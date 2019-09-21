@@ -97,7 +97,7 @@ const bool UITargetHUD::HandleEvent(const Event* const event)
 			const auto derivedEvent = (SetTargetEvent*)event;
 
 			std::wostringstream nameText;
-			nameText << derivedEvent->targetName->c_str();
+			nameText << derivedEvent->targetName.c_str();
 			ThrowIfFailed(writeFactory->CreateTextLayout(
 				nameText.str().c_str(),
 				(UINT32)nameText.str().size(),

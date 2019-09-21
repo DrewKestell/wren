@@ -6,5 +6,5 @@
 class CommonRepository : public Repository
 {
 public:
-	std::vector<StaticObject*> ListStaticObjects();
+	std::vector<std::unique_ptr<StaticObject>> ListStaticObjects();
 };

@@ -118,6 +118,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>WrenServer.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -125,10 +126,11 @@
     <IncludePath>$(ProjectDir)Include;$(SolutionDir)WrenCommon\Source;$(SolutionDir)WrenCommon\Include;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir)ThirdParty;$(SourcePath)</SourcePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
-    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\WrenCommon\WrenCommon.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>WrenServer.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -136,6 +138,7 @@
     <IncludePath>$(ProjectDir)Include;$(SolutionDir)WrenCommon\Source;$(SolutionDir)WrenCommon\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)Lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(ProjectDir)ThirdParty;$(SourcePath)</SourcePath>
+    <CodeAnalysisRuleSet>WrenServer.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -11,7 +11,7 @@ public:
 		const XMFLOAT3 mov,
 		const int modelId,
 		const int textureId,
-		std::string* name,
+		const std::string& name,
 		const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance,
 		const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina)
 		: Event(EventType::PlayerUpdate),
@@ -28,7 +28,7 @@ public:
 	const XMFLOAT3 mov;
 	const int modelId;
 	const int textureId;
-	std::string* name;
+	const std::string name;
 	const int agility;
 	const int strength;
 	const int wisdom;
