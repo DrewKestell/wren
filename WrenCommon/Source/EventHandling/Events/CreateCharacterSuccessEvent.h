@@ -5,16 +5,10 @@
 class CreateCharacterSuccessEvent : public Event
 {
 public:
-	CreateCharacterSuccessEvent(const std::vector<std::string*>* characterList)
+	CreateCharacterSuccessEvent(std::vector<std::unique_ptr<std::string>>& characterList)
 		: Event(EventType::CreateCharacterSuccess),
-		  characterList{ characterList }
+		  characterList{ std::move(characterList) }
 	{
 	}
-	~CreateCharacterSuccessEvent()
-	{
-		for (auto i = 0; i < characterList->size(); i++)
-			delete characterList->at(i);
-		delete characterList;
-	}
-	const std::vector<std::string*>* characterList;
+	const std::vector<std::unique_ptr<std::string>> characterList;
 };

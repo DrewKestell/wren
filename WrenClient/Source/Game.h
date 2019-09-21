@@ -128,7 +128,7 @@ private:
 	void InitializeRasterStates();
 	void InitializeSprites();
 	void InitializeAbilitiesContainer();
-	void RecreateCharacterListings(const std::vector<std::string*>* characterNames);
+	void RecreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();
 
 	// TextFormats

@@ -9,6 +9,7 @@
 #include "EventHandling/Events/LoginFailedEvent.h"
 #include "EventHandling/Events/CreateCharacterFailedEvent.h"
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
+#include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
 #include "EventHandling/Events/NpcUpdateEvent.h"
 #include "EventHandling/Events/PlayerUpdateEvent.h"
@@ -44,24 +45,24 @@ void ClientSocketManager::SendPacket(const OpCode opCode, std::vector<std::strin
 	SocketManager::SendPacket(from, opCode, args);
 }
 
-bool ClientSocketManager::Connected()
+const bool ClientSocketManager::Connected() const
 {
 	return accountId != -1 && token != "";
 }
 
-std::vector<std::string*>* ClientSocketManager::BuildCharacterVector(const std::string& characterString)
+std::vector<std::unique_ptr<std::string>> ClientSocketManager::BuildCharacterVector(const std::string& characterString)
 {
-    std::vector<std::string*>* characterList = new std::vector<std::string*>;
-	auto arg = new std::string;
+    std::vector<std::unique_ptr<std::string>> characterList;
+	std::string arg{ "" };
     for (auto i = 0; i < characterString.length(); i++)
     {
-        if (characterString[i] == ';')
+        if (characterString.at(i) == ';')
         {
-            characterList->push_back(arg);
-			arg = new std::string;
+            characterList.push_back(std::make_unique<std::string>(arg));
+			arg = "";
         }
         else
-            *arg += characterString[i];
+            arg += characterString.at(i);
     }
     return characterList;
 }
@@ -167,10 +168,10 @@ void ClientSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::LoginSuccess] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = args[0];
-		const auto token = args[1];
-		const auto characterString = args[2];
-		const auto characterList = BuildCharacterVector(characterString);
+		const auto accountId = args.at(0);
+		const auto token = args.at(1);
+		const auto characterString = args.at(2);
+		auto characterList = BuildCharacterVector(characterString);
 
 		this->accountId = std::stoi(accountId);
 		this->token = std::string(token);
@@ -188,9 +189,17 @@ void ClientSocketManager::InitializeMessageHandlers()
 	messageHandlers[OpCode::CreateCharacterSuccess] = [this](const std::vector<std::string>& args)
 	{
 		const auto characterString = args[0];
-		const auto characterList = BuildCharacterVector(characterString);
+		auto characterList = BuildCharacterVector(characterString);
 
 		g_eventHandler.QueueEvent(new CreateCharacterSuccessEvent{ characterList });
+	};
+
+	messageHandlers[OpCode::DeleteCharacterSuccess] = [this](const std::vector<std::string>& args)
+	{
+		const auto characterString = args[0];
+		auto characterList = BuildCharacterVector(characterString);
+
+		g_eventHandler.QueueEvent(new DeleteCharacterSuccessEvent{ characterList });
 	};
 
 	messageHandlers[OpCode::EnterWorldSuccess] = [this](const std::vector<std::string>& args)

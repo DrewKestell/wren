@@ -896,7 +896,7 @@ void Game::InitializeSprites()
 	auto d3dDevice = deviceResources->GetD3DDevice();
 }
 
-void Game::RecreateCharacterListings(const std::vector<std::string*>* characterNames)
+void Game::RecreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames)
 {
 	auto writeFactory = deviceResources->GetWriteFactory();
 	auto d2dFactory = deviceResources->GetD2DFactory();
@@ -904,10 +904,10 @@ void Game::RecreateCharacterListings(const std::vector<std::string*>* characterN
 
 	characterList.clear();
 
-	for (auto i = 0; i < characterNames->size(); i++)
+	for (auto i = 0; i < characterNames.size(); i++)
 	{
 		const float y = 100.0f + (i * 40.0f);
-		characterList.push_back(std::make_unique<UICharacterListing>(uiComponents, XMFLOAT2{ 25.0f, y }, CharacterSelect, 1, 260.0f, 30.0f, (*characterNames->at(i)).c_str(), whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatAccountCredsInputValue.Get(), d2dFactory));
+		characterList.push_back(std::make_unique<UICharacterListing>(uiComponents, XMFLOAT2{ 25.0f, y }, CharacterSelect, 1, 260.0f, 30.0f, characterNames.at(i)->c_str(), whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatAccountCredsInputValue.Get(), d2dFactory));
 	}
 }
 

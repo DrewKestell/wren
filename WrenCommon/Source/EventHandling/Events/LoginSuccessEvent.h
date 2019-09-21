@@ -5,16 +5,10 @@
 class LoginSuccessEvent : public Event
 {
 public:
-	LoginSuccessEvent(const std::vector<std::string*>* characterList)
+	LoginSuccessEvent(std::vector<std::unique_ptr<std::string>>& characterList)
 		: Event(EventType::LoginSuccess),
-		  characterList{ characterList }
+		  characterList{ std::move(characterList) }
 	{
 	}
-	~LoginSuccessEvent()
-	{
-		for (auto i = 0; i < characterList->size(); i++)
-			delete characterList->at(i);
-		delete characterList;
-	}
-	const std::vector<std::string*>* characterList;
+	const std::vector<std::unique_ptr<std::string>> characterList;
 };

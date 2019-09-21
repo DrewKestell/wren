@@ -5,16 +5,10 @@
 class DeleteCharacterSuccessEvent : public Event
 {
 public:
-	DeleteCharacterSuccessEvent(const std::vector<std::string*>* characterList)
+	DeleteCharacterSuccessEvent(std::vector<std::unique_ptr<std::string>>& characterList)
 		: Event(EventType::DeleteCharacterSuccess),
-		  characterList{ characterList }
+		  characterList{ std::move(characterList) }
 	{
 	}
-	~DeleteCharacterSuccessEvent()
-	{
-		for (auto i = 0; i < characterList->size(); i++)
-			delete characterList->at(i);
-		delete characterList;
-	}
-	const std::vector<std::string*>* characterList;
+	const std::vector<std::unique_ptr<std::string>> characterList;
 };

@@ -11,7 +11,7 @@ private:
 	int accountId{ -1 };
 	std::string token{ "" };
 
-    std::vector<std::string*>* BuildCharacterVector(const std::string& characterString);
+	std::vector<std::unique_ptr<std::string>> BuildCharacterVector(const std::string& characterString);
 	std::vector<WrenCommon::Skill*>* BuildSkillVector(const std::string& skillString);
 	std::vector<Ability*>* BuildAbilityVector(const std::string& abilityString);
 	virtual void InitializeMessageHandlers();
@@ -21,6 +21,6 @@ public:
     
 	void SendPacket(const OpCode opCode);
 	void SendPacket(const OpCode opcode, std::vector<std::string>& args);
-	bool Connected();
+	const bool Connected()const;
 	void Logout();
 };
