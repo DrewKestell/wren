@@ -5,7 +5,7 @@
 #include "SkillComponent.h"
 #include "ObjectManager.h"
 
-static constexpr unsigned int MAX_SKILLCOMPONENTS_SIZE = 100000;
+constexpr unsigned int MAX_SKILLCOMPONENTS_SIZE = 100000;
 
 class SkillComponentManager : public Observer
 {

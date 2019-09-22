@@ -52,9 +52,9 @@ ServerSocketManager::ServerSocketManager(ServerRepository& repository, CommonRep
 	const std::string dummyName{ "Dummy" };
 	GameObject& dummyGameObject = g_objectManager.CreateGameObject(XMFLOAT3{ 30.0f, 0.0f, 30.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 30.0f, GameObjectType::Npc, dummyName, 101, false, 2, 4);
 	const auto dummyId = dummyGameObject.GetId();
-	auto dummyAIComponent = g_aiComponentManager.CreateAIComponent(dummyId);
+	const auto dummyAIComponent = g_aiComponentManager.CreateAIComponent(dummyId);
 	dummyGameObject.aiComponentId = dummyAIComponent.id;
-	StatsComponent& dummyStatsComponent = g_statsComponentManager.CreateStatsComponent(dummyId, 10, 10, 10, 10, 10, 10, 10, 100, 100, 100, 100, 100, 100);
+	const auto dummyStatsComponent = g_statsComponentManager.CreateStatsComponent(dummyId, 10, 10, 10, 10, 10, 10, 10, 100, 100, 100, 100, 100, 100);
 	dummyGameObject.statsComponentId = dummyStatsComponent.GetId();
 	g_gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
 }
@@ -66,12 +66,12 @@ void ServerSocketManager::SendPacket(sockaddr_in to, const OpCode opCode, const 
 
 void ServerSocketManager::SendPacketToAllClients(const OpCode opcode, const std::vector<std::string>& args)
 {
-	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
-	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
+	const auto playerComponents = g_playerComponentManager.GetPlayerComponents();
+	const auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
 
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
-		PlayerComponent& player = playerComponents[i];
+		const auto player = playerComponents[i];
 		SendPacket(player.fromSockAddr, opcode, args);
 	}
 }
@@ -79,7 +79,7 @@ void ServerSocketManager::SendPacketToAllClients(const OpCode opcode, const std:
 const bool ServerSocketManager::ValidateToken(const int accountId, const std::string token)
 {
 	const auto gameObject = g_objectManager.GetGameObjectById(accountId);
-	const PlayerComponent& playerComponent = g_playerComponentManager.GetPlayerComponentById(gameObject.playerComponentId);
+	const auto playerComponent = g_playerComponentManager.GetPlayerComponentById(gameObject.playerComponentId);
 	
 	return token == playerComponent.token;
 }
@@ -93,12 +93,12 @@ PlayerComponent& ServerSocketManager::GetPlayerComponent(const int accountId)
 
 void ServerSocketManager::HandleTimeout()
 {
-	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
-	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
+	const auto playerComponents = g_playerComponentManager.GetPlayerComponents();
+	const auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
 
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
-		PlayerComponent& comp = playerComponents[i];
+		const auto comp = playerComponents[i];
 		if (GetTickCount64() > comp.lastHeartbeat + TIMEOUT_DURATION)
 		{
 			g_objectManager.DeleteGameObject(g_eventHandler, comp.gameObjectId);
@@ -109,7 +109,7 @@ void ServerSocketManager::HandleTimeout()
 void ServerSocketManager::Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, sockaddr_in from)
 {
 	std::string error;
-	auto account = repository.GetAccount(accountName);
+	const auto account = repository.GetAccount(accountName);
 	if (account)
 	{
 		if (crypto_pwhash_str_verify(account->GetPassword().c_str(), password.c_str(), strlen(password.c_str())) != 0)
@@ -118,14 +118,14 @@ void ServerSocketManager::Login(const std::string& accountName, const std::strin
 		{
 			GUID guid;
 			if (FAILED(CoCreateGuid(&guid)))
-				throw new std::exception("Failed to create GUID.");
+				throw std::exception("Failed to create GUID.");
 			char guid_cstr[39];
 			snprintf(guid_cstr, sizeof(guid_cstr),
 				"{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
 				guid.Data1, guid.Data2, guid.Data3,
 				guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
 				guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
-			const std::string token = std::string(guid_cstr);
+			const std::string token{ guid_cstr };
 
 			const auto accountId = account->GetId();
 			const std::string name{ "" };
@@ -243,48 +243,48 @@ void ServerSocketManager::EnterWorld(const int accountId, const std::string& cha
 	gameObject.name = characterName;
 
 	PlayerComponent& playerComponent = GetPlayerComponent(accountId);
-	auto character = repository.GetCharacter(characterName);
-	gameObject.localPosition = character->GetPosition();
+	const auto character = repository.GetCharacter(characterName);
+	gameObject.localPosition = character.GetPosition();
 	playerComponent.lastHeartbeat = GetTickCount64();
-	playerComponent.characterId = character->GetId();
-	playerComponent.modelId = character->GetModelId();
-	playerComponent.textureId = character->GetTextureId();
+	playerComponent.characterId = character.GetId();
+	playerComponent.modelId = character.GetModelId();
+	playerComponent.textureId = character.GetTextureId();
 
-	const auto agility = character->GetAgility();
-	const auto strength = character->GetStrength();
-	const auto wisdom = character->GetWisdom();
-	const auto intelligence = character->GetIntelligence();
-	const auto charisma = character->GetCharisma();
-	const auto luck = character->GetLuck();
-	const auto endurance = character->GetEndurance();
-	const auto health = character->GetHealth();
-	const auto maxHealth = character->GetMaxHealth();
-	const auto mana = character->GetMana();
-	const auto maxMana = character->GetMaxMana();
-	const auto stamina = character->GetStamina();
-	const auto maxStamina = character->GetMaxStamina();
+	const auto agility = character.GetAgility();
+	const auto strength = character.GetStrength();
+	const auto wisdom = character.GetWisdom();
+	const auto intelligence = character.GetIntelligence();
+	const auto charisma = character.GetCharisma();
+	const auto luck = character.GetLuck();
+	const auto endurance = character.GetEndurance();
+	const auto health = character.GetHealth();
+	const auto maxHealth = character.GetMaxHealth();
+	const auto mana = character.GetMana();
+	const auto maxMana = character.GetMaxMana();
+	const auto stamina = character.GetStamina();
+	const auto maxStamina = character.GetMaxStamina();
 
 	const int gameObjectId = gameObject.GetId();
-	auto statsComponent = g_statsComponentManager.CreateStatsComponent(
+	const auto statsComponent = g_statsComponentManager.CreateStatsComponent(
 		gameObjectId,
 		agility, strength, wisdom, intelligence, charisma, luck, endurance,
 		health, maxHealth, mana, maxMana, stamina, maxStamina
 	);
 	gameObject.statsComponentId = statsComponent.GetId();
 
-	auto skills = repository.ListCharacterSkills(character->GetId());
+	auto skills = repository.ListCharacterSkills(character.GetId());
 	const auto skillComponent = g_skillComponentManager.CreateSkillComponent(gameObjectId, skills);
 	gameObject.skillComponentId = skillComponent.GetId();
 
-	const auto pos = character->GetPosition();
-	const auto charId = character->GetId();
+	const auto pos = character.GetPosition();
+	const auto charId = character.GetId();
 	std::vector<std::string> args
 	{
 		std::to_string(accountId),
 		std::to_string(pos.x), std::to_string(pos.y), std::to_string(pos.z),
-		std::to_string(character->GetModelId()), std::to_string(character->GetTextureId()),
+		std::to_string(character.GetModelId()), std::to_string(character.GetTextureId()),
 		ListSkills(charId), ListAbilities(charId),
-		character->GetName(),
+		character.GetName(),
 		std::to_string(agility), std::to_string(strength), std::to_string(wisdom), std::to_string(intelligence), std::to_string(charisma), std::to_string(luck), std::to_string(endurance),
 		std::to_string(health), std::to_string(maxHealth), std::to_string(mana), std::to_string(maxMana), std::to_string(stamina), std::to_string(maxStamina),
 	};

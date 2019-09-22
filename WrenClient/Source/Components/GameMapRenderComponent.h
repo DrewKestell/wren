@@ -5,10 +5,10 @@
 
 // this is certainly not the right way to handle this...
 
-static constexpr unsigned int INDEX_COUNT = MAP_SIZE * 6;
-static constexpr unsigned int GAMEMAP_STRIDE = sizeof(Vertex);
-static constexpr unsigned int GAMEMAP_OFFSET = 0;
-static const XMMATRIX WORLD_TRANSFORM{ XMMatrixIdentity() };
+constexpr unsigned int INDEX_COUNT = MAP_SIZE * 6;
+constexpr unsigned int GAMEMAP_STRIDE = sizeof(Vertex);
+constexpr unsigned int GAMEMAP_OFFSET = 0;
+const XMMATRIX WORLD_TRANSFORM{ XMMatrixIdentity() };
 
 class GameMapRenderComponent
 {

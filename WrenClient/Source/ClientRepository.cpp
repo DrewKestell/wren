@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ClientRepository.h"
 
-static constexpr char LIST_NPCS_QUERY[] = "SELECT id, name, model_id, texture_id, speed FROM Npcs;";
+constexpr char LIST_NPCS_QUERY[] = "SELECT id, name, model_id, texture_id, speed FROM Npcs;";
 
 std::vector<std::unique_ptr<Npc>> ClientRepository::ListNpcs()
 {

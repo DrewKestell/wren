@@ -6,7 +6,7 @@
 #include "ObjectManager.h"
 #include <GameMap/GameMap.h>
 
-static constexpr unsigned int MAX_AICOMPONENTS_SIZE = 100000;
+constexpr unsigned int MAX_AICOMPONENTS_SIZE = 100000;
 
 class AIComponentManager : public Observer
 {

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "CommonRepository.h"
 
-static constexpr char LIST_STATIC_OBJECTS_QUERY[] = "SELECT id, name, model_id, texture_id, position_x, position_y, position_z FROM StaticObjects;";
+constexpr char LIST_STATIC_OBJECTS_QUERY[] = "SELECT id, name, model_id, texture_id, position_x, position_y, position_z FROM StaticObjects;";
 
 std::vector<std::unique_ptr<StaticObject>> CommonRepository::ListStaticObjects()
 {

@@ -10,7 +10,7 @@ extern EventHandler g_eventHandler;
 extern ServerSocketManager g_socketManager;
 extern StatsComponentManager g_statsComponentManager;
 
-static constexpr XMFLOAT3 DIRECTIONS[8]
+constexpr XMFLOAT3 DIRECTIONS[8]
 {
 	VEC_SOUTHWEST,
 	VEC_SOUTH,

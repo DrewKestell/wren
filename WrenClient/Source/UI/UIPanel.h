@@ -4,7 +4,7 @@
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
 
-static constexpr float HEADER_HEIGHT = 20.0f;
+constexpr float HEADER_HEIGHT = 20.0f;
 
 class UIPanel : public UIComponent
 {

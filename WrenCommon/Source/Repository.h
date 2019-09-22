@@ -2,8 +2,8 @@
 
 #include <Span.h>
 
-static constexpr auto FAILED_TO_PREPARE = "Failed to prepare SQLite statement.";
-static constexpr auto FAILED_TO_EXECUTE = "Failed to execute statement.";
+constexpr auto FAILED_TO_PREPARE = "Failed to prepare SQLite statement.";
+constexpr auto FAILED_TO_EXECUTE = "Failed to execute statement.";
 
 class Repository
 {

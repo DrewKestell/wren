@@ -4,7 +4,7 @@
 #include "ObjectManager.h"
 #include "EventHandling/Observer.h"
 
-static constexpr unsigned int MAX_STATSCOMPONENTS_SIZE = 100000;
+constexpr unsigned int MAX_STATSCOMPONENTS_SIZE = 100000;
 
 class StatsComponentManager : public Observer
 {

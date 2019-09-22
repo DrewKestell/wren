@@ -1,17 +1,17 @@
 #include "stdafx.h"
 #include "ServerRepository.h"
 
-static constexpr char ACCOUNT_EXISTS_QUERY[] = "SELECT id FROM Accounts WHERE account_name = '%s' LIMIT 1;";
-static constexpr char CHARACTER_EXISTS_QUERY[] = "SELECT id FROM Characters WHERE character_name = '%s' LIMIT 1;";
-static constexpr char CREATE_ACCOUNT_QUERY[] = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
-static constexpr char CREATE_CHARACTER_QUERY[] = "INSERT INTO Characters (character_name, account_id, position_x, position_y, position_z) VALUES('%s', '%d', 0.0, 0.0, 0.0);";
-static constexpr char GET_ACCOUNT_QUERY[] = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
-static constexpr char LIST_CHARACTERS_QUERY[] = "SELECT * FROM Characters WHERE account_id = '%d';";
-static constexpr char DELETE_CHARACTER_QUERY[] = "DELETE FROM Characters WHERE character_name = '%s';";
-static constexpr char GET_CHARACTER_QUERY[] = "SELECT * FROM Characters WHERE character_name = '%s' LIMIT 1;";
-static constexpr char LIST_CHARACTER_SKILLS_QUERY[] = "SELECT Skills.id, Skills.name, CharacterSkills.value FROM CharacterSkills INNER JOIN Skills on Skills.id = CharacterSkills.skill_id WHERE CharacterSkills.character_id = '%d';";
-static constexpr char LIST_CHARACTER_ABILITIES_QUERY[] = "SELECT Abilities.id, Abilities.name, Abilities.sprite_id, Abilities.toggled FROM CharacterAbilities INNER JOIN Abilities on Abilities.id = CharacterAbilities.ability_id WHERE CharacterAbilities.character_id = '%d';";
-static constexpr char LIST_ABILITIES_QUERY[] = "SELECT id, name, sprite_id, toggled, targeted FROM Abilities;";
+constexpr char ACCOUNT_EXISTS_QUERY[] = "SELECT id FROM Accounts WHERE account_name = '%s' LIMIT 1;";
+constexpr char CHARACTER_EXISTS_QUERY[] = "SELECT id FROM Characters WHERE character_name = '%s' LIMIT 1;";
+constexpr char CREATE_ACCOUNT_QUERY[] = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
+constexpr char CREATE_CHARACTER_QUERY[] = "INSERT INTO Characters (character_name, account_id, position_x, position_y, position_z) VALUES('%s', '%d', 0.0, 0.0, 0.0);";
+constexpr char GET_ACCOUNT_QUERY[] = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
+constexpr char LIST_CHARACTERS_QUERY[] = "SELECT * FROM Characters WHERE account_id = '%d';";
+constexpr char DELETE_CHARACTER_QUERY[] = "DELETE FROM Characters WHERE character_name = '%s';";
+constexpr char GET_CHARACTER_QUERY[] = "SELECT * FROM Characters WHERE character_name = '%s' LIMIT 1;";
+constexpr char LIST_CHARACTER_SKILLS_QUERY[] = "SELECT Skills.id, Skills.name, CharacterSkills.value FROM CharacterSkills INNER JOIN Skills on Skills.id = CharacterSkills.skill_id WHERE CharacterSkills.character_id = '%d';";
+constexpr char LIST_CHARACTER_ABILITIES_QUERY[] = "SELECT Abilities.id, Abilities.name, Abilities.sprite_id, Abilities.toggled FROM CharacterAbilities INNER JOIN Abilities on Abilities.id = CharacterAbilities.ability_id WHERE CharacterAbilities.character_id = '%d';";
+constexpr char LIST_ABILITIES_QUERY[] = "SELECT id, name, sprite_id, toggled, targeted FROM Abilities;";
 
 const bool ServerRepository::AccountExists(const std::string& accountName)
 {
@@ -103,7 +103,7 @@ void ServerRepository::CreateCharacter(const std::string& characterName, const i
 	}
 }
 
-Account* ServerRepository::GetAccount(const std::string& accountName)
+const std::unique_ptr<Account> ServerRepository::GetAccount(const std::string& accountName)
 {
 	auto dbConnection = GetConnection();
 
@@ -117,7 +117,7 @@ Account* ServerRepository::GetAccount(const std::string& accountName)
 	{
 		const int id = sqlite3_column_int(statement, 0);
 		const unsigned char *hashedPassword = sqlite3_column_text(statement, 2);
-		auto account = new Account(id, accountName, std::string((reinterpret_cast<const char*>(hashedPassword))));
+		auto account = std::make_unique<Account>(id, accountName, std::string((reinterpret_cast<const char*>(hashedPassword))));
 		sqlite3_finalize(statement);
 		return account;
 	}
@@ -190,7 +190,7 @@ void ServerRepository::DeleteCharacter(const std::string& characterName)
 	}
 }
 
-Character* ServerRepository::GetCharacter(const std::string& characterName)
+Character ServerRepository::GetCharacter(const std::string& characterName)
 {
 	auto dbConnection = GetConnection();
 
@@ -223,13 +223,14 @@ Character* ServerRepository::GetCharacter(const std::string& characterName)
 		const auto stamina = sqlite3_column_int(statement, i++);
 		const auto maxStamina = sqlite3_column_int(statement, i++);
 
-		auto character = new Character(
+		Character character
+		{
 			id, std::string(reinterpret_cast<const char*>(charName)), accountId,
 			XMFLOAT3{ positionX, positionY, positionZ },
 			modelId, textureId,
 			agility, strength, wisdom, intelligence, charisma, luck, endurance,
 			health, maxHealth, mana, maxMana, stamina, maxStamina
-		);
+		};
 
 		sqlite3_finalize(statement);
 		return character;

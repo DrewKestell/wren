@@ -6,7 +6,7 @@
 #include "PlayerComponent.h"
 #include "ObjectManager.h"
 
-static constexpr unsigned int MAX_PLAYERCOMPONENTS_SIZE = 10000;
+constexpr unsigned int MAX_PLAYERCOMPONENTS_SIZE = 10000;
 
 class PlayerComponentManager : public Observer
 {
