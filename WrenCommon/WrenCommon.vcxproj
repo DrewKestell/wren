@@ -50,6 +50,7 @@
     <ClCompile Include="Source\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Span.h" />
     <ClInclude Include="Include\sqlite3.h" />
     <ClInclude Include="Source\Components\StatsComponent.h" />
     <ClInclude Include="Source\Components\StatsComponentManager.h" />

@@ -15,10 +15,10 @@ sqlite3* Repository::GetConnection()
     return dbConnection;
 }
 
-sqlite3_stmt* Repository::PrepareStatement(sqlite3* dbConnection, const char *query)
+sqlite3_stmt* Repository::PrepareStatement(sqlite3* dbConnection, std::span<const char> query)
 {
     sqlite3_stmt* statement;
-    if (sqlite3_prepare_v2(dbConnection, query, -1, &statement, NULL) != SQLITE_OK)
+    if (sqlite3_prepare_v2(dbConnection, query.data(), -1, &statement, NULL) != SQLITE_OK)
     {
 		PrintLastError(dbConnection);
         sqlite3_finalize(statement);

@@ -1,17 +1,17 @@
 #include "stdafx.h"
 #include "ServerRepository.h"
 
-const auto ACCOUNT_EXISTS_QUERY = "SELECT id FROM Accounts WHERE account_name = '%s' LIMIT 1;";
-const auto CHARACTER_EXISTS_QUERY = "SELECT id FROM Characters WHERE character_name = '%s' LIMIT 1;";
-const auto CREATE_ACCOUNT_QUERY = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
-const auto CREATE_CHARACTER_QUERY = "INSERT INTO Characters (character_name, account_id, position_x, position_y, position_z) VALUES('%s', '%d', 0.0, 0.0, 0.0);";
-const auto GET_ACCOUNT_QUERY = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
-const auto LIST_CHARACTERS_QUERY = "SELECT * FROM Characters WHERE account_id = '%d';";
-const auto DELETE_CHARACTER_QUERY = "DELETE FROM Characters WHERE character_name = '%s';";
-const auto GET_CHARACTER_QUERY = "SELECT * FROM Characters WHERE character_name = '%s' LIMIT 1;";
-const auto LIST_CHARACTER_SKILLS_QUERY = "SELECT Skills.id, Skills.name, CharacterSkills.value FROM CharacterSkills INNER JOIN Skills on Skills.id = CharacterSkills.skill_id WHERE CharacterSkills.character_id = '%d';";
-const auto LIST_CHARACTER_ABILITIES_QUERY = "SELECT Abilities.id, Abilities.name, Abilities.sprite_id, Abilities.toggled FROM CharacterAbilities INNER JOIN Abilities on Abilities.id = CharacterAbilities.ability_id WHERE CharacterAbilities.character_id = '%d';";
-const auto LIST_ABILITIES_QUERY = "SELECT id, name, sprite_id, toggled, targeted FROM Abilities;";
+static constexpr char ACCOUNT_EXISTS_QUERY[] = "SELECT id FROM Accounts WHERE account_name = '%s' LIMIT 1;";
+static constexpr char CHARACTER_EXISTS_QUERY[] = "SELECT id FROM Characters WHERE character_name = '%s' LIMIT 1;";
+static constexpr char CREATE_ACCOUNT_QUERY[] = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
+static constexpr char CREATE_CHARACTER_QUERY[] = "INSERT INTO Characters (character_name, account_id, position_x, position_y, position_z) VALUES('%s', '%d', 0.0, 0.0, 0.0);";
+static constexpr char GET_ACCOUNT_QUERY[] = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
+static constexpr char LIST_CHARACTERS_QUERY[] = "SELECT * FROM Characters WHERE account_id = '%d';";
+static constexpr char DELETE_CHARACTER_QUERY[] = "DELETE FROM Characters WHERE character_name = '%s';";
+static constexpr char GET_CHARACTER_QUERY[] = "SELECT * FROM Characters WHERE character_name = '%s' LIMIT 1;";
+static constexpr char LIST_CHARACTER_SKILLS_QUERY[] = "SELECT Skills.id, Skills.name, CharacterSkills.value FROM CharacterSkills INNER JOIN Skills on Skills.id = CharacterSkills.skill_id WHERE CharacterSkills.character_id = '%d';";
+static constexpr char LIST_CHARACTER_ABILITIES_QUERY[] = "SELECT Abilities.id, Abilities.name, Abilities.sprite_id, Abilities.toggled FROM CharacterAbilities INNER JOIN Abilities on Abilities.id = CharacterAbilities.ability_id WHERE CharacterAbilities.character_id = '%d';";
+static constexpr char LIST_ABILITIES_QUERY[] = "SELECT id, name, sprite_id, toggled, targeted FROM Abilities;";
 
 const bool ServerRepository::AccountExists(const std::string& accountName)
 {
@@ -201,31 +201,31 @@ Character* ServerRepository::GetCharacter(const std::string& characterName)
 	if (sqlite3_step(statement) == SQLITE_ROW)
 	{
 		auto i = 0;
-		const int id = sqlite3_column_int(statement, i++);
-		const unsigned char *characterName = sqlite3_column_text(statement, i++);
-		const int accountId = sqlite3_column_int(statement, i++);
-		const double positionX = sqlite3_column_double(statement, i++);
-		const double positionY = sqlite3_column_double(statement, i++);
-		const double positionZ = sqlite3_column_double(statement, i++);
-		const int modelId = sqlite3_column_int(statement, i++);
-		const int textureId = sqlite3_column_int(statement, i++);
-		const int agility = sqlite3_column_int(statement, i++);
-		const int strength = sqlite3_column_int(statement, i++);
-		const int wisdom = sqlite3_column_int(statement, i++);
-		const int intelligence = sqlite3_column_int(statement, i++);
-		const int charisma = sqlite3_column_int(statement, i++);
-		const int luck = sqlite3_column_int(statement, i++);
-		const int endurance = sqlite3_column_int(statement, i++);
-		const int health = sqlite3_column_int(statement, i++);
-		const int maxHealth = sqlite3_column_int(statement, i++);
-		const int mana = sqlite3_column_int(statement, i++);
-		const int maxMana = sqlite3_column_int(statement, i++);
-		const int stamina = sqlite3_column_int(statement, i++);
-		const int maxStamina = sqlite3_column_int(statement, i++);
+		const auto id = sqlite3_column_int(statement, i++);
+		const auto charName = sqlite3_column_text(statement, i++);
+		const auto accountId = sqlite3_column_int(statement, i++);
+		const auto positionX = static_cast<float>(sqlite3_column_double(statement, i++));
+		const auto positionY = static_cast<float>(sqlite3_column_double(statement, i++));
+		const auto positionZ = static_cast<float>(sqlite3_column_double(statement, i++));
+		const auto modelId = sqlite3_column_int(statement, i++);
+		const auto textureId = sqlite3_column_int(statement, i++);
+		const auto agility = sqlite3_column_int(statement, i++);
+		const auto strength = sqlite3_column_int(statement, i++);
+		const auto wisdom = sqlite3_column_int(statement, i++);
+		const auto intelligence = sqlite3_column_int(statement, i++);
+		const auto charisma = sqlite3_column_int(statement, i++);
+		const auto luck = sqlite3_column_int(statement, i++);
+		const auto endurance = sqlite3_column_int(statement, i++);
+		const auto health = sqlite3_column_int(statement, i++);
+		const auto maxHealth = sqlite3_column_int(statement, i++);
+		const auto mana = sqlite3_column_int(statement, i++);
+		const auto maxMana = sqlite3_column_int(statement, i++);
+		const auto stamina = sqlite3_column_int(statement, i++);
+		const auto maxStamina = sqlite3_column_int(statement, i++);
 
 		auto character = new Character(
-			id, std::string(reinterpret_cast<const char*>(characterName)), accountId,
-			XMFLOAT3{ (float)positionX, (float)positionY, (float)positionZ },
+			id, std::string(reinterpret_cast<const char*>(charName)), accountId,
+			XMFLOAT3{ positionX, positionY, positionZ },
 			modelId, textureId,
 			agility, strength, wisdom, intelligence, charisma, luck, endurance,
 			health, maxHealth, mana, maxMana, stamina, maxStamina

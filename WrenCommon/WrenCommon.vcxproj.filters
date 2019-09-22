@@ -123,6 +123,7 @@
     <ClInclude Include="Source\EventHandling\Events\NpcUpdateEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\PropagateChatMessageEvent.h" />
     <ClInclude Include="Source\SocketManager.h" />
+    <ClInclude Include="Include\Span.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Wren.ruleset" />

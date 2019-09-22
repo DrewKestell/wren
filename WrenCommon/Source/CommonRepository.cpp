@@ -1,12 +1,11 @@
 #include "stdafx.h"
 #include "CommonRepository.h"
 
-const auto LIST_STATIC_OBJECTS_QUERY = "SELECT id, name, model_id, texture_id, position_x, position_y, position_z FROM StaticObjects;";
+static constexpr char LIST_STATIC_OBJECTS_QUERY[] = "SELECT id, name, model_id, texture_id, position_x, position_y, position_z FROM StaticObjects;";
 
 std::vector<std::unique_ptr<StaticObject>> CommonRepository::ListStaticObjects()
 {
 	auto dbConnection = GetConnection();
-
 	auto statement = PrepareStatement(dbConnection, LIST_STATIC_OBJECTS_QUERY);
 
 	std::vector<std::unique_ptr<StaticObject>> staticObjects;
