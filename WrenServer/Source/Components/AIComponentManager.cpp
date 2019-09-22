@@ -5,10 +5,7 @@
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
-
-extern EventHandler g_eventHandler;
-extern ServerSocketManager g_socketManager;
-extern StatsComponentManager g_statsComponentManager;
+#include <memory>
 
 constexpr XMFLOAT3 DIRECTIONS[8]
 {
@@ -22,11 +19,14 @@ constexpr XMFLOAT3 DIRECTIONS[8]
 	VEC_WEST
 };
 
-AIComponentManager::AIComponentManager(ObjectManager& objectManager, GameMap& gameMap)
-	: objectManager{ objectManager },
-	  gameMap{ gameMap }
+AIComponentManager::AIComponentManager(EventHandler& eventHandler, ObjectManager& objectManager, GameMap& gameMap, ServerComponentOrchestrator& componentOrchestrator, ServerSocketManager& socketManager)
+	: eventHandler{ eventHandler },
+	  objectManager{ objectManager },
+	  gameMap{ gameMap },
+	  componentOrchestrator{ componentOrchestrator },
+	  socketManager{ socketManager }
 {
-	g_eventHandler.Subscribe(*this);
+	eventHandler.Subscribe(*this);
 }
 
 AIComponent& AIComponentManager::CreateAIComponent(const int gameObjectId)
@@ -87,6 +87,8 @@ void AIComponentManager::Update()
 	std::mt19937 rng(dev());
 	std::uniform_int_distribution<std::mt19937::result_type> dist100(0, 99);
 	std::uniform_int_distribution<std::mt19937::result_type> dist8(0, 7);
+
+	const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
 
 	for (auto i = 0; i < aiComponentIndex; i++)
 	{
@@ -176,22 +178,24 @@ void AIComponentManager::Update()
 						std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);
 						const auto dmg = distDamage(rng);
 
-						StatsComponent& statsComponent = g_statsComponentManager.GetStatsComponentById(target.statsComponentId);
+						StatsComponent& statsComponent = statsComponentManager->GetStatsComponentById(target.statsComponentId);
 						statsComponent.health = Utility::Max(0, statsComponent.health - dmg);
 
 						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
-						g_eventHandler.QueueEvent(new AttackHitEvent{ gameObjectId, targetId, (int)dmg, weaponSkillIds, 2 });
+						std::unique_ptr<Event> e = std::make_unique<AttackHitEvent>(gameObjectId, targetId, (int)dmg, weaponSkillIds, 2);
+						eventHandler.QueueEvent(e);
 
 						std::vector<std::string> args{ std::to_string(gameObjectId), std::to_string(targetId), std::to_string(dmg) };
-						g_socketManager.SendPacketToAllClients(OpCode::AttackHit, args);
+						socketManager.SendPacketToAllClients(OpCode::AttackHit, args);
 					}
 					else
 					{
 						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
-						g_eventHandler.QueueEvent(new AttackMissEvent{ gameObjectId, targetId, weaponSkillIds, 2 });
+						std::unique_ptr<Event> e = std::make_unique<AttackMissEvent>(gameObjectId, targetId, weaponSkillIds, 2);
+						eventHandler.QueueEvent(e);
 
 						std::vector<std::string> args{ std::to_string(gameObjectId), std::to_string(targetId)};
-						g_socketManager.SendPacketToAllClients(OpCode::AttackMiss, args);
+						socketManager.SendPacketToAllClients(OpCode::AttackMiss, args);
 					}
 				}
 			}
@@ -201,5 +205,5 @@ void AIComponentManager::Update()
 
 AIComponentManager::~AIComponentManager()
 {
-	g_eventHandler.Unsubscribe(*this);
+	eventHandler.Unsubscribe(*this);
 }

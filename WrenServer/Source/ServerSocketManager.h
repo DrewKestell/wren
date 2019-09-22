@@ -3,12 +3,20 @@
 #include <SocketManager.h>
 #include <OpCodes.h>
 #include <CommonRepository.h>
-#include "Components/PlayerComponent.h"
 #include "ServerRepository.h"
+#include "Components/ServerComponentOrchestrator.h"
+#include <EventHandling/EventHandler.h>
+#include <GameMap/GameMap.h>
+#include <ObjectManager.h>
+#include "Components/PlayerComponent.h"
 
 class ServerSocketManager : public SocketManager
 {
-	ServerRepository& repository;
+	EventHandler& eventHandler;
+	GameMap& gameMap;
+	ObjectManager& objectManager;
+	ServerComponentOrchestrator& componentOrchestrator;
+	ServerRepository& serverRepository;
 	CommonRepository& commonRepository;
 	std::vector<Ability> abilities;
 
@@ -29,8 +37,15 @@ class ServerSocketManager : public SocketManager
 	void InitializeMessageHandlers() override;
 
 public:
-	ServerSocketManager(ServerRepository& repository, CommonRepository& commonRepository);
+	ServerSocketManager(
+		EventHandler& eventHandler,
+		GameMap& gameMap,
+		ObjectManager& objectManager,
+		ServerComponentOrchestrator& componentOrchestrator,
+		ServerRepository& serverRepository,
+		CommonRepository& commonRepository);
 
+	void Initialize();
 	void HandleTimeout();
 	void UpdateClients();
 	void SendPacket(sockaddr_in to, const OpCode opCode, const std::vector<std::string>& args = std::vector<std::string>{});

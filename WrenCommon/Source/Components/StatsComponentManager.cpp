@@ -2,9 +2,9 @@
 #include "StatsComponentManager.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 
-StatsComponentManager::StatsComponentManager(ObjectManager& objectManager, EventHandler& eventHandler)
-	: objectManager{ objectManager },
-	  eventHandler{ eventHandler }
+StatsComponentManager::StatsComponentManager(EventHandler& eventHandler, ObjectManager& objectManager)
+	: eventHandler{ eventHandler },
+	  objectManager{ objectManager }	  
 {
 	eventHandler.Subscribe(*this);
 }

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ServerSocketManager.h"
-#include <Components/StatsComponentManager.h>
 #include "Components/AIComponentManager.h"
+#include <Components/StatsComponentManager.h>
 #include "Components/PlayerComponentManager.h"
 #include "Components/SkillComponentManager.h"
 
@@ -15,18 +15,24 @@ constexpr auto INVALID_ATTACK_TARGET = "You can't attack that!";
 constexpr auto NO_ATTACK_TARGET = "You need a target before attacking!";
 constexpr auto MESSAGE_TYPE_ERROR = "ERROR";
 
-extern ObjectManager g_objectManager;
-extern StatsComponentManager g_statsComponentManager;
-extern AIComponentManager g_aiComponentManager;
-extern PlayerComponentManager g_playerComponentManager;
-extern SkillComponentManager g_skillComponentManager;
-extern GameMap g_gameMap;
-extern EventHandler g_eventHandler;
-
-ServerSocketManager::ServerSocketManager(ServerRepository& repository, CommonRepository& commonRepository)
+ServerSocketManager::ServerSocketManager(
+	EventHandler& eventHandler,
+	GameMap& gameMap,
+	ObjectManager& objectManager,
+	ServerComponentOrchestrator& componentOrchestrator,
+	ServerRepository& serverRepository,
+	CommonRepository& commonRepository)
 	: SocketManager{ SERVER_PORT_NUMBER },
-	  repository{ repository },
+	  eventHandler{ eventHandler },
+	  gameMap{ gameMap },
+	  objectManager{ objectManager },
+	  componentOrchestrator{ componentOrchestrator },
+	  serverRepository{ serverRepository },
 	  commonRepository{ commonRepository }
+{	
+}
+
+void ServerSocketManager::Initialize()
 {
 	InitializeMessageHandlers();
 
@@ -34,7 +40,7 @@ ServerSocketManager::ServerSocketManager(ServerRepository& repository, CommonRep
 	sodium_init();
 
 	// initialize Abilities
-	abilities = repository.ListAbilities();
+	abilities = serverRepository.ListAbilities();
 
 	// initialize StaticObjects
 	auto staticObjects = commonRepository.ListStaticObjects();
@@ -43,20 +49,22 @@ ServerSocketManager::ServerSocketManager(ServerRepository& repository, CommonRep
 	{
 		const StaticObject* staticObject = staticObjects.at(i).get();
 		const auto pos = staticObject->GetPosition();
-		const GameObject& gameObject = g_objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true);
-		g_gameMap.SetTileOccupied(gameObject.localPosition, true);
+		const GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true);
+		gameMap.SetTileOccupied(gameObject.localPosition, true);
 	}
 
 	// initialize test dummy
 	// we need to move ListNpcs to CommonRepository
 	const std::string dummyName{ "Dummy" };
-	GameObject& dummyGameObject = g_objectManager.CreateGameObject(XMFLOAT3{ 30.0f, 0.0f, 30.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 30.0f, GameObjectType::Npc, dummyName, 101, false, 2, 4);
+	GameObject& dummyGameObject = objectManager.CreateGameObject(XMFLOAT3{ 30.0f, 0.0f, 30.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 30.0f, GameObjectType::Npc, dummyName, 101, false, 2, 4);
 	const auto dummyId = dummyGameObject.GetId();
-	const auto dummyAIComponent = g_aiComponentManager.CreateAIComponent(dummyId);
+	const auto aiComponentManager = componentOrchestrator.GetAIComponentManager();
+	const auto dummyAIComponent = aiComponentManager->CreateAIComponent(dummyId);
 	dummyGameObject.aiComponentId = dummyAIComponent.id;
-	const auto dummyStatsComponent = g_statsComponentManager.CreateStatsComponent(dummyId, 10, 10, 10, 10, 10, 10, 10, 100, 100, 100, 100, 100, 100);
+	const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
+	const auto dummyStatsComponent = statsComponentManager->CreateStatsComponent(dummyId, 10, 10, 10, 10, 10, 10, 10, 100, 100, 100, 100, 100, 100);
 	dummyGameObject.statsComponentId = dummyStatsComponent.GetId();
-	g_gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
+	gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
 }
 
 void ServerSocketManager::SendPacket(sockaddr_in to, const OpCode opCode, const std::vector<std::string>& args)
@@ -66,8 +74,9 @@ void ServerSocketManager::SendPacket(sockaddr_in to, const OpCode opCode, const 
 
 void ServerSocketManager::SendPacketToAllClients(const OpCode opcode, const std::vector<std::string>& args)
 {
-	const auto * const playerComponents = g_playerComponentManager.GetPlayerComponents();
-	const auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
+	const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
+	const auto * const playerComponents = playerComponentManager->GetPlayerComponents();
+	const auto playerComponentIndex = playerComponentManager->GetPlayerComponentIndex();
 
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
@@ -78,30 +87,33 @@ void ServerSocketManager::SendPacketToAllClients(const OpCode opcode, const std:
 
 const bool ServerSocketManager::ValidateToken(const int accountId, const std::string token)
 {
-	const auto gameObject = g_objectManager.GetGameObjectById(accountId);
-	const auto playerComponent = g_playerComponentManager.GetPlayerComponentById(gameObject.playerComponentId);
+	const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
+	const auto gameObject = objectManager.GetGameObjectById(accountId);
+	const auto playerComponent = playerComponentManager->GetPlayerComponentById(gameObject.playerComponentId);
 	
 	return token == playerComponent.token;
 }
 
 PlayerComponent& ServerSocketManager::GetPlayerComponent(const int accountId)
 {
-	const auto gameObject = g_objectManager.GetGameObjectById(accountId);
+	const auto gameObject = objectManager.GetGameObjectById(accountId);
+	const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
 
-	return g_playerComponentManager.GetPlayerComponentById(gameObject.playerComponentId);
+	return playerComponentManager->GetPlayerComponentById(gameObject.playerComponentId);
 }
 
 void ServerSocketManager::HandleTimeout()
 {
-	const auto * const playerComponents = g_playerComponentManager.GetPlayerComponents();
-	const auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
+	const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
+	const auto * const playerComponents = playerComponentManager->GetPlayerComponents();
+	const auto playerComponentIndex = playerComponentManager->GetPlayerComponentIndex();
 
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
 		const auto comp = playerComponents[i];
 		if (GetTickCount64() > comp.lastHeartbeat + TIMEOUT_DURATION)
 		{
-			g_objectManager.DeleteGameObject(g_eventHandler, comp.gameObjectId);
+			objectManager.DeleteGameObject(eventHandler, comp.gameObjectId);
 		}
 	}
 }
@@ -109,7 +121,7 @@ void ServerSocketManager::HandleTimeout()
 void ServerSocketManager::Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, sockaddr_in from)
 {
 	std::string error;
-	const auto account = repository.GetAccount(accountName);
+	const auto account = serverRepository.GetAccount(accountName);
 	if (account)
 	{
 		if (crypto_pwhash_str_verify(account->GetPassword().c_str(), password.c_str(), strlen(password.c_str())) != 0)
@@ -129,9 +141,10 @@ void ServerSocketManager::Login(const std::string& accountName, const std::strin
 
 			const auto accountId = account->GetId();
 			const std::string name{ "" };
-			GameObject& playerGameObject = g_objectManager.CreateGameObject(VEC_ZERO, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, name, accountId);
+			GameObject& playerGameObject = objectManager.CreateGameObject(VEC_ZERO, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, name, accountId);
 			const auto playerId = playerGameObject.GetId();
-			const PlayerComponent& playerComponent = g_playerComponentManager.CreatePlayerComponent(playerId, token, ipAndPort, from, GetTickCount64());
+			const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
+			const PlayerComponent& playerComponent = playerComponentManager->CreatePlayerComponent(playerId, token, ipAndPort, from, GetTickCount64());
 			playerGameObject.playerComponentId = playerComponent.id;
             
 			std::vector<std::string> args{ std::to_string(accountId), token, ListCharacters(accountId) };
@@ -151,12 +164,12 @@ void ServerSocketManager::Login(const std::string& accountName, const std::strin
 
 void ServerSocketManager::Logout(const int accountId)
 {
-	g_objectManager.DeleteGameObject(g_eventHandler, accountId);
+	objectManager.DeleteGameObject(eventHandler, accountId);
 }
 
 void ServerSocketManager::CreateAccount(const std::string& accountName, const std::string& password, sockaddr_in from)
 {
-	if (repository.AccountExists(accountName))
+	if (serverRepository.AccountExists(accountName))
 	{
 		const std::string error = ACCOUNT_ALREADY_EXISTS;
 		std::vector<std::string> args{ error };
@@ -175,7 +188,7 @@ void ServerSocketManager::CreateAccount(const std::string& accountName, const st
 		if (result != 0)
 			throw std::exception(LIBSODIUM_MEMORY_ERROR);
 
-		repository.CreateAccount(accountName, std::string{ hashedPassword });
+		serverRepository.CreateAccount(accountName, std::string{ hashedPassword });
 		SendPacket(from, OpCode::CreateAccountSuccess);
 	}
 }
@@ -184,7 +197,7 @@ void ServerSocketManager::CreateCharacter(const int accountId, const std::string
 {
 	const PlayerComponent& playerComponent = GetPlayerComponent(accountId);
 
-	if (repository.CharacterExists(characterName))
+	if (serverRepository.CharacterExists(characterName))
 	{
 		const std::string error = CHARACTER_ALREADY_EXISTS;
 		std::vector<std::string> args{ error };
@@ -192,7 +205,7 @@ void ServerSocketManager::CreateCharacter(const int accountId, const std::string
 	}
 	else
 	{
-		repository.CreateCharacter(characterName, accountId);
+		serverRepository.CreateCharacter(characterName, accountId);
 		std::vector<std::string> args{ ListCharacters(accountId) };
 		SendPacket(playerComponent.fromSockAddr, OpCode::CreateCharacterSuccess, args);
 	}
@@ -206,7 +219,7 @@ void ServerSocketManager::UpdateLastHeartbeat(const int accountId)
 
 std::string ServerSocketManager::ListCharacters(const int accountId)
 {
-    auto characters = repository.ListCharacters(accountId);
+    auto characters = serverRepository.ListCharacters(accountId);
     std::string characterString = "";
     for (auto i = 0; i < characters.size(); i++)
         characterString += (characters.at(i) + ";");
@@ -215,7 +228,7 @@ std::string ServerSocketManager::ListCharacters(const int accountId)
 
 std::string ServerSocketManager::ListSkills(const int characterId)
 {
-	auto skills = repository.ListCharacterSkills(characterId);
+	auto skills = serverRepository.ListCharacterSkills(characterId);
 	std::string skillString = "";
 	for (auto i = 0; i < skills.size(); i++)
 	{
@@ -227,7 +240,7 @@ std::string ServerSocketManager::ListSkills(const int characterId)
 
 std::string ServerSocketManager::ListAbilities(const int characterId)
 {
-	auto abilities = repository.ListCharacterAbilities(characterId);
+	auto abilities = serverRepository.ListCharacterAbilities(characterId);
 	std::string abilityString = "";
 	for (auto i = 0; i < abilities.size(); i++)
 	{
@@ -239,11 +252,11 @@ std::string ServerSocketManager::ListAbilities(const int characterId)
 
 void ServerSocketManager::EnterWorld(const int accountId, const std::string& characterName)
 {
-	GameObject& gameObject = g_objectManager.GetGameObjectById(accountId);
+	GameObject& gameObject = objectManager.GetGameObjectById(accountId);
 	gameObject.name = characterName;
 
 	PlayerComponent& playerComponent = GetPlayerComponent(accountId);
-	const auto character = repository.GetCharacter(characterName);
+	const auto character = serverRepository.GetCharacter(characterName);
 	gameObject.localPosition = character.GetPosition();
 	playerComponent.lastHeartbeat = GetTickCount64();
 	playerComponent.characterId = character.GetId();
@@ -265,15 +278,17 @@ void ServerSocketManager::EnterWorld(const int accountId, const std::string& cha
 	const auto maxStamina = character.GetMaxStamina();
 
 	const int gameObjectId = gameObject.GetId();
-	const auto statsComponent = g_statsComponentManager.CreateStatsComponent(
+	const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
+	const auto statsComponent = statsComponentManager->CreateStatsComponent(
 		gameObjectId,
 		agility, strength, wisdom, intelligence, charisma, luck, endurance,
 		health, maxHealth, mana, maxMana, stamina, maxStamina
 	);
 	gameObject.statsComponentId = statsComponent.GetId();
 
-	auto skills = repository.ListCharacterSkills(character.GetId());
-	const auto skillComponent = g_skillComponentManager.CreateSkillComponent(gameObjectId, skills);
+	auto skills = serverRepository.ListCharacterSkills(character.GetId());
+	const auto skillComponentManager = componentOrchestrator.GetSkillComponentManager();
+	const auto skillComponent = skillComponentManager->CreateSkillComponent(gameObjectId, skills);
 	gameObject.skillComponentId = skillComponent.GetId();
 
 	const auto pos = character.GetPosition();
@@ -289,24 +304,25 @@ void ServerSocketManager::EnterWorld(const int accountId, const std::string& cha
 		std::to_string(health), std::to_string(maxHealth), std::to_string(mana), std::to_string(maxMana), std::to_string(stamina), std::to_string(maxStamina),
 	};
 	SendPacket(playerComponent.fromSockAddr, OpCode::EnterWorldSuccess, args);
-	g_gameMap.SetTileOccupied(pos, true);
+	gameMap.SetTileOccupied(pos, true);
 }
 
 void ServerSocketManager::DeleteCharacter(const int accountId, const std::string& characterName)
 {
 	const PlayerComponent& playerComponent = GetPlayerComponent(accountId);
-	repository.DeleteCharacter(characterName);
+	serverRepository.DeleteCharacter(characterName);
 	std::vector<std::string> args{ ListCharacters(accountId) };
 	SendPacket(playerComponent.fromSockAddr , OpCode::DeleteCharacterSuccess, args);
 }
 
 void ServerSocketManager::UpdateClients()
 {
-	const auto gameObjectLength = g_objectManager.GetGameObjectIndex();
-	const auto * const gameObjects = g_objectManager.GetGameObjects();
+	const auto gameObjectLength = objectManager.GetGameObjectIndex();
+	const auto * const gameObjects = objectManager.GetGameObjects();
 
-	const auto * const playerComponents = g_playerComponentManager.GetPlayerComponents();
-	const auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
+	const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
+	const auto * const playerComponents = playerComponentManager->GetPlayerComponents();
+	const auto playerComponentIndex = playerComponentManager->GetPlayerComponentIndex();
 
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
@@ -333,9 +349,10 @@ void ServerSocketManager::UpdateClients()
 			const auto movZ = std::to_string(mov.z);
 
 			const auto type = gameObject.GetType();
+			const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
 			if (type == GameObjectType::Npc)
 			{
-				const auto stats = g_statsComponentManager.GetStatsComponentById(gameObject.statsComponentId);
+				const auto stats = statsComponentManager->GetStatsComponentById(gameObject.statsComponentId);
 
 				const auto agility = std::to_string(stats.agility);
 				const auto strength = std::to_string(stats.strength);
@@ -356,7 +373,7 @@ void ServerSocketManager::UpdateClients()
 			}
 			else if (type == GameObjectType::Player)
 			{
-				const auto stats = g_statsComponentManager.GetStatsComponentById(gameObject.statsComponentId);
+				const auto stats = statsComponentManager->GetStatsComponentById(gameObject.statsComponentId);
 
 				const auto agility = std::to_string(stats.agility);
 				const auto strength = std::to_string(stats.strength);
@@ -372,7 +389,8 @@ void ServerSocketManager::UpdateClients()
 				const auto stamina = std::to_string(stats.stamina);
 				const auto maxStamina = std::to_string(stats.maxStamina);
 
-				const PlayerComponent& otherPlayer = g_playerComponentManager.GetPlayerComponentById(gameObject.playerComponentId);
+				const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
+				const PlayerComponent& otherPlayer = playerComponentManager->GetPlayerComponentById(gameObject.playerComponentId);
 				std::vector<std::string> args{ id, posX, posY, posZ, movX, movY, movZ, std::to_string(otherPlayer.modelId), std::to_string(otherPlayer.textureId), gameObject.name, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina };
 				SendPacket(playerToUpdate.fromSockAddr, OpCode::PlayerUpdate, args);
 			}
@@ -382,8 +400,9 @@ void ServerSocketManager::UpdateClients()
 
 void ServerSocketManager::PropagateChatMessage(const std::string& senderName, const std::string& message)
 {
-	const auto * const playerComponents = g_playerComponentManager.GetPlayerComponents();
-	const auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
+	const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
+	const auto * const playerComponents = playerComponentManager->GetPlayerComponents();
+	const auto playerComponentIndex = playerComponentManager->GetPlayerComponentIndex();
 
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
@@ -403,7 +422,7 @@ void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, cons
 			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args);
 			return;
 		}
-		else if (!playerComponent.autoAttackOn && g_objectManager.GetGameObjectById(playerComponent.targetId).isStatic)
+		else if (!playerComponent.autoAttackOn && objectManager.GetGameObjectById(playerComponent.targetId).isStatic)
 		{
 			std::vector<std::string> args{ std::string(INVALID_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
 			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args);
@@ -535,7 +554,7 @@ void ServerSocketManager::InitializeMessageHandlers()
 		PlayerComponent& playerComponent = GetPlayerComponent(accountId);
 		playerComponent.targetId = std::stol(targetId);
 
-		const auto gameObject = g_objectManager.GetGameObjectById(playerComponent.targetId);
+		const auto gameObject = objectManager.GetGameObjectById(playerComponent.targetId);
 
 		// Toggle off Auto-Attack on the server and the client if the player switches to an invalid target.
 		if (gameObject.isStatic && playerComponent.autoAttackOn)

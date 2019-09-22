@@ -24,6 +24,7 @@
     <ClInclude Include="Source\Components\AIComponentManager.h" />
     <ClInclude Include="Source\Components\PlayerComponent.h" />
     <ClInclude Include="Source\Components\PlayerComponentManager.h" />
+    <ClInclude Include="Source\Components\ServerComponentOrchestrator.h" />
     <ClInclude Include="Source\Components\SkillComponent.h" />
     <ClInclude Include="Source\Components\SkillComponentManager.h" />
     <ClInclude Include="Source\Events\AttackHitEvent.h" />
@@ -41,6 +42,7 @@
     <ClCompile Include="Source\Components\AIComponentManager.cpp" />
     <ClCompile Include="Source\Components\PlayerComponent.cpp" />
     <ClCompile Include="Source\Components\PlayerComponentManager.cpp" />
+    <ClCompile Include="Source\Components\ServerComponentOrchestrator.cpp" />
     <ClCompile Include="Source\Components\SkillComponent.cpp" />
     <ClCompile Include="Source\Components\SkillComponentManager.cpp" />
     <ClCompile Include="Source\ServerRepository.cpp" />

@@ -11,10 +11,10 @@ class StatsComponentManager : public Observer
 	std::map<int, int> idIndexMap;
 	StatsComponent statsComponents[MAX_STATSCOMPONENTS_SIZE];
 	int statsComponentIndex{ 0 };
-	ObjectManager& objectManager;
 	EventHandler& eventHandler;
+	ObjectManager& objectManager;
 public:
-	StatsComponentManager(ObjectManager& objectManager, EventHandler& eventHandler);
+	StatsComponentManager(EventHandler& eventHandler, ObjectManager& objectManager);
 	StatsComponent& CreateStatsComponent(
 		const int gameObjectId,
 		const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance,

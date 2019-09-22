@@ -6,14 +6,13 @@
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
 
-extern EventHandler g_eventHandler;
-extern ServerSocketManager g_socketManager;
-extern PlayerComponentManager g_playerComponentManager;
-
-SkillComponentManager::SkillComponentManager(ObjectManager& objectManager)
-	: objectManager{ objectManager }
+SkillComponentManager::SkillComponentManager(EventHandler& eventHandler, ObjectManager& objectManager, ServerComponentOrchestrator& componentOrchestrator, ServerSocketManager& serverSocketManager)
+	: eventHandler{ eventHandler },
+	  objectManager{ objectManager },
+	  componentOrchestrator{ componentOrchestrator },
+	  socketManager{ socketManager }
 {
-	g_eventHandler.Subscribe(*this);
+	eventHandler.Subscribe(*this);
 }
 
 SkillComponent& SkillComponentManager::CreateSkillComponent(const int gameObjectId, std::vector<WrenCommon::Skill>& skills)
@@ -68,13 +67,15 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 			std::mt19937 rng(dev());
 			std::uniform_int_distribution<std::mt19937::result_type> dist100(0, 99);
 
+			const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
+
 			// first try to increase the attacker's skills
 			const auto attacker = objectManager.GetGameObjectById(derivedEvent->attackerId);
 
 			if (attacker.skillComponentId >= 0) // this is initialized as -1, so we check if this object has a skillComponent (NPCs don't for now)
 			{
 				const auto attackerSkillComp = GetSkillComponentById(attacker.skillComponentId);
-				const auto attackerPlayerComp = g_playerComponentManager.GetPlayerComponentById(attacker.playerComponentId);
+				const auto attackerPlayerComp = playerComponentManager->GetPlayerComponentById(attacker.playerComponentId);
 
 				for (auto i = 0; i < derivedEvent->weaponSkillArrLen; i++)
 				{
@@ -90,7 +91,7 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 							weaponSkill->value++;
 
 							std::vector<std::string> args{ std::to_string(weaponSkillId), std::to_string(weaponSkill->value) };
-							g_socketManager.SendPacket(attackerPlayerComp.fromSockAddr, OpCode::SkillIncrease, args);
+							socketManager.SendPacket(attackerPlayerComp.fromSockAddr, OpCode::SkillIncrease, args);
 						}
 					}
 				}
@@ -102,7 +103,7 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 			if (target.skillComponentId >= 0) // this is initialized as -1, so we check if this object has a skillComponent (NPCs don't for now)
 			{
 				const auto targetSkillComp = GetSkillComponentById(target.skillComponentId);
-				const auto targetPlayerComp = g_playerComponentManager.GetPlayerComponentById(target.playerComponentId);
+				const auto targetPlayerComp = playerComponentManager->GetPlayerComponentById(target.playerComponentId);
 
 				const auto defenseSkillId = 2;
 				WrenServer::Skill* defenseSkill = targetSkillComp.skills[defenseSkillId];
@@ -116,7 +117,7 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 						defenseSkill->value++;
 
 						std::vector<std::string> args{ std::to_string(defenseSkillId), std::to_string(defenseSkill->value) };
-						g_socketManager.SendPacket(targetPlayerComp.fromSockAddr, OpCode::SkillIncrease, args);
+						socketManager.SendPacket(targetPlayerComp.fromSockAddr, OpCode::SkillIncrease, args);
 					}
 				}
 			}
@@ -146,5 +147,5 @@ void SkillComponentManager::Update()
 
 SkillComponentManager::~SkillComponentManager()
 {
-	g_eventHandler.Unsubscribe(*this);
+	eventHandler.Unsubscribe(*this);
 }

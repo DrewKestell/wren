@@ -6,10 +6,12 @@ class Observer;
 
 class EventHandler
 {	
+	std::queue<std::unique_ptr<const Event>> eventQueue;
+	std::list<Observer*> observers;
 public:
-	void Subscribe(Observer& observer) { observers->push_back(&observer); }
-	void Unsubscribe(Observer& observer) { observers->remove(&observer); }
-	void QueueEvent(const Event* const event) { eventQueue->push(event); }
-	std::queue<const Event*>* eventQueue = new std::queue<const Event*>;
-	std::list<Observer*>* observers = new std::list<Observer*>;
+	void Subscribe(Observer& observer);
+	void Unsubscribe(Observer& observer);
+	void QueueEvent(std::unique_ptr<Event>& event);
+	std::queue<std::unique_ptr<const Event>>& GetEventQueue();
+	std::list<Observer*>& GetObservers();
 };

@@ -17,6 +17,7 @@
     <ClInclude Include="Source\Events\AttackHitEvent.h" />
     <ClInclude Include="Source\Events\AttackMissEvent.h" />
     <ClInclude Include="Source\ServerSocketManager.h" />
+    <ClInclude Include="Source\Components\ServerComponentOrchestrator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\WrenServer.cpp" />
@@ -30,5 +31,6 @@
     <ClCompile Include="Source\Components\SkillComponent.cpp" />
     <ClCompile Include="Source\Components\SkillComponentManager.cpp" />
     <ClCompile Include="Source\ServerSocketManager.cpp" />
+    <ClCompile Include="Source\Components\ServerComponentOrchestrator.cpp" />
   </ItemGroup>
 </Project>

@@ -79,7 +79,7 @@ private:
 	std::unique_ptr<DX::DeviceResources> deviceResources;
 	ObjectManager objectManager;
 	RenderComponentManager renderComponentManager{ objectManager };
-	StatsComponentManager statsComponentManager{ objectManager, g_eventHandler };
+	StatsComponentManager statsComponentManager{ g_eventHandler, objectManager };
 	GameTimer timer;
 	Camera camera;
 	GameMap gameMap;

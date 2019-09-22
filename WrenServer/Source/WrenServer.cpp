@@ -5,31 +5,20 @@
 #include "Components/AIComponentManager.h"
 #include "Components/PlayerComponentManager.h"
 #include "Components/SkillComponentManager.h"
+#include "Components/ServerComponentOrchestrator.h"
 
-static ServerRepository repository{ "..\\..\\Databases\\WrenServer.db" };
-static CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db " };
-
-ObjectManager g_objectManager;
-GameTimer m_timer;
-EventHandler g_eventHandler;
-StatsComponentManager g_statsComponentManager{ g_objectManager, g_eventHandler };
-GameMap g_gameMap;
-AIComponentManager g_aiComponentManager{ g_objectManager, g_gameMap };
-PlayerComponentManager g_playerComponentManager{ g_objectManager, g_gameMap };
-SkillComponentManager g_skillComponentManager{ g_objectManager };
-ServerSocketManager g_socketManager{ repository, commonRepository };
-
-void PublishEvents()
+void PublishEvents(EventHandler& eventHandler)
 {
-	auto eventQueue = g_eventHandler.eventQueue;
-	while (!eventQueue->empty())
+	std::queue<std::unique_ptr<const Event>>& eventQueue = eventHandler.GetEventQueue();
+	std::list<Observer*>& observers = eventHandler.GetObservers();
+	while (!eventQueue.empty())
 	{
-		const auto event = eventQueue->front();
-		eventQueue->pop();
+		auto event = std::move(eventQueue.front());
+		eventQueue.pop();
 
-		for (auto it = g_eventHandler.observers->begin(); it != g_eventHandler.observers->end(); it++)
+		for (auto it = observers.begin(); it != observers.end(); it++)
 		{
-			if ((*it)->HandleEvent(event))
+			if ((*it)->HandleEvent(event.get()))
 				break;
 		}
 	}
@@ -37,40 +26,54 @@ void PublishEvents()
 
 int main()
 {
+	static EventHandler eventHandler;
+	static ObjectManager objectManager;
+	static GameMap gameMap;
+	static ServerComponentOrchestrator componentOrchestrator;
+	static ServerRepository serverRepository{ "..\\..\\Databases\\WrenServer.db" };
+	static CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db " };
+	static ServerSocketManager socketManager{ eventHandler, gameMap, objectManager, componentOrchestrator, serverRepository, commonRepository };
+	static AIComponentManager aiComponentManager{ eventHandler, objectManager, gameMap, componentOrchestrator, socketManager };
+	static PlayerComponentManager playerComponentManager{ eventHandler, objectManager, gameMap, componentOrchestrator, socketManager };
+	static SkillComponentManager skillComponentManager{ eventHandler, objectManager, componentOrchestrator, socketManager };
+	static StatsComponentManager statsComponentManager{ eventHandler, objectManager };
+	componentOrchestrator.InitializeComponentManagers(&aiComponentManager, &playerComponentManager, &skillComponentManager, &statsComponentManager);
+	socketManager.Initialize();
     HWND consoleWindow = GetConsoleWindow();
     MoveWindow(consoleWindow, 810, 0, 800, 800, TRUE);
     std::cout << "WrenServer initialized.\n\n";
 
+	GameTimer timer;
+	timer.Reset();
 	auto updateTimer{ 0.0f };
-	m_timer.Reset();
-
+	
     while (true)
     {
-		m_timer.Tick();
+		timer.Tick();
 
-		g_socketManager.ProcessPackets();
+		socketManager.ProcessPackets();
 
 		// turn this off for debugging
 		//socketManager.HandleTimeout();
 
-		const auto deltaTime = m_timer.DeltaTime();
+		const auto deltaTime = timer.DeltaTime();
 
 		updateTimer += deltaTime;
 		if (updateTimer >= UPDATE_FREQUENCY)
 		{
-			g_aiComponentManager.Update();
-			g_playerComponentManager.Update();
-			g_objectManager.Update();
+			aiComponentManager.Update();
+			playerComponentManager.Update();
+			objectManager.Update();
 			
-			PublishEvents();
+			PublishEvents(eventHandler);
 
-			g_socketManager.UpdateClients();
+			socketManager.UpdateClients();
 
 			updateTimer -= UPDATE_FREQUENCY;
 		}
     }
     
-    g_socketManager.CloseSockets();    
+    socketManager.CloseSockets();    
 
     return 0;
 }

@@ -35,7 +35,8 @@ void ObjectManager::DeleteGameObject(EventHandler& eventHandler, const int gameO
 	idIndexMap[lastGameObjectId] = gameObjectToDeleteIndex;
 
 	// publish event that other ComponentManagers can subscribe to so they can delete those Components
-	eventHandler.QueueEvent(new DeleteGameObjectEvent(gameObjectId));
+	std::unique_ptr<Event> e = std::make_unique<DeleteGameObjectEvent>(gameObjectId);
+	eventHandler.QueueEvent(e);
 }
 
 GameObject& ObjectManager::GetGameObjectById(const int gameObjectId)

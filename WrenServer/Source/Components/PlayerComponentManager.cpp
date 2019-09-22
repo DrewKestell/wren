@@ -1,22 +1,19 @@
 #include "stdafx.h"
 #include "PlayerComponentManager.h"
-#include "AIComponentManager.h"
-#include <Components/StatsComponentManager.h>
-#include "../ServerSocketManager.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
+#include "AIComponentManager.h"
+#include <Components/StatsComponentManager.h>
 
-extern EventHandler g_eventHandler;
-extern AIComponentManager g_aiComponentManager;
-extern StatsComponentManager g_statsComponentManager;
-extern ServerSocketManager g_socketManager;
-
-PlayerComponentManager::PlayerComponentManager(ObjectManager& objectManager, GameMap& gameMap)
-	: objectManager{ objectManager },
-	  gameMap{ gameMap }
+PlayerComponentManager::PlayerComponentManager(EventHandler& eventHandler, ObjectManager& objectManager, GameMap& gameMap, ServerComponentOrchestrator& componentOrchestrator, ServerSocketManager& socketManager)
+	: eventHandler{ eventHandler },
+	  objectManager{ objectManager },
+	  gameMap{ gameMap },
+	  componentOrchestrator{ componentOrchestrator },
+	  socketManager{ socketManager }
 {
-	g_eventHandler.Subscribe(*this);
+	eventHandler.Subscribe(*this);
 }
 
 PlayerComponent& PlayerComponentManager::CreatePlayerComponent(const int gameObjectId, const std::string token, const std::string ipAndPort, const sockaddr_in fromSockAddr, const unsigned __int64 lastHeartbeat)
@@ -69,6 +66,9 @@ void PlayerComponentManager::Update()
 	std::mt19937 rng(dev());
 	std::uniform_int_distribution<std::mt19937::result_type> dist100(0, 99);
 
+	const auto aiComponentManager = componentOrchestrator.GetAIComponentManager();
+	const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
+
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
 		PlayerComponent& comp = playerComponents[i];
@@ -109,7 +109,7 @@ void PlayerComponentManager::Update()
 				{
 					comp.swingTimer = 0.0f;
 
-					AIComponent& targetAIComponent = g_aiComponentManager.GetAIComponentById(target.aiComponentId);
+					AIComponent& targetAIComponent = aiComponentManager->GetAIComponentById(target.aiComponentId);
 
 					const auto playerId = player.GetId();
 					const auto targetId = target.GetId();
@@ -123,22 +123,24 @@ void PlayerComponentManager::Update()
 						std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);
 						const auto dmg = distDamage(rng);
 
-						StatsComponent& statsComponent = g_statsComponentManager.GetStatsComponentById(target.statsComponentId);
+						StatsComponent& statsComponent = statsComponentManager->GetStatsComponentById(target.statsComponentId);
 						statsComponent.health = Utility::Max(0, statsComponent.health - dmg);
 
 						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
-						g_eventHandler.QueueEvent(new AttackHitEvent{ playerId, targetId, (int)dmg, weaponSkillIds, 2 });
+						std::unique_ptr<Event> e = std::make_unique<AttackHitEvent>(playerId, targetId, (int)dmg, weaponSkillIds, 2);
+						eventHandler.QueueEvent(e);
 
 						std::vector<std::string> args{ std::to_string(playerId), std::to_string(targetId), std::to_string(dmg) };
-						g_socketManager.SendPacketToAllClients(OpCode::AttackHit, args);
+						socketManager.SendPacketToAllClients(OpCode::AttackHit, args);
 					}
 					else
 					{
 						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
-						g_eventHandler.QueueEvent(new AttackMissEvent{ playerId, targetId, weaponSkillIds, 2 });
+						std::unique_ptr<Event> e = std::make_unique<AttackMissEvent>(playerId, targetId, weaponSkillIds, 2);
+						eventHandler.QueueEvent(e);
 
 						std::vector<std::string> args{ std::to_string(playerId), std::to_string(targetId) };
-						g_socketManager.SendPacketToAllClients(OpCode::AttackMiss, args);
+						socketManager.SendPacketToAllClients(OpCode::AttackMiss, args);
 					}
 				}
 			}
@@ -167,5 +169,5 @@ const int PlayerComponentManager::GetPlayerComponentIndex()
 
 PlayerComponentManager::~PlayerComponentManager()
 {
-	g_eventHandler.Unsubscribe(*this);
+	eventHandler.Unsubscribe(*this);
 }
