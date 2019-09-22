@@ -53,7 +53,7 @@ int main()
 		// turn this off for debugging
 		//socketManager.HandleTimeout();
 
-		auto deltaTime = m_timer.DeltaTime();
+		const auto deltaTime = m_timer.DeltaTime();
 
 		updateTimer += deltaTime;
 		if (updateTimer >= UPDATE_FREQUENCY)

@@ -25,8 +25,8 @@ class ServerSocketManager : public SocketManager
 	void EnterWorld(const int accountId, const std::string& characterName);
 	void DeleteCharacter(const int accountId, const std::string& characterName);
 	void PropagateChatMessage(const std::string& senderName, const std::string& message);
-	void ActivateAbility(PlayerComponent& player, Ability& ability);
-	virtual void InitializeMessageHandlers();
+	void ActivateAbility(PlayerComponent& player, const Ability& ability);
+	void InitializeMessageHandlers() override;
 
 public:
 	ServerSocketManager(ServerRepository& repository, CommonRepository& commonRepository);

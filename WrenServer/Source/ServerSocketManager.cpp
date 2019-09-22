@@ -66,7 +66,7 @@ void ServerSocketManager::SendPacket(sockaddr_in to, const OpCode opCode, const 
 
 void ServerSocketManager::SendPacketToAllClients(const OpCode opcode, const std::vector<std::string>& args)
 {
-	const auto playerComponents = g_playerComponentManager.GetPlayerComponents();
+	const auto * const playerComponents = g_playerComponentManager.GetPlayerComponents();
 	const auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
 
 	for (auto i = 0; i < playerComponentIndex; i++)
@@ -93,7 +93,7 @@ PlayerComponent& ServerSocketManager::GetPlayerComponent(const int accountId)
 
 void ServerSocketManager::HandleTimeout()
 {
-	const auto playerComponents = g_playerComponentManager.GetPlayerComponents();
+	const auto * const playerComponents = g_playerComponentManager.GetPlayerComponents();
 	const auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
 
 	for (auto i = 0; i < playerComponentIndex; i++)
@@ -175,7 +175,7 @@ void ServerSocketManager::CreateAccount(const std::string& accountName, const st
 		if (result != 0)
 			throw std::exception(LIBSODIUM_MEMORY_ERROR);
 
-		repository.CreateAccount(accountName, hashedPassword);
+		repository.CreateAccount(accountName, std::string{ hashedPassword });
 		SendPacket(from, OpCode::CreateAccountSuccess);
 	}
 }
@@ -302,15 +302,15 @@ void ServerSocketManager::DeleteCharacter(const int accountId, const std::string
 
 void ServerSocketManager::UpdateClients()
 {
-	auto gameObjectLength = g_objectManager.GetGameObjectIndex();
-	auto gameObjects = g_objectManager.GetGameObjects();
+	const auto gameObjectLength = g_objectManager.GetGameObjectIndex();
+	const auto * const gameObjects = g_objectManager.GetGameObjects();
 
-	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
-	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
+	const auto * const playerComponents = g_playerComponentManager.GetPlayerComponents();
+	const auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
 
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
-		PlayerComponent& playerToUpdate = playerComponents[i];
+		const auto playerToUpdate = playerComponents[i];
 
 		// skip players that have logged in, but haven't selected a character and entered the game yet
 		if (playerToUpdate.characterId == 0)
@@ -319,10 +319,10 @@ void ServerSocketManager::UpdateClients()
 		// for each player, send them an update for every non-static game object
 		for (auto j = 0; j < gameObjectLength; j++)
 		{
-			auto gameObject = gameObjects[j];
+			const auto gameObject = gameObjects[j];
 
-			auto pos = gameObject.GetWorldPosition();
-			auto mov = gameObject.movementVector;
+			const auto pos = gameObject.GetWorldPosition();
+			const auto mov = gameObject.movementVector;
 
 			const auto id = std::to_string(gameObject.GetId());
 			const auto posX = std::to_string(pos.x);
@@ -382,18 +382,18 @@ void ServerSocketManager::UpdateClients()
 
 void ServerSocketManager::PropagateChatMessage(const std::string& senderName, const std::string& message)
 {
-	auto playerComponents = g_playerComponentManager.GetPlayerComponents();
-	auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
+	const auto * const playerComponents = g_playerComponentManager.GetPlayerComponents();
+	const auto playerComponentIndex = g_playerComponentManager.GetPlayerComponentIndex();
 
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
-		PlayerComponent& playerToUpdate = playerComponents[i];
+		const auto playerToUpdate = playerComponents[i];
 		std::vector<std::string> args{ senderName, message };
 		SendPacket(playerToUpdate.fromSockAddr, OpCode::PropagateChatMessage, args);
 	}
 }
 
-void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, Ability& ability)
+void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, const Ability& ability)
 {
 	if (ability.name == "Auto Attack")
 	{
@@ -431,21 +431,21 @@ void ServerSocketManager::InitializeMessageHandlers()
 {
 	messageHandlers[OpCode::Connect] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountName = args[0];
-		const auto password = args[1];
+		const auto accountName = args.at(0);
+		const auto password = args.at(1);
 
 		char str[INET_ADDRSTRLEN];
 		ZeroMemory(str, sizeof(str));
 		inet_ntop(AF_INET, &(from.sin_addr), str, INET_ADDRSTRLEN);
-		const auto ipAndPort = std::string(str) + ":" + std::to_string(from.sin_port);
+		const auto ipAndPort = std::string{ str } + ":" + std::to_string(from.sin_port);
 
 		Login(accountName, password, ipAndPort, from);
 	};
 
 	messageHandlers[OpCode::Disconnect] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
 
 		ValidateToken(accountId, token);
 		Logout(accountId);
@@ -453,17 +453,17 @@ void ServerSocketManager::InitializeMessageHandlers()
 	
 	messageHandlers[OpCode::CreateAccount] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountName = args[0];
-		const auto password = args[1];
+		const auto accountName = args.at(0);
+		const auto password = args.at(1);
 
 		CreateAccount(accountName, password, from);
 	};
 
 	messageHandlers[OpCode::CreateCharacter] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
-		const auto characterName = args[2];
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
+		const auto characterName = args.at(2);
 
 		ValidateToken(accountId, token);
 		CreateCharacter(accountId, characterName);
@@ -471,8 +471,8 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::Heartbeat] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
 
 		ValidateToken(accountId, token);
 		UpdateLastHeartbeat(accountId);
@@ -480,9 +480,9 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::EnterWorld] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
-		const auto characterName = args[2];
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
+		const auto characterName = args.at(2);
 
 		ValidateToken(accountId, token);
 		EnterWorld(accountId, characterName);
@@ -490,9 +490,9 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::DeleteCharacter] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
-		const auto characterName = args[2];
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
+		const auto characterName = args.at(2);
 
 		ValidateToken(accountId, token);
 		DeleteCharacter(accountId, characterName);
@@ -500,9 +500,9 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::ActivateAbility] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
-		const auto abilityId = args[2];
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
+		const auto abilityId = args.at(2);
 
 		ValidateToken(accountId, token);
 		PlayerComponent& playerComponent = GetPlayerComponent(accountId);
@@ -516,10 +516,10 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::SendChatMessage] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
-		const auto message = args[2];
-		const auto senderName = args[3];
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
+		const auto message = args.at(2);
+		const auto senderName = args.at(3);
 
 		ValidateToken(accountId, token);
 		PropagateChatMessage(senderName, message);
@@ -527,9 +527,9 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::SetTarget] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
-		const auto targetId = args[2];
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
+		const auto targetId = args.at(2);
 
 		ValidateToken(accountId, token);
 		PlayerComponent& playerComponent = GetPlayerComponent(accountId);
@@ -551,8 +551,8 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::UnsetTarget] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
 
 		ValidateToken(accountId, token);
 		PlayerComponent& playerComponent = GetPlayerComponent(accountId);
@@ -561,22 +561,22 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::Ping] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
-		const auto pingId = args[2];
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
+		const auto pingId = args.at(2);
 
 		ValidateToken(accountId, token);
 
-		PlayerComponent& player = GetPlayerComponent(accountId);
+		const auto player = GetPlayerComponent(accountId);
 		std::vector<std::string> outgoingArgs{ pingId };
 		SendPacket(player.fromSockAddr, OpCode::Pong, outgoingArgs);
 	};
 
 	messageHandlers[OpCode::PlayerRightMouseDown] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
-		const auto dir = XMFLOAT3{ std::stof(args[2]), std::stof(args[3]), std::stof(args[4]) };
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
+		const auto dir = XMFLOAT3{ std::stof(args.at(2)), std::stof(args.at(3)), std::stof(args.at(4)) };
 
 		ValidateToken(accountId, token);
 
@@ -586,8 +586,8 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::PlayerRightMouseUp] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
 
 		ValidateToken(accountId, token);
 
@@ -597,9 +597,9 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::PlayerRightMouseDirChange] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = std::stoi(args[0]);
-		const auto token = args[1];
-		const auto dir = XMFLOAT3{ std::stof(args[2]), std::stof(args[3]), std::stof(args[4]) };
+		const auto accountId = std::stoi(args.at(0));
+		const auto token = args.at(1);
+		const auto dir = XMFLOAT3{ std::stof(args.at(2)), std::stof(args.at(3)), std::stof(args.at(4)) };
 
 		ValidateToken(accountId, token);
 
