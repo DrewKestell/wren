@@ -14,8 +14,8 @@ void ServerComponentOrchestrator::InitializeComponentManagers(
 	this->statsComponentManager = statsComponentManager;
 }
 
-AIComponentManager* ServerComponentOrchestrator::GetAIComponentManager() { return aiComponentManager; }
-PlayerComponentManager* ServerComponentOrchestrator::GetPlayerComponentManager() { return playerComponentManager; }
-SkillComponentManager* ServerComponentOrchestrator::GetSkillComponentManager() { return skillComponentManager; }
-StatsComponentManager* ServerComponentOrchestrator::GetStatsComponentManager() { return statsComponentManager;
+AIComponentManager* ServerComponentOrchestrator::GetAIComponentManager() const { return aiComponentManager; }
+PlayerComponentManager* ServerComponentOrchestrator::GetPlayerComponentManager() const { return playerComponentManager; }
+SkillComponentManager* ServerComponentOrchestrator::GetSkillComponentManager() const { return skillComponentManager; }
+StatsComponentManager* ServerComponentOrchestrator::GetStatsComponentManager() const { return statsComponentManager;
 }

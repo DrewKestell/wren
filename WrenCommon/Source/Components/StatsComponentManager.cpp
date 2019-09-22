@@ -26,11 +26,11 @@ void StatsComponentManager::DeleteStatsComponent(const int statsComponentId)
 {
 	// first copy the last StatsComponent into the index that was deleted
 	auto statsComponentToDeleteIndex = idIndexMap[statsComponentId];
-	auto lastStatsComponentIndex = --statsComponentIndex;
+	const auto lastStatsComponentIndex = --statsComponentIndex;
 	memcpy(&statsComponents[statsComponentToDeleteIndex], &statsComponents[lastStatsComponentIndex], sizeof(StatsComponent));
 
 	// then update the index of the moved StatsComponent
-	auto lastStatsComponentId = statsComponents[statsComponentToDeleteIndex].id;
+	const auto lastStatsComponentId = statsComponents[statsComponentToDeleteIndex].id;
 	idIndexMap[lastStatsComponentId] = statsComponentToDeleteIndex;
 }
 

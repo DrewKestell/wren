@@ -2,7 +2,7 @@
 #include <Constants.h>
 #include "Utility.h"
 
-bool Utility::DetectClick(const float topLeftX, const float topLeftY, const float bottomRightX, const float bottomRightY, const float mousePosX, const float mousePosY)
+constexpr bool Utility::DetectClick(const float topLeftX, const float topLeftY, const float bottomRightX, const float bottomRightY, const float mousePosX, const float mousePosY)
 {
 	return mousePosX >= topLeftX && mousePosX <= bottomRightX && mousePosY >= topLeftY && mousePosY <= bottomRightY;
 }
@@ -20,19 +20,19 @@ const char Utility::GetHotbarIndex(const float clientHeight, const float mousePo
 	if (mousePosX < 5.0f || mousePosX >= 405.0f || mousePosY < clientHeight - 45.0f || mousePosY > clientHeight - 5.0f)
 		return -1;
 
-	return (char)((mousePosX - 5) / 40);
+	return static_cast<char>((mousePosX - 5) / 40);
 }
 
 const XMFLOAT3 Utility::MousePosToDirection(const float clientWidth, const float clientHeight, const float mouseX, const float mouseY)
 {
-	auto centerPoint = XMVECTOR{ clientWidth / 2, clientHeight / 2, 0.0f, 0.0f };
-	auto clickPoint = XMVECTOR{ mouseX, mouseY, 0.0f, 0.0f };
-	auto clickVec = XMVectorSubtract(centerPoint, clickPoint);
-	auto upVec = XMVECTOR{ 0.0f, 1.0f, 0.0f, 0.0f };
-	auto angleVec = XMVectorATan2(XMVector3Dot(upVec, clickVec), XMVector3Cross(upVec, clickVec));
+	const auto centerPoint = XMVECTOR{ clientWidth / 2, clientHeight / 2, 0.0f, 0.0f };
+	const auto clickPoint = XMVECTOR{ mouseX, mouseY, 0.0f, 0.0f };
+	const auto clickVec = XMVectorSubtract(centerPoint, clickPoint);
+	const auto upVec = XMVECTOR{ 0.0f, 1.0f, 0.0f, 0.0f };
+	const auto angleVec = XMVectorATan2(XMVector3Dot(upVec, clickVec), XMVector3Cross(upVec, clickVec));
 	XMFLOAT4 angleFloat;
 	XMStoreFloat4(&angleFloat, angleVec);
-	auto angle = XMConvertToDegrees(angleFloat.z) + 180.0f;
+	const auto angle = XMConvertToDegrees(angleFloat.z) + 180.0f;
 
 	if (angle >= 337.5 || angle <= 22.5)
 		return VEC_SOUTHWEST;
@@ -62,8 +62,8 @@ const bool Utility::CheckOutOfBounds(const XMFLOAT3 pos)
 
 void Utility::GetMapTileXYFromPos(const XMFLOAT3 pos, int& row, int& col)
 {
-	row = (int)pos.x / (int)TILE_SIZE;
-	col = (int)pos.z / (int)TILE_SIZE;
+	row = static_cast<int>(pos.x) / static_cast<int>(TILE_SIZE);
+	col = static_cast<int>(pos.z) / static_cast<int>(TILE_SIZE);
 }
 
 const bool Utility::AreOnAdjacentOrDiagonalTiles(const XMFLOAT3 pos1, const XMFLOAT3 pos2)

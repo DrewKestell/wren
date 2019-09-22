@@ -20,8 +20,8 @@ public:
 		StatsComponentManager* statsComponentManager
 	);
 
-	AIComponentManager* GetAIComponentManager();
-	PlayerComponentManager* GetPlayerComponentManager();
-	SkillComponentManager* GetSkillComponentManager();
-	StatsComponentManager* GetStatsComponentManager();
+	AIComponentManager* GetAIComponentManager() const;
+	PlayerComponentManager* GetPlayerComponentManager() const;
+	SkillComponentManager* GetSkillComponentManager() const;
+	StatsComponentManager* GetStatsComponentManager() const;
 };

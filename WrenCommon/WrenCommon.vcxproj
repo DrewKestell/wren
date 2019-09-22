@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClCompile Include="Source\Components\StatsComponent.cpp" />
     <ClCompile Include="Source\Components\StatsComponentManager.cpp" />
-    <ClCompile Include="Source\dllmain.cpp" />
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
     <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
     <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />

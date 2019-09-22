@@ -8,8 +8,8 @@ void GameObject::Update()
 	// first check if the destination is reached
 	if (movementVector != VEC_ZERO)
 	{
-		auto deltaX = std::abs(position.x - destination.x);
-		auto deltaZ = std::abs(position.z - destination.z);
+		const auto deltaX = std::abs(position.x - destination.x);
+		const auto deltaZ = std::abs(position.z - destination.z);
 
 		if (deltaX < 1.0f && deltaZ < 1.0f)
 		{
@@ -22,7 +22,7 @@ void GameObject::Update()
 	auto movementVec = XMLoadFloat3(&movementVector);
 	movementVec *= speed * UPDATE_FREQUENCY;
 	
-	auto positionVec = XMLoadFloat3(&localPosition);
+	const auto positionVec = XMLoadFloat3(&localPosition);
 	XMStoreFloat3(&localPosition, movementVec + positionVec);
 }
 

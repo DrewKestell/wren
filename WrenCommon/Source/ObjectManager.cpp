@@ -17,7 +17,7 @@ GameObject& ObjectManager::CreateGameObject(const XMFLOAT3 localPosition, const 
 	if (gameObjectIndex == MAX_GAMEOBJECTS_SIZE)
 		throw std::exception("Max GameObjects exceeded!");
 
-	auto gameObjectId = id == 0 ? gameObjectIndex : id;
+	const auto gameObjectId = id == 0 ? gameObjectIndex : id;
 	gameObjects[gameObjectIndex].Initialize(gameObjectId, type, name, localPosition, scale, speed, isStatic, modelId, textureId);
 	idIndexMap[gameObjectId] = gameObjectIndex;
 	return gameObjects[gameObjectIndex++];
@@ -27,11 +27,11 @@ void ObjectManager::DeleteGameObject(EventHandler& eventHandler, const int gameO
 {
 	// first copy the last GameObject into the index that was deleted
 	auto gameObjectToDeleteIndex = idIndexMap[gameObjectId];
-	auto lastGameObjectIndex = --gameObjectIndex;
+	const auto lastGameObjectIndex = --gameObjectIndex;
 	memcpy(&gameObjects[gameObjectToDeleteIndex], &gameObjects[lastGameObjectIndex], sizeof(GameObject));
 
 	// then update the index of the moved GameObject
-	auto lastGameObjectId = gameObjects[gameObjectToDeleteIndex].id;
+	const auto lastGameObjectId = gameObjects[gameObjectToDeleteIndex].id;
 	idIndexMap[lastGameObjectId] = gameObjectToDeleteIndex;
 
 	// publish event that other ComponentManagers can subscribe to so they can delete those Components

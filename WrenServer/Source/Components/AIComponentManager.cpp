@@ -1,11 +1,9 @@
 #include "stdafx.h"
 #include "AIComponentManager.h"
 #include <Components/StatsComponentManager.h>
-#include "../ServerSocketManager.h"
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
-#include <memory>
 
 constexpr XMFLOAT3 DIRECTIONS[8]
 {

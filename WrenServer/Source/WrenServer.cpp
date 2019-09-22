@@ -1,11 +1,9 @@
 #include "stdafx.h"
-#include "ServerSocketManager.h"
 #include <GameTimer.h>
 #include <Components/StatsComponentManager.h>
 #include "Components/AIComponentManager.h"
 #include "Components/PlayerComponentManager.h"
 #include "Components/SkillComponentManager.h"
-#include "Components/ServerComponentOrchestrator.h"
 
 void PublishEvents(EventHandler& eventHandler)
 {

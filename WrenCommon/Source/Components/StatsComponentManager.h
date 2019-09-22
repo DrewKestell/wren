@@ -21,6 +21,6 @@ public:
 		const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina);
 	void DeleteStatsComponent(const int statsComponentId);
 	StatsComponent& GetStatsComponentById(const int statsComponentId);
-	virtual const bool HandleEvent(const Event* const event);
+	const bool HandleEvent(const Event* const event) override;
 	~StatsComponentManager();
 };

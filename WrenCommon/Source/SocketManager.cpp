@@ -6,7 +6,7 @@ SocketManager::SocketManager(const int localPort)
 {
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
-		throw new std::exception("Failed to initialize sockets.");
+		throw std::exception("Failed to initialize sockets.");
 
 	local.sin_family = AF_INET;
 	local.sin_addr.s_addr = INADDR_ANY;
@@ -17,7 +17,7 @@ SocketManager::SocketManager(const int localPort)
 	if (sock == INVALID_SOCKET)
 	{
 		const auto error = WSAGetLastError();
-		throw new std::exception("Failed to create new socket. Error: " + error);
+		throw std::exception("Failed to create new socket. Error: " + error);
 	}
 
 	bind(sock, (sockaddr*)& local, sockaddr_in_len);
@@ -29,15 +29,15 @@ bool SocketManager::TryRecieveMessage()
 {
 	char buffer[1024];
 	ZeroMemory(buffer, sizeof(buffer));
-	auto result = recvfrom(sock, buffer, sizeof(buffer), 0, (sockaddr*)& from, &sockaddr_in_len);
+	const auto result = recvfrom(sock, buffer, sizeof(buffer), 0, (sockaddr*)& from, &sockaddr_in_len);
 	if (result == SOCKET_ERROR)
 	{
-		auto errorCode = WSAGetLastError();
+		const auto errorCode = WSAGetLastError();
 
 		if (errorCode == WSAEWOULDBLOCK)
 			return false;
 
-		throw new std::exception("WrenServer SocketManager error receiving packet. Error code: " + errorCode);
+		throw std::exception("WrenServer SocketManager error receiving packet. Error code: " + errorCode);
 	}
 	else
 	{
@@ -47,7 +47,7 @@ bool SocketManager::TryRecieveMessage()
 		int checksum{ 0 };
 		memcpy(&checksum, buffer, sizeof(OpCode));
 		offset += sizeof(OpCode);
-		if (checksum != (int)OpCode::Checksum)
+		if (checksum != static_cast<int>(OpCode::Checksum))
 			return true;
 
 		OpCode opCode{ };
@@ -55,7 +55,7 @@ bool SocketManager::TryRecieveMessage()
 		offset += sizeof(OpCode);
 
 		std::vector<std::string> args;
-		auto bufferLength = strlen(buffer + offset);
+		const auto bufferLength = strlen(buffer + offset);
 		if (bufferLength > 0)
 		{
 			std::string arg = "";
@@ -89,17 +89,17 @@ void SocketManager::SendPacket(sockaddr_in to, const OpCode opCode, const std::v
 	int offset{ 0 };
 
 	memcpy(buffer, &CHECKSUM, sizeof(OpCode));
-	offset += (int)sizeof(OpCode);
+	offset += int{ sizeof(OpCode) };
 
 	memcpy(buffer + offset, &opCode, sizeof(OpCode));
-	offset += (int)sizeof(OpCode);
+	offset += int{ sizeof(OpCode) };
 
 	std::string packet{ "" };
 	for (auto i = 0; i < args.size(); i++)
 		packet += args[i] + "|";
 
 	strcpy_s(buffer + offset, packet.length() + 1, packet.c_str());
-	auto sentBytes = sendto(sock, buffer, sizeof(buffer), 0, (sockaddr*)& to, sockaddr_in_len);
+	const auto sentBytes = sendto(sock, buffer, sizeof(buffer), 0, (sockaddr*)& to, sockaddr_in_len);
 	if (sentBytes != sizeof(buffer))
 		throw std::exception("Failed to send packet.");
 }
