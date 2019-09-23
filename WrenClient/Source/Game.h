@@ -1,36 +1,36 @@
 #pragma once
 
-#include <CommonRepository.h>
-#include "ClientRepository.h"
-#include <Models/Skill.h>
-#include <Models/StaticObject.h>
-#include <Constants.h>
-#include <GameMap/GameMap.h>
-#include "DeviceResources.h"
-#include "GameTimer.h"
 #include "Camera.h"
-#include "ShaderBuffer.h"
-#include "Mesh.h"
-#include "ObjectManager.h"
+#include "ClientRepository.h"
+#include "Components/GameMapRenderComponent.h"
 #include "Components/RenderComponentManager.h"
 #include "Components/StatsComponentManager.h"
-#include "Components/GameMapRenderComponent.h"
-#include "Sprite.h"
+#include "DeviceResources.h"
+#include "EventHandling/EventHandler.h"
+#include "GameTimer.h"
+#include "Mesh.h"
 #include "Models/Npc.h"
+#include "ObjectManager.h"
+#include "ShaderBuffer.h"
+#include "Sprite.h"
+#include "UI/UIAbilitiesContainer.h"
+#include "UI/UIButton.h"
+#include "UI/UICharacterHUD.h"
 #include "UI/UICharacterListing.h"
+#include "UI/UIHotbar.h"
 #include "UI/UIInput.h"
 #include "UI/UIInputGroup.h"
-#include "UI/UIButton.h"
-#include "UI/UIPanel.h"
 #include "UI/UILabel.h"
+#include "UI/UIPanel.h"
 #include "UI/UISkillListing.h"
-#include "UI/UIHotbar.h"
-#include "UI/UIAbilitiesContainer.h"
 #include "UI/UISkillsContainer.h"
-#include "UI/UICharacterHUD.h"
 #include "UI/UITargetHUD.h"
 #include "UI/UITextWindow.h"
-#include "EventHandling/EventHandler.h"
+#include <CommonRepository.h>
+#include <Constants.h>
+#include <GameMap/GameMap.h>
+#include <Models/Skill.h>
+#include <Models/StaticObject.h>
 
 extern EventHandler g_eventHandler;
 
