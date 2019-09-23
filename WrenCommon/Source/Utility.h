@@ -3,7 +3,7 @@
 class Utility
 {
 public:
-	static constexpr bool DetectClick(const float topLeftX, const float topLeftY, const float bottomRightX, const float bottomRightY, const float mousePosX, const float mousePosY);
+	static const bool DetectClick(const float topLeftX, const float topLeftY, const float bottomRightX, const float bottomRightY, const float mousePosX, const float mousePosY);
 	static std::string ws2s(const std::wstring& wstr);
 	static const char GetHotbarIndex(const float clientHeight, const float mousePosX, const float mousePosY);
 	static const XMFLOAT3 MousePosToDirection(const float clientWidth, const float clientHeight, const float mouseX, const float mouseY);

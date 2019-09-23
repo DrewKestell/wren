@@ -71,7 +71,8 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 
 				// it's important that UIAbilities receive certain events (mouse clicks for example) before other
 				// UI elements, so we reorder here to make sure the UIComponents are in the right order.
-				g_eventHandler.QueueEvent(new Event(EventType::ReorderUIComponents));
+				std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
+				g_eventHandler.QueueEvent(e);
 			}
 			else
 			{

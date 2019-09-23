@@ -146,6 +146,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	auto game = reinterpret_cast<Game*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
 	WPARAM keyCode;
+	std::unique_ptr<Event> e;
 	switch (message)
 	{
 	case WM_PAINT:
@@ -253,25 +254,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_LBUTTONDOWN:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::LeftMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		e = std::make_unique<MouseEvent>(EventType::LeftMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+		g_eventHandler.QueueEvent(e);
 		break;
 	case WM_MBUTTONDOWN:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MiddleMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		e = std::make_unique<MouseEvent>(EventType::MiddleMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+		g_eventHandler.QueueEvent(e);
 		break;
 	case WM_RBUTTONDOWN:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::RightMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		e = std::make_unique<MouseEvent>(EventType::RightMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+		g_eventHandler.QueueEvent(e);
 		break;
 	case WM_LBUTTONUP:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::LeftMouseUp,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		e = std::make_unique<MouseEvent>(EventType::LeftMouseUp, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+		g_eventHandler.QueueEvent(e);
 		break;
 	case WM_MBUTTONUP:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MiddleMouseUp,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		e = std::make_unique<MouseEvent>(EventType::MiddleMouseUp, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+		g_eventHandler.QueueEvent(e);
 		break;
 	case WM_RBUTTONUP:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::RightMouseUp,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		e = std::make_unique<MouseEvent>(EventType::RightMouseUp, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+		g_eventHandler.QueueEvent(e);
 		break;
 	case WM_MOUSEMOVE:
-		g_eventHandler.QueueEvent(new MouseEvent{ EventType::MouseMove,(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam) });
+		e = std::make_unique<MouseEvent>(EventType::MouseMove, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+		g_eventHandler.QueueEvent(e);
 		break;
 
 	case WM_SYSKEYDOWN:
@@ -305,7 +313,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 			case VK_MENU:
 				const auto keyCode = MapLeftRightKeys(wParam, lParam);
-				g_eventHandler.QueueEvent(new SystemKeyDownEvent{ keyCode });
+				e = std::make_unique<SystemKeyDownEvent>(keyCode);
+				g_eventHandler.QueueEvent(e);
 				break;
 			}
 		}
@@ -317,7 +326,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_MENU:
 			const auto keyCode = MapLeftRightKeys(wParam, lParam);
-			g_eventHandler.QueueEvent(new SystemKeyUpEvent{ keyCode });
+			e = std::make_unique<SystemKeyUpEvent>(keyCode);
+			g_eventHandler.QueueEvent(e);
 			break;
 		}
 		break;
@@ -333,7 +343,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			keyCode = wParam;
 			break;
 		}
-		g_eventHandler.QueueEvent(new SystemKeyDownEvent{ keyCode });
+		e = std::make_unique<SystemKeyDownEvent>(keyCode);
+		g_eventHandler.QueueEvent(e);
 		break;
 
 	case WM_KEYUP:
@@ -347,7 +358,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			keyCode = wParam;
 			break;
 		}
-		g_eventHandler.QueueEvent(new SystemKeyUpEvent{ keyCode });
+		e = std::make_unique<SystemKeyUpEvent>(keyCode);
+		g_eventHandler.QueueEvent(e);
 		break;
 
 	case WM_CHAR:
@@ -365,7 +377,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		default:   // Process a normal character press.            
 			auto ch = (wchar_t)wParam;
-			g_eventHandler.QueueEvent(new KeyDownEvent{ ch });
+			e = std::make_unique<KeyDownEvent>(ch);
+			g_eventHandler.QueueEvent(e);
 			break;
 		}
 

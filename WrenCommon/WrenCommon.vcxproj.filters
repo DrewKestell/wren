@@ -22,12 +22,6 @@
     <ClCompile Include="Source\EventHandling\EventHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\GameTimer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

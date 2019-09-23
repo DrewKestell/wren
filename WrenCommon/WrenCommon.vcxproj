@@ -22,8 +22,6 @@
     <ClCompile Include="Source\Components\StatsComponent.cpp" />
     <ClCompile Include="Source\Components\StatsComponentManager.cpp" />
     <ClCompile Include="Source\EventHandling\EventHandler.cpp" />
-    <ClCompile Include="Source\EventHandling\Events\KeyPressEvent.cpp" />
-    <ClCompile Include="Source\EventHandling\Events\SystemKeyPressEvent.cpp" />
     <ClCompile Include="Source\Extensions.cpp" />
     <ClCompile Include="Source\GameMap\GameMap.cpp" />
     <ClCompile Include="Source\GameMap\GameMapTile.cpp" />

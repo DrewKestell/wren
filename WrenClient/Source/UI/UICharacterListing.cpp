@@ -76,7 +76,11 @@ const bool UICharacterListing::HandleEvent(const Event* const event)
 			}
 
 			if (wasSelected && !selected)
-				g_eventHandler.QueueEvent(new Event(EventType::DeselectCharacterListing));
+			{
+				std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
+				g_eventHandler.QueueEvent(e);
+			}
+				
 			
 			break;
 		}

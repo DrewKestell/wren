@@ -10,6 +10,5 @@ public:
 		  keyCode{ keyCode }
 	{
 	}
-	virtual ~SystemKeyPressEvent() = 0;
 	const WPARAM keyCode;
 };

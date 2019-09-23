@@ -5,7 +5,7 @@
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
 
-SkillComponentManager::SkillComponentManager(EventHandler& eventHandler, ObjectManager& objectManager, ServerComponentOrchestrator& componentOrchestrator, ServerSocketManager& serverSocketManager)
+SkillComponentManager::SkillComponentManager(EventHandler& eventHandler, ObjectManager& objectManager, ServerComponentOrchestrator& componentOrchestrator, ServerSocketManager& socketManager)
 	: eventHandler{ eventHandler },
 	  objectManager{ objectManager },
 	  componentOrchestrator{ componentOrchestrator },

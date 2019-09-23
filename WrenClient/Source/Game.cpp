@@ -40,11 +40,11 @@ Game::Game(ClientRepository repository, CommonRepository commonRepository) noexc
 void Game::PublishEvents()
 {
 	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
-	auto eventQueue = g_eventHandler.eventQueue;
-	while (!eventQueue->empty())
+	std::queue<std::unique_ptr<const Event>>& eventQueue = g_eventHandler.GetEventQueue();
+	while (!eventQueue.empty())
 	{
-		const auto event = eventQueue->front();
-		eventQueue->pop();
+		auto event = std::move(eventQueue.front());
+		eventQueue.pop();
 
 		// We pass events to the UIComponents first, because those are usually overlaid on top
 		//   of 3D GameObjects, and therefore we want certain events like clicks, etc to hit
@@ -54,7 +54,7 @@ void Game::PublishEvents()
 
 		for (int i = (int)uiComponents.size() - 1; i >= 0; i--)
 		{
-			stopPropagation = uiComponents.at(i)->HandleEvent(event);
+			stopPropagation = uiComponents.at(i)->HandleEvent(event.get());
 			if (stopPropagation)
 				break;
 		}
@@ -65,9 +65,10 @@ void Game::PublishEvents()
 		if (stopPropagation)
 			continue;
 
-		for (auto observer : *g_eventHandler.observers)
+		std::list<Observer*>& observers = g_eventHandler.GetObservers();
+		for (auto observer : observers)
 		{
-			stopPropagation = observer->HandleEvent(event);
+			stopPropagation = observer->HandleEvent(event.get());
 			if (stopPropagation)
 				break;
 		}
@@ -923,7 +924,9 @@ const bool Game::HandleEvent(const Event* const event)
 void Game::SetActiveLayer(const Layer layer)
 {
 	activeLayer = layer;
-	g_eventHandler.QueueEvent(new ChangeActiveLayerEvent{ layer });
+
+	std::unique_ptr<Event> e = std::make_unique<ChangeActiveLayerEvent>(layer);
+	g_eventHandler.QueueEvent(e);
 }
 
 Game::~Game()
@@ -960,6 +963,9 @@ void Game::InitializeEventHandlers()
 {
 	eventHandlers[EventType::RightMouseDown] = [this](const Event* const event)
 	{
+		if (activeLayer != Layer::InGame)
+			return;
+
 		const auto derivedEvent = (MouseEvent*)event;
 
 		const auto dir = Utility::MousePosToDirection((float)clientWidth, (float)clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
@@ -971,6 +977,9 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::RightMouseUp] = [this](const Event* const event)
 	{
+		if (activeLayer != Layer::InGame)
+			return;
+
 		g_socketManager.SendPacket(OpCode::PlayerRightMouseUp);
 
 		rightMouseDownDir = VEC_ZERO;
@@ -1294,13 +1303,15 @@ void Game::InitializeEventHandlers()
 		{
 			const auto objectId = clickedGameObject->GetId();
 			StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(clickedGameObject->statsComponentId);
-			g_eventHandler.QueueEvent(new SetTargetEvent{ objectId, clickedGameObject->name, &statsComponent });
+			std::unique_ptr<Event> e = std::make_unique<SetTargetEvent>(objectId, clickedGameObject->name, &statsComponent);
+			g_eventHandler.QueueEvent(e);
 			std::vector<std::string> args{ std::to_string(objectId) };
 			g_socketManager.SendPacket(OpCode::SetTarget, args);
 		}
 		else
 		{
-			g_eventHandler.QueueEvent(new Event{ EventType::UnsetTarget });
+			std::unique_ptr<Event> e = std::make_unique<Event>(EventType::UnsetTarget);
+			g_eventHandler.QueueEvent(e);
 			g_socketManager.SendPacket(OpCode::UnsetTarget);
 		}
 	};

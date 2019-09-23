@@ -155,19 +155,22 @@ void ClientSocketManager::InitializeMessageHandlers()
 	{
 		const auto error = args[0];
 
-		g_eventHandler.QueueEvent(new CreateAccountFailedEvent{ new std::string(error) });
+		std::unique_ptr<Event> e = std::make_unique<CreateAccountFailedEvent>(new std::string(error));
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::CreateAccountSuccess] = [this](const std::vector<std::string>& args)
 	{
-		g_eventHandler.QueueEvent(new Event{ EventType::CreateAccountSuccess });
+		std::unique_ptr<Event> e = std::make_unique<Event>(EventType::CreateAccountSuccess);
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::LoginFailure] = [this](const std::vector<std::string>& args)
 	{
 		const auto error = args[0];
 		
-		g_eventHandler.QueueEvent(new LoginFailedEvent{ new std::string(error) });
+		std::unique_ptr<Event> e = std::make_unique<LoginFailedEvent>(new std::string(error));
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::LoginSuccess] = [this](const std::vector<std::string>& args)
@@ -180,14 +183,16 @@ void ClientSocketManager::InitializeMessageHandlers()
 		this->accountId = std::stoi(accountId);
 		this->token = std::string(token);
 
-		g_eventHandler.QueueEvent(new LoginSuccessEvent{ characterList });
+		std::unique_ptr<Event> e = std::make_unique<LoginSuccessEvent>(characterList);
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::CreateCharacterFailure] = [this](const std::vector<std::string>& args)
 	{
 		const auto error = args[0];
 
-		g_eventHandler.QueueEvent(new CreateCharacterFailedEvent{ new std::string(error) });
+		std::unique_ptr<Event> e = std::make_unique<CreateCharacterFailedEvent>(new std::string(error));
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::CreateCharacterSuccess] = [this](const std::vector<std::string>& args)
@@ -195,7 +200,8 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const auto characterString = args[0];
 		auto characterList = BuildCharacterVector(characterString);
 
-		g_eventHandler.QueueEvent(new CreateCharacterSuccessEvent{ characterList });
+		std::unique_ptr<Event> e = std::make_unique<CreateCharacterSuccessEvent>(characterList);
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::DeleteCharacterSuccess] = [this](const std::vector<std::string>& args)
@@ -203,7 +209,8 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const auto characterString = args[0];
 		auto characterList = BuildCharacterVector(characterString);
 
-		g_eventHandler.QueueEvent(new DeleteCharacterSuccessEvent{ characterList });
+		std::unique_ptr<Event> e = std::make_unique<DeleteCharacterSuccessEvent>(characterList);
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::EnterWorldSuccess] = [this](const std::vector<std::string>& args)
@@ -232,8 +239,8 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const auto stamina = args.at(j++);
 		const auto maxStamina = args.at(j++);
 
-		const auto enterWorldSuccessEvent = new EnterWorldSuccessEvent
-		{
+		std::unique_ptr<Event> e = std::make_unique<EnterWorldSuccessEvent>
+		(
 			std::stoi(accountId),
 			XMFLOAT3{ std::stof(positionX), std::stof(positionY), std::stof(positionZ) },
 			std::stoi(modelId), std::stoi(textureId),
@@ -241,8 +248,9 @@ void ClientSocketManager::InitializeMessageHandlers()
 			name,
 			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
-		};
-		g_eventHandler.QueueEvent(enterWorldSuccessEvent);
+		);
+
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::NpcUpdate] = [this](const std::vector<std::string>& args)
@@ -269,14 +277,15 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const auto stamina = args[j++];
 		const auto maxStamina = args[j++];
 
-		const auto gameObjectUpdateEvent = new NpcUpdateEvent
-		{
+		std::unique_ptr<Event> e = std::make_unique<NpcUpdateEvent>
+		(
 			std::stol(gameObjectId),
 			XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ)}, XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ)},
 			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
-		};
-		g_eventHandler.QueueEvent(gameObjectUpdateEvent);
+		);
+
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::PlayerUpdate] = [this](const std::vector<std::string>& args)
@@ -306,16 +315,17 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const auto stamina = args[j++];
 		const auto maxStamina = args[j++];
 
-		const auto playerUpdateEvent = new PlayerUpdateEvent
-		{
+		std::unique_ptr<Event> e = std::make_unique<PlayerUpdateEvent>
+		(
 			std::stol(accountId),
 			XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ)}, XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ) },
 			std::stoi(modelId), std::stoi(textureId),
 			name,
 			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
-		};
-		g_eventHandler.QueueEvent(playerUpdateEvent);
+		);
+
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::PropagateChatMessage] = [this](const std::vector<std::string>& args)
@@ -323,7 +333,8 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const auto message = args[0];
 		const auto senderName = args[1];
 
-		g_eventHandler.QueueEvent(new PropagateChatMessageEvent(new std::string(senderName), new std::string(message)));
+		std::unique_ptr<Event> e = std::make_unique<PropagateChatMessageEvent>(new std::string(senderName), new std::string(message));
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::ServerMessage] = [this](const std::vector<std::string>& args)
@@ -331,7 +342,8 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const auto message = args[0];
 		const auto type = args[1];
 
-		g_eventHandler.QueueEvent(new ServerMessageEvent(new std::string(message), new std::string(type)));
+		std::unique_ptr<Event> e = std::make_unique<ServerMessageEvent>(new std::string(message), new std::string(type));
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::AttackHit] = [this](const std::vector<std::string>& args)
@@ -340,22 +352,25 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const auto targetId = args[1];
 		const auto damage = args[2];
 
-		g_eventHandler.QueueEvent(new AttackHitEvent(std::stoi(attackerId), std::stoi(targetId), std::stoi(damage)));
+		std::unique_ptr<Event> e = std::make_unique<AttackHitEvent>(std::stoi(attackerId), std::stoi(targetId), std::stoi(damage));
+		g_eventHandler.QueueEvent(e);
 	};
 
-	messageHandlers[OpCode::CreateAccountFailure] = [this](const std::vector<std::string>& args)
+	messageHandlers[OpCode::AttackMiss] = [this](const std::vector<std::string>& args)
 	{
 		const auto attackerId = args[0];
 		const auto targetId = args[1];
 
-		g_eventHandler.QueueEvent(new AttackMissEvent(std::stoi(attackerId), std::stoi(targetId)));
+		std::unique_ptr<Event> e = std::make_unique<AttackMissEvent>(std::stoi(attackerId), std::stoi(targetId));
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::ActivateAbilitySuccess] = [this](const std::vector<std::string>& args)
 	{
 		const auto abilityId = args[0];
 
-		g_eventHandler.QueueEvent(new ActivateAbilitySuccessEvent(std::stoi(abilityId)));
+		std::unique_ptr<Event> e = std::make_unique<ActivateAbilitySuccessEvent>(std::stoi(abilityId));
+		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::Pong] = [this](const std::vector<std::string>& args)
@@ -370,6 +385,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const auto skillId = args[0];
 		const auto newValue = args[1];
 
-		g_eventHandler.QueueEvent(new SkillIncreaseEvent(std::stoi(skillId), std::stoi(newValue)));
+		std::unique_ptr<Event> e = std::make_unique<SkillIncreaseEvent>(std::stoi(skillId), std::stoi(newValue));
+		g_eventHandler.QueueEvent(e);
 	};
 }

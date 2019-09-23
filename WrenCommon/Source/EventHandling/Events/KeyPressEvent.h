@@ -10,6 +10,5 @@ public:
 		  charCode{ charCode }
 	{
 	}
-	virtual ~KeyPressEvent() = 0;
 	const wchar_t charCode;
 };

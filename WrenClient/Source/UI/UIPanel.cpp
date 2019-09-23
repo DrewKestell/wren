@@ -82,7 +82,8 @@ const bool UIPanel::HandleEvent(const Event* const event)
 					zIndex = g_zIndex;
 					BringToFront(this);
 
-					g_eventHandler.QueueEvent(new Event(EventType::ReorderUIComponents));
+					std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
+					g_eventHandler.QueueEvent(e);
 
 					stopEvent = true;
 				}
@@ -153,7 +154,8 @@ const bool UIPanel::HandleEvent(const Event* const event)
 						BringToFront(this);
 					}
 
-					g_eventHandler.QueueEvent(new Event(EventType::ReorderUIComponents));
+					std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
+					g_eventHandler.QueueEvent(e);
 				}
 			}
 

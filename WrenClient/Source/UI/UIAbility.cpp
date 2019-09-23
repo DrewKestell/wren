@@ -146,7 +146,8 @@ const bool UIAbility::HandleEvent(const Event* const event)
 							lastDragY = mousePosY;
 						}
 
-						g_eventHandler.QueueEvent(new StartDraggingUIAbilityEvent{ mousePosX, mousePosY, Utility::GetHotbarIndex(clientHeight, mousePosX, mousePosY) });
+						std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(clientHeight, mousePosX, mousePosY));
+						g_eventHandler.QueueEvent(e);
 					}
 				}
 
@@ -187,12 +188,14 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 			if (isDragging)
 			{
-				g_eventHandler.QueueEvent(new UIAbilityDroppedEvent{ this, derivedEvent->mousePosX, derivedEvent->mousePosY });
+				std::unique_ptr<Event> e = std::make_unique<UIAbilityDroppedEvent>(this, derivedEvent->mousePosX, derivedEvent->mousePosY);
+				g_eventHandler.QueueEvent(e);
 			}
 			
 			if (!isDragging && isVisible && isHovered && isPressed)
 			{
-				g_eventHandler.QueueEvent(new ActivateAbilityEvent{ abilityId });
+				std::unique_ptr<Event> e = std::make_unique<ActivateAbilityEvent>(abilityId);
+				g_eventHandler.QueueEvent(e);
 				stopPropagation = true;
 			}
 
@@ -224,7 +227,10 @@ const bool UIAbility::HandleEvent(const Event* const event)
 			// if any abilities require a target, toggle them off
 
 			if (isToggled)
-				g_eventHandler.QueueEvent(new ActivateAbilityEvent{ abilityId });
+			{
+				std::unique_ptr<Event> e = std::make_unique<ActivateAbilityEvent>(abilityId);
+				g_eventHandler.QueueEvent(e);
+			}
 		}
 	}
 
