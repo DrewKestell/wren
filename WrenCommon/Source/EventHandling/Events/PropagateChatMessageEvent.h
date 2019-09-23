@@ -5,13 +5,12 @@
 class PropagateChatMessageEvent : public Event
 {
 public:
-	PropagateChatMessageEvent(std::string* senderName, std::string* message)
+	PropagateChatMessageEvent(const std::string& senderName, const std::string& message)
 		: Event(EventType::PropagateChatMessage),
 		  senderName{ senderName },
 		  message{ message }
 	{
 	}
-	~PropagateChatMessageEvent() { delete message; }
-	std::string* senderName;
-	std::string* message;
+	const std::string senderName;
+	const std::string message;
 };

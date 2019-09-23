@@ -59,7 +59,7 @@ Mesh::Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShad
 			indices.push_back(face.mIndices[j]);
 	}
 
-	indexCount = (int)indices.size();
+	indexCount = static_cast<int>(indices.size());
 
 	// create SamplerState
 	D3D11_SAMPLER_DESC samplerDesc;
@@ -92,7 +92,7 @@ Mesh::Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShad
 	device->CreateBuffer(&bufferDesc, nullptr, constantBuffer.ReleaseAndGetAddressOf());
 
 	// create InputLayout
-	D3D11_INPUT_ELEMENT_DESC ied[] =
+	const D3D11_INPUT_ELEMENT_DESC ied[] =
 	{
 		{"POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"NORMAL",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -103,7 +103,7 @@ Mesh::Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShad
 
 	// create vertex buffer using existing bufferDesc
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bufferDesc.ByteWidth = (UINT)(sizeof(Vertex) * vertices.size());
+	bufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size());
 	bufferDesc.CPUAccessFlags = 0;
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
@@ -114,7 +114,7 @@ Mesh::Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShad
 
 	// create index buffer using existing bufferDesc
 	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bufferDesc.ByteWidth = (UINT)(sizeof(unsigned int) * indices.size());
+	bufferDesc.ByteWidth = static_cast<UINT>(sizeof(unsigned int) * indices.size());
 
 	D3D11_SUBRESOURCE_DATA indexData;
 	indexData.pSysMem = indices.data();

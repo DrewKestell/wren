@@ -14,5 +14,4 @@ void SkillComponent::Initialize(const int id, const int gameObjectId, std::vecto
 }
 
 const int SkillComponent::GetId() const { return id; }
-
 const int SkillComponent::GetGameObjectId() const { return gameObjectId; }

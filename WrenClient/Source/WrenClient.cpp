@@ -50,7 +50,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		return 1;
 
 	// Create window
-	RECT rc = { 0, 0, static_cast<long>(CLIENT_WIDTH), static_cast<long>(CLIENT_HEIGHT) };
+	RECT rc = { 0, 0, long{ CLIENT_WIDTH }, long{ CLIENT_HEIGHT } };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 	// TODO: Change to CreateWindowExW(WS_EX_TOPMOST, L"Direct3D_Win32_Game1WindowClass", L"Direct3D Win32 Game1", WS_POPUP,
@@ -105,8 +105,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 WPARAM MapLeftRightKeys(WPARAM vk, LPARAM lParam)
 {
-	UINT scancode = (lParam & 0x00ff0000) >> 16;
-	int extended = (lParam & 0x01000000) != 0;
+	const UINT scancode = (lParam & 0x00ff0000) >> 16;
+	const int extended = (lParam & 0x01000000) != 0;
 
 	switch (vk)
 	{
@@ -145,7 +145,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	auto game = reinterpret_cast<Game*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
-	WPARAM keyCode;
+	WPARAM keyCode{ 0 };
 	std::unique_ptr<Event> e;
 	switch (message)
 	{
@@ -293,14 +293,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				ShowWindow(hWnd, SW_SHOWNORMAL);
 
-				SetWindowPos(hWnd, HWND_TOP, 0, 0, CLIENT_WIDTH, CLIENT_HEIGHT, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+				SetWindowPos(hWnd, nullptr, 0, 0, CLIENT_WIDTH, CLIENT_HEIGHT, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
 			}
 			else
 			{
 				SetWindowLongPtr(hWnd, GWL_STYLE, 0);
 				SetWindowLongPtr(hWnd, GWL_EXSTYLE, WS_EX_TOPMOST);
 
-				SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+				SetWindowPos(hWnd, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 
 				ShowWindow(hWnd, SW_SHOWMAXIMIZED);
 			}
@@ -312,8 +312,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			switch (wParam)
 			{
 			case VK_MENU:
-				const auto keyCode = MapLeftRightKeys(wParam, lParam);
-				e = std::make_unique<SystemKeyDownEvent>(keyCode);
+				const auto key = MapLeftRightKeys(wParam, lParam);
+				e = std::make_unique<SystemKeyDownEvent>(key);
 				g_eventHandler.QueueEvent(e);
 				break;
 			}
@@ -325,8 +325,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case VK_MENU:
-			const auto keyCode = MapLeftRightKeys(wParam, lParam);
-			e = std::make_unique<SystemKeyUpEvent>(keyCode);
+			const auto key = MapLeftRightKeys(wParam, lParam);
+			e = std::make_unique<SystemKeyUpEvent>(key);
 			g_eventHandler.QueueEvent(e);
 			break;
 		}
@@ -376,7 +376,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case 0x0D: // Ignore carriage return.
 			break;
 		default:   // Process a normal character press.            
-			auto ch = (wchar_t)wParam;
+			auto ch = static_cast<wchar_t>(wParam);
 			e = std::make_unique<KeyDownEvent>(ch);
 			g_eventHandler.QueueEvent(e);
 			break;

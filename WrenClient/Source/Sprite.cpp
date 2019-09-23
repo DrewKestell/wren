@@ -2,7 +2,7 @@
 #include "Sprite.h"
 #include "ConstantBufferPerObject.h"
 
-Sprite::Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture, const BYTE* vertexShaderBuffer, const int vertexShaderSize, ID3D11Device* device,  float originX, float originY, float width, float height)
+Sprite::Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture, const BYTE* vertexShaderBuffer, const int vertexShaderSize, ID3D11Device* device, const float originX, const float originY, const float width, const float height)
 	: vertexShader{ vertexShader },
 	  pixelShader{ pixelShader },
 	  texture{ texture }
@@ -33,7 +33,7 @@ Sprite::Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader,
 	bottomLeftVertex.TexCoords = XMFLOAT2{ 0.0f, 1.0f };
 	vertices[3] = bottomLeftVertex;
 
-	unsigned int indices[6] = { 0, 1, 3, 1, 2, 3 };
+	const unsigned int indices[6]{ 0, 1, 3, 1, 2, 3 };
 
 	// create SamplerState - TODO: pass this in as param
 	D3D11_SAMPLER_DESC samplerDesc;
@@ -65,8 +65,8 @@ Sprite::Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader,
 
 	device->CreateBuffer(&bufferDesc, nullptr, constantBuffer.ReleaseAndGetAddressOf());
 
-	// create `
-	D3D11_INPUT_ELEMENT_DESC ied[] =
+	// create
+	const D3D11_INPUT_ELEMENT_DESC ied[] =
 	{
 		{"POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"TEXCOORDS", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
@@ -76,7 +76,7 @@ Sprite::Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader,
 
 	// create vertex buffer using existing bufferDesc
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bufferDesc.ByteWidth = (UINT)(sizeof(SpriteVertex) * 4);
+	bufferDesc.ByteWidth = UINT{ sizeof(SpriteVertex) * 4 };
 	bufferDesc.CPUAccessFlags = 0;
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
@@ -87,7 +87,7 @@ Sprite::Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader,
 
 	// create index buffer using existing bufferDesc
 	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bufferDesc.ByteWidth = (UINT)(sizeof(unsigned int) * 6);
+	bufferDesc.ByteWidth = UINT{ sizeof(unsigned int) * 6 };
 
 	D3D11_SUBRESOURCE_DATA indexData;
 	indexData.pSysMem = indices;

@@ -5,13 +5,12 @@
 class ServerMessageEvent : public Event
 {
 public:
-	ServerMessageEvent(const std::string* message, const std::string* type)
+	ServerMessageEvent(const std::string& message, const std::string& type)
 		: Event(EventType::ServerMessage),
 		message{ message },
-		type{ type }
+		type{ message }
 	{
 	}
-	~ServerMessageEvent() { delete message; delete type; }
-	const std::string* message;
-	const std::string* type;
+	const std::string message;
+	const std::string type;
 };

@@ -1008,7 +1008,7 @@ void Game::InitializeEventHandlers()
 	{
 		const auto derivedEvent = (CreateAccountFailedEvent*)event;
 
-		createAccount_errorMessageLabel->SetText(("Failed to create account. Reason: " + *(derivedEvent->error)).c_str());
+		createAccount_errorMessageLabel->SetText(("Failed to create account. Reason: " + derivedEvent->error).c_str());
 	};
 
 	eventHandlers[EventType::CreateAccountSuccess] = [this](const Event* const event)
@@ -1022,7 +1022,7 @@ void Game::InitializeEventHandlers()
 	{
 		const auto derivedEvent = (LoginFailedEvent*)event;
 
-		loginScreen_errorMessageLabel->SetText(("Login failed. Reason: " + *(derivedEvent->error)).c_str());
+		loginScreen_errorMessageLabel->SetText(("Login failed. Reason: " + derivedEvent->error).c_str());
 		SetActiveLayer(Login);
 	};
 
@@ -1038,7 +1038,7 @@ void Game::InitializeEventHandlers()
 	{
 		const auto derivedEvent = (CreateCharacterFailedEvent*)event;
 
-		createCharacter_errorMessageLabel->SetText(("Character creation failed. Reason: " + *(derivedEvent->error)).c_str());
+		createCharacter_errorMessageLabel->SetText(("Character creation failed. Reason: " + derivedEvent->error).c_str());
 	};
 
 	eventHandlers[EventType::CreateCharacterSuccess] = [this](const Event* const event)
@@ -1330,7 +1330,7 @@ void Game::InitializeEventHandlers()
 	{
 		const auto derivedEvent = (PropagateChatMessageEvent*)event;
 
-		std::string* msg = new std::string("(" + *derivedEvent->senderName + ") " + *derivedEvent->message);
+		std::string* msg = new std::string("(" + derivedEvent->senderName + ") " + derivedEvent->message);
 		textWindow->AddMessage(msg);
 	};
 
@@ -1338,7 +1338,7 @@ void Game::InitializeEventHandlers()
 	{
 		const auto derivedEvent = (ServerMessageEvent*)event;
 
-		std::string* msg = new std::string(*derivedEvent->message);
+		std::string* msg = new std::string(derivedEvent->message);
 		textWindow->AddMessage(msg);
 	};
 

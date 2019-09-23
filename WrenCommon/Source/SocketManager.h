@@ -15,7 +15,7 @@ protected:
 
 	SocketManager(const int localPort = 0);
 	virtual void InitializeMessageHandlers() = 0;
-	void SendPacket(sockaddr_in to, const OpCode opCode, const std::vector<std::string>& args);
+	void SendPacket(const sockaddr_in& to, const OpCode opCode, const std::vector<std::string>& args);
 
 public:
 	void ProcessPackets();

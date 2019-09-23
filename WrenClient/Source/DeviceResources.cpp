@@ -160,13 +160,13 @@ void DeviceResources::CreateWindowSizeDependentResources()
 	//m_d2dContext->Flush();
 
 	// Determine the render target size in pixels.
-	UINT renderTargetWidth = std::max<UINT>(outputSize.right - outputSize.left, 1);
-	UINT renderTargetHeight = std::max<UINT>(outputSize.bottom - outputSize.top, 1);
+	const UINT renderTargetWidth = std::max<UINT>(outputSize.right - outputSize.left, 1);
+	const UINT renderTargetHeight = std::max<UINT>(outputSize.bottom - outputSize.top, 1);
 
 	if (swapChain)
 	{
 		// If the swap chain already exists, resize it.
-		HRESULT hr = swapChain->ResizeBuffers(
+		const HRESULT hr = swapChain->ResizeBuffers(
 			backBufferCount,
 			renderTargetWidth,
 			renderTargetHeight,

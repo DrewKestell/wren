@@ -60,14 +60,14 @@ void ServerSocketManager::Initialize()
 	const auto dummyId = dummyGameObject.GetId();
 	const auto aiComponentManager = componentOrchestrator.GetAIComponentManager();
 	const auto dummyAIComponent = aiComponentManager->CreateAIComponent(dummyId);
-	dummyGameObject.aiComponentId = dummyAIComponent.id;
+	dummyGameObject.aiComponentId = dummyAIComponent.GetId();
 	const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
 	const auto dummyStatsComponent = statsComponentManager->CreateStatsComponent(dummyId, 10, 10, 10, 10, 10, 10, 10, 100, 100, 100, 100, 100, 100);
 	dummyGameObject.statsComponentId = dummyStatsComponent.GetId();
 	gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
 }
 
-void ServerSocketManager::SendPacket(sockaddr_in to, const OpCode opCode, const std::vector<std::string>& args)
+void ServerSocketManager::SendPacket(const sockaddr_in& to, const OpCode opCode, const std::vector<std::string>& args)
 {
 	SocketManager::SendPacket(to, opCode, args);
 }
@@ -81,7 +81,7 @@ void ServerSocketManager::SendPacketToAllClients(const OpCode opcode, const std:
 	for (auto i = 0; i < playerComponentIndex; i++)
 	{
 		const auto player = playerComponents[i];
-		SendPacket(player.fromSockAddr, opcode, args);
+		SendPacket(player.GetFromSockAddr(), opcode, args);
 	}
 }
 
@@ -91,7 +91,7 @@ const bool ServerSocketManager::ValidateToken(const int accountId, const std::st
 	const auto gameObject = objectManager.GetGameObjectById(accountId);
 	const auto playerComponent = playerComponentManager->GetPlayerComponentById(gameObject.playerComponentId);
 	
-	return token == playerComponent.token;
+	return token == playerComponent.GetToken();
 }
 
 PlayerComponent& ServerSocketManager::GetPlayerComponent(const int accountId)
@@ -113,12 +113,12 @@ void ServerSocketManager::HandleTimeout()
 		const auto comp = playerComponents[i];
 		if (GetTickCount64() > comp.lastHeartbeat + TIMEOUT_DURATION)
 		{
-			objectManager.DeleteGameObject(eventHandler, comp.gameObjectId);
+			objectManager.DeleteGameObject(eventHandler, comp.GetGameObjectId());
 		}
 	}
 }
 
-void ServerSocketManager::Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, sockaddr_in from)
+void ServerSocketManager::Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, const sockaddr_in& from)
 {
 	std::string error;
 	const auto account = serverRepository.GetAccount(accountName);
@@ -145,7 +145,7 @@ void ServerSocketManager::Login(const std::string& accountName, const std::strin
 			const auto playerId = playerGameObject.GetId();
 			const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
 			const PlayerComponent& playerComponent = playerComponentManager->CreatePlayerComponent(playerId, token, ipAndPort, from, GetTickCount64());
-			playerGameObject.playerComponentId = playerComponent.id;
+			playerGameObject.playerComponentId = playerComponent.GetId();
             
 			std::vector<std::string> args{ std::to_string(accountId), token, ListCharacters(accountId) };
 			SendPacket(from, OpCode::LoginSuccess, args);
@@ -167,7 +167,7 @@ void ServerSocketManager::Logout(const int accountId)
 	objectManager.DeleteGameObject(eventHandler, accountId);
 }
 
-void ServerSocketManager::CreateAccount(const std::string& accountName, const std::string& password, sockaddr_in from)
+void ServerSocketManager::CreateAccount(const std::string& accountName, const std::string& password, const sockaddr_in& from)
 {
 	if (serverRepository.AccountExists(accountName))
 	{
@@ -201,13 +201,13 @@ void ServerSocketManager::CreateCharacter(const int accountId, const std::string
 	{
 		const std::string error = CHARACTER_ALREADY_EXISTS;
 		std::vector<std::string> args{ error };
-		SendPacket(playerComponent.fromSockAddr, OpCode::CreateCharacterFailure, args);
+		SendPacket(playerComponent.GetFromSockAddr(), OpCode::CreateCharacterFailure, args);
 	}
 	else
 	{
 		serverRepository.CreateCharacter(characterName, accountId);
 		std::vector<std::string> args{ ListCharacters(accountId) };
-		SendPacket(playerComponent.fromSockAddr, OpCode::CreateCharacterSuccess, args);
+		SendPacket(playerComponent.GetFromSockAddr(), OpCode::CreateCharacterSuccess, args);
 	}
 }
 
@@ -303,7 +303,7 @@ void ServerSocketManager::EnterWorld(const int accountId, const std::string& cha
 		std::to_string(agility), std::to_string(strength), std::to_string(wisdom), std::to_string(intelligence), std::to_string(charisma), std::to_string(luck), std::to_string(endurance),
 		std::to_string(health), std::to_string(maxHealth), std::to_string(mana), std::to_string(maxMana), std::to_string(stamina), std::to_string(maxStamina),
 	};
-	SendPacket(playerComponent.fromSockAddr, OpCode::EnterWorldSuccess, args);
+	SendPacket(playerComponent.GetFromSockAddr(), OpCode::EnterWorldSuccess, args);
 	gameMap.SetTileOccupied(pos, true);
 }
 
@@ -312,7 +312,7 @@ void ServerSocketManager::DeleteCharacter(const int accountId, const std::string
 	const PlayerComponent& playerComponent = GetPlayerComponent(accountId);
 	serverRepository.DeleteCharacter(characterName);
 	std::vector<std::string> args{ ListCharacters(accountId) };
-	SendPacket(playerComponent.fromSockAddr , OpCode::DeleteCharacterSuccess, args);
+	SendPacket(playerComponent.GetFromSockAddr(), OpCode::DeleteCharacterSuccess, args);
 }
 
 void ServerSocketManager::UpdateClients()
@@ -369,7 +369,7 @@ void ServerSocketManager::UpdateClients()
 				const auto maxStamina = std::to_string(stats.maxStamina);
 
 				std::vector<std::string> args{ id, posX, posY, posZ, movX, movY, movZ, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina };
-				SendPacket(playerToUpdate.fromSockAddr, OpCode::NpcUpdate, args);
+				SendPacket(playerToUpdate.GetFromSockAddr(), OpCode::NpcUpdate, args);
 			}
 			else if (type == GameObjectType::Player)
 			{
@@ -392,7 +392,7 @@ void ServerSocketManager::UpdateClients()
 				const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
 				const PlayerComponent& otherPlayer = playerComponentManager->GetPlayerComponentById(gameObject.playerComponentId);
 				std::vector<std::string> args{ id, posX, posY, posZ, movX, movY, movZ, std::to_string(otherPlayer.modelId), std::to_string(otherPlayer.textureId), gameObject.name, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina };
-				SendPacket(playerToUpdate.fromSockAddr, OpCode::PlayerUpdate, args);
+				SendPacket(playerToUpdate.GetFromSockAddr(), OpCode::PlayerUpdate, args);
 			}
 		}
 	}
@@ -408,7 +408,7 @@ void ServerSocketManager::PropagateChatMessage(const std::string& senderName, co
 	{
 		const auto playerToUpdate = playerComponents[i];
 		std::vector<std::string> args{ senderName, message };
-		SendPacket(playerToUpdate.fromSockAddr, OpCode::PropagateChatMessage, args);
+		SendPacket(playerToUpdate.GetFromSockAddr(), OpCode::PropagateChatMessage, args);
 	}
 }
 
@@ -419,13 +419,13 @@ void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, cons
 		if (!playerComponent.autoAttackOn && playerComponent.targetId == -1)
 		{
 			std::vector<std::string> args{ std::string(NO_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
-			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args);
+			SendPacket(playerComponent.GetFromSockAddr(), OpCode::ServerMessage, args);
 			return;
 		}
 		else if (!playerComponent.autoAttackOn && objectManager.GetGameObjectById(playerComponent.targetId).isStatic)
 		{
 			std::vector<std::string> args{ std::string(INVALID_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
-			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args);
+			SendPacket(playerComponent.GetFromSockAddr(), OpCode::ServerMessage, args);
 			return;
 		}
 		else
@@ -443,7 +443,7 @@ void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, cons
 	}
 
 	std::vector<std::string> args{ std::to_string(ability.abilityId) };
-	SendPacket(playerComponent.fromSockAddr, OpCode::ActivateAbilitySuccess, args);
+	SendPacket(playerComponent.GetFromSockAddr(), OpCode::ActivateAbilitySuccess, args);
 }
 
 void ServerSocketManager::InitializeMessageHandlers()
@@ -561,10 +561,10 @@ void ServerSocketManager::InitializeMessageHandlers()
 		{
 			playerComponent.autoAttackOn = false;
 			std::vector<std::string> args1{ std::string(INVALID_ATTACK_TARGET), std::string(MESSAGE_TYPE_ERROR) };
-			SendPacket(playerComponent.fromSockAddr, OpCode::ServerMessage, args1);
+			SendPacket(playerComponent.GetFromSockAddr(), OpCode::ServerMessage, args1);
 			const std::string autoAttackAbilityId = "1";
 			std::vector<std::string> args2{ autoAttackAbilityId };
-			SendPacket(playerComponent.fromSockAddr, OpCode::ActivateAbilitySuccess, args2);
+			SendPacket(playerComponent.GetFromSockAddr(), OpCode::ActivateAbilitySuccess, args2);
 		}
 	};
 
@@ -588,7 +588,7 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 		const auto player = GetPlayerComponent(accountId);
 		std::vector<std::string> outgoingArgs{ pingId };
-		SendPacket(player.fromSockAddr, OpCode::Pong, outgoingArgs);
+		SendPacket(player.GetFromSockAddr(), OpCode::Pong, outgoingArgs);
 	};
 
 	messageHandlers[OpCode::PlayerRightMouseDown] = [this](const std::vector<std::string>& args)

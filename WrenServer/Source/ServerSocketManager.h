@@ -22,8 +22,8 @@ class ServerSocketManager : public SocketManager
 
 	const bool ValidateToken(const int accountId, const std::string token); // this should probably return a PlayerComponent to improve performance
 	PlayerComponent& GetPlayerComponent(const int accountId);
-	void Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, sockaddr_in from);
-	void CreateAccount(const std::string& accountName, const std::string& password, sockaddr_in from);
+	void Login(const std::string& accountName, const std::string& password, const std::string& ipAndPort, const sockaddr_in& from);
+	void CreateAccount(const std::string& accountName, const std::string& password, const sockaddr_in& from);
 	void Logout(const int accountId);
 	void CreateCharacter(const int accountId, const std::string& characterName);
 	void UpdateLastHeartbeat(const int accountId);
@@ -48,6 +48,6 @@ public:
 	void Initialize();
 	void HandleTimeout();
 	void UpdateClients();
-	void SendPacket(sockaddr_in to, const OpCode opCode, const std::vector<std::string>& args = std::vector<std::string>{});
+	void SendPacket(const sockaddr_in& to, const OpCode opCode, const std::vector<std::string>& args = std::vector<std::string>{});
 	void SendPacketToAllClients(const OpCode opCode, const std::vector<std::string>& args = std::vector<std::string>{});
 };

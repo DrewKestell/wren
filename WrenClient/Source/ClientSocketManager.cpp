@@ -70,10 +70,10 @@ std::vector<std::unique_ptr<std::string>> ClientSocketManager::BuildCharacterVec
 std::vector<std::unique_ptr<WrenCommon::Skill>> ClientSocketManager::BuildSkillVector(const std::string& skillString)
 {
 	std::vector<std::unique_ptr<WrenCommon::Skill>> skillList;
-	char param = 0;
-	std::string skillId = "";
-	std::string name = "";
-	std::string value = "";
+	char param{ 0 };
+	std::string skillId{ "" };
+	std::string name{ "" };
+	std::string value{ "" };
 
 	for (auto i = 0; i < skillString.length(); i++)
 	{
@@ -104,12 +104,12 @@ std::vector<std::unique_ptr<WrenCommon::Skill>> ClientSocketManager::BuildSkillV
 std::vector<std::unique_ptr<Ability>> ClientSocketManager::BuildAbilityVector(const std::string& abilityString)
 {
 	std::vector<std::unique_ptr<Ability>> abilityList;
-	char param = 0;
-	std::string abilityId = "";
-	std::string name = "";
-	std::string spriteId = "";
-	std::string toggled = "";
-	std::string targeted = "";
+	char param{ 0 };
+	std::string abilityId{ "" };
+	std::string name{ "" };
+	std::string spriteId{ "" };
+	std::string toggled{ "" };
+	std::string targeted{ "" };
 
 	for (auto i = 0; i < abilityString.length(); i++)
 	{
@@ -153,93 +153,93 @@ void ClientSocketManager::InitializeMessageHandlers()
 {
 	messageHandlers[OpCode::CreateAccountFailure] = [this](const std::vector<std::string>& args)
 	{
-		const auto error = args[0];
+		const std::string& error{ args.at(0) };
 
-		std::unique_ptr<Event> e = std::make_unique<CreateAccountFailedEvent>(new std::string(error));
+		std::unique_ptr<Event> e{ std::make_unique<CreateAccountFailedEvent>(error) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::CreateAccountSuccess] = [this](const std::vector<std::string>& args)
 	{
-		std::unique_ptr<Event> e = std::make_unique<Event>(EventType::CreateAccountSuccess);
+		std::unique_ptr<Event> e{ std::make_unique<Event>(EventType::CreateAccountSuccess) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::LoginFailure] = [this](const std::vector<std::string>& args)
 	{
-		const auto error = args[0];
+		const std::string& error{ args.at(0) };
 		
-		std::unique_ptr<Event> e = std::make_unique<LoginFailedEvent>(new std::string(error));
+		std::unique_ptr<Event> e{ std::make_unique<LoginFailedEvent>(error) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::LoginSuccess] = [this](const std::vector<std::string>& args)
 	{
-		const auto accountId = args.at(0);
-		const auto token = args.at(1);
-		const auto characterString = args.at(2);
-		auto characterList = BuildCharacterVector(characterString);
+		const std::string& accountId{ args.at(0) };
+		const std::string& token{ args.at(1) };
+		const std::string& characterString{ args.at(2) };
+		auto characterList{ BuildCharacterVector(characterString) };
 
 		this->accountId = std::stoi(accountId);
-		this->token = std::string(token);
+		this->token = std::string{ token };
 
-		std::unique_ptr<Event> e = std::make_unique<LoginSuccessEvent>(characterList);
+		std::unique_ptr<Event> e{ std::make_unique<LoginSuccessEvent>(characterList) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::CreateCharacterFailure] = [this](const std::vector<std::string>& args)
 	{
-		const auto error = args[0];
+		const std::string& error{ args.at(0) };
 
-		std::unique_ptr<Event> e = std::make_unique<CreateCharacterFailedEvent>(new std::string(error));
+		std::unique_ptr<Event> e{ std::make_unique<CreateCharacterFailedEvent>(error) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::CreateCharacterSuccess] = [this](const std::vector<std::string>& args)
 	{
-		const auto characterString = args[0];
-		auto characterList = BuildCharacterVector(characterString);
+		const std::string& characterString{ args.at(0) };
+		auto characterList{ BuildCharacterVector(characterString) };
 
-		std::unique_ptr<Event> e = std::make_unique<CreateCharacterSuccessEvent>(characterList);
+		std::unique_ptr<Event> e{ std::make_unique<CreateCharacterSuccessEvent>(characterList) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::DeleteCharacterSuccess] = [this](const std::vector<std::string>& args)
 	{
-		const auto characterString = args[0];
-		auto characterList = BuildCharacterVector(characterString);
+		const std::string& characterString{ args.at(0) };
+		auto characterList{ BuildCharacterVector(characterString) };
 
-		std::unique_ptr<Event> e = std::make_unique<DeleteCharacterSuccessEvent>(characterList);
+		std::unique_ptr<Event> e{ std::make_unique<DeleteCharacterSuccessEvent>(characterList) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::EnterWorldSuccess] = [this](const std::vector<std::string>& args)
 	{
 		auto j = 0;
-		const auto accountId = args.at(j++);
-		const auto positionX = args.at(j++);
-		const auto positionY = args.at(j++);
-		const auto positionZ = args.at(j++);
-		const auto modelId = args.at(j++);
-		const auto textureId = args.at(j++);
-		auto skillVector = BuildSkillVector(args.at(j++));
-		auto abilityVector = BuildAbilityVector(args.at(j++));
-		const auto name = args.at(j++);
-		const auto agility = args.at(j++);
-		const auto strength = args.at(j++);
-		const auto wisdom = args.at(j++);
-		const auto intelligence = args.at(j++);
-		const auto charisma = args.at(j++);
-		const auto luck = args.at(j++);
-		const auto endurance = args.at(j++);
-		const auto health = args.at(j++);
-		const auto maxHealth = args.at(j++);
-		const auto mana = args.at(j++);
-		const auto maxMana = args.at(j++);
-		const auto stamina = args.at(j++);
-		const auto maxStamina = args.at(j++);
+		const std::string& accountId{ args.at(j++) };
+		const std::string& positionX{ args.at(j++) };
+		const std::string& positionY{ args.at(j++) };
+		const std::string& positionZ{ args.at(j++) };
+		const std::string& modelId{ args.at(j++) };
+		const std::string& textureId{ args.at(j++) };
+		auto skillVector{ BuildSkillVector(args.at(j++)) };
+		auto abilityVector{ BuildAbilityVector(args.at(j++)) };
+		const std::string& name{ args.at(j++) };
+		const std::string& agility{ args.at(j++) };
+		const std::string& strength{ args.at(j++) };
+		const std::string& wisdom{ args.at(j++) };
+		const std::string& intelligence{ args.at(j++) };
+		const std::string& charisma{ args.at(j++) };
+		const std::string& luck{ args.at(j++) };
+		const std::string& endurance{ args.at(j++) };
+		const std::string& health{ args.at(j++) };
+		const std::string& maxHealth{ args.at(j++) };
+		const std::string& mana{ args.at(j++) };
+		const std::string& maxMana{ args.at(j++) };
+		const std::string& stamina{ args.at(j++) };
+		const std::string& maxStamina{ args.at(j++) };
 
-		std::unique_ptr<Event> e = std::make_unique<EnterWorldSuccessEvent>
+		std::unique_ptr<Event> e{ std::make_unique<EnterWorldSuccessEvent>
 		(
 			std::stoi(accountId),
 			XMFLOAT3{ std::stof(positionX), std::stof(positionY), std::stof(positionZ) },
@@ -248,7 +248,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 			name,
 			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
-		);
+		) };
 
 		g_eventHandler.QueueEvent(e);
 	};
@@ -256,34 +256,34 @@ void ClientSocketManager::InitializeMessageHandlers()
 	messageHandlers[OpCode::NpcUpdate] = [this](const std::vector<std::string>& args)
 	{
 		auto j = 0;
-		const auto gameObjectId = args[j++];
-		const auto posX = args[j++];
-		const auto posY = args[j++];
-		const auto posZ = args[j++];
-		const auto movX = args[j++];
-		const auto movY = args[j++];
-		const auto movZ = args[j++];
-		const auto agility = args[j++];
-		const auto strength = args[j++];
-		const auto wisdom = args[j++];
-		const auto intelligence = args[j++];
-		const auto charisma = args[j++];
-		const auto luck = args[j++];
-		const auto endurance = args[j++];
-		const auto health = args[j++];
-		const auto maxHealth = args[j++];
-		const auto mana = args[j++];
-		const auto maxMana = args[j++];
-		const auto stamina = args[j++];
-		const auto maxStamina = args[j++];
+		const std::string& gameObjectId{ args.at(j++) };
+		const std::string& posX{ args.at(j++) };
+		const std::string& posY{ args.at(j++) };
+		const std::string& posZ{ args.at(j++) };
+		const std::string& movX{ args.at(j++) };
+		const std::string& movY{ args.at(j++) };
+		const std::string& movZ{ args.at(j++) };
+		const std::string& agility{ args.at(j++) };
+		const std::string& strength{ args.at(j++) };
+		const std::string& wisdom{ args.at(j++) };
+		const std::string& intelligence{ args.at(j++) };
+		const std::string& charisma{ args.at(j++) };
+		const std::string& luck{ args.at(j++) };
+		const std::string& endurance{ args.at(j++) };
+		const std::string& health{ args.at(j++) };
+		const std::string& maxHealth{ args.at(j++) };
+		const std::string& mana{ args.at(j++) };
+		const std::string& maxMana{ args.at(j++) };
+		const std::string& stamina{ args.at(j++) };
+		const std::string& maxStamina{ args.at(j++) };
 
-		std::unique_ptr<Event> e = std::make_unique<NpcUpdateEvent>
+		std::unique_ptr<Event> e{ std::make_unique<NpcUpdateEvent>
 		(
 			std::stol(gameObjectId),
 			XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ)}, XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ)},
 			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
-		);
+		) };
 
 		g_eventHandler.QueueEvent(e);
 	};
@@ -291,31 +291,31 @@ void ClientSocketManager::InitializeMessageHandlers()
 	messageHandlers[OpCode::PlayerUpdate] = [this](const std::vector<std::string>& args)
 	{
 		auto j = 0;
-		const auto accountId = args[j++];
-		const auto posX = args[j++];
-		const auto posY = args[j++];
-		const auto posZ = args[j++];
-		const auto movX = args[j++];
-		const auto movY = args[j++];
-		const auto movZ = args[j++];
-		const auto modelId = args[j++];
-		const auto textureId = args[j++];
-		const auto name = args[j++];
-		const auto agility = args[j++];
-		const auto strength = args[j++];
-		const auto wisdom = args[j++];
-		const auto intelligence = args[j++];
-		const auto charisma = args[j++];
-		const auto luck = args[j++];
-		const auto endurance = args[j++];
-		const auto health = args[j++];
-		const auto maxHealth = args[j++];
-		const auto mana = args[j++];
-		const auto maxMana = args[j++];
-		const auto stamina = args[j++];
-		const auto maxStamina = args[j++];
+		const std::string& accountId{ args.at(j++) };
+		const std::string& posX{ args.at(j++) };
+		const std::string& posY{ args.at(j++) };
+		const std::string& posZ{ args.at(j++) };
+		const std::string& movX{ args.at(j++) };
+		const std::string& movY{ args.at(j++) };
+		const std::string& movZ{ args.at(j++) };
+		const std::string& modelId{ args.at(j++) };
+		const std::string& textureId{ args.at(j++) };
+		const std::string& name{ args.at(j++) };
+		const std::string& agility{ args.at(j++) };
+		const std::string& strength{ args.at(j++) };
+		const std::string& wisdom{ args.at(j++) };
+		const std::string& intelligence{ args.at(j++) };
+		const std::string& charisma{ args.at(j++) };
+		const std::string& luck{ args.at(j++) };
+		const std::string& endurance{ args.at(j++) };
+		const std::string& health{ args.at(j++) };
+		const std::string& maxHealth{ args.at(j++) };
+		const std::string& mana{ args.at(j++) };
+		const std::string& maxMana{ args.at(j++) };
+		const std::string& stamina{ args.at(j++) };
+		const std::string& maxStamina{ args.at(j++) };
 
-		std::unique_ptr<Event> e = std::make_unique<PlayerUpdateEvent>
+		std::unique_ptr<Event> e{ std::make_unique<PlayerUpdateEvent>
 		(
 			std::stol(accountId),
 			XMFLOAT3{ std::stof(posX), std::stof(posY), std::stof(posZ)}, XMFLOAT3{ std::stof(movX), std::stof(movY), std::stof(movZ) },
@@ -323,69 +323,69 @@ void ClientSocketManager::InitializeMessageHandlers()
 			name,
 			std::stoi(agility), std::stoi(strength), std::stoi(wisdom), std::stoi(intelligence), std::stoi(charisma), std::stoi(luck), std::stoi(endurance),
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
-		);
+		) };
 
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::PropagateChatMessage] = [this](const std::vector<std::string>& args)
 	{
-		const auto message = args[0];
-		const auto senderName = args[1];
+		const std::string& message{ args.at(0) };
+		const std::string& senderName{ args.at(1) };
 
-		std::unique_ptr<Event> e = std::make_unique<PropagateChatMessageEvent>(new std::string(senderName), new std::string(message));
+		std::unique_ptr<Event> e{ std::make_unique<PropagateChatMessageEvent>(senderName, message) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::ServerMessage] = [this](const std::vector<std::string>& args)
 	{
-		const auto message = args[0];
-		const auto type = args[1];
+		const std::string& message{ args.at(0) };
+		const std::string& type{ args.at(1) };
 
-		std::unique_ptr<Event> e = std::make_unique<ServerMessageEvent>(new std::string(message), new std::string(type));
+		std::unique_ptr<Event> e{ std::make_unique<ServerMessageEvent>(message, type) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::AttackHit] = [this](const std::vector<std::string>& args)
 	{
-		const auto attackerId = args[0];
-		const auto targetId = args[1];
-		const auto damage = args[2];
+		const std::string& attackerId{ args.at(0) };
+		const std::string& targetId{ args.at(1) };
+		const std::string& damage{ args.at(2) };
 
-		std::unique_ptr<Event> e = std::make_unique<AttackHitEvent>(std::stoi(attackerId), std::stoi(targetId), std::stoi(damage));
+		std::unique_ptr<Event> e{ std::make_unique<AttackHitEvent>(std::stoi(attackerId), std::stoi(targetId), std::stoi(damage)) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::AttackMiss] = [this](const std::vector<std::string>& args)
 	{
-		const auto attackerId = args[0];
-		const auto targetId = args[1];
+		const std::string& attackerId{ args.at(0) };
+		const std::string& targetId{ args.at(1) };
 
-		std::unique_ptr<Event> e = std::make_unique<AttackMissEvent>(std::stoi(attackerId), std::stoi(targetId));
+		std::unique_ptr<Event> e{ std::make_unique<AttackMissEvent>(std::stoi(attackerId), std::stoi(targetId)) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::ActivateAbilitySuccess] = [this](const std::vector<std::string>& args)
 	{
-		const auto abilityId = args[0];
+		const std::string& abilityId{ args.at(0) };
 
-		std::unique_ptr<Event> e = std::make_unique<ActivateAbilitySuccessEvent>(std::stoi(abilityId));
+		std::unique_ptr<Event> e{ std::make_unique<ActivateAbilitySuccessEvent>(std::stoi(abilityId)) };
 		g_eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::Pong] = [this](const std::vector<std::string>& args)
 	{
-		const auto pingId = args[0];
+		const std::string& pingId{ args.at(0) };
 
 		g_game.get()->OnPong(std::stoul(pingId));
 	};
 
 	messageHandlers[OpCode::SkillIncrease] = [this](const std::vector<std::string>& args)
 	{
-		const auto skillId = args[0];
-		const auto newValue = args[1];
+		const std::string& skillId{ args.at(0) };
+		const std::string& newValue{ args.at(1) };
 
-		std::unique_ptr<Event> e = std::make_unique<SkillIncreaseEvent>(std::stoi(skillId), std::stoi(newValue));
+		std::unique_ptr<Event> e{ std::make_unique<SkillIncreaseEvent>(std::stoi(skillId), std::stoi(newValue)) };
 		g_eventHandler.QueueEvent(e);
 	};
 }

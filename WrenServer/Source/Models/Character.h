@@ -29,7 +29,7 @@ class Character
 public:
 	Character(
 		const int id,
-		const std::string name,
+		const std::string& name,
 		const int accountId,
 		const XMFLOAT3 position,
 		const int modelId, const int textureId,
