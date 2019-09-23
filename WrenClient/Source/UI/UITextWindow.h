@@ -3,6 +3,7 @@
 #include <Constants.h>
 #include <GameTimer.h>
 #include "UIComponent.h"
+#include <EventHandling/EventHandler.h>
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
 
@@ -12,6 +13,7 @@ constexpr float TEXT_WINDOW_WIDTH = 600.0f;
 
 class UITextWindow : public UIComponent
 {
+	EventHandler& eventHandler;
 	int playerId{ 0 };
 	bool inputActive{ false };
 	wchar_t inputValue[60];
@@ -56,6 +58,7 @@ public:
 		const XMFLOAT2 position,
 		const Layer uiLayer,
 		const unsigned int zIndex,
+		EventHandler& eventHandler,
 		std::string* messages[MESSAGE_BUFFER_SIZE],
 		unsigned int* messageIndex,
 		ID2D1SolidColorBrush* backgroundBrush,

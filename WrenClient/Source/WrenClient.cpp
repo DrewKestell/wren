@@ -1,17 +1,15 @@
 #include "stdafx.h"
+#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/SystemKeyUpEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "Game.h"
+#include "ClientSocketManager.h"
 
 static wchar_t szWindowClass[] = L"win32app";
 static wchar_t szTitle[] = L"Wren Client";
-
-EventHandler g_eventHandler;
-ClientRepository repository{ "..\\..\\Databases\\WrenClient.db" };
-CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db" };
-std::unique_ptr<Game> g_game;
+static EventHandler eventHandler;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -24,16 +22,14 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	if (FAILED(hr))
 		return 1;
 
-	g_game = std::make_unique<Game>(repository, commonRepository);
-
-	// Allocate Console
-#ifdef _DEBUG
-	AllocConsole();
-	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
-	HWND consoleWindow = GetConsoleWindow();
-	MoveWindow(consoleWindow, 0, 640, 800, 400, TRUE);
-	std::cout << "WrenClient initialized.\n\n";
-#endif
+	static ObjectManager objectManager;
+	static RenderComponentManager renderComponentManager{ eventHandler, objectManager };
+	static StatsComponentManager statsComponentManager{ eventHandler, objectManager };
+	static ClientRepository clientRepository{ "..\\..\\Databases\\WrenClient.db" };
+	static CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db" };
+	static ClientSocketManager socketManager{ eventHandler };
+	static auto game = std::make_unique<Game>(eventHandler, objectManager, renderComponentManager, statsComponentManager, clientRepository, commonRepository, socketManager);
+	socketManager.SetGamePointer(game.get()); // this is a hack to get ping/pong working. refactor.
 
 	// Register class
 	WNDCLASSEX wcex = {};
@@ -76,27 +72,27 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	ShowWindow(hWnd, nCmdShow);
 
 	// Wrap the WindowPtr in our Game
-	SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(g_game.get()));
+	SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(game.get()));
 
 	GetClientRect(hWnd, &rc);
-	g_game->Initialize(hWnd, rc.right - rc.left, rc.bottom - rc.top);
+	game->Initialize(hWnd, rc.right - rc.left, rc.bottom - rc.top);
 
 	// Main message loop
-	MSG msg = { 0 };
+	MSG msg{ nullptr };
 	while (msg.message != WM_QUIT)
 	{
-		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 		else
 		{
-			g_game->Tick();
+			game->Tick();
 		}
 	}
 
-	g_game.reset();
+	game.reset();
 
 	CoUninitialize();
 
@@ -255,31 +251,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_LBUTTONDOWN:
 		e = std::make_unique<MouseEvent>(EventType::LeftMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 		break;
 	case WM_MBUTTONDOWN:
 		e = std::make_unique<MouseEvent>(EventType::MiddleMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 		break;
 	case WM_RBUTTONDOWN:
 		e = std::make_unique<MouseEvent>(EventType::RightMouseDown, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 		break;
 	case WM_LBUTTONUP:
 		e = std::make_unique<MouseEvent>(EventType::LeftMouseUp, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 		break;
 	case WM_MBUTTONUP:
 		e = std::make_unique<MouseEvent>(EventType::MiddleMouseUp, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 		break;
 	case WM_RBUTTONUP:
 		e = std::make_unique<MouseEvent>(EventType::RightMouseUp, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 		break;
 	case WM_MOUSEMOVE:
 		e = std::make_unique<MouseEvent>(EventType::MouseMove, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 		break;
 
 	case WM_SYSKEYDOWN:
@@ -314,7 +310,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case VK_MENU:
 				const auto key = MapLeftRightKeys(wParam, lParam);
 				e = std::make_unique<SystemKeyDownEvent>(key);
-				g_eventHandler.QueueEvent(e);
+				eventHandler.QueueEvent(e);
 				break;
 			}
 		}
@@ -327,7 +323,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case VK_MENU:
 			const auto key = MapLeftRightKeys(wParam, lParam);
 			e = std::make_unique<SystemKeyUpEvent>(key);
-			g_eventHandler.QueueEvent(e);
+			eventHandler.QueueEvent(e);
 			break;
 		}
 		break;
@@ -344,7 +340,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		e = std::make_unique<SystemKeyDownEvent>(keyCode);
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 		break;
 
 	case WM_KEYUP:
@@ -359,7 +355,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		e = std::make_unique<SystemKeyUpEvent>(keyCode);
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 		break;
 
 	case WM_CHAR:
@@ -378,7 +374,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		default:   // Process a normal character press.            
 			auto ch = static_cast<wchar_t>(wParam);
 			e = std::make_unique<KeyDownEvent>(ch);
-			g_eventHandler.QueueEvent(e);
+			eventHandler.QueueEvent(e);
 			break;
 		}
 

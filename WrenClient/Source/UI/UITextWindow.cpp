@@ -2,7 +2,6 @@
 #include "UITextWindow.h"
 #include "Events/AttackMissEvent.h"
 #include "Events/AttackHitEvent.h"
-#include <EventHandling/EventHandler.h>
 #include <EventHandling/Events/MouseEvent.h>
 #include <EventHandling/Events/KeyDownEvent.h>
 #include <EventHandling/Events/SystemKeyDownEvent.h>
@@ -12,13 +11,12 @@
 
 using namespace DX;
 
-extern EventHandler g_eventHandler;
-
 UITextWindow::UITextWindow(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
 	const unsigned int zIndex,
+	EventHandler& eventHandler,
 	std::string* messages[MESSAGE_BUFFER_SIZE],
 	unsigned int* messageIndex,
 	ID2D1SolidColorBrush* backgroundBrush,
@@ -35,6 +33,7 @@ UITextWindow::UITextWindow(
 	IDWriteTextFormat* textFormatInactive,
 	ID2D1Factory2* d2dFactory)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	  eventHandler{ eventHandler },
 	  messages{ messages },
 	  messageIndex{ messageIndex },
 	  backgroundBrush{ backgroundBrush },
@@ -277,7 +276,7 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 
 							// convert inputValue to const char * or std::string, then send the message
 							std::unique_ptr<Event> e = std::make_unique<SendChatMessage>(std::string(str));
-							g_eventHandler.QueueEvent(e);
+							eventHandler.QueueEvent(e);
 
 							while (inputIndex > 0)
 							{

@@ -17,12 +17,10 @@
 #include "EventHandling/Events/ServerMessageEvent.h"
 #include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
 
-extern EventHandler g_eventHandler;
-extern std::unique_ptr<Game> g_game;
-
 static bool logMessages{ false };
 
-ClientSocketManager::ClientSocketManager()
+ClientSocketManager::ClientSocketManager(EventHandler& eventHandler)
+	: eventHandler{ eventHandler }
 {
 	InitializeMessageHandlers();
 
@@ -156,13 +154,13 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const std::string& error{ args.at(0) };
 
 		std::unique_ptr<Event> e{ std::make_unique<CreateAccountFailedEvent>(error) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::CreateAccountSuccess] = [this](const std::vector<std::string>& args)
 	{
 		std::unique_ptr<Event> e{ std::make_unique<Event>(EventType::CreateAccountSuccess) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::LoginFailure] = [this](const std::vector<std::string>& args)
@@ -170,7 +168,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const std::string& error{ args.at(0) };
 		
 		std::unique_ptr<Event> e{ std::make_unique<LoginFailedEvent>(error) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::LoginSuccess] = [this](const std::vector<std::string>& args)
@@ -184,7 +182,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 		this->token = std::string{ token };
 
 		std::unique_ptr<Event> e{ std::make_unique<LoginSuccessEvent>(characterList) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::CreateCharacterFailure] = [this](const std::vector<std::string>& args)
@@ -192,7 +190,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const std::string& error{ args.at(0) };
 
 		std::unique_ptr<Event> e{ std::make_unique<CreateCharacterFailedEvent>(error) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::CreateCharacterSuccess] = [this](const std::vector<std::string>& args)
@@ -201,7 +199,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 		auto characterList{ BuildCharacterVector(characterString) };
 
 		std::unique_ptr<Event> e{ std::make_unique<CreateCharacterSuccessEvent>(characterList) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::DeleteCharacterSuccess] = [this](const std::vector<std::string>& args)
@@ -210,7 +208,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 		auto characterList{ BuildCharacterVector(characterString) };
 
 		std::unique_ptr<Event> e{ std::make_unique<DeleteCharacterSuccessEvent>(characterList) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::EnterWorldSuccess] = [this](const std::vector<std::string>& args)
@@ -250,7 +248,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
 		) };
 
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::NpcUpdate] = [this](const std::vector<std::string>& args)
@@ -285,7 +283,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
 		) };
 
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::PlayerUpdate] = [this](const std::vector<std::string>& args)
@@ -325,7 +323,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 			std::stoi(health), std::stoi(maxHealth), std::stoi(mana), std::stoi(maxMana), std::stoi(stamina), std::stoi(maxStamina)
 		) };
 
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::PropagateChatMessage] = [this](const std::vector<std::string>& args)
@@ -334,7 +332,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const std::string& senderName{ args.at(1) };
 
 		std::unique_ptr<Event> e{ std::make_unique<PropagateChatMessageEvent>(senderName, message) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::ServerMessage] = [this](const std::vector<std::string>& args)
@@ -343,7 +341,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const std::string& type{ args.at(1) };
 
 		std::unique_ptr<Event> e{ std::make_unique<ServerMessageEvent>(message, type) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::AttackHit] = [this](const std::vector<std::string>& args)
@@ -353,7 +351,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const std::string& damage{ args.at(2) };
 
 		std::unique_ptr<Event> e{ std::make_unique<AttackHitEvent>(std::stoi(attackerId), std::stoi(targetId), std::stoi(damage)) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::AttackMiss] = [this](const std::vector<std::string>& args)
@@ -362,7 +360,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const std::string& targetId{ args.at(1) };
 
 		std::unique_ptr<Event> e{ std::make_unique<AttackMissEvent>(std::stoi(attackerId), std::stoi(targetId)) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::ActivateAbilitySuccess] = [this](const std::vector<std::string>& args)
@@ -370,14 +368,14 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const std::string& abilityId{ args.at(0) };
 
 		std::unique_ptr<Event> e{ std::make_unique<ActivateAbilitySuccessEvent>(std::stoi(abilityId)) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 
 	messageHandlers[OpCode::Pong] = [this](const std::vector<std::string>& args)
 	{
 		const std::string& pingId{ args.at(0) };
 
-		g_game.get()->OnPong(std::stoul(pingId));
+		game->OnPong(std::stoul(pingId));
 	};
 
 	messageHandlers[OpCode::SkillIncrease] = [this](const std::vector<std::string>& args)
@@ -386,6 +384,8 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const std::string& newValue{ args.at(1) };
 
 		std::unique_ptr<Event> e{ std::make_unique<SkillIncreaseEvent>(std::stoi(skillId), std::stoi(newValue)) };
-		g_eventHandler.QueueEvent(e);
+		eventHandler.QueueEvent(e);
 	};
 }
+
+void ClientSocketManager::SetGamePointer(Game* game) { this->game = game; }

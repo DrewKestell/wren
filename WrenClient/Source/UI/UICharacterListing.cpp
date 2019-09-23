@@ -1,18 +1,16 @@
 #include "stdafx.h"
 #include "UICharacterListing.h"
-#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 
 using namespace DX;
-
-extern EventHandler g_eventHandler;
 
 UICharacterListing::UICharacterListing(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
 	const unsigned int zIndex,
+	EventHandler& eventHandler,
 	const float width,
 	const float height,
 	const char* inText,
@@ -25,6 +23,7 @@ UICharacterListing::UICharacterListing(
 	IDWriteTextFormat* textFormat,
 	ID2D1Factory2* d2dFactory)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	  eventHandler{ eventHandler },
 	  width{ width },
 	  height{ height },
 	  brush{ brush },
@@ -78,7 +77,7 @@ const bool UICharacterListing::HandleEvent(const Event* const event)
 			if (wasSelected && !selected)
 			{
 				std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
-				g_eventHandler.QueueEvent(e);
+				eventHandler.QueueEvent(e);
 			}
 				
 			

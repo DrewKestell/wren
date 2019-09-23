@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UIComponent.h"
+#include "EventHandling/EventHandler.h"
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
 
@@ -8,6 +9,7 @@ constexpr float HEADER_HEIGHT = 20.0f;
 
 class UIPanel : public UIComponent
 {
+	EventHandler& eventHandler;
 	ComPtr<ID2D1RoundedRectangleGeometry> headerGeometry;
 	ComPtr<ID2D1RoundedRectangleGeometry> bodyGeometry;
 	bool isActive{ false };
@@ -31,6 +33,7 @@ public:
 		const XMFLOAT2 position,
 		const Layer uiLayer,
 		const unsigned int zIndex,
+		EventHandler& eventHandler,
 		const bool isDraggable,
 		const float width,
 		const float height,

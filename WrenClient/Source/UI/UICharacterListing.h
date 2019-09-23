@@ -1,11 +1,13 @@
 #pragma once
 
 #include "UIComponent.h"
+#include "EventHandling/EventHandler.h"
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
 
 class UICharacterListing : public UIComponent
 {
+	EventHandler& eventHandler;
 	ComPtr<IDWriteTextLayout> textLayout;
 	ComPtr<ID2D1RoundedRectangleGeometry> geometry;
 	std::string characterName{ "" };
@@ -24,6 +26,7 @@ public:
 		const XMFLOAT2 position,
 		const Layer uiLayer,
 		const unsigned int zIndex,
+		EventHandler& eventHandler,
 		const float width,
 		const float height,
 		const char* inText,

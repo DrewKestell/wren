@@ -3,11 +3,13 @@
 #include <Models/Ability.h>
 #include "UIComponent.h"
 #include "UIAbility.h"
+#include <EventHandling/EventHandler.h>
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
 
 class UIAbilitiesContainer : public UIComponent
 {
+	EventHandler& eventHandler;
 	const float HEADER_WIDTH{ 200.0f };
 	const float HEADER_HEIGHT{ 30.0f };
 	const float BORDER_WIDTH{ 40.0f };
@@ -41,6 +43,7 @@ public:
 		const XMFLOAT2 position,
 		const Layer uiLayer,
 		const unsigned int zIndex,
+		EventHandler& eventHandler,
 		ID2D1DeviceContext1* d2dDeviceContext,
 		ID2D1Factory2* d2dFactory,
 		ID3D11Device* d3dDevice,

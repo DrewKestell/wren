@@ -2,12 +2,11 @@
 #include "RenderComponentManager.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
 
-extern EventHandler g_eventHandler;
-
-RenderComponentManager::RenderComponentManager(ObjectManager& objectManager)
-	: objectManager{ objectManager }
+RenderComponentManager::RenderComponentManager(EventHandler& eventHandler, ObjectManager& objectManager)
+	: eventHandler{ eventHandler },
+	  objectManager{ objectManager }
 {
-	g_eventHandler.Subscribe(*this);
+	eventHandler.Subscribe(*this);
 }
 
 void RenderComponentManager::Render(ID3D11DeviceContext* d3dContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform, const float updateLag)
@@ -66,5 +65,5 @@ const bool RenderComponentManager::HandleEvent(const Event* const event)
 
 RenderComponentManager::~RenderComponentManager()
 {
-	g_eventHandler.Unsubscribe(*this);
+	eventHandler.Unsubscribe(*this);
 }

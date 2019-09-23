@@ -1,43 +1,49 @@
 #pragma once
 
-#include "Camera.h"
-#include "ClientRepository.h"
-#include "Components/GameMapRenderComponent.h"
-#include "Components/RenderComponentManager.h"
-#include "Components/StatsComponentManager.h"
-#include "DeviceResources.h"
-#include "EventHandling/EventHandler.h"
-#include "GameTimer.h"
-#include "Mesh.h"
-#include "Models/Npc.h"
-#include "ObjectManager.h"
-#include "ShaderBuffer.h"
-#include "Sprite.h"
-#include "UI/UIAbilitiesContainer.h"
-#include "UI/UIButton.h"
-#include "UI/UICharacterHUD.h"
-#include "UI/UICharacterListing.h"
-#include "UI/UIHotbar.h"
-#include "UI/UIInput.h"
-#include "UI/UIInputGroup.h"
-#include "UI/UILabel.h"
-#include "UI/UIPanel.h"
-#include "UI/UISkillListing.h"
-#include "UI/UISkillsContainer.h"
-#include "UI/UITargetHUD.h"
-#include "UI/UITextWindow.h"
 #include <CommonRepository.h>
-#include <Constants.h>
-#include <GameMap/GameMap.h>
+#include "ClientRepository.h"
 #include <Models/Skill.h>
 #include <Models/StaticObject.h>
-
-extern EventHandler g_eventHandler;
+#include <Constants.h>
+#include <GameMap/GameMap.h>
+#include "DeviceResources.h"
+#include "GameTimer.h"
+#include "Camera.h"
+#include "ShaderBuffer.h"
+#include "Mesh.h"
+#include "ObjectManager.h"
+#include "Components/RenderComponentManager.h"
+#include "Components/StatsComponentManager.h"
+#include "Components/GameMapRenderComponent.h"
+#include "Sprite.h"
+#include "Models/Npc.h"
+#include "UI/UICharacterListing.h"
+#include "UI/UIInput.h"
+#include "UI/UIInputGroup.h"
+#include "UI/UIButton.h"
+#include "UI/UIPanel.h"
+#include "UI/UILabel.h"
+#include "UI/UISkillListing.h"
+#include "UI/UIHotbar.h"
+#include "UI/UIAbilitiesContainer.h"
+#include "UI/UISkillsContainer.h"
+#include "UI/UICharacterHUD.h"
+#include "UI/UITargetHUD.h"
+#include "UI/UITextWindow.h"
+#include "EventHandling/EventHandler.h"
+#include "ClientSocketManager.h"
 
 class Game : public DX::IDeviceNotify, public Observer
 {
 public:
-	Game(ClientRepository repository, CommonRepository commonRepository) noexcept(false);
+	Game(
+		EventHandler& eventHandler,
+		ObjectManager& objectManager,
+		RenderComponentManager& renderComponentManager,
+		StatsComponentManager& statsComponentManager,
+		ClientRepository& clientRepository,
+		CommonRepository& commonRepository,
+		ClientSocketManager& socketManager);
 
 	void Initialize(HWND window, int width, int height);
 	void Tick();
@@ -58,6 +64,13 @@ public:
 	~Game();
 
 private:
+	ObjectManager& objectManager;
+	RenderComponentManager& renderComponentManager;
+	StatsComponentManager& statsComponentManager;
+	EventHandler& eventHandler;
+	ClientRepository& clientRepository;
+	CommonRepository& commonRepository;
+	ClientSocketManager& socketManager;
 	int ping{ 0 };
 	float pingStart{ 0.0f };
 	unsigned int pingId{ 0 };
@@ -74,12 +87,7 @@ private:
 	XMMATRIX viewTransform{ XMMatrixIdentity() };
 	XMMATRIX projectionTransform{ XMMatrixIdentity() };
 	Layer activeLayer{ Login };
-	ClientRepository repository;
-	CommonRepository commonRepository;
 	std::unique_ptr<DX::DeviceResources> deviceResources;
-	ObjectManager objectManager;
-	RenderComponentManager renderComponentManager{ objectManager };
-	StatsComponentManager statsComponentManager{ g_eventHandler, objectManager };
 	GameTimer timer;
 	Camera camera;
 	GameMap gameMap;

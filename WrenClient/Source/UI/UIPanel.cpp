@@ -1,18 +1,17 @@
 #include "stdafx.h"
 #include "UIPanel.h"
-#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
 
 extern unsigned int g_zIndex;
-extern EventHandler g_eventHandler;
 
 UIPanel::UIPanel(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
 	const unsigned int zIndex,
+	EventHandler& eventHandler,
 	const bool isDraggable,
 	const float width,
 	const float height,
@@ -23,6 +22,7 @@ UIPanel::UIPanel(
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	  eventHandler{ eventHandler },
 	  isDraggable{ isDraggable },
 	  width{ width },
 	  height{ height },
@@ -83,7 +83,7 @@ const bool UIPanel::HandleEvent(const Event* const event)
 					BringToFront(this);
 
 					std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
-					g_eventHandler.QueueEvent(e);
+					eventHandler.QueueEvent(e);
 
 					stopEvent = true;
 				}
@@ -155,7 +155,7 @@ const bool UIPanel::HandleEvent(const Event* const event)
 					}
 
 					std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
-					g_eventHandler.QueueEvent(e);
+					eventHandler.QueueEvent(e);
 				}
 			}
 

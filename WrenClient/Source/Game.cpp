@@ -1,38 +1,48 @@
+#include "stdafx.h"
 #include "Game.h"
-#include "ClientSocketManager.h"
 #include "ConstantBufferOnce.h"
-#include "EventHandling/Events/ActivateAbilityEvent.h"
+#include "Events/UIAbilityDroppedEvent.h"
+#include "Events/SkillIncreaseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
+#include "EventHandling/Events/LoginSuccessEvent.h"
+#include "EventHandling/Events/LoginFailedEvent.h"
 #include "EventHandling/Events/CreateCharacterFailedEvent.h"
 #include "EventHandling/Events/CreateCharacterSuccessEvent.h"
 #include "EventHandling/Events/DeleteCharacterSuccessEvent.h"
 #include "EventHandling/Events/EnterWorldSuccessEvent.h"
-#include "EventHandling/Events/LoginFailedEvent.h"
-#include "EventHandling/Events/LoginSuccessEvent.h"
 #include "EventHandling/Events/NpcUpdateEvent.h"
 #include "EventHandling/Events/PlayerUpdateEvent.h"
-#include "EventHandling/Events/PropagateChatMessageEvent.h"
-#include "EventHandling/Events/SendChatMessage.h"
-#include "EventHandling/Events/ServerMessageEvent.h"
+#include "EventHandling/Events/ActivateAbilityEvent.h"
 #include "EventHandling/Events/SetTargetEvent.h"
-#include "Events/SkillIncreaseEvent.h"
-#include "Events/UIAbilityDroppedEvent.h"
-#include "stdafx.h"
+#include "EventHandling/Events/SendChatMessage.h"
+#include "EventHandling/Events/PropagateChatMessageEvent.h"
+#include "EventHandling/Events/ServerMessageEvent.h"
 
-ClientSocketManager g_socketManager;
 unsigned int g_zIndex{ 0 };
 
 bool CompareUIComponents(UIComponent* a, UIComponent* b) { return (a->zIndex < b->zIndex); }
 
-Game::Game(ClientRepository repository, CommonRepository commonRepository) noexcept(false)
-	: repository{ repository },
-	  commonRepository{ commonRepository }
+Game::Game(
+	EventHandler& eventHandler,
+	ObjectManager& objectManager,
+	RenderComponentManager& renderComponentManager,
+	StatsComponentManager& statsComponentManager,
+	ClientRepository& clientRepository,
+	CommonRepository& commonRepository,
+	ClientSocketManager& socketManager)
+	: eventHandler{ eventHandler },
+	  objectManager{ objectManager },
+	  renderComponentManager{ renderComponentManager },
+	  statsComponentManager{ statsComponentManager },
+	  clientRepository{ clientRepository },
+	  commonRepository{ commonRepository },
+	  socketManager{ socketManager }
 {
 	deviceResources = std::make_unique<DX::DeviceResources>();
 	deviceResources->RegisterDeviceNotify(this);
 
-	g_eventHandler.Subscribe(*this);
+	eventHandler.Subscribe(*this);
 
 	InitializeEventHandlers();
 }
@@ -40,7 +50,7 @@ Game::Game(ClientRepository repository, CommonRepository commonRepository) noexc
 void Game::PublishEvents()
 {
 	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
-	std::queue<std::unique_ptr<const Event>>& eventQueue = g_eventHandler.GetEventQueue();
+	std::queue<std::unique_ptr<const Event>>& eventQueue = eventHandler.GetEventQueue();
 	while (!eventQueue.empty())
 	{
 		auto event = std::move(eventQueue.front());
@@ -65,7 +75,7 @@ void Game::PublishEvents()
 		if (stopPropagation)
 			continue;
 
-		std::list<Observer*>& observers = g_eventHandler.GetObservers();
+		std::list<Observer*>& observers = eventHandler.GetObservers();
 		for (auto observer : observers)
 		{
 			stopPropagation = observer->HandleEvent(event.get());
@@ -97,7 +107,7 @@ void Game::Tick()
 {
 	timer.Tick();
 
-	g_socketManager.ProcessPackets();
+	socketManager.ProcessPackets();
 
 	// to get an accurate ping, we should handle this outside of the main update loop which is locked at 60 updates / second
 	if (activeLayer == InGame)
@@ -107,7 +117,7 @@ void Game::Tick()
 			pingStart = timer.TotalTime();
 
 			std::vector<std::string> args{ std::to_string(pingId) };
-			g_socketManager.SendPacket(OpCode::Ping, args);
+			socketManager.SendPacket(OpCode::Ping, args);
 		}
 	}
 	
@@ -160,8 +170,8 @@ void Game::Render(const float updateTimer)
 		frameCnt = 0;
 		timeElapsed += 1.0f;
 
-		if (g_socketManager.Connected())
-			g_socketManager.SendPacket(OpCode::Heartbeat);
+		if (socketManager.Connected())
+			socketManager.SendPacket(OpCode::Heartbeat);
 	}
 
 	// update ping
@@ -316,10 +326,10 @@ void Game::CreateWindowSizeDependentResources()
 	auto writeFactory = deviceResources->GetWriteFactory();
 
 	// init hotbar
-	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
+	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0, eventHandler, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
 
 	// init textWindow
-	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, textWindowMessages, textWindowMessageIndex, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
+	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, eventHandler, textWindowMessages, textWindowMessageIndex, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
 
 	if (skills.size() > 0)
 		skillsContainer->Initialize(skills);
@@ -374,7 +384,7 @@ ShaderBuffer Game::LoadShader(const std::wstring filename)
 
 void Game::InitializeNpcs()
 {
-	npcs = repository.ListNpcs();
+	npcs = clientRepository.ListNpcs();
 }
 
 void Game::InitializeStaticObjects()
@@ -482,20 +492,20 @@ void Game::InitializeInputs()
 	// LoginScreen
 	loginScreen_accountNameInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, Login, 0, false, 120.0f, 260.0f, 24.0f, "Account Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
 	loginScreen_passwordInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 50.0f }, Login, 0, true, 120.0f, 260.0f, 24.0f, "Password:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
-	loginScreen_inputGroup = std::make_unique<UIInputGroup>(Login);
+	loginScreen_inputGroup = std::make_unique<UIInputGroup>(Login, eventHandler);
 	loginScreen_inputGroup->AddInput(loginScreen_accountNameInput.get());
 	loginScreen_inputGroup->AddInput(loginScreen_passwordInput.get());
 
 	// CreateAccount
 	createAccount_accountNameInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, CreateAccount, 0, false, 120.0f, 260.0f, 24.0f, "Account Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
 	createAccount_passwordInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 50.0f  }, CreateAccount, 0, true, 120.0f, 260.0f, 24.0f, "Password:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
-	createAccount_inputGroup = std::make_unique<UIInputGroup>(CreateAccount);
+	createAccount_inputGroup = std::make_unique<UIInputGroup>(CreateAccount, eventHandler);
 	createAccount_inputGroup->AddInput(createAccount_accountNameInput.get());
 	createAccount_inputGroup->AddInput(createAccount_passwordInput.get());
 
 	// CreateCharacter
 	createCharacter_characterNameInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, CreateCharacter, 0, false, 140.0f, 260.0f, 24.0f, "Character Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
-	createCharacter_inputGroup = std::make_unique<UIInputGroup>(CreateCharacter);
+	createCharacter_inputGroup = std::make_unique<UIInputGroup>(CreateCharacter, eventHandler);
 	createCharacter_inputGroup->AddInput(createCharacter_characterNameInput.get());
 }
 
@@ -525,7 +535,7 @@ void Game::InitializeButtons()
 		}
 
 		std::vector<std::string> args{ accountName, password };
-		g_socketManager.SendPacket(OpCode::Connect, args);
+		socketManager.SendPacket(OpCode::Connect, args);
 		SetActiveLayer(Connecting);
 	};
 
@@ -565,7 +575,7 @@ void Game::InitializeButtons()
 		}
 
 		std::vector<std::string> args{ accountName, password };
-		g_socketManager.SendPacket(OpCode::CreateAccount, args);
+		socketManager.SendPacket(OpCode::CreateAccount, args);
 	};
 
 	const auto onClickCreateAccountCancelButton = [this]()
@@ -599,7 +609,7 @@ void Game::InitializeButtons()
 		else
 		{
 			std::vector<std::string> args{ characterInput->GetName() };
-			g_socketManager.SendPacket(OpCode::EnterWorld, args);
+			socketManager.SendPacket(OpCode::EnterWorld, args);
 			SetActiveLayer(EnteringWorld);
 		}
 	};
@@ -621,7 +631,7 @@ void Game::InitializeButtons()
 
 	const auto onClickCharacterSelectLogoutButton = [this]()
 	{
-		g_socketManager.Logout();
+		socketManager.Logout();
 
 		SetActiveLayer(Login);
 	};
@@ -645,7 +655,7 @@ void Game::InitializeButtons()
 		}
 
 		std::vector<std::string> args{ characterName };
-		g_socketManager.SendPacket(OpCode::CreateCharacter, args);
+		socketManager.SendPacket(OpCode::CreateCharacter, args);
 	};
 
 	const auto onClickCreateCharacterBackButton = [this]()
@@ -662,7 +672,7 @@ void Game::InitializeButtons()
 	const auto onClickDeleteCharacterConfirm = [this]()
 	{
 		std::vector<std::string> args{ characterNamePendingDeletion };
-		g_socketManager.SendPacket(OpCode::DeleteCharacter, args);
+		socketManager.SendPacket(OpCode::DeleteCharacter, args);
 	};
 
 	const auto onClickDeleteCharacterCancel = [this]()
@@ -716,11 +726,11 @@ void Game::InitializePanels()
 	const auto gameSettingsPanelY = (clientHeight - 200.0f) / 2.0f;
 	const auto onClickGameSettingsLogoutButton = [this]()
 	{
-		g_socketManager.SendPacket(OpCode::Disconnect);
-		g_socketManager.Logout();
+		socketManager.SendPacket(OpCode::Disconnect);
+		socketManager.Logout();
 		SetActiveLayer(Login);
 	};
-	gameSettingsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ gameSettingsPanelX, gameSettingsPanelY }, InGame, 1, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
+	gameSettingsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ gameSettingsPanelX, gameSettingsPanelY }, InGame, 1, eventHandler, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
 	gameSettings_logoutButton = std::make_unique<UIButton>(uiComponents, XMFLOAT2{ 10.0f, 26.0f }, InGame, 2, 80.0f, 24.0f, "LOGOUT", onClickGameSettingsLogoutButton, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dDeviceContext, writeFactory, textFormatButtonText.Get(), d2dFactory);
 	gameSettingsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 2, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dDeviceContext, writeFactory, d2dFactory);
 	gameSettingsPanelHeader->SetText("Game Settings");
@@ -730,7 +740,7 @@ void Game::InitializePanels()
 	// Game Editor
 	const auto gameEditorPanelX = 580.0f;
 	const auto gameEditorPanelY = 5.0f;
-	gameEditorPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ gameEditorPanelX, gameEditorPanelY }, InGame, 1, true, 200.0f, 400.0f, VK_F1, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
+	gameEditorPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ gameEditorPanelX, gameEditorPanelY }, InGame, 1, eventHandler, true, 200.0f, 400.0f, VK_F1, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
 	gameEditorPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 2, 200.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dDeviceContext, writeFactory, d2dFactory);
 	gameEditorPanelHeader->SetText("Game Editor");
 	gameEditorPanel->AddChildComponent(*gameEditorPanelHeader);
@@ -738,7 +748,7 @@ void Game::InitializePanels()
 	// Diagnostics
 	const auto diagnosticsPanelX = 580.0f;
 	const auto diagnosticsPanelY = 336.0f;
-	diagnosticsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ diagnosticsPanelX, diagnosticsPanelY }, InGame, 1, true, 200.0f, 200.0f, VK_F2, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
+	diagnosticsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ diagnosticsPanelX, diagnosticsPanelY }, InGame, 1, eventHandler, true, 200.0f, 200.0f, VK_F2, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
 
 	diagnosticsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 2, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dDeviceContext, writeFactory, d2dFactory);
 	diagnosticsPanelHeader->SetText("Diagnostics");
@@ -756,7 +766,7 @@ void Game::InitializePanels()
 	// Skills
 	const auto skillsPanelX = 200.0f;
 	const auto skillsPanelY = 200.0f;
-	skillsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ skillsPanelX, skillsPanelY }, InGame, 1, true, 200.0f, 200.0f, VK_F3, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
+	skillsPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ skillsPanelX, skillsPanelY }, InGame, 1, eventHandler, true, 200.0f, 200.0f, VK_F3, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
 
 	skillsPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 3, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dDeviceContext, writeFactory, d2dFactory);
 	skillsPanelHeader->SetText("Skills");
@@ -768,13 +778,13 @@ void Game::InitializePanels()
 	// Abilities
 	const auto abilitiesPanelX = 10.0f;
 	const auto abilitiesPanelY = 10.0f;
-	abilitiesPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ abilitiesPanelX, abilitiesPanelY }, InGame, 1, true, 240.0f, 400.0f, VK_F4, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
+	abilitiesPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ abilitiesPanelX, abilitiesPanelY }, InGame, 1, eventHandler, true, 240.0f, 400.0f, VK_F4, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
 
 	abilitiesPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 3, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dDeviceContext, writeFactory, d2dFactory);
 	abilitiesPanelHeader->SetText("Abilities");
 	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
 
-	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
+	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, eventHandler, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
 	abilitiesPanel->AddChildComponent(*abilitiesContainer);
 }
 
@@ -908,7 +918,7 @@ void Game::RecreateCharacterListings(const std::vector<std::unique_ptr<std::stri
 	for (auto i = 0; i < characterNames.size(); i++)
 	{
 		const float y = 100.0f + (i * 40.0f);
-		characterList.push_back(std::make_unique<UICharacterListing>(uiComponents, XMFLOAT2{ 25.0f, y }, CharacterSelect, 1, 260.0f, 30.0f, characterNames.at(i)->c_str(), whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatAccountCredsInputValue.Get(), d2dFactory));
+		characterList.push_back(std::make_unique<UICharacterListing>(uiComponents, XMFLOAT2{ 25.0f, y }, CharacterSelect, 1, eventHandler, 260.0f, 30.0f, characterNames.at(i)->c_str(), whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), d2dContext, writeFactory, textFormatAccountCredsInputValue.Get(), d2dFactory));
 	}
 }
 
@@ -926,12 +936,12 @@ void Game::SetActiveLayer(const Layer layer)
 	activeLayer = layer;
 
 	std::unique_ptr<Event> e = std::make_unique<ChangeActiveLayerEvent>(layer);
-	g_eventHandler.QueueEvent(e);
+	eventHandler.QueueEvent(e);
 }
 
 Game::~Game()
 {
-	g_eventHandler.Unsubscribe(*this);
+	eventHandler.Unsubscribe(*this);
 }
 
 void Game::InitializeAbilitiesContainer()
@@ -970,7 +980,7 @@ void Game::InitializeEventHandlers()
 
 		const auto dir = Utility::MousePosToDirection((float)clientWidth, (float)clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
 		std::vector<std::string> args{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
-		g_socketManager.SendPacket(OpCode::PlayerRightMouseDown, args);
+		socketManager.SendPacket(OpCode::PlayerRightMouseDown, args);
 
 		rightMouseDownDir = dir;
 	};
@@ -980,7 +990,7 @@ void Game::InitializeEventHandlers()
 		if (activeLayer != Layer::InGame)
 			return;
 
-		g_socketManager.SendPacket(OpCode::PlayerRightMouseUp);
+		socketManager.SendPacket(OpCode::PlayerRightMouseUp);
 
 		rightMouseDownDir = VEC_ZERO;
 	};
@@ -998,7 +1008,7 @@ void Game::InitializeEventHandlers()
 			if (dir != rightMouseDownDir)
 			{
 				std::vector<std::string> args{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
-				g_socketManager.SendPacket(OpCode::PlayerRightMouseDirChange, args);
+				socketManager.SendPacket(OpCode::PlayerRightMouseDirChange, args);
 				rightMouseDownDir = dir;
 			}
 		}
@@ -1240,7 +1250,7 @@ void Game::InitializeEventHandlers()
 		const auto derivedEvent = (ActivateAbilityEvent*)event;
 
 		std::vector<std::string> args{ std::to_string(derivedEvent->abilityId) };
-		g_socketManager.SendPacket(OpCode::ActivateAbility, args);
+		socketManager.SendPacket(OpCode::ActivateAbility, args);
 	};
 
 	eventHandlers[EventType::ReorderUIComponents] = [this](const Event* const event)
@@ -1304,15 +1314,15 @@ void Game::InitializeEventHandlers()
 			const auto objectId = clickedGameObject->GetId();
 			StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(clickedGameObject->statsComponentId);
 			std::unique_ptr<Event> e = std::make_unique<SetTargetEvent>(objectId, clickedGameObject->name, &statsComponent);
-			g_eventHandler.QueueEvent(e);
+			eventHandler.QueueEvent(e);
 			std::vector<std::string> args{ std::to_string(objectId) };
-			g_socketManager.SendPacket(OpCode::SetTarget, args);
+			socketManager.SendPacket(OpCode::SetTarget, args);
 		}
 		else
 		{
 			std::unique_ptr<Event> e = std::make_unique<Event>(EventType::UnsetTarget);
-			g_eventHandler.QueueEvent(e);
-			g_socketManager.SendPacket(OpCode::UnsetTarget);
+			eventHandler.QueueEvent(e);
+			socketManager.SendPacket(OpCode::UnsetTarget);
 		}
 	};
 
@@ -1323,7 +1333,7 @@ void Game::InitializeEventHandlers()
 		auto statsComponent = statsComponentManager.GetStatsComponentById(player->statsComponentId);
 
 		std::vector<std::string> args{ player->name, derivedEvent->message };
-		g_socketManager.SendPacket(OpCode::SendChatMessage, args);
+		socketManager.SendPacket(OpCode::SendChatMessage, args);
 	};
 
 	eventHandlers[EventType::PropagateChatMessage] = [this](const Event* const event)

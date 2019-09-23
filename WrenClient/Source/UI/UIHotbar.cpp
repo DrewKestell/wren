@@ -1,22 +1,21 @@
 #include "stdafx.h"
 #include "UIHotbar.h"
 #include "Events/UIAbilityDroppedEvent.h"
-#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/StartDraggingUIAbilityEvent.h"
-
-extern EventHandler g_eventHandler;
 
 UIHotbar::UIHotbar(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
 	const unsigned int zIndex,
+	EventHandler& eventHandler,
 	ID2D1SolidColorBrush* brush,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory,
 	const float clientHeight)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	  eventHandler{ eventHandler },
 	  brush{ brush },
 	  d2dDeviceContext{ d2dDeviceContext },
 	  d2dFactory{ d2dFactory },
@@ -72,7 +71,7 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 				// it's important that UIAbilities receive certain events (mouse clicks for example) before other
 				// UI elements, so we reorder here to make sure the UIComponents are in the right order.
 				std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
-				g_eventHandler.QueueEvent(e);
+				eventHandler.QueueEvent(e);
 			}
 			else
 			{

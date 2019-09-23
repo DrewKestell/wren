@@ -2,11 +2,13 @@
 
 #include "UIComponent.h"
 #include "../Sprite.h"
+#include "EventHandling/EventHandler.h"
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
 
 class UIAbility : public UIComponent
 {
+	EventHandler& eventHandler;
 	const float SPRITE_WIDTH{ 36.0f };
 	const float HIGHLIGHT_WIDTH{ 36.0f };
 	bool isHovered{ false };
@@ -42,6 +44,7 @@ public:
 		const XMFLOAT2 position,
 		const Layer uiLayer,
 		const unsigned int zIndex,
+		EventHandler& eventHandler,
 		const int abilityId,
 		const bool toggled,
 		ID2D1DeviceContext1* d2dDeviceContext,
