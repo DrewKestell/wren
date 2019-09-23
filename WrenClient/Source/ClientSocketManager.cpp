@@ -215,7 +215,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::EnterWorldSuccess] = [this](const std::vector<std::string>& args)
 	{
-		auto j = 0;
+		auto j{ 0 };
 		const std::string& accountId{ args.at(j++) };
 		const std::string& positionX{ args.at(j++) };
 		const std::string& positionY{ args.at(j++) };
@@ -255,7 +255,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::NpcUpdate] = [this](const std::vector<std::string>& args)
 	{
-		auto j = 0;
+		auto j{ 0 };
 		const std::string& gameObjectId{ args.at(j++) };
 		const std::string& posX{ args.at(j++) };
 		const std::string& posY{ args.at(j++) };
@@ -290,7 +290,7 @@ void ClientSocketManager::InitializeMessageHandlers()
 
 	messageHandlers[OpCode::PlayerUpdate] = [this](const std::vector<std::string>& args)
 	{
-		auto j = 0;
+		auto j{ 0 };
 		const std::string& accountId{ args.at(j++) };
 		const std::string& posX{ args.at(j++) };
 		const std::string& posY{ args.at(j++) };
