@@ -62,7 +62,7 @@ void Game::PublishEvents()
 		// These UIComponents are sorted in ascending order of their z-index.
 		auto stopPropagation = false;
 
-		for (int i = static_cast<int>(uiComponents.size()) - 1; i >= 0; i--)
+		for (auto i = (int)uiComponents.size() - 1; i >= 0; i--)
 		{
 			stopPropagation = uiComponents.at(i)->HandleEvent(event.get());
 			if (stopPropagation)
@@ -217,16 +217,16 @@ void Game::Render(const float updateTimer)
 void Game::Clear()
 {
 	// Clear the views.
-	auto context = deviceResources->GetD3DDeviceContext();
-	auto renderTarget = deviceResources->GetOffscreenRenderTargetView();
-	auto depthStencil = deviceResources->GetDepthStencilView();
+	auto context{ deviceResources->GetD3DDeviceContext() };
+	auto renderTarget{ deviceResources->GetOffscreenRenderTargetView() };
+	auto depthStencil{ deviceResources->GetDepthStencilView() };
 
 	context->ClearRenderTargetView(renderTarget, Colors::CornflowerBlue);
 	context->ClearDepthStencilView(depthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	context->OMSetRenderTargets(1, &renderTarget, depthStencil);
 
 	// Set the viewport.
-	auto viewport = deviceResources->GetScreenViewport();
+	const auto viewport{ deviceResources->GetScreenViewport() };
 	context->RSSetViewports(1, &viewport);
 }
 #pragma endregion
@@ -397,9 +397,9 @@ void Game::InitializeStaticObjects()
 		const auto pos{ staticObject->GetPosition() };
 		GameObject& gameObject{ objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true) };
 		const auto gameObjectId{ gameObject.GetId() };
-		const auto renderComponent{ renderComponentManager.CreateRenderComponent(gameObjectId, meshes[staticObject->GetModelId()].get(), vertexShader.Get(), pixelShader.Get(), textures[staticObject->GetTextureId()].Get()) };
+		const auto renderComponent{ renderComponentManager.CreateRenderComponent(gameObjectId, meshes.at(staticObject->GetModelId()).get(), vertexShader.Get(), pixelShader.Get(), textures.at(staticObject->GetTextureId()).Get()) };
 		gameObject.renderComponentId = renderComponent.GetId();
-		StatsComponent& statsComponent{ statsComponentManager.CreateStatsComponent(gameObjectId, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10) };
+		const auto statsComponent{ statsComponentManager.CreateStatsComponent(gameObjectId, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10) };
 		gameObject.statsComponentId = statsComponent.GetId();
 		gameMap.SetTileOccupied(gameObject.localPosition, true);
 	}	
@@ -407,7 +407,7 @@ void Game::InitializeStaticObjects()
 
 void Game::InitializeBrushes()
 {
-	auto d2dContext = deviceResources->GetD2DDeviceContext();
+	auto d2dContext{ deviceResources->GetD2DDeviceContext() };
 
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.35f, 0.35f, 0.35f, 1.0f), grayBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.1f, 0.1f, 0.1f, 1.0f), blackBrush.ReleaseAndGetAddressOf());
@@ -603,7 +603,7 @@ void Game::InitializeButtons()
 		characterSelect_successMessageLabel->SetText("");
 		characterSelect_errorMessageLabel->SetText("");
 
-		const auto characterInput{ GetCurrentlySelectedCharacterListing() };
+		const auto* const characterInput{ GetCurrentlySelectedCharacterListing() };
 		if (characterInput == nullptr)
 			characterSelect_errorMessageLabel->SetText("You must select a character before entering the game.");
 		else
@@ -619,7 +619,7 @@ void Game::InitializeButtons()
 		characterSelect_successMessageLabel->SetText("");
 		characterSelect_errorMessageLabel->SetText("");
 
-		const auto characterInput{ GetCurrentlySelectedCharacterListing() };
+		const auto* const characterInput{ GetCurrentlySelectedCharacterListing() };
 		if (characterInput == nullptr)
 			characterSelect_errorMessageLabel->SetText("You must select a character to delete.");
 		else
@@ -800,7 +800,7 @@ UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
 
 void Game::InitializeShaders()
 {
-	auto d3dDevice = deviceResources->GetD3DDevice();
+	auto d3dDevice{ deviceResources->GetD3DDevice() };
 
 	vertexShaderBuffer = LoadShader(L"VertexShader.cso");
 	d3dDevice->CreateVertexShader(vertexShaderBuffer.buffer, vertexShaderBuffer.size, nullptr, vertexShader.ReleaseAndGetAddressOf());
@@ -835,7 +835,7 @@ void Game::InitializeBuffers()
 	// map ConstantBuffer
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	d3dContext->Map(constantBufferOnce, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	auto pCB = reinterpret_cast<ConstantBufferOnce*>(mappedResource.pData);
+	auto pCB{ reinterpret_cast<ConstantBufferOnce*>(mappedResource.pData) };
 	XMStoreFloat4(&pCB->directionalLight, XMVECTOR{ 0.0f, -1.0f, 0.5f, 0.0f });
 	d3dContext->Unmap(constantBufferOnce, 0);
 
