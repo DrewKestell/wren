@@ -19,10 +19,10 @@ std::vector<std::unique_ptr<StaticObject>> CommonRepository::ListStaticObjects()
 	{
 		while (result == SQLITE_ROW)
 		{
-			const int id = sqlite3_column_int(statement, 0);
+			const auto id = sqlite3_column_int(statement, 0);
 			const auto name = reinterpret_cast<const char*>(sqlite3_column_text(statement, 1));
-			const int modelId = sqlite3_column_int(statement, 2);
-			const int textureId = sqlite3_column_int(statement, 3);
+			const auto modelId = sqlite3_column_int(statement, 2);
+			const auto textureId = sqlite3_column_int(statement, 3);
 			const auto positionX = static_cast<float>(sqlite3_column_double(statement, 4));
 			const auto positionY = static_cast<float>(sqlite3_column_double(statement, 5));
 			const auto positionZ = static_cast<float>(sqlite3_column_double(statement, 6));

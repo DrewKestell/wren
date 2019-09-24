@@ -11,14 +11,14 @@ constexpr unsigned int MAX_AICOMPONENTS_SIZE = 100000;
 
 class AIComponentManager : public Observer
 {
-	std::map<int, int> idIndexMap;
-	AIComponent aiComponents[MAX_AICOMPONENTS_SIZE];
-	int aiComponentIndex{ 0 };
 	EventHandler& eventHandler;
 	ObjectManager& objectManager;
 	GameMap& gameMap;
 	ServerComponentOrchestrator& componentOrchestrator;
 	ServerSocketManager& socketManager;
+	std::map<int, int> idIndexMap;
+	AIComponent aiComponents[MAX_AICOMPONENTS_SIZE];
+	int aiComponentIndex{ 0 };
 public:
 	AIComponentManager(EventHandler& eventHandler, ObjectManager& objectManager, GameMap& gameMap, ServerComponentOrchestrator& componentOrchestrator, ServerSocketManager& socketManager);
 	AIComponent& CreateAIComponent(const int gameObjectId);

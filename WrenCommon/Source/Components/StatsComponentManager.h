@@ -8,11 +8,11 @@ constexpr unsigned int MAX_STATSCOMPONENTS_SIZE = 100000;
 
 class StatsComponentManager : public Observer
 {
+	EventHandler& eventHandler;
+	ObjectManager& objectManager;
 	std::map<int, int> idIndexMap;
 	StatsComponent statsComponents[MAX_STATSCOMPONENTS_SIZE];
 	int statsComponentIndex{ 0 };
-	EventHandler& eventHandler;
-	ObjectManager& objectManager;
 public:
 	StatsComponentManager(EventHandler& eventHandler, ObjectManager& objectManager);
 	StatsComponent& CreateStatsComponent(

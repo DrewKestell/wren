@@ -24,5 +24,4 @@ void StatsComponent::Initialize(
 }
 
 const int StatsComponent::GetId() const { return id; }
-
 const int StatsComponent::GetGameObjectId() const { return gameObjectId; }

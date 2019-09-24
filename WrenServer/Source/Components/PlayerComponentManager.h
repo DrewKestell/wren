@@ -13,15 +13,15 @@ constexpr unsigned int MAX_PLAYERCOMPONENTS_SIZE = 10000;
 
 class PlayerComponentManager : public Observer
 {
-	std::map<int, int> idIndexMap;
-	PlayerComponent playerComponents[MAX_PLAYERCOMPONENTS_SIZE];
-	int playerComponentIndex{ 0 };
 	EventHandler& eventHandler;
 	ObjectManager& objectManager;
 	GameMap& gameMap;
 	ServerComponentOrchestrator& componentOrchestrator;
 	ServerSocketManager& socketManager;
-
+	std::map<int, int> idIndexMap;
+	PlayerComponent playerComponents[MAX_PLAYERCOMPONENTS_SIZE];
+	int playerComponentIndex{ 0 };
+	
 	const XMFLOAT3 GetDestinationVector(const XMFLOAT3 rightMouseDownDir, const XMFLOAT3 playerPos) const;
 public:
 	PlayerComponentManager(EventHandler& eventHandler, ObjectManager& objectManager, GameMap& gameMap, ServerComponentOrchestrator& componentOrchestrator, ServerSocketManager& socketManager);
