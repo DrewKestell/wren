@@ -15,22 +15,22 @@ void RenderComponent::Initialize(const int id, const int gameObjectId, Mesh* mes
 void RenderComponent::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform, const float updateLag, GameObject& gameObject)
 {
 	// TODO: update GameObjects position based on state and updateLag
-	auto pos = gameObject.GetWorldPosition();
-	auto scale = gameObject.scale;
-	auto worldTransform = XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixTranslation(pos.x, pos.y, pos.z);
+	auto pos{ gameObject.GetWorldPosition() };
+	auto scale{ gameObject.scale };
+	auto worldTransform{ XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixTranslation(pos.x, pos.y, pos.z) };
 
-	auto constantBuffer = mesh->GetConstantBuffer();
-	auto samplerState = mesh->GetSamplerState();
-	auto vertexBuffer = mesh->GetVertexBuffer();
+	auto constantBuffer{ mesh->GetConstantBuffer() };
+	auto samplerState{ mesh->GetSamplerState() };
+	auto vertexBuffer{ mesh->GetVertexBuffer() };
 
 	// set InputLayout
 	immediateContext->IASetInputLayout(mesh->GetInputLayout());
 
 	// map ConstantBuffer
-	auto worldViewProjection = worldTransform * viewTransform * projectionTransform;
+	auto worldViewProjection{ worldTransform * viewTransform * projectionTransform };
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	immediateContext->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	auto pCB = reinterpret_cast<ConstantBufferPerObject*>(mappedResource.pData);
+	auto pCB{ reinterpret_cast<ConstantBufferPerObject*>(mappedResource.pData) };
 	XMStoreFloat4x4(&pCB->mWorldViewProj, XMMatrixTranspose(worldViewProjection));
 	immediateContext->Unmap(constantBuffer, 0);
 

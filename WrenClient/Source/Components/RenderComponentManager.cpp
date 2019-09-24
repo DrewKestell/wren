@@ -13,8 +13,8 @@ void RenderComponentManager::Render(ID3D11DeviceContext* d3dContext, const XMMAT
 {
 	for (auto i = 0; i < renderComponentIndex; i++)
 	{
-		auto renderComponent = renderComponents[i];
-		auto gameObject = objectManager.GetGameObjectById(renderComponent.gameObjectId);
+		RenderComponent& renderComponent{ renderComponents[i] };
+		GameObject& gameObject{ objectManager.GetGameObjectById(renderComponent.gameObjectId) };
 		renderComponent.Draw(d3dContext, viewTransform, projectionTransform, updateLag, gameObject);
 	}
 }
@@ -32,30 +32,30 @@ RenderComponent& RenderComponentManager::CreateRenderComponent(const int gameObj
 void RenderComponentManager::DeleteRenderComponent(const int renderComponentId)
 {
 	// first copy the last RenderComponent into the index that was deleted
-	auto renderComponentToDeleteIndex = idIndexMap[renderComponentId];
-	auto lastRenderComponentIndex = --renderComponentIndex;
+	const auto renderComponentToDeleteIndex{ idIndexMap[renderComponentId] };
+	const auto lastRenderComponentIndex{ --renderComponentIndex };
 	memcpy(&renderComponents[renderComponentToDeleteIndex], &renderComponents[lastRenderComponentIndex], sizeof(RenderComponent));
 
 	// then update the index of the moved RenderComponent
-	auto lastRenderComponentId = renderComponents[renderComponentToDeleteIndex].id;
+	const auto lastRenderComponentId{ renderComponents[renderComponentToDeleteIndex].id };
 	idIndexMap[lastRenderComponentId] = renderComponentToDeleteIndex;
 }
 
 RenderComponent& RenderComponentManager::GetRenderComponentById(const int renderComponentId)
 {
-	const auto index = idIndexMap[renderComponentId];
+	const auto index{ idIndexMap[renderComponentId] };
 	return renderComponents[index];
 }
 
 const bool RenderComponentManager::HandleEvent(const Event* const event)
 {
-	const auto type = event->type;
+	const auto type{ event->type };
 	switch (type)
 	{
 		case EventType::DeleteGameObject:
 		{
-			const auto derivedEvent = (DeleteGameObjectEvent*)event;
-			const auto gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
+			const auto derivedEvent{ (DeleteGameObjectEvent*)event };
+			const GameObject& gameObject{ objectManager.GetGameObjectById(derivedEvent->gameObjectId) };
 			DeleteRenderComponent(gameObject.renderComponentId);
 			break;
 		}
