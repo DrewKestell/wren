@@ -25,18 +25,18 @@ StatsComponent& StatsComponentManager::CreateStatsComponent(
 void StatsComponentManager::DeleteStatsComponent(const int statsComponentId)
 {
 	// first copy the last StatsComponent into the index that was deleted
-	const auto statsComponentToDeleteIndex{ idIndexMap[statsComponentId] };
-	const auto lastStatsComponentIndex{ --statsComponentIndex };
+	const auto statsComponentToDeleteIndex = idIndexMap[statsComponentId];
+	const auto lastStatsComponentIndex = --statsComponentIndex;
 	memcpy(&statsComponents[statsComponentToDeleteIndex], &statsComponents[lastStatsComponentIndex], sizeof(StatsComponent));
 
 	// then update the index of the moved StatsComponent
-	const auto lastStatsComponentId{ statsComponents[statsComponentToDeleteIndex].id };
+	const auto lastStatsComponentId = statsComponents[statsComponentToDeleteIndex].id;
 	idIndexMap[lastStatsComponentId] = statsComponentToDeleteIndex;
 }
 
 StatsComponent& StatsComponentManager::GetStatsComponentById(const int statsComponentId)
 {
-	const auto index{ idIndexMap[statsComponentId] };
+	const auto index = idIndexMap[statsComponentId];
 	return statsComponents[index];
 }
 
@@ -47,7 +47,7 @@ const bool StatsComponentManager::HandleEvent(const Event* const event)
 	{
 		case EventType::DeleteGameObject:
 		{
-			const auto derivedEvent{ (DeleteGameObjectEvent*)event };
+			const auto derivedEvent = (DeleteGameObjectEvent*)event;
 			const GameObject& gameObject{ objectManager.GetGameObjectById(derivedEvent->gameObjectId) };
 			DeleteStatsComponent(gameObject.statsComponentId);
 			break;

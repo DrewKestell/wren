@@ -50,10 +50,8 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 		case EventType::DeleteGameObject:
 		{
 			const auto derivedEvent = (DeleteGameObjectEvent*)event;
-
-			const auto gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
+			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
 			DeleteSkillComponent(gameObject.skillComponentId);
-
 			break;
 		}
 		case EventType::AttackHit:
@@ -69,17 +67,17 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 			const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
 
 			// first try to increase the attacker's skills
-			const auto attacker = objectManager.GetGameObjectById(derivedEvent->attackerId);
+			const GameObject& attacker = objectManager.GetGameObjectById(derivedEvent->attackerId);
 
 			if (attacker.skillComponentId >= 0) // this is initialized as -1, so we check if this object has a skillComponent (NPCs don't for now)
 			{
-				const auto attackerSkillComp = GetSkillComponentById(attacker.skillComponentId);
-				const auto attackerPlayerComp = playerComponentManager->GetPlayerComponentById(attacker.playerComponentId);
+				const SkillComponent& attackerSkillComp = GetSkillComponentById(attacker.skillComponentId);
+				const PlayerComponent& attackerPlayerComp = playerComponentManager->GetPlayerComponentById(attacker.playerComponentId);
 
 				for (auto i = 0; i < derivedEvent->weaponSkillArrLen; i++)
 				{
 					const auto weaponSkillId = derivedEvent->weaponSkillIds[i];
-					WrenServer::Skill* weaponSkill = attackerSkillComp.skills[weaponSkillId];
+					auto weaponSkill = attackerSkillComp.skills[weaponSkillId];
 
 					// 100 is the max skill level, so we skip this weapon skill in that case
 					if (weaponSkill->value < 100)

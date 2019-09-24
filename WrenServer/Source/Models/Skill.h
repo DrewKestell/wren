@@ -7,7 +7,7 @@ namespace WrenServer
 	public:
 		Skill(const int id, const int value)
 			: id{ id },
-			value{ value }
+			  value{ value }
 		{
 		}
 		const int id;

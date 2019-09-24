@@ -32,18 +32,18 @@ RenderComponent& RenderComponentManager::CreateRenderComponent(const int gameObj
 void RenderComponentManager::DeleteRenderComponent(const int renderComponentId)
 {
 	// first copy the last RenderComponent into the index that was deleted
-	const auto renderComponentToDeleteIndex{ idIndexMap[renderComponentId] };
-	const auto lastRenderComponentIndex{ --renderComponentIndex };
+	const auto renderComponentToDeleteIndex = idIndexMap[renderComponentId];
+	const auto lastRenderComponentIndex = --renderComponentIndex;
 	memcpy(&renderComponents[renderComponentToDeleteIndex], &renderComponents[lastRenderComponentIndex], sizeof(RenderComponent));
 
 	// then update the index of the moved RenderComponent
-	const auto lastRenderComponentId{ renderComponents[renderComponentToDeleteIndex].id };
+	const auto lastRenderComponentId = renderComponents[renderComponentToDeleteIndex].id;
 	idIndexMap[lastRenderComponentId] = renderComponentToDeleteIndex;
 }
 
 RenderComponent& RenderComponentManager::GetRenderComponentById(const int renderComponentId)
 {
-	const auto index{ idIndexMap[renderComponentId] };
+	const auto index = idIndexMap[renderComponentId];
 	return renderComponents[index];
 }
 
@@ -54,7 +54,7 @@ const bool RenderComponentManager::HandleEvent(const Event* const event)
 	{
 		case EventType::DeleteGameObject:
 		{
-			const auto derivedEvent{ (DeleteGameObjectEvent*)event };
+			const auto derivedEvent = (DeleteGameObjectEvent*)event;
 			const GameObject& gameObject{ objectManager.GetGameObjectById(derivedEvent->gameObjectId) };
 			DeleteRenderComponent(gameObject.renderComponentId);
 			break;

@@ -8,7 +8,7 @@ void SkillComponent::Initialize(const int id, const int gameObjectId, std::vecto
 
 	for (auto i = 0; i < skills.size(); i++)
 	{
-		const auto skill{ skills.at(i) };
+		const auto skill = skills.at(i);
 		this->skills[skill.skillId] = new WrenServer::Skill(skill.skillId, skill.value);
 	}
 }

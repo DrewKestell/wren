@@ -13,16 +13,16 @@ GameMapRenderComponent::GameMapRenderComponent(ID3D11Device* device, const BYTE*
 
 	for (auto i = 0; i < MAP_SIZE; i++)
 	{
-		const auto row{ i / MAP_HEIGHT };
-		const auto col{ i % MAP_WIDTH };
+		const auto row = i / MAP_HEIGHT;
+		const auto col = i % MAP_WIDTH;
 
-		const float x{ (col * TILE_SIZE) - static_cast<float>(TILE_SIZE) / 2 };
-		const float z{ (row * TILE_SIZE) - static_cast<float>(TILE_SIZE) / 2 };
+		const auto x = (col * TILE_SIZE) - static_cast<float>(TILE_SIZE) / 2;
+		const auto z = (row * TILE_SIZE) - static_cast<float>(TILE_SIZE) / 2;
 
-		const auto bottomLeft{ i * 4 };
-		const auto topLeft{ (i * 4) + 1 };
-		const auto topRight{ (i * 4) + 2 };
-		const auto bottomRight{ (i * 4) + 3 };
+		const auto bottomLeft = i * 4;
+		const auto topLeft = (i * 4) + 1;
+		const auto topRight = (i * 4) + 2;
+		const auto bottomRight = (i * 4) + 3;
 
 		vertices[bottomLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{0.0f, 0.0f} };
 		vertices[topLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z + TILE_SIZE }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{1.0f, 0.0f} };
@@ -87,7 +87,7 @@ GameMapRenderComponent::GameMapRenderComponent(ID3D11Device* device, const BYTE*
 	device->CreateSamplerState(&samplerDesc, samplerState.ReleaseAndGetAddressOf());
 
 	// create InputLayout
-	D3D11_INPUT_ELEMENT_DESC ied[] =
+	D3D11_INPUT_ELEMENT_DESC ied[]
 	{
 		{"POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"NORMAL",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -103,7 +103,7 @@ void GameMapRenderComponent::Draw(ID3D11DeviceContext* immediateContext, const X
 	immediateContext->IASetInputLayout(inputLayout.Get());
 
 	// map ConstantBuffer
-	auto worldViewProjection{ WORLD_TRANSFORM * viewTransform * projectionTransform };
+	auto worldViewProjection = WORLD_TRANSFORM * viewTransform * projectionTransform;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	immediateContext->Map(constantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	auto pCB{ reinterpret_cast<ConstantBufferPerObject*>(mappedResource.pData) };

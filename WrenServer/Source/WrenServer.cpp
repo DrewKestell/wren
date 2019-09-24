@@ -37,13 +37,14 @@ int main()
 	static StatsComponentManager statsComponentManager{ eventHandler, objectManager };
 	componentOrchestrator.InitializeComponentManagers(&aiComponentManager, &playerComponentManager, &skillComponentManager, &statsComponentManager);
 	socketManager.Initialize();
+
     HWND consoleWindow = GetConsoleWindow();
     MoveWindow(consoleWindow, 810, 0, 800, 800, TRUE);
     std::cout << "WrenServer initialized.\n\n";
 
 	GameTimer timer;
 	timer.Reset();
-	auto updateTimer{ 0.0f };
+	auto updateTimer = 0.0f;
 	
     while (true)
     {
