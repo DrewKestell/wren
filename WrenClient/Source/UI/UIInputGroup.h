@@ -12,7 +12,7 @@ class UIInputGroup : public Observer
 	std::vector<UIInput*> inputs;
 public:
 	UIInputGroup(const Layer uiLayer, EventHandler& eventHandler);
-	virtual const bool HandleEvent(const Event* const event);
+	const bool HandleEvent(const Event* const event) override;
 	void AddInput(UIInput* input) { inputs.push_back(input); }
 	~UIInputGroup();
 };

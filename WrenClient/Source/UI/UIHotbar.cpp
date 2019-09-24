@@ -43,6 +43,22 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
+		case EventType::LeftMouseDown:
+		{
+			const auto mouseDownEvent = (MouseEvent*)event;
+
+			if (isVisible)
+			{
+				// if anywhere in the hotbar is clicked, return true to stop event propagation
+				const auto position = GetWorldPosition();
+				if (Utility::DetectClick(position.x, position.y, position.x + 400.0f, position.y + 40.0f, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+				{
+					return true;
+				}
+			}
+
+			break;
+		}
 		case EventType::ChangeActiveLayer:
 		{
 			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
@@ -77,9 +93,12 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 			{
 				delete derivedEvent->uiAbility;
 			}
+
 			if (draggingIndex >= 0)
 			{
-				uiAbilities[draggingIndex] = nullptr;
+				if (index != draggingIndex)
+					uiAbilities[draggingIndex] = nullptr;
+
 				draggingIndex = -1;
 			}
 			

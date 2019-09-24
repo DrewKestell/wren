@@ -39,6 +39,6 @@ public:
 		IDWriteFactory2* writeFactory,
 		IDWriteTextFormat* buttonTextFormat,
 		ID2D1Factory2* d2dFactory);
-    virtual void Draw();
-	virtual const bool HandleEvent(const Event* const event);
+    void Draw() override;
+	const bool HandleEvent(const Event* const event) override;
 };

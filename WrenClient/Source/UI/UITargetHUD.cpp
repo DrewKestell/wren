@@ -2,6 +2,7 @@
 #include "UITargetHUD.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/SetTargetEvent.h"
+#include "EventHandling/Events/MouseEvent.h"
 
 using namespace DX;
 
@@ -81,6 +82,22 @@ const bool UITargetHUD::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
+		case EventType::LeftMouseDown:
+		{
+			const auto mouseDownEvent = (MouseEvent*)event;
+
+			if (isVisible)
+			{
+				// if either the stats container is clicked, return true to stop event propagation
+				const auto position = GetWorldPosition();
+				if (Utility::DetectClick(position.x, position.y + 10.0f, position.x + 160.0f, position.y + 80.0f, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+				{
+					return true;
+				}
+			}
+
+			break;
+		}
 		case EventType::ChangeActiveLayer:
 		{
 			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
@@ -88,7 +105,10 @@ const bool UITargetHUD::HandleEvent(const Event* const event)
 			if (derivedEvent->layer == uiLayer && GetParent() == nullptr)
 				isActive = true;
 			else
+			{
 				isActive = false;
+				isVisible = false;
+			}
 
 			break;
 		}

@@ -82,7 +82,7 @@ const bool UIButton::HandleEvent(const Event* const event)
 			if (isVisible)
 			{
 				const auto position = GetWorldPosition();
-				if (Utility::DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+				if(Utility::DetectClick(position.x, position.y, position.x + width, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 				{
 					pressed = true;
 					onClick();

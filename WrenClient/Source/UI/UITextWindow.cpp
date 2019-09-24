@@ -145,10 +145,10 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 		{
 			inputActive = false;
 
-			const auto mouseDownEvent = (MouseEvent*)event;
-
-			if (isVisible && !inputActive)
+			if (isVisible)
 			{
+				const auto mouseDownEvent = (MouseEvent*)event;
+
 				const auto position = GetWorldPosition();
 				if (Utility::DetectClick(position.x, position.y + TEXT_WINDOW_HEIGHT, position.x + TEXT_WINDOW_WIDTH, position.y + 245.0f, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
 				{
@@ -194,6 +194,10 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 						UpdateMessages();
 					}
 				}
+
+				// if anywhere in the text window was clicked, return true to stop propagation
+				if (Utility::DetectClick(position.x, position.y, position.x + TEXT_WINDOW_WIDTH, position.y + TEXT_WINDOW_HEIGHT + 20.0f, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+					return true;
 			}   
 
 			break;

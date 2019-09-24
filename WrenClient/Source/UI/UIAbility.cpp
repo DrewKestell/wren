@@ -137,6 +137,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 						{
 							abilityCopy = new UIAbility(uiComponents, worldPos, uiLayer, 2, eventHandler, abilityId, toggled, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, worldPos.x, worldPos.y, clientWidth, clientHeight, projectionTransform, true, mousePosX, mousePosY);
 							abilityCopy->isVisible = true;
+							abilityCopy->isToggled = isToggled;
 						}
 						else if (dragBehavior == "MOVE")
 						{

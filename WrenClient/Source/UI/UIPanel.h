@@ -43,6 +43,6 @@ public:
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1DeviceContext1* d2dDeviceContext,
 		ID2D1Factory2* d2dFactory);
-    virtual void Draw();
-	virtual const bool HandleEvent(const Event* const event);
+    void Draw() override;
+	const bool HandleEvent(const Event* const event) override;
 };

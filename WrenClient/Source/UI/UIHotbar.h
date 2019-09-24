@@ -27,8 +27,8 @@ public:
 		ID2D1DeviceContext1* d2dDeviceContext,
 		ID2D1Factory2* d2dFactory,
 		const float clientHeight);
-	virtual void Draw();
-	virtual const bool HandleEvent(const Event* const event);
-	virtual const std::string GetUIAbilityDragBehavior() const;
+	void Draw() override;
+	const bool HandleEvent(const Event* const event) override;
+	const std::string GetUIAbilityDragBehavior() const override;
 	void DrawSprites();
 };

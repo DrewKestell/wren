@@ -67,7 +67,7 @@ public:
 		const bool isDragging = false,
 		const float mousePosX = 0.0f,
 		const float mousePosY = 0.0f);
-	virtual void Draw();
-	virtual const bool HandleEvent(const Event* const event);
+	void Draw() override;
+	const bool HandleEvent(const Event* const event) override;
 	void DrawSprite();
 };

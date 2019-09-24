@@ -23,7 +23,7 @@ public:
 		ID2D1DeviceContext1* d2dDeviceContext,
 		IDWriteFactory2* writeFactory,
 		IDWriteTextFormat* textFormat);
-	virtual void Draw();
-	virtual const bool HandleEvent(const Event* const event);
+	void Draw() override;
+	const bool HandleEvent(const Event* const event) override;
 	void SetValue(const int value);
 };

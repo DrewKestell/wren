@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "UICharacterHUD.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "EventHandling/Events/MouseEvent.h"
 
 using namespace DX;
 
@@ -96,6 +97,23 @@ const bool UICharacterHUD::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
+		case EventType::LeftMouseDown:
+		{
+			const auto mouseDownEvent = (MouseEvent*)event;
+
+			if (isVisible)
+			{
+				// if either the character portrait or the stats container are clicked, return true to stop event propagation
+				const auto position = GetWorldPosition();
+				if (Utility::DetectClick(position.x, position.y, position.x + 80.0f, position.y + 80.0f, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY)
+					|| Utility::DetectClick(position.x + 80.0f, position.y + 10.0f, position.x + 240.0f, position.y + 80.0f, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+				{
+					return true;
+				}
+			}
+
+			break;
+		}
 		case EventType::ChangeActiveLayer:
 		{
 			const auto derivedEvent = (ChangeActiveLayerEvent*)event;

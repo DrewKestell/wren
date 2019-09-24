@@ -38,8 +38,8 @@ public:
 		IDWriteFactory2* writeFactory,
 		IDWriteTextFormat* textFormat,
 		ID2D1Factory2* d2dFactory);
-    virtual void Draw();
-	virtual const bool HandleEvent(const Event* const event);
+    void Draw() override;
+	const bool HandleEvent(const Event* const event) override;
 	const std::string& GetName() const { return characterName; }
 	const bool IsSelected() const { return selected; }
 };

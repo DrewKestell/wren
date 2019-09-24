@@ -74,8 +74,8 @@ public:
 		IDWriteTextFormat* textFormat,
 		IDWriteTextFormat* textFormatInactive,
 		ID2D1Factory2* d2dFactory);
-	virtual void Draw();
-	virtual const bool HandleEvent(const Event* const event);
+	void Draw() override;
+	const bool HandleEvent(const Event* const event) override;
 	void Update();
 	void AddMessage(std::string* message);
 };

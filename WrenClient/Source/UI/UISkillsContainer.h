@@ -30,7 +30,7 @@ public:
 		IDWriteFactory2* writeFactory,
 		ID2D1SolidColorBrush* brush,
 		IDWriteTextFormat* textFormat);
-	virtual void Draw();
-	virtual const bool HandleEvent(const Event* const event);
+	void Draw() override;
+	const bool HandleEvent(const Event* const event) override;
 	void Initialize(const std::vector<std::unique_ptr<WrenCommon::Skill>>& skills);
 };

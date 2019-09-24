@@ -43,6 +43,6 @@ public:
 		ID2D1SolidColorBrush* statBorderBrush,
 		ID2D1SolidColorBrush* nameBrush,
 		ID2D1SolidColorBrush* whiteBrush);
-	virtual void Draw();
-	virtual const bool HandleEvent(const Event* const event);
+	void Draw() override;
+	const bool HandleEvent(const Event* const event) override;
 };

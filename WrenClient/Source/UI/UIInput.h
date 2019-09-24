@@ -44,8 +44,8 @@ public:
 		IDWriteFactory2* writeFactory,
 		IDWriteTextFormat* labelTextFormat,
 		ID2D1Factory2* d2dFactory);
-    virtual void Draw();
-	virtual const bool HandleEvent(const Event* const event);
+    void Draw() override;
+	const bool HandleEvent(const Event* const event) override;
     const wchar_t* GetInputValue() const;
 	const bool IsActive() const { return active; }
 	void SetActive(const bool active) { this->active = active; }
