@@ -92,7 +92,7 @@ Mesh::Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShad
 	device->CreateBuffer(&bufferDesc, nullptr, constantBuffer.ReleaseAndGetAddressOf());
 
 	// create InputLayout
-	const D3D11_INPUT_ELEMENT_DESC ied[] =
+	const D3D11_INPUT_ELEMENT_DESC ied[]
 	{
 		{"POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"NORMAL",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -123,13 +123,8 @@ Mesh::Mesh(const std::string& path, ID3D11Device* device, const BYTE* vertexShad
 }
 
 ID3D11InputLayout* Mesh::GetInputLayout() const { return inputLayout.Get(); }
-
 ID3D11Buffer* Mesh::GetConstantBuffer() const { return constantBuffer.Get(); }
-
 ID3D11SamplerState* Mesh::GetSamplerState() const { return samplerState.Get(); }
-
 ID3D11Buffer* Mesh::GetVertexBuffer() const { return vertexBuffer.Get(); }
-
 ID3D11Buffer* Mesh::GetIndexBuffer() const { return indexBuffer.Get(); }
-
 const int Mesh::GetIndexCount() const { return indexCount; }

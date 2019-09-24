@@ -8,8 +8,8 @@ GameMapRenderComponent::GameMapRenderComponent(ID3D11Device* device, const BYTE*
 	pixelShader{ pixelShader },
 	texture{ texture }
 {
-	std::vector<Vertex> vertices{ std::vector<Vertex>(MAP_SIZE * 4) };
-	std::vector<unsigned int> indices{ std::vector<unsigned int>(MAP_SIZE * 6, 0) };
+	std::vector<Vertex> vertices(MAP_SIZE * 4);
+	std::vector<unsigned int> indices(MAP_SIZE * 6, 0);
 
 	for (auto i = 0; i < MAP_SIZE; i++)
 	{
@@ -106,7 +106,7 @@ void GameMapRenderComponent::Draw(ID3D11DeviceContext* immediateContext, const X
 	auto worldViewProjection = WORLD_TRANSFORM * viewTransform * projectionTransform;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	immediateContext->Map(constantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	auto pCB{ reinterpret_cast<ConstantBufferPerObject*>(mappedResource.pData) };
+	auto pCB = reinterpret_cast<ConstantBufferPerObject*>(mappedResource.pData);
 	XMStoreFloat4x4(&pCB->mWorldViewProj, XMMatrixTranspose(worldViewProjection));
 	immediateContext->Unmap(constantBuffer.Get(), 0);
 

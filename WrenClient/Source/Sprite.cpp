@@ -66,7 +66,7 @@ Sprite::Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader,
 	device->CreateBuffer(&bufferDesc, nullptr, constantBuffer.ReleaseAndGetAddressOf());
 
 	// create
-	const D3D11_INPUT_ELEMENT_DESC ied[] =
+	const D3D11_INPUT_ELEMENT_DESC ied[]
 	{
 		{"POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"TEXCOORDS", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}

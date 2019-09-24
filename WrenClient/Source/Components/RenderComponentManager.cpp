@@ -13,8 +13,8 @@ void RenderComponentManager::Render(ID3D11DeviceContext* d3dContext, const XMMAT
 {
 	for (auto i = 0; i < renderComponentIndex; i++)
 	{
-		RenderComponent& renderComponent{ renderComponents[i] };
-		GameObject& gameObject{ objectManager.GetGameObjectById(renderComponent.gameObjectId) };
+		RenderComponent& renderComponent = renderComponents[i];
+		GameObject& gameObject = objectManager.GetGameObjectById(renderComponent.gameObjectId);
 		renderComponent.Draw(d3dContext, viewTransform, projectionTransform, updateLag, gameObject);
 	}
 }
@@ -49,13 +49,13 @@ RenderComponent& RenderComponentManager::GetRenderComponentById(const int render
 
 const bool RenderComponentManager::HandleEvent(const Event* const event)
 {
-	const auto type{ event->type };
+	const auto type = event->type;
 	switch (type)
 	{
 		case EventType::DeleteGameObject:
 		{
 			const auto derivedEvent = (DeleteGameObjectEvent*)event;
-			const GameObject& gameObject{ objectManager.GetGameObjectById(derivedEvent->gameObjectId) };
+			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
 			DeleteRenderComponent(gameObject.renderComponentId);
 			break;
 		}
