@@ -217,16 +217,16 @@ void Game::Render(const float updateTimer)
 void Game::Clear()
 {
 	// Clear the views.
-	auto context{ deviceResources->GetD3DDeviceContext() };
-	auto renderTarget{ deviceResources->GetOffscreenRenderTargetView() };
-	auto depthStencil{ deviceResources->GetDepthStencilView() };
+	auto context = deviceResources->GetD3DDeviceContext();
+	auto renderTarget = deviceResources->GetOffscreenRenderTargetView();
+	auto depthStencil = deviceResources->GetDepthStencilView();
 
 	context->ClearRenderTargetView(renderTarget, Colors::CornflowerBlue);
 	context->ClearDepthStencilView(depthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	context->OMSetRenderTargets(1, &renderTarget, depthStencil);
 
 	// Set the viewport.
-	const auto viewport{ deviceResources->GetScreenViewport() };
+	const auto viewport = deviceResources->GetScreenViewport();
 	context->RSSetViewports(1, &viewport);
 }
 #pragma endregion
@@ -393,13 +393,15 @@ void Game::InitializeStaticObjects()
 
 	for (auto i = 0; i < staticObjects.size(); i++)
 	{
-		const StaticObject* staticObject{ staticObjects.at(i).get() };
-		const auto pos{ staticObject->GetPosition() };
-		GameObject& gameObject{ objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true) };
-		const auto gameObjectId{ gameObject.GetId() };
-		const auto renderComponent{ renderComponentManager.CreateRenderComponent(gameObjectId, meshes.at(staticObject->GetModelId()).get(), vertexShader.Get(), pixelShader.Get(), textures.at(staticObject->GetTextureId()).Get()) };
+		const StaticObject* staticObject = staticObjects.at(i).get();
+		const auto pos = staticObject->GetPosition();
+		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true);
+		const auto gameObjectId = gameObject.GetId();
+		
+		const RenderComponent& renderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes.at(staticObject->GetModelId()).get(), vertexShader.Get(), pixelShader.Get(), textures.at(staticObject->GetTextureId()).Get());
 		gameObject.renderComponentId = renderComponent.GetId();
-		const auto statsComponent{ statsComponentManager.CreateStatsComponent(gameObjectId, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10) };
+
+		const StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObjectId, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
 		gameObject.statsComponentId = statsComponent.GetId();
 		gameMap.SetTileOccupied(gameObject.localPosition, true);
 	}	
@@ -407,7 +409,7 @@ void Game::InitializeStaticObjects()
 
 void Game::InitializeBrushes()
 {
-	auto d2dContext{ deviceResources->GetD2DDeviceContext() };
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.35f, 0.35f, 0.35f, 1.0f), grayBrush.ReleaseAndGetAddressOf());
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.1f, 0.1f, 0.1f, 1.0f), blackBrush.ReleaseAndGetAddressOf());
@@ -435,7 +437,7 @@ void Game::InitializeTextFormats()
 	auto arialFontFamily{ L"Arial" };
 	auto locale{ L"en-US" };
 
-	auto writeFactory{ deviceResources->GetWriteFactory() };
+	auto writeFactory = deviceResources->GetWriteFactory();
 
 	// FPS / MousePos
 	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 10.0f, locale, textFormatFPS.ReleaseAndGetAddressOf());
@@ -485,9 +487,9 @@ void Game::InitializeTextFormats()
 
 void Game::InitializeInputs()
 {
-	auto writeFactory{ deviceResources->GetWriteFactory() };
-	auto d2dFactory{ deviceResources->GetD2DFactory() };
-	auto d2dContext{ deviceResources->GetD2DDeviceContext() };
+	auto writeFactory = deviceResources->GetWriteFactory();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
 	// LoginScreen
 	loginScreen_accountNameInput = std::make_unique<UIInput>(uiComponents, XMFLOAT2{ 15.0f, 20.0f }, Login, 0, false, 120.0f, 260.0f, 24.0f, "Account Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), d2dContext, writeFactory, textFormatAccountCreds.Get(), d2dFactory);
@@ -511,17 +513,17 @@ void Game::InitializeInputs()
 
 void Game::InitializeButtons()
 {
-	auto writeFactory{ deviceResources->GetWriteFactory() };
-	auto d2dFactory{ deviceResources->GetD2DFactory() };
-	auto d2dContext{ deviceResources->GetD2DDeviceContext() };
+	auto writeFactory = deviceResources->GetWriteFactory();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
 	
 	const auto onClickLoginButton = [this]()
 	{
 		loginScreen_successMessageLabel->SetText("");
 		loginScreen_errorMessageLabel->SetText("");
 
-		const auto accountName{ Utility::ws2s(std::wstring(loginScreen_accountNameInput->GetInputValue())) };
-		const auto password{ Utility::ws2s(std::wstring(loginScreen_passwordInput->GetInputValue())) };
+		const auto accountName = Utility::ws2s(std::wstring(loginScreen_accountNameInput->GetInputValue()));
+		const auto password = Utility::ws2s(std::wstring(loginScreen_passwordInput->GetInputValue()));
 
 		if (accountName.length() == 0)
 		{
@@ -560,8 +562,8 @@ void Game::InitializeButtons()
 	{
 		createAccount_errorMessageLabel->SetText("");
 
-		const auto accountName{ Utility::ws2s(std::wstring(createAccount_accountNameInput->GetInputValue())) };
-		const auto password{ Utility::ws2s(std::wstring(createAccount_passwordInput->GetInputValue())) };
+		const auto accountName = Utility::ws2s(std::wstring(createAccount_accountNameInput->GetInputValue()));
+		const auto password = Utility::ws2s(std::wstring(createAccount_passwordInput->GetInputValue()));
 
 		if (accountName.length() == 0)
 		{
@@ -603,7 +605,7 @@ void Game::InitializeButtons()
 		characterSelect_successMessageLabel->SetText("");
 		characterSelect_errorMessageLabel->SetText("");
 
-		const auto* const characterInput{ GetCurrentlySelectedCharacterListing() };
+		const auto* const characterInput = GetCurrentlySelectedCharacterListing();
 		if (characterInput == nullptr)
 			characterSelect_errorMessageLabel->SetText("You must select a character before entering the game.");
 		else
@@ -619,7 +621,7 @@ void Game::InitializeButtons()
 		characterSelect_successMessageLabel->SetText("");
 		characterSelect_errorMessageLabel->SetText("");
 
-		const auto* const characterInput{ GetCurrentlySelectedCharacterListing() };
+		const auto* const characterInput = GetCurrentlySelectedCharacterListing();
 		if (characterInput == nullptr)
 			characterSelect_errorMessageLabel->SetText("You must select a character to delete.");
 		else
@@ -646,7 +648,7 @@ void Game::InitializeButtons()
 	{
 		createCharacter_errorMessageLabel->SetText("");
 
-		const auto characterName{ Utility::ws2s(std::wstring(createCharacter_characterNameInput->GetInputValue())) };
+		const auto characterName = Utility::ws2s(std::wstring(createCharacter_characterNameInput->GetInputValue()));
 
 		if (characterName.length() == 0)
 		{
@@ -687,9 +689,9 @@ void Game::InitializeButtons()
 
 void Game::InitializeLabels()
 {
-	auto writeFactory{ deviceResources->GetWriteFactory() };
-	auto d2dFactory{ deviceResources->GetD2DFactory() };
-	auto d2dContext{ deviceResources->GetD2DDeviceContext() };
+	auto writeFactory = deviceResources->GetWriteFactory();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
 	loginScreen_successMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 170.0f }, Login, 0, 400.0f, successMessageBrush.Get(), textFormatSuccessMessage.Get(), d2dContext, writeFactory, d2dFactory);
 	loginScreen_errorMessageLabel = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 30.0f, 170.0f }, Login, 0, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get(), d2dContext, writeFactory, d2dFactory);
@@ -715,11 +717,11 @@ void Game::InitializeLabels()
 
 void Game::InitializePanels()
 {
-	auto writeFactory{ deviceResources->GetWriteFactory() };
-	auto d2dFactory{ deviceResources->GetD2DFactory() };
-	auto d2dDeviceContext{ deviceResources->GetD2DDeviceContext() };
-	auto d3dDevice{ deviceResources->GetD3DDevice() };
-	auto d3dDeviceContext{ deviceResources->GetD3DDeviceContext() };
+	auto writeFactory = deviceResources->GetWriteFactory();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+	auto d3dDevice = deviceResources->GetD3DDevice();
+	auto d3dDeviceContext = deviceResources->GetD3DDeviceContext();
 
 	// Game Settings
 	const auto gameSettingsPanelX{ (clientWidth - 400.0f) / 2.0f };
@@ -800,7 +802,7 @@ UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
 
 void Game::InitializeShaders()
 {
-	auto d3dDevice{ deviceResources->GetD3DDevice() };
+	auto d3dDevice = deviceResources->GetD3DDevice();
 
 	vertexShaderBuffer = LoadShader(L"VertexShader.cso");
 	d3dDevice->CreateVertexShader(vertexShaderBuffer.buffer, vertexShaderBuffer.size, nullptr, vertexShader.ReleaseAndGetAddressOf());
@@ -817,8 +819,8 @@ void Game::InitializeShaders()
 
 void Game::InitializeBuffers()
 {
-	auto d3dDevice{ deviceResources->GetD3DDevice() };
-	auto d3dContext{ deviceResources->GetD3DDeviceContext() };
+	auto d3dDevice = deviceResources->GetD3DDevice();
+	auto d3dContext = deviceResources->GetD3DDeviceContext();
 
 	// create constant buffer
 	D3D11_BUFFER_DESC bufferDesc;
@@ -859,7 +861,7 @@ void Game::InitializeRasterStates()
 
 void Game::InitializeTextures()
 {
-	auto d3dDevice{ deviceResources->GetD3DDevice() };
+	auto d3dDevice = deviceResources->GetD3DDevice();
 
 	const std::vector<const wchar_t*> paths
 	{
@@ -903,16 +905,16 @@ void Game::InitializeMeshes()
 
 void Game::InitializeSprites()
 {
-	auto d3dDevice{ deviceResources->GetD3DDevice() };
+	auto d3dDevice = deviceResources->GetD3DDevice();
 	
 	// TODO
 }
 
 void Game::RecreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames)
 {
-	auto writeFactory{ deviceResources->GetWriteFactory() };
-	auto d2dFactory{ deviceResources->GetD2DFactory() };
-	auto d2dContext{ deviceResources->GetD2DDeviceContext() };
+	auto writeFactory = deviceResources->GetWriteFactory();
+	auto d2dFactory = deviceResources->GetD2DFactory();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
 	characterList.clear();
 
@@ -924,7 +926,7 @@ void Game::RecreateCharacterListings(const std::vector<std::unique_ptr<std::stri
 
 const bool Game::HandleEvent(const Event* const event)
 {
-	const auto fun{ eventHandlers[event->type] };
+	const auto fun = eventHandlers[event->type];
 	if (fun)
 		fun(event);
 
@@ -935,7 +937,7 @@ void Game::SetActiveLayer(const Layer layer)
 {
 	activeLayer = layer;
 
-	std::unique_ptr<Event> e{ std::make_unique<ChangeActiveLayerEvent>(layer) };
+	std::unique_ptr<Event> e = std::make_unique<ChangeActiveLayerEvent>(layer);
 	eventHandler.QueueEvent(e);
 }
 
@@ -949,8 +951,8 @@ void Game::InitializeAbilitiesContainer()
 	abilitiesContainer->ClearAbilities();
 	for (auto i = 0; i < abilities.size(); i++)
 	{
-		Ability* ability{ abilities.at(i).get() };
-		abilitiesContainer->AddAbility(ability, textures[ability->spriteId].Get());
+		Ability* ability = abilities.at(i).get();
+		abilitiesContainer->AddAbility(ability, textures.at(ability->spriteId).Get());
 	}
 }
 
@@ -961,7 +963,7 @@ void Game::QuitGame()
 
 void Game::OnPong(unsigned int pingId)
 {
-	const auto delta{ timer.TotalTime() - pingStart };
+	const auto delta = timer.TotalTime() - pingStart;
 	ping = static_cast<int>(std::round(delta * 1000));
 	pingStart = 0.0f;
 	this->pingId++;
@@ -974,9 +976,9 @@ void Game::InitializeEventHandlers()
 		if (activeLayer != Layer::InGame)
 			return;
 
-		const auto derivedEvent{ (MouseEvent*)event };
+		const auto derivedEvent = (MouseEvent*)event;
 
-		const auto dir{ Utility::MousePosToDirection(static_cast<float>(clientWidth), static_cast<float>(clientHeight), derivedEvent->mousePosX, derivedEvent->mousePosY) };
+		const auto dir = Utility::MousePosToDirection(static_cast<float>(clientWidth), static_cast<float>(clientHeight), derivedEvent->mousePosX, derivedEvent->mousePosY);
 		std::vector<std::string> args{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
 		socketManager.SendPacket(OpCode::PlayerRightMouseDown, args);
 
@@ -995,14 +997,14 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::MouseMove] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (MouseEvent*)event };
+		const auto derivedEvent = (MouseEvent*)event;
 
 		mousePosX = derivedEvent->mousePosX;
 		mousePosY = derivedEvent->mousePosY;
 
 		if (activeLayer == Layer::InGame && rightMouseDownDir != VEC_ZERO)
 		{
-			const auto dir{ Utility::MousePosToDirection(static_cast<float>(clientWidth), static_cast<float>(clientHeight), derivedEvent->mousePosX, derivedEvent->mousePosY) };
+			const auto dir = Utility::MousePosToDirection(static_cast<float>(clientWidth), static_cast<float>(clientHeight), derivedEvent->mousePosX, derivedEvent->mousePosY);
 			if (dir != rightMouseDownDir)
 			{
 				std::vector<std::string> args{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
@@ -1014,7 +1016,7 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::CreateAccountFailed] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (CreateAccountFailedEvent*)event };
+		const auto derivedEvent = (CreateAccountFailedEvent*)event;
 
 		createAccount_errorMessageLabel->SetText(("Failed to create account. Reason: " + derivedEvent->error).c_str());
 	};
@@ -1028,7 +1030,7 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::LoginFailed] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (LoginFailedEvent*)event };
+		const auto derivedEvent = (LoginFailedEvent*)event;
 
 		loginScreen_errorMessageLabel->SetText(("Login failed. Reason: " + derivedEvent->error).c_str());
 		SetActiveLayer(Login);
@@ -1036,7 +1038,7 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::LoginSuccess] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (LoginSuccessEvent*)event };
+		const auto derivedEvent = (LoginSuccessEvent*)event;
 
 		RecreateCharacterListings(derivedEvent->characterList);
 		SetActiveLayer(CharacterSelect);
@@ -1044,14 +1046,14 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::CreateCharacterFailed] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (CreateCharacterFailedEvent*)event };
+		const auto derivedEvent = (CreateCharacterFailedEvent*)event;
 
 		createCharacter_errorMessageLabel->SetText(("Character creation failed. Reason: " + derivedEvent->error).c_str());
 	};
 
 	eventHandlers[EventType::CreateCharacterSuccess] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (CreateCharacterSuccessEvent*)event };
+		const auto derivedEvent = (CreateCharacterSuccessEvent*)event;
 
 		RecreateCharacterListings(derivedEvent->characterList);
 		createCharacter_errorMessageLabel->SetText("");
@@ -1061,7 +1063,7 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::DeleteCharacterSuccess] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (DeleteCharacterSuccessEvent*)event };
+		const auto derivedEvent = (DeleteCharacterSuccessEvent*)event;
 
 		RecreateCharacterListings(derivedEvent->characterList);
 		characterNamePendingDeletion = "";
@@ -1072,34 +1074,34 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::EnterWorldSuccess] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (EnterWorldSuccessEvent*)event };
+		const auto derivedEvent = (EnterWorldSuccessEvent*)event;
 
-		const auto agility{ derivedEvent->agility };
-		const auto strength{ derivedEvent->strength };
-		const auto wisdom{ derivedEvent->wisdom };
-		const auto intelligence{ derivedEvent->intelligence };
-		const auto charisma{ derivedEvent->charisma };
-		const auto luck{ derivedEvent->luck };
-		const auto endurance{ derivedEvent->endurance };
-		const auto health{ derivedEvent->health };
-		const auto maxHealth{ derivedEvent->maxHealth };
-		const auto mana{ derivedEvent->mana };
-		const auto maxMana{ derivedEvent->maxMana };
-		const auto stamina{ derivedEvent->stamina };
-		const auto maxStamina{ derivedEvent->maxStamina };
+		const auto agility = derivedEvent->agility;
+		const auto strength = derivedEvent->strength;
+		const auto wisdom = derivedEvent->wisdom;
+		const auto intelligence = derivedEvent->intelligence;
+		const auto charisma = derivedEvent->charisma;
+		const auto luck = derivedEvent->luck;
+		const auto endurance = derivedEvent->endurance;
+		const auto health = derivedEvent->health;
+		const auto maxHealth = derivedEvent->maxHealth;
+		const auto mana = derivedEvent->mana;
+		const auto maxMana = derivedEvent->maxMana;
+		const auto stamina = derivedEvent->stamina;
+		const auto maxStamina = derivedEvent->maxStamina;
 
-		GameObject& player{ objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, derivedEvent->name, derivedEvent->accountId) };
-		const auto playerId{ player.GetId() };
+		GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, derivedEvent->name, derivedEvent->accountId);
+		const auto playerId = player.GetId();
 		this->player = &player;
-		auto sphereRenderComponent{ renderComponentManager.CreateRenderComponent(playerId, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get()) };
+		RenderComponent& sphereRenderComponent = renderComponentManager.CreateRenderComponent(playerId, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 		player.renderComponentId = sphereRenderComponent.GetId();
-		StatsComponent& statsComponent{ statsComponentManager.CreateStatsComponent(playerId, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina) };
+		StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(playerId, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
 		player.statsComponentId = statsComponent.GetId();
 		gameMap.SetTileOccupied(player.localPosition, true);
 
-		auto d2dFactory{ deviceResources->GetD2DFactory() };
-		auto d2dDeviceContext{ deviceResources->GetD2DDeviceContext() };
-		auto writeFactory{ deviceResources->GetWriteFactory() };
+		auto d2dFactory = deviceResources->GetD2DFactory();
+		auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+		auto writeFactory = deviceResources->GetWriteFactory();
 
 		if (skills.size() > 0)
 			skills.clear();
@@ -1123,50 +1125,50 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::NpcUpdate] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (NpcUpdateEvent*)event };
+		const auto derivedEvent = (NpcUpdateEvent*)event;
 
-		const auto gameObjectId{ derivedEvent->gameObjectId };
-		const auto type{ derivedEvent->type };
-		const auto pos{ derivedEvent->pos };
-		const auto mov{ derivedEvent->mov };
-		const auto agility{ derivedEvent->agility };
-		const auto strength{ derivedEvent->strength };
-		const auto wisdom{ derivedEvent->wisdom };
-		const auto intelligence{ derivedEvent->intelligence };
-		const auto charisma{ derivedEvent->charisma };
-		const auto luck{ derivedEvent->luck };
-		const auto endurance{ derivedEvent->endurance };
-		const auto health{ derivedEvent->health };
-		const auto maxHealth{ derivedEvent->maxHealth };
-		const auto mana{ derivedEvent->mana };
-		const auto maxMana{ derivedEvent->maxMana };
-		const auto stamina{ derivedEvent->stamina };
-		const auto maxStamina{ derivedEvent->maxStamina };
+		const auto gameObjectId = derivedEvent->gameObjectId;
+		const auto type = derivedEvent->type;
+		const auto pos = derivedEvent->pos;
+		const auto mov = derivedEvent->mov;
+		const auto agility = derivedEvent->agility;
+		const auto strength = derivedEvent->strength;
+		const auto wisdom = derivedEvent->wisdom;
+		const auto intelligence = derivedEvent->intelligence;
+		const auto charisma = derivedEvent->charisma;
+		const auto luck = derivedEvent->luck;
+		const auto endurance = derivedEvent->endurance;
+		const auto health = derivedEvent->health;
+		const auto maxHealth = derivedEvent->maxHealth;
+		const auto mana = derivedEvent->mana;
+		const auto maxMana = derivedEvent->maxMana;
+		const auto stamina = derivedEvent->stamina;
+		const auto maxStamina = derivedEvent->maxStamina;
 
-		auto npc{ find_if(npcs.begin(), npcs.end(), [&gameObjectId](std::unique_ptr<Npc>& npc) { return npc->GetId() == gameObjectId; }) };
-		const auto modelId{ npc->get()->GetModelId() };
-		const auto textureId{ npc->get()->GetTextureId() };
-		const auto name{ npc->get()->GetName() };
-		const auto speed{ npc->get()->GetSpeed() };
+		auto npc = find_if(npcs.begin(), npcs.end(), [&gameObjectId](std::unique_ptr<Npc>& npc) { return npc->GetId() == gameObjectId; });
+		const auto modelId = npc->get()->GetModelId();
+		const auto textureId = npc->get()->GetTextureId();
+		const auto name = npc->get()->GetName();
+		const auto speed = npc->get()->GetSpeed();
 
 		if (!objectManager.GameObjectExists(gameObjectId))
 		{
-			GameObject& obj{ objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, speed, GameObjectType::Npc, name, gameObjectId) };
+			GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, speed, GameObjectType::Npc, name, gameObjectId);
 			obj.movementVector = mov;
-			const auto sphereRenderComponent{ renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get()) };
+			const RenderComponent& sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
 			obj.renderComponentId = sphereRenderComponent.GetId();
 
-			const auto statsComponent{ statsComponentManager.CreateStatsComponent(obj.GetId(), agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina) };
+			const StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.GetId(), agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
 			obj.statsComponentId = statsComponent.GetId();
 			gameMap.SetTileOccupied(obj.localPosition, true);
 		}
 		else
 		{
-			GameObject& gameObject{ objectManager.GetGameObjectById(derivedEvent->gameObjectId) };
+			GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
 			gameObject.localPosition = pos;
 			gameObject.movementVector = mov;
 
-			StatsComponent& statsComponent{ statsComponentManager.GetStatsComponentById(gameObject.statsComponentId) };
+			StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(gameObject.statsComponentId);
 			statsComponent.agility = agility;
 			statsComponent.strength = strength;
 			statsComponent.wisdom = wisdom;
@@ -1185,46 +1187,46 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::PlayerUpdate] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (PlayerUpdateEvent*)event };
+		const auto derivedEvent = (PlayerUpdateEvent*)event;
 
-		const auto gameObjectId{ derivedEvent->accountId };
-		const auto type{ derivedEvent->type };
-		const auto pos{ derivedEvent->pos };
-		const auto mov{ derivedEvent->mov };
-		const auto modelId{ derivedEvent->modelId };
-		const auto textureId{ derivedEvent->textureId };
-		const auto name{ derivedEvent->name };
-		const auto agility{ derivedEvent->agility };
-		const auto strength{ derivedEvent->strength };
-		const auto wisdom{ derivedEvent->wisdom };
-		const auto intelligence{ derivedEvent->intelligence };
-		const auto charisma{ derivedEvent->charisma };
-		const auto luck{ derivedEvent->luck };
-		const auto endurance{ derivedEvent->endurance };
-		const auto health{ derivedEvent->health };
-		const auto maxHealth{ derivedEvent->maxHealth };
-		const auto mana{ derivedEvent->mana };
-		const auto maxMana{ derivedEvent->maxMana };
-		const auto stamina{ derivedEvent->stamina };
-		const auto maxStamina{ derivedEvent->maxStamina };
+		const auto gameObjectId = derivedEvent->accountId;
+		const auto type = derivedEvent->type;
+		const auto pos = derivedEvent->pos;
+		const auto mov = derivedEvent->mov;
+		const auto modelId = derivedEvent->modelId;
+		const auto textureId = derivedEvent->textureId;
+		const auto name = derivedEvent->name;
+		const auto agility = derivedEvent->agility;
+		const auto strength = derivedEvent->strength;
+		const auto wisdom = derivedEvent->wisdom;
+		const auto intelligence = derivedEvent->intelligence;
+		const auto charisma = derivedEvent->charisma;
+		const auto luck = derivedEvent->luck;
+		const auto endurance = derivedEvent->endurance;
+		const auto health = derivedEvent->health;
+		const auto maxHealth = derivedEvent->maxHealth;
+		const auto mana = derivedEvent->mana;
+		const auto maxMana = derivedEvent->maxMana;
+		const auto stamina = derivedEvent->stamina;
+		const auto maxStamina = derivedEvent->maxStamina;
 
 		if (!objectManager.GameObjectExists(gameObjectId))
 		{
 			GameObject& obj = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, name, gameObjectId);
 			obj.movementVector = mov;
-			const auto sphereRenderComponent{ renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get()) };
+			const RenderComponent& sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes.at(modelId).get(), vertexShader.Get(), pixelShader.Get(), textures.at(textureId).Get());
 			obj.renderComponentId = sphereRenderComponent.GetId();
 
-			const auto statsComponent{ statsComponentManager.CreateStatsComponent(obj.GetId(), agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina) };
+			const StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.GetId(), agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
 			obj.statsComponentId = statsComponent.GetId();
 		}
 		else
 		{
-			GameObject& obj{ objectManager.GetGameObjectById(derivedEvent->accountId) };
+			GameObject& obj = objectManager.GetGameObjectById(derivedEvent->accountId);
 			obj.localPosition = pos;
 			obj.movementVector = mov;
 
-			StatsComponent& statsComponent{ statsComponentManager.GetStatsComponentById(obj.statsComponentId) };
+			StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(obj.statsComponentId);
 			statsComponent.agility = agility;
 			statsComponent.strength = strength;
 			statsComponent.wisdom = wisdom;
@@ -1243,7 +1245,7 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::ActivateAbility] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (ActivateAbilityEvent*)event };
+		const auto derivedEvent = (ActivateAbilityEvent*)event;
 
 		std::vector<std::string> args{ std::to_string(derivedEvent->abilityId) };
 		socketManager.SendPacket(OpCode::ActivateAbility, args);
@@ -1259,40 +1261,40 @@ void Game::InitializeEventHandlers()
 		if (activeLayer != Layer::InGame)
 			return;
 
-		const auto derivedEvent{ (MouseEvent*)event };
+		const auto derivedEvent = (MouseEvent*)event;
 
 		GameObject* clickedGameObject{ nullptr };
-		float smallestDist{ FLT_MAX };
+		float smallestDist = FLT_MAX;
 
-		auto gameObjects{ objectManager.GetGameObjects() };
+		auto gameObjects = objectManager.GetGameObjects();
 		for (auto j = 0; j < objectManager.GetGameObjectIndex(); j++)
 		{
-			GameObject& gameObject{ gameObjects[j] };
-			const auto pos{ gameObject.GetWorldPosition() };
-			const auto scale{ gameObject.scale };
-			const auto worldTransform{ XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixTranslation(pos.x, pos.y, pos.z) };
+			GameObject& gameObject = gameObjects[j];
+			const auto pos = gameObject.GetWorldPosition();
+			const auto scale = gameObject.scale;
+			const auto worldTransform = XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixTranslation(pos.x, pos.y, pos.z);
 
-			XMVECTOR roScreen{ XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 0.0f, 1.0f) };
-			XMVECTOR rdScreen{ XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 1.0f, 1.0f) };
-			XMVECTOR ro{ XMVector3Unproject(roScreen, 0.0f, 0.0f, (float)clientWidth, (float)clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform) };
-			XMVECTOR rd{ XMVector3Unproject(rdScreen, 0.0f, 0.0f, (float)clientWidth, (float)clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform) };
+			XMVECTOR roScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 0.0f, 1.0f);
+			XMVECTOR rdScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 1.0f, 1.0f);
+			XMVECTOR ro = XMVector3Unproject(roScreen, 0.0f, 0.0f, (float)clientWidth, (float)clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
+			XMVECTOR rd = XMVector3Unproject(rdScreen, 0.0f, 0.0f, (float)clientWidth, (float)clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
 			rd = XMVector3Normalize(rd - ro);
 
-			auto renderComponent{ renderComponentManager.GetRenderComponentById(gameObject.renderComponentId) };
-			auto vertices{ renderComponent.mesh->vertices };
-			auto indices{ renderComponent.mesh->indices };
+			RenderComponent& renderComponent = renderComponentManager.GetRenderComponentById(gameObject.renderComponentId);
+			auto vertices = renderComponent.mesh->vertices;
+			auto indices = renderComponent.mesh->indices;
 
-			float dist{ 0.0f };
+			auto dist = 0.0f;
 			unsigned int i = 0;
 			while (i < indices.size())
 			{
-				auto ver1{ vertices[indices[i]] };
-				auto ver2{ vertices[indices[i + 1]] };
-				auto ver3{ vertices[indices[i + 2]] };
-				XMVECTOR v1{ XMVectorSet(ver1.Position.x, ver1.Position.y, ver1.Position.z, 1.0f) };
-				XMVECTOR v2{ XMVectorSet(ver2.Position.x, ver2.Position.y, ver2.Position.z, 1.0f) };
-				XMVECTOR v3{ XMVectorSet(ver3.Position.x, ver3.Position.y, ver3.Position.z, 1.0f) };
-				auto result{ TriangleTests::Intersects(ro, rd, v1, v2, v3, dist) };
+				auto ver1 = vertices[indices[i]];
+				auto ver2 = vertices[indices[i + 1]];
+				auto ver3 = vertices[indices[i + 2]];
+				XMVECTOR v1 = XMVectorSet(ver1.Position.x, ver1.Position.y, ver1.Position.z, 1.0f);
+				XMVECTOR v2 = XMVectorSet(ver2.Position.x, ver2.Position.y, ver2.Position.z, 1.0f);
+				XMVECTOR v3 = XMVectorSet(ver3.Position.x, ver3.Position.y, ver3.Position.z, 1.0f);
+				auto result = TriangleTests::Intersects(ro, rd, v1, v2, v3, dist);
 				if (result)
 				{
 					if (dist < smallestDist)
@@ -1306,16 +1308,16 @@ void Game::InitializeEventHandlers()
 		}
 		if (clickedGameObject)
 		{
-			const auto objectId{ clickedGameObject->GetId() };
-			StatsComponent& statsComponent{ statsComponentManager.GetStatsComponentById(clickedGameObject->statsComponentId) };
-			std::unique_ptr<Event> e{ std::make_unique<SetTargetEvent>(objectId, clickedGameObject->name, &statsComponent) };
+			const auto objectId = clickedGameObject->GetId();
+			StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(clickedGameObject->statsComponentId);
+			std::unique_ptr<Event> e = std::make_unique<SetTargetEvent>(objectId, clickedGameObject->name, &statsComponent);
 			eventHandler.QueueEvent(e);
 			std::vector<std::string> args{ std::to_string(objectId) };
 			socketManager.SendPacket(OpCode::SetTarget, args);
 		}
 		else
 		{
-			std::unique_ptr<Event> e{ std::make_unique<Event>(EventType::UnsetTarget) };
+			std::unique_ptr<Event> e = std::make_unique<Event>(EventType::UnsetTarget);
 			eventHandler.QueueEvent(e);
 			socketManager.SendPacket(OpCode::UnsetTarget);
 		}
@@ -1323,7 +1325,7 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::SendChatMessage] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (SendChatMessage*)event };
+		const auto derivedEvent = (SendChatMessage*)event;
 
 		std::vector<std::string> args{ player->name, derivedEvent->message };
 		socketManager.SendPacket(OpCode::SendChatMessage, args);
@@ -1331,7 +1333,7 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::PropagateChatMessage] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (PropagateChatMessageEvent*)event };
+		const auto derivedEvent = (PropagateChatMessageEvent*)event;
 
 		const auto msg{ new std::string("(" + derivedEvent->senderName + ") " + derivedEvent->message) };
 		textWindow->AddMessage(msg);
@@ -1339,7 +1341,7 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::ServerMessage] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (ServerMessageEvent*)event };
+		const auto derivedEvent = (ServerMessageEvent*)event;
 
 		const auto msg{ new std::string(derivedEvent->message) };
 		textWindow->AddMessage(msg);
@@ -1347,7 +1349,7 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::SkillIncrease] = [this](const Event* const event)
 	{
-		const auto derivedEvent{ (SkillIncreaseEvent*)event };
+		const auto derivedEvent = (SkillIncreaseEvent*)event;
 
 		// TODO: refactors skills on ClientSide to be somewhere easier to access, use array, etc.
 		for (auto i = 0; i < skills.size(); i++)

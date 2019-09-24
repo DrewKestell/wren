@@ -72,7 +72,7 @@ void UIAbility::Draw()
 	if (toggled)
 		d2dFactory->CreateRectangleGeometry(D2D1::RectF(worldPos.x, worldPos.y, worldPos.x + HIGHLIGHT_WIDTH, worldPos.y + HIGHLIGHT_WIDTH), toggledGeometry.ReleaseAndGetAddressOf());
 
-	auto pos = XMFLOAT3{ worldPos.x + 18.0f, worldPos.y + 18.0f, 0.0f };
+	XMFLOAT3 pos{ worldPos.x + 18.0f, worldPos.y + 18.0f, 0.0f };
 	FXMVECTOR v = XMLoadFloat3(&pos);
 	CXMMATRIX view = XMMatrixIdentity();
 	CXMMATRIX world = XMMatrixIdentity();
