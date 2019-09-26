@@ -2,12 +2,12 @@
 
 #include "GameTimer.h"
 
-constexpr float ACCELERATION = 0.02f;
-constexpr float MIN_SPEED = 0.02f;
-constexpr float MAX_SPEED = 0.00005f;
-constexpr float OFFSET_X = 500.0f;
-constexpr float OFFSET_Y = 700.0f;
-constexpr float OFFSET_Z = -500.0f;
+constexpr auto ACCELERATION = 0.02f;
+constexpr auto MIN_SPEED    = 0.02f;
+constexpr auto MAX_SPEED    = 0.00005f;
+constexpr auto OFFSET_X     = 500.0f;
+constexpr auto OFFSET_Y     = 700.0f;
+constexpr auto OFFSET_Z     = -500.0f;
 
 class Camera
 {
