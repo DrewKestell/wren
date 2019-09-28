@@ -55,6 +55,14 @@ void UIPanel::Draw()
 	}
 	d2dDeviceContext->FillGeometry(bodyGeometry.Get(), bodyBrush);
 	d2dDeviceContext->DrawGeometry(bodyGeometry.Get(), borderBrush, borderWeight);
+
+	// Draw "X" Button
+	const auto position = GetWorldPosition();
+	auto startingX = position.x + width - 17.0f;
+	auto startingY = position.y + 4.0f;
+
+	d2dDeviceContext->DrawLine(D2D1::Point2F(startingX, startingY), D2D1::Point2F(startingX + 12.0f, startingY + 12.0f), borderBrush, 2.0f);
+	d2dDeviceContext->DrawLine(D2D1::Point2F(startingX + 12.0f, startingY), D2D1::Point2F(startingX, startingY + 12.0f), borderBrush, 2.0f);
 }
 
 const bool UIPanel::HandleEvent(const Event* const event)
@@ -87,6 +95,15 @@ const bool UIPanel::HandleEvent(const Event* const event)
 
 					stopEvent = true;
 				}
+				const auto closeButtonStartingX = position.x + width - 17.0f;
+				const auto closeButtonStartingY = position.y + 4.0f;
+				if (Utility::DetectClick(closeButtonStartingX, closeButtonStartingY, closeButtonStartingX + 12.0f, closeButtonStartingY + 12.0f, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+				{
+					ToggleVisibility();
+
+					stopEvent = true;
+				}
+
 				return stopEvent;
 			}
 			
@@ -142,21 +159,7 @@ const bool UIPanel::HandleEvent(const Event* const event)
 				const auto keyDownEvent = (SystemKeyDownEvent*)event;
 
 				if (keyDownEvent->keyCode == showKey)
-				{
-					isVisible = !isVisible;
-
-					SetChildrenAsVisible(this);
-
-					if (isVisible)
-					{
-						g_zIndex++;
-						zIndex = g_zIndex;
-						BringToFront(this);
-					}
-
-					std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
-					eventHandler.QueueEvent(e);
-				}
+					ToggleVisibility();
 			}
 
 			break;
@@ -194,3 +197,22 @@ void UIPanel::BringToFront(UIComponent* uiComponent)
 		BringToFront(uiComponent);
 	}
 }
+
+void UIPanel::ToggleVisibility()
+{
+	isVisible = !isVisible;
+
+	SetChildrenAsVisible(this);
+
+	if (isVisible)
+	{
+		g_zIndex++;
+		zIndex = g_zIndex;
+		BringToFront(this);
+	}
+
+	std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
+	eventHandler.QueueEvent(e);
+}
+
+const bool UIPanel::GetIsDragging() const { return isDragging; }

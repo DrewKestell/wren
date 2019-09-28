@@ -25,6 +25,7 @@ public:
 	int maxMana{ 0 };
 	int stamina{ 0 };
 	int maxStamina{ 0 };
+	bool alive{ true };
 
 	const int GetId() const;
 	const int GetGameObjectId() const;

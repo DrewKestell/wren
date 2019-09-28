@@ -4,6 +4,7 @@
 #include <Components/StatsComponentManager.h>
 #include "Components/PlayerComponentManager.h"
 #include "Components/SkillComponentManager.h"
+#include "Components/InventoryComponentManager.h"
 
 constexpr auto PLAYER_NOT_FOUND = "Player not found.";
 constexpr auto INCORRECT_USERNAME = "Incorrect Username.";
@@ -12,6 +13,7 @@ constexpr auto ACCOUNT_ALREADY_EXISTS = "Account already exists.";
 constexpr auto LIBSODIUM_MEMORY_ERROR = "Ran out of memory while hashing password.";
 constexpr auto CHARACTER_ALREADY_EXISTS = "Character already exists.";
 constexpr auto INVALID_ATTACK_TARGET = "You can't attack that!";
+constexpr auto DEAD_ATTACK_TARGET = "You can't attack something that is already dead.";
 constexpr auto NO_ATTACK_TARGET = "You need a target before attacking!";
 constexpr auto MESSAGE_TYPE_ERROR = "ERROR";
 
@@ -65,6 +67,13 @@ void ServerSocketManager::Initialize()
 	const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
 	const StatsComponent& dummyStatsComponent = statsComponentManager->CreateStatsComponent(dummyId, 10, 10, 10, 10, 10, 10, 10, 100, 100, 100, 100, 100, 100);
 	dummyGameObject.statsComponentId = dummyStatsComponent.GetId();
+
+	const auto inventoryComponentManager = componentOrchestrator.GetInventoryComponentManager();
+	InventoryComponent& dummyInventoryComponent = inventoryComponentManager->CreateInventoryComponent(dummyId);
+	dummyGameObject.inventoryComponentId = dummyInventoryComponent.GetId();
+	dummyInventoryComponent.itemIds[0] = 1;
+	dummyInventoryComponent.itemIds[1] = 1;
+	dummyInventoryComponent.itemIds[2] = 1;
 
 	gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
 }
@@ -395,6 +404,11 @@ void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, cons
 {
 	if (ability.name == "Auto Attack")
 	{
+		const GameObject& target = objectManager.GetGameObjectById(playerComponent.targetId);
+
+		const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
+		const StatsComponent& targetStatsComponent = statsComponentManager->GetStatsComponentById(target.statsComponentId);
+
 		if (!playerComponent.autoAttackOn && playerComponent.targetId == -1)
 		{
 			std::vector<std::string> args{ NO_ATTACK_TARGET, MESSAGE_TYPE_ERROR };
@@ -404,6 +418,12 @@ void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, cons
 		else if (!playerComponent.autoAttackOn && objectManager.GetGameObjectById(playerComponent.targetId).isStatic)
 		{
 			std::vector<std::string> args{ INVALID_ATTACK_TARGET, MESSAGE_TYPE_ERROR };
+			SendPacket(playerComponent.GetFromSockAddr(), OpCode::ServerMessage, args);
+			return;
+		}
+		else if (!playerComponent.autoAttackOn && !targetStatsComponent.alive)
+		{
+			std::vector<std::string> args{ DEAD_ATTACK_TARGET, MESSAGE_TYPE_ERROR };
 			SendPacket(playerComponent.GetFromSockAddr(), OpCode::ServerMessage, args);
 			return;
 		}

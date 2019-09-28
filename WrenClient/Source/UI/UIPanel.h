@@ -45,4 +45,6 @@ public:
 		ID2D1Factory2* d2dFactory);
     void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
+	void ToggleVisibility();
+	const bool GetIsDragging() const;
 };

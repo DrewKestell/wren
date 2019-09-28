@@ -17,6 +17,7 @@
 #include "Components/GameMapRenderComponent.h"
 #include "Sprite.h"
 #include "Models/Npc.h"
+#include "Models/Item.h"
 #include "UI/UICharacterListing.h"
 #include "UI/UIInput.h"
 #include "UI/UIInputGroup.h"
@@ -26,6 +27,7 @@
 #include "UI/UISkillListing.h"
 #include "UI/UIHotbar.h"
 #include "UI/UIAbilitiesContainer.h"
+#include "UI/UILootContainer.h"
 #include "UI/UISkillsContainer.h"
 #include "UI/UICharacterHUD.h"
 #include "UI/UITargetHUD.h"
@@ -74,6 +76,7 @@ private:
 	int ping{ 0 };
 	float pingStart{ 0.0f };
 	unsigned int pingId{ 0 };
+	float doubleClickStart{ 0.0f };
 	float updateTimer{ 0.0f };
 	float mousePosX{ 0.0f };
 	float mousePosY{ 0.0f };
@@ -106,6 +109,7 @@ private:
 	unsigned int* textWindowMessageIndex = new unsigned int{ 0 };
 	std::string* textWindowMessages[MESSAGE_BUFFER_SIZE];
 	std::vector<std::unique_ptr<Npc>> npcs;
+	std::vector<std::unique_ptr<Item>> items;
 	std::map<EventType, std::function<void(const Event* const event)>> eventHandlers;
 
 	void Render(const float updateTimer);
@@ -122,6 +126,7 @@ private:
 
 	void InitializeEventHandlers();
 	void InitializeNpcs();
+	void InitializeItems();
 	void InitializeStaticObjects();
 	void InitializeBrushes();
 	void InitializeTextFormats();
@@ -234,15 +239,18 @@ private:
 	std::unique_ptr<UILabel> diagnosticsPanelHeader;
 	std::unique_ptr<UILabel> skillsPanelHeader;
 	std::unique_ptr<UILabel> abilitiesPanelHeader;
+	std::unique_ptr<UILabel> lootPanelHeader;
 
 	// Panels
 	std::unique_ptr<UIPanel> gameSettingsPanel;
 	std::unique_ptr<UIPanel> gameEditorPanel;
 	std::unique_ptr<UIPanel> diagnosticsPanel;
-	std::unique_ptr<UIPanel> skillsPanel;
 	std::unique_ptr<UIPanel> abilitiesPanel;
+	std::unique_ptr<UIPanel> lootPanel;
+	std::unique_ptr<UIPanel> skillsPanel;
 
 	// Containers
 	std::unique_ptr<UIAbilitiesContainer> abilitiesContainer;
+	std::unique_ptr<UILootContainer> lootContainer;
 	std::unique_ptr<UISkillsContainer> skillsContainer;
 };

@@ -8,6 +8,7 @@
 #include <EventHandling/Events/ChangeActiveLayerEvent.h>
 #include <EventHandling/Events/SendChatMessage.h>
 #include <EventHandling/Events/EnterWorldSuccessEvent.h>
+#include <EventHandling/Events/NpcDeathEvent.h>
 
 using namespace DX;
 
@@ -17,6 +18,7 @@ UITextWindow::UITextWindow(
 	const Layer uiLayer,
 	const unsigned int zIndex,
 	EventHandler& eventHandler,
+	ObjectManager& objectManager,
 	std::string* messages[MESSAGE_BUFFER_SIZE],
 	unsigned int* messageIndex,
 	ID2D1SolidColorBrush* backgroundBrush,
@@ -34,6 +36,7 @@ UITextWindow::UITextWindow(
 	ID2D1Factory2* d2dFactory)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
 	  eventHandler{ eventHandler },
+	  objectManager{ objectManager },
 	  messages{ messages },
 	  messageIndex{ messageIndex },
 	  backgroundBrush{ backgroundBrush },
@@ -208,11 +211,13 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 
 			if (derivedEvent->attackerId == playerId)
 			{
-				AddMessage(new std::string("You swing and hit Dummy for " + std::to_string(derivedEvent->damage) + " points of damage!"));
+				const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->targetId);
+				AddMessage(new std::string("You swing and hit " + gameObject.name + " for " + std::to_string(derivedEvent->damage) + " points of damage!"));
 			}
 			else if (derivedEvent->targetId == playerId)
 			{
-				AddMessage(new std::string("Dummy swings and hits you for " + std::to_string(derivedEvent->damage) + " points of damage!"));
+				const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->attackerId);
+				AddMessage(new std::string(gameObject.name + " swings and hits you for " + std::to_string(derivedEvent->damage) + " points of damage!"));
 			}
 
 			break;
@@ -223,11 +228,13 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 
 			if (derivedEvent->attackerId == playerId)
 			{
-				AddMessage(new std::string("You swing at Dummy and miss!"));
+				const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->targetId);
+				AddMessage(new std::string("You swing at " + gameObject.name + " and miss!"));
 			}
 			else if (derivedEvent->targetId == playerId)
 			{
-				AddMessage(new std::string("Dummy swings at you and misses!"));
+				const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->attackerId);
+				AddMessage(new std::string(gameObject.name + " swings at you and misses!"));
 			}
 
 			break;
@@ -316,6 +323,15 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 			const auto derivedEvent = (EnterWorldSuccessEvent*)event;
 
 			playerId = derivedEvent->accountId;
+
+			break;
+		}
+		case EventType::NpcDeath:
+		{
+			const auto derivedEvent = (NpcDeathEvent*)event;
+
+			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
+			AddMessage(new std::string(gameObject.name + " has been slain."));
 
 			break;
 		}

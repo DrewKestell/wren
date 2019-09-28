@@ -36,6 +36,7 @@
     <ClCompile Include="Source\Mesh.cpp" />
     <ClCompile Include="Source\Components\RenderComponent.cpp" />
     <ClCompile Include="Source\Components\RenderComponentManager.cpp" />
+    <ClCompile Include="Source\Models\Item.cpp" />
     <ClCompile Include="Source\Models\Npc.cpp" />
     <ClCompile Include="Source\Sprite.cpp" />
     <ClCompile Include="Source\stdafx.cpp">
@@ -56,6 +57,7 @@
     <ClCompile Include="Source\UI\UIHotbar.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
+    <ClCompile Include="Source\UI\UILootContainer.cpp" />
     <ClCompile Include="Source\UI\UIPanel.cpp" />
     <ClCompile Include="Source\ClientSocketManager.cpp" />
     <ClCompile Include="Source\UI\UIButton.cpp" />
@@ -166,6 +168,7 @@
     <ClInclude Include="Source\EventHandling\Events\SystemKeyDownEvent.h" />
     <ClInclude Include="Source\Events\AttackHitEvent.h" />
     <ClInclude Include="Source\Events\AttackMissEvent.h" />
+    <ClInclude Include="Source\Events\DoubleLeftMouseDownEvent.h" />
     <ClInclude Include="Source\Events\SkillIncreaseEvent.h" />
     <ClInclude Include="Source\Events\UIAbilityDroppedEvent.h" />
     <ClInclude Include="Source\Game.h" />
@@ -173,6 +176,7 @@
     <ClInclude Include="Source\Mesh.h" />
     <ClInclude Include="Source\Components\RenderComponent.h" />
     <ClInclude Include="Source\Components\RenderComponentManager.h" />
+    <ClInclude Include="Source\Models\Item.h" />
     <ClInclude Include="Source\Models\Npc.h" />
     <ClInclude Include="Source\ShaderBuffer.h" />
     <ClInclude Include="Source\Sprite.h" />
@@ -186,6 +190,7 @@
     <ClInclude Include="Source\UI\UIHotbar.h" />
     <ClInclude Include="Source\UI\UIInputGroup.h" />
     <ClInclude Include="Source\UI\UIComponent.h" />
+    <ClInclude Include="Source\UI\UILootContainer.h" />
     <ClInclude Include="Source\UI\UIPanel.h" />
     <ClInclude Include="Source\ClientSocketManager.h" />
     <ClInclude Include="Source\UI\UIButton.h" />

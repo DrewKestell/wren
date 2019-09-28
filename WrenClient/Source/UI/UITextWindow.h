@@ -6,6 +6,7 @@
 #include <EventHandling/EventHandler.h>
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
+#include <ObjectManager.h>
 
 constexpr int MESSAGES_PER_PAGE = 13;
 constexpr float TEXT_WINDOW_HEIGHT = 220.0f;
@@ -14,6 +15,7 @@ constexpr float TEXT_WINDOW_WIDTH = 600.0f;
 class UITextWindow : public UIComponent
 {
 	EventHandler& eventHandler;
+	ObjectManager& objectManager;
 	int playerId{ 0 };
 	bool inputActive{ false };
 	wchar_t inputValue[60];
@@ -59,6 +61,7 @@ public:
 		const Layer uiLayer,
 		const unsigned int zIndex,
 		EventHandler& eventHandler,
+		ObjectManager& objectManager,
 		std::string* messages[MESSAGE_BUFFER_SIZE],
 		unsigned int* messageIndex,
 		ID2D1SolidColorBrush* backgroundBrush,

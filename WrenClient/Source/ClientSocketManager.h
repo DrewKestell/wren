@@ -16,9 +16,10 @@ private:
 	int accountId{ -1 };
 	std::string token{ "" };
 
-	std::vector<std::unique_ptr<std::string>> BuildCharacterVector(const std::string& characterString);
-	std::vector<std::unique_ptr<WrenCommon::Skill>> BuildSkillVector(const std::string& skillString);
-	std::vector<std::unique_ptr<Ability>> BuildAbilityVector(const std::string& abilityString);
+	std::vector<std::unique_ptr<std::string>> BuildCharacterVector(const std::string& characterString) const;
+	std::vector<std::unique_ptr<WrenCommon::Skill>> BuildSkillVector(const std::string& skillString) const;
+	std::vector<std::unique_ptr<Ability>> BuildAbilityVector(const std::string& abilityString) const;
+	std::vector<int> BuildItemIdsVector(const std::string& itemIdsString) const;
 	void InitializeMessageHandlers() override;
 	
 public:

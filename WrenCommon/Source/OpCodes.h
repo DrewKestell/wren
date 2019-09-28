@@ -34,6 +34,7 @@ enum class OpCode : int
 	PlayerRightMouseDown,
 	PlayerRightMouseUp,
 	PlayerRightMouseDirChange,
+	NpcDeath,
 
 	Checksum = 65836216
 };

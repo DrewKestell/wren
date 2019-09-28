@@ -18,6 +18,7 @@
 #include "EventHandling/Events/SendChatMessage.h"
 #include "EventHandling/Events/PropagateChatMessageEvent.h"
 #include "EventHandling/Events/ServerMessageEvent.h"
+#include "Events/DoubleLeftMouseDownEvent.h"
 
 unsigned int g_zIndex{ 0 };
 
@@ -120,6 +121,10 @@ void Game::Tick()
 			socketManager.SendPacket(OpCode::Ping, args);
 		}
 	}
+
+	// reset double click timer if necessary
+	if (timer.TotalTime() - doubleClickStart > 0.5f)
+		doubleClickStart = 0.0f;
 	
 	updateTimer += timer.DeltaTime();
 	if (updateTimer >= UPDATE_FREQUENCY)
@@ -290,6 +295,7 @@ void Game::CreateDeviceDependentResources()
 	InitializeBuffers();
 	InitializeMeshes();
 	InitializeNpcs();
+	InitializeItems();
 	InitializeStaticObjects();
 	InitializeRasterStates();
 	InitializeSprites();
@@ -329,7 +335,7 @@ void Game::CreateWindowSizeDependentResources()
 	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0, eventHandler, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
 
 	// init textWindow
-	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, eventHandler, textWindowMessages, textWindowMessageIndex, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
+	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, eventHandler, objectManager, textWindowMessages, textWindowMessageIndex, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
 
 	if (skills.size() > 0)
 		skillsContainer->Initialize(skills);
@@ -385,6 +391,11 @@ ShaderBuffer Game::LoadShader(const std::wstring filename)
 void Game::InitializeNpcs()
 {
 	npcs = clientRepository.ListNpcs();
+}
+
+void Game::InitializeItems()
+{
+	items = clientRepository.ListItems();
 }
 
 void Game::InitializeStaticObjects()
@@ -782,12 +793,24 @@ void Game::InitializePanels()
 	const auto abilitiesPanelY{ 10.0f };
 	abilitiesPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ abilitiesPanelX, abilitiesPanelY }, InGame, 1, eventHandler, true, 240.0f, 400.0f, VK_F4, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
 
-	abilitiesPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 3, 280.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dDeviceContext, writeFactory, d2dFactory);
+	abilitiesPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 3, 240.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dDeviceContext, writeFactory, d2dFactory);
 	abilitiesPanelHeader->SetText("Abilities");
 	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
 
 	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, eventHandler, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, writeFactory, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
 	abilitiesPanel->AddChildComponent(*abilitiesContainer);
+
+	// Loot
+	const auto lootPanelX{ 400.0f };
+	const auto lootPanelY{ 300.0f };
+	lootPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ lootPanelX, lootPanelY }, InGame, 1, eventHandler, true, 140.0f, 185.0f, 0, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
+
+	lootPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 3, 140.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dDeviceContext, writeFactory, d2dFactory);
+	lootPanelHeader->SetText("Loot");
+	lootPanel->AddChildComponent(*lootPanelHeader);
+
+	lootContainer = std::make_unique<UILootContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, blackBrush.Get(), d2dDeviceContext, d2dFactory);
+	lootPanel->AddChildComponent(*lootContainer);
 }
 
 UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
@@ -871,7 +894,8 @@ void Game::InitializeTextures()
 		L"../../WrenClient/Textures/abilityicon01.dds", // 3
 		L"../../WrenClient/Textures/texture03.dds",     // 4
 		L"../../WrenClient/Textures/abilityicon02.dds", // 5
-		L"../../WrenClient/Textures/abilityicon03.dds"  // 6
+		L"../../WrenClient/Textures/abilityicon03.dds", // 6
+		L"../../WrenClient/Textures/jade.dds"           // 7
 	};
 
 	// clear calls the destructor of its elements, and ComPtr's destructor handles calling Release()
@@ -1321,6 +1345,16 @@ void Game::InitializeEventHandlers()
 			eventHandler.QueueEvent(e);
 			socketManager.SendPacket(OpCode::UnsetTarget);
 		}
+
+		// check for double click
+		if (doubleClickStart == 0.0f)
+			doubleClickStart = timer.TotalTime();
+		else if (timer.TotalTime() - doubleClickStart <= 0.5f)
+		{
+			std::unique_ptr<Event> e = std::make_unique<DoubleLeftMouseDownEvent>(mousePosX, mousePosY, clickedGameObject);
+			eventHandler.QueueEvent(e);
+			doubleClickStart = 0.0f;
+		}
 	};
 
 	eventHandlers[EventType::SendChatMessage] = [this](const Event* const event)
@@ -1362,6 +1396,18 @@ void Game::InitializeEventHandlers()
 				const auto msg{ new std::string("Your skill in " + skill->name + " has increased to " + std::to_string(derivedEvent->newValue)) };
 				textWindow->AddMessage(msg);
 			}
+		}
+	};
+
+	eventHandlers[EventType::DoubleLeftMouseDown] = [this](const Event* const event)
+	{
+		const auto derivedEvent = (DoubleLeftMouseDownEvent*)event;
+		
+		if (derivedEvent->clickedObject)
+		{
+			// TODO: set up loot
+			if (!lootPanel->isVisible)
+				lootPanel->ToggleVisibility();
 		}
 	};
 }

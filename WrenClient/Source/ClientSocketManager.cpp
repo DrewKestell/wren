@@ -16,6 +16,7 @@
 #include "EventHandling/Events/PropagateChatMessageEvent.h"
 #include "EventHandling/Events/ServerMessageEvent.h"
 #include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
+#include "EventHandling/Events/NpcDeathEvent.h"
 
 ClientSocketManager::ClientSocketManager(EventHandler& eventHandler)
 	: eventHandler{ eventHandler }
@@ -46,7 +47,7 @@ const bool ClientSocketManager::Connected() const
 	return accountId != -1 && token != "";
 }
 
-std::vector<std::unique_ptr<std::string>> ClientSocketManager::BuildCharacterVector(const std::string& characterString)
+std::vector<std::unique_ptr<std::string>> ClientSocketManager::BuildCharacterVector(const std::string& characterString) const
 {
     std::vector<std::unique_ptr<std::string>> characterList;
 	std::string arg{ "" };
@@ -63,7 +64,7 @@ std::vector<std::unique_ptr<std::string>> ClientSocketManager::BuildCharacterVec
     return characterList;
 }
 
-std::vector<std::unique_ptr<WrenCommon::Skill>> ClientSocketManager::BuildSkillVector(const std::string& skillString)
+std::vector<std::unique_ptr<WrenCommon::Skill>> ClientSocketManager::BuildSkillVector(const std::string& skillString) const
 {
 	std::vector<std::unique_ptr<WrenCommon::Skill>> skillList;
 	char param = 0;
@@ -97,7 +98,7 @@ std::vector<std::unique_ptr<WrenCommon::Skill>> ClientSocketManager::BuildSkillV
 	return skillList;
 }
 
-std::vector<std::unique_ptr<Ability>> ClientSocketManager::BuildAbilityVector(const std::string& abilityString)
+std::vector<std::unique_ptr<Ability>> ClientSocketManager::BuildAbilityVector(const std::string& abilityString) const
 {
 	std::vector<std::unique_ptr<Ability>> abilityList;
 	char param = 0;
@@ -137,6 +138,27 @@ std::vector<std::unique_ptr<Ability>> ClientSocketManager::BuildAbilityVector(co
 	}
 
 	return abilityList;
+}
+
+std::vector<int> ClientSocketManager::BuildItemIdsVector(const std::string& itemIdsString) const
+{
+	std::vector<int> itemIdsList;
+	std::string itemId{ "" };
+
+	for (auto i = 0; i < itemIdsString.length(); i++)
+	{
+		if (itemIdsString.at(i) == ';')
+		{
+			itemIdsList.push_back(std::stoi(itemId));
+			itemId = "";
+		}
+		else
+		{
+			itemId += itemIdsString.at(i);
+		}
+	}
+
+	return itemIdsList;
 }
 
 void ClientSocketManager::Logout()
@@ -382,6 +404,15 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const std::string& newValue = args.at(1);
 
 		std::unique_ptr<Event> e = std::make_unique<SkillIncreaseEvent>(std::stoi(skillId), std::stoi(newValue));
+		eventHandler.QueueEvent(e);
+	};
+
+	messageHandlers[OpCode::NpcDeath] = [this](const std::vector<std::string>& args)
+	{
+		const int gameObjectId = std::stoi(args.at(0));
+		const std::vector<int> itemIds = BuildItemIdsVector(args.at(1));
+
+		std::unique_ptr<Event> e = std::make_unique<NpcDeathEvent>(gameObjectId, itemIds);
 		eventHandler.QueueEvent(e);
 	};
 }

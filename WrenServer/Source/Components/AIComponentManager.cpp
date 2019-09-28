@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "AIComponentManager.h"
 #include <Components/StatsComponentManager.h>
+#include "InventoryComponentManager.h"
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
@@ -57,21 +58,15 @@ AIComponent& AIComponentManager::GetAIComponentById(const int aiComponentId)
 
 const bool AIComponentManager::HandleEvent(const Event* const event)
 {
-	const auto type{ event->type };
+	const auto type = event->type;
 	switch (type)
 	{
 		case EventType::DeleteGameObject:
 		{
 			const auto derivedEvent = (DeleteGameObjectEvent*)event;
-			const GameObject& gameObject{ objectManager.GetGameObjectById(derivedEvent->gameObjectId) };
+			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
 			DeleteAIComponent(gameObject.aiComponentId);
 			break;
-		}
-		case EventType::AttackHit:
-		{
-			const auto derivedEvent{ (AttackHitEvent*)event };
-
-			// TODO
 		}
 	}
 	return false;
@@ -84,12 +79,35 @@ void AIComponentManager::Update()
 	std::uniform_int_distribution<std::mt19937::result_type> dist100(0, 99);
 	std::uniform_int_distribution<std::mt19937::result_type> dist8(0, 7);
 
-	const auto statsComponentManager{ componentOrchestrator.GetStatsComponentManager() };
+	const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
+	const auto inventoryComponentManager = componentOrchestrator.GetInventoryComponentManager();
 
 	for (auto i = 0; i < aiComponentIndex; i++)
 	{
-		AIComponent& comp{ aiComponents[i] };
-		GameObject& gameObject{ objectManager.GetGameObjectById(comp.gameObjectId) };
+		AIComponent& comp = aiComponents[i];
+		GameObject& gameObject = objectManager.GetGameObjectById(comp.gameObjectId);
+		StatsComponent& statsComponent = statsComponentManager->GetStatsComponentById(gameObject.statsComponentId);
+
+		if (!statsComponent.alive)
+			continue;
+
+		if (statsComponent.alive && statsComponent.health <= 0)
+		{
+			statsComponent.alive = false;
+
+			const InventoryComponent& inventoryComponent = inventoryComponentManager->GetInventoryComponentById(gameObject.inventoryComponentId);
+			
+			std::string itemIdString{ "" };
+			for (auto i = 0; i < inventoryComponent.inventorySize; i++)
+			{
+				const auto itemId = inventoryComponent.itemIds[i];
+				if (itemId > 0)
+					itemIdString += std::to_string(itemId) + ";";
+			}
+			std::vector<std::string> args{ std::to_string(gameObject.GetId()), itemIdString };
+			socketManager.SendPacketToAllClients(OpCode::NpcDeath, args);
+		}
+
 		auto pos = gameObject.GetWorldPosition();
 
 		// handle movement
@@ -100,25 +118,28 @@ void AIComponentManager::Update()
 			if (comp.targetId >= 0)
 			{
 				const GameObject& target = objectManager.GetGameObjectById(comp.targetId);
-
-				const auto npcPosVec = XMLoadFloat3(&pos);
-				const auto targetPosVec = XMLoadFloat3(&target.localPosition);
-
-				float shortestDistance{ FLT_MAX };
-				for (auto i = 0; i < 8; i++)
+				
+				if (!Utility::AreOnAdjacentOrDiagonalTiles(gameObject.localPosition, target.localPosition))
 				{
-					const auto dirVec = XMLoadFloat3(&DIRECTIONS[i]);
-					const auto newVec = XMVectorAdd(npcPosVec, dirVec);
-					const auto npcToPlayerVec = XMVectorSubtract(newVec, targetPosVec);
-					const auto magnitudeVec = XMVector3Length(npcToPlayerVec);
+					const auto npcPosVec = XMLoadFloat3(&pos);
+					const auto targetPosVec = XMLoadFloat3(&target.localPosition);
 
-					XMFLOAT3 magnitudeStoredVec;
-					XMStoreFloat3(&magnitudeStoredVec, magnitudeVec);
-					
-					if (std::abs(magnitudeStoredVec.x) < shortestDistance)
+					float shortestDistance{ FLT_MAX };
+					for (auto i = 0; i < 8; i++)
 					{
-						shortestDistance = magnitudeStoredVec.x;
-						movementVec = DIRECTIONS[i];
+						const auto dirVec = XMLoadFloat3(&DIRECTIONS[i]);
+						const auto newVec = XMVectorAdd(npcPosVec, dirVec);
+						const auto npcToPlayerVec = XMVectorSubtract(newVec, targetPosVec);
+						const auto magnitudeVec = XMVector3Length(npcToPlayerVec);
+
+						XMFLOAT3 magnitudeStoredVec;
+						XMStoreFloat3(&magnitudeStoredVec, magnitudeVec);
+
+						if (std::abs(magnitudeStoredVec.x) < shortestDistance)
+						{
+							shortestDistance = magnitudeStoredVec.x;
+							movementVec = DIRECTIONS[i];
+						}
 					}
 				}
 			}
@@ -174,8 +195,8 @@ void AIComponentManager::Update()
 						std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);
 						const auto dmg = distDamage(rng);
 
-						StatsComponent& statsComponent = statsComponentManager->GetStatsComponentById(target.statsComponentId);
-						statsComponent.health = Utility::Max(0, statsComponent.health - dmg);
+						StatsComponent& targetStatsComponent = statsComponentManager->GetStatsComponentById(target.statsComponentId);
+						targetStatsComponent.health = Utility::Max(0, targetStatsComponent.health - dmg);
 
 						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
 						std::unique_ptr<Event> e = std::make_unique<AttackHitEvent>(gameObjectId, targetId, (int)dmg, weaponSkillIds, 2);

@@ -45,4 +45,5 @@ public:
 	int aiComponentId{ -1 };
 	int playerComponentId{ -1 };
 	int skillComponentId{ -1 };
+	int inventoryComponentId{ -1 };
 };

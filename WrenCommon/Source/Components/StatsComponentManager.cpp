@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "StatsComponentManager.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
+#include "EventHandling/Events/NpcDeathEvent.h"
 
 StatsComponentManager::StatsComponentManager(EventHandler& eventHandler, ObjectManager& objectManager)
 	: eventHandler{ eventHandler },
@@ -48,8 +49,20 @@ const bool StatsComponentManager::HandleEvent(const Event* const event)
 		case EventType::DeleteGameObject:
 		{
 			const auto derivedEvent = (DeleteGameObjectEvent*)event;
-			const GameObject& gameObject{ objectManager.GetGameObjectById(derivedEvent->gameObjectId) };
+
+			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
 			DeleteStatsComponent(gameObject.statsComponentId);
+
+			break;
+		}
+		case EventType::NpcDeath:
+		{
+			const auto derivedEvent = (NpcDeathEvent*)event;
+
+			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
+			StatsComponent& statsComponent = GetStatsComponentById(gameObject.statsComponentId);
+			statsComponent.alive = false;
+
 			break;
 		}
 	}

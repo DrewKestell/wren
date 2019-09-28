@@ -3,6 +3,7 @@
 enum class EventType
 {
 	LeftMouseDown,
+	DoubleLeftMouseDown,
 	LeftMouseUp,
 	RightMouseDown,
 	RightMouseUp,
@@ -42,5 +43,6 @@ enum class EventType
 	AttackHit,
 	AttackMiss,
 	Pong,
-	SkillIncrease
+	SkillIncrease,
+	NpcDeath
 };

@@ -4,6 +4,7 @@
 #include "Components/AIComponentManager.h"
 #include "Components/PlayerComponentManager.h"
 #include "Components/SkillComponentManager.h"
+#include "Components/InventoryComponentManager.h"
 
 void PublishEvents(EventHandler& eventHandler)
 {
@@ -35,7 +36,8 @@ int main()
 	static PlayerComponentManager playerComponentManager{ eventHandler, objectManager, gameMap, componentOrchestrator, socketManager };
 	static SkillComponentManager skillComponentManager{ eventHandler, objectManager, componentOrchestrator, socketManager };
 	static StatsComponentManager statsComponentManager{ eventHandler, objectManager };
-	componentOrchestrator.InitializeComponentManagers(&aiComponentManager, &playerComponentManager, &skillComponentManager, &statsComponentManager);
+	static InventoryComponentManager inventoryComponentManager{ eventHandler, objectManager, componentOrchestrator, socketManager };
+	componentOrchestrator.InitializeComponentManagers(&aiComponentManager, &playerComponentManager, &skillComponentManager, &statsComponentManager, &inventoryComponentManager);
 	socketManager.Initialize();
 
     HWND consoleWindow = GetConsoleWindow();
