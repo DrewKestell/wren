@@ -11,8 +11,8 @@ class InventoryComponent
 
 	friend class InventoryComponentManager;
 public:
-	static const int inventorySize{ 16 };
-	int itemIds[inventorySize] = { 0 };
+	static const int inventorySize{ 12 };
+	int itemIds[inventorySize] = { -1 };
 
 	const int GetId() const;
 	const int GetGameObjectId() const;

@@ -29,6 +29,7 @@ enum class EventType
 	NpcUpdate,
 	PlayerUpdate,
 	UIAbilityDropped,
+	UIItemDropped,
 	ActivateAbility,
 	StartDraggingUIAbility,
 	SetTarget,

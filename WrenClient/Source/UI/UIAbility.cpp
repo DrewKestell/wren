@@ -26,8 +26,6 @@ UIAbility::UIAbility(
 	ID2D1SolidColorBrush* abilityToggledBrush,
 	const BYTE* vertexShaderBuffer,
 	const int vertexShaderSize,
-	const float worldPosX,
-	const float worldPosY,
 	const float clientWidth,
 	const float clientHeight,
 	const XMMATRIX projectionTransform,
@@ -127,28 +125,25 @@ const bool UIAbility::HandleEvent(const Event* const event)
 					isHovered = false;
 
 				// if the button is pressed, and the mouse starts moving, let's move the UIAbility
-				if (isPressed)
+				if (isPressed && !isDragging && !abilityCopy)
 				{
-					if (!isDragging && !abilityCopy)
+					const auto dragBehavior = GetParent()->GetUIAbilityDragBehavior();
+
+					if (dragBehavior == "COPY")
 					{
-						const auto dragBehavior = GetParent()->GetUIAbilityDragBehavior();
-
-						if (dragBehavior == "COPY")
-						{
-							abilityCopy = new UIAbility(uiComponents, worldPos, uiLayer, 2, eventHandler, abilityId, toggled, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, worldPos.x, worldPos.y, clientWidth, clientHeight, projectionTransform, true, mousePosX, mousePosY);
-							abilityCopy->isVisible = true;
-							abilityCopy->isToggled = isToggled;
-						}
-						else if (dragBehavior == "MOVE")
-						{
-							isDragging = true;
-							lastDragX = mousePosX;
-							lastDragY = mousePosY;
-						}
-
-						std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(clientHeight, mousePosX, mousePosY));
-						eventHandler.QueueEvent(e);
+						abilityCopy = new UIAbility(uiComponents, worldPos, uiLayer, 2, eventHandler, abilityId, toggled, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, true, mousePosX, mousePosY);
+						abilityCopy->isVisible = true;
+						abilityCopy->isToggled = isToggled;
 					}
+					else if (dragBehavior == "MOVE")
+					{
+						isDragging = true;
+						lastDragX = mousePosX;
+						lastDragY = mousePosY;
+					}
+
+					std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(clientHeight, mousePosX, mousePosY));
+					eventHandler.QueueEvent(e);
 				}
 
 				if (isDragging)
@@ -169,13 +164,10 @@ const bool UIAbility::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
-			if (isVisible)
+			if (isVisible && isHovered && !isDragging)
 			{
-				if (isHovered && !isDragging)
-				{
-					isPressed = true;
-					return true;
-				}
+				isPressed = true;
+				return true;
 			}
 
 			break;

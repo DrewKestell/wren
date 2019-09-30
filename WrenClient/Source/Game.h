@@ -14,6 +14,7 @@
 #include "ObjectManager.h"
 #include "Components/RenderComponentManager.h"
 #include "Components/StatsComponentManager.h"
+#include "Components/InventoryComponentManager.h"
 #include "Components/GameMapRenderComponent.h"
 #include "Sprite.h"
 #include "Models/Npc.h"
@@ -43,6 +44,7 @@ public:
 		ObjectManager& objectManager,
 		RenderComponentManager& renderComponentManager,
 		StatsComponentManager& statsComponentManager,
+		InventoryComponentManager& inventoryComponentManager,
 		ClientRepository& clientRepository,
 		CommonRepository& commonRepository,
 		ClientSocketManager& socketManager);
@@ -69,6 +71,7 @@ private:
 	ObjectManager& objectManager;
 	RenderComponentManager& renderComponentManager;
 	StatsComponentManager& statsComponentManager;
+	InventoryComponentManager& inventoryComponentManager;
 	EventHandler& eventHandler;
 	ClientRepository& clientRepository;
 	CommonRepository& commonRepository;

@@ -25,10 +25,11 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	static ObjectManager objectManager;
 	static RenderComponentManager renderComponentManager{ eventHandler, objectManager };
 	static StatsComponentManager statsComponentManager{ eventHandler, objectManager };
+	static InventoryComponentManager inventoryComponentManager{ eventHandler, objectManager };
 	static ClientRepository clientRepository{ "..\\..\\Databases\\WrenClient.db" };
 	static CommonRepository commonRepository{ "..\\..\\Databases\\WrenCommon.db" };
 	static ClientSocketManager socketManager{ eventHandler };
-	static auto game = std::make_unique<Game>(eventHandler, objectManager, renderComponentManager, statsComponentManager, clientRepository, commonRepository, socketManager);
+	static auto game = std::make_unique<Game>(eventHandler, objectManager, renderComponentManager, statsComponentManager, inventoryComponentManager, clientRepository, commonRepository, socketManager);
 	socketManager.SetGamePointer(game.get()); // this is a hack to get ping/pong working. refactor.
 
 	// Register class

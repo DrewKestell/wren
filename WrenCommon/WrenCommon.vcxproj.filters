@@ -55,6 +55,12 @@
     <ClCompile Include="Source\ThirdParty\sqlite3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Components\InventoryComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Components\InventoryComponentManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -116,6 +122,8 @@
     <ClInclude Include="Source\SocketManager.h" />
     <ClInclude Include="Include\Span.h" />
     <ClInclude Include="Source\EventHandling\Events\NpcDeathEvent.h" />
+    <ClInclude Include="Source\Components\InventoryComponent.h" />
+    <ClInclude Include="Source\Components\InventoryComponentManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Wren.ruleset" />

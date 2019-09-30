@@ -36,7 +36,7 @@ int main()
 	static PlayerComponentManager playerComponentManager{ eventHandler, objectManager, gameMap, componentOrchestrator, socketManager };
 	static SkillComponentManager skillComponentManager{ eventHandler, objectManager, componentOrchestrator, socketManager };
 	static StatsComponentManager statsComponentManager{ eventHandler, objectManager };
-	static InventoryComponentManager inventoryComponentManager{ eventHandler, objectManager, componentOrchestrator, socketManager };
+	static InventoryComponentManager inventoryComponentManager{ eventHandler, objectManager };
 	componentOrchestrator.InitializeComponentManagers(&aiComponentManager, &playerComponentManager, &skillComponentManager, &statsComponentManager, &inventoryComponentManager);
 	socketManager.Initialize();
 

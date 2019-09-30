@@ -25,6 +25,8 @@ public:
 	void ClearChildren();
 	void SetLocalPosition(const XMFLOAT2 pos) { this->localPosition = pos; }
 	virtual const std::string GetUIAbilityDragBehavior() const { return "NONE"; }
+	virtual const std::string GetUIItemDragBehavior() const { return "NONE"; }
+	virtual const std::string GetUIItemRightClickBehavior() const { return "NONE"; }
 	virtual void Draw() = 0;
 	~UIComponent();
 };

@@ -1,12 +1,11 @@
 #include "stdafx.h"
 #include "InventoryComponentManager.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"
+#include "EventHandling/Events/NpcDeathEvent.h"
 
-InventoryComponentManager::InventoryComponentManager(EventHandler& eventHandler, ObjectManager& objectManager, ServerComponentOrchestrator& componentOrchestrator, ServerSocketManager& socketManager)
+InventoryComponentManager::InventoryComponentManager(EventHandler& eventHandler, ObjectManager& objectManager)
 	: eventHandler{ eventHandler },
-	  objectManager{ objectManager },
-	  componentOrchestrator{ componentOrchestrator },
-	  socketManager{ socketManager }
+	  objectManager{ objectManager }
 {
 	eventHandler.Subscribe(*this);
 }
@@ -18,7 +17,14 @@ InventoryComponent& InventoryComponentManager::CreateInventoryComponent(const in
 
 	inventoryComponents[inventoryComponentIndex].Initialize(inventoryComponentIndex, gameObjectId);
 	idIndexMap[inventoryComponentIndex] = inventoryComponentIndex;
-	return inventoryComponents[inventoryComponentIndex++];
+
+	InventoryComponent& inventoryComponent = inventoryComponents[inventoryComponentIndex++];
+
+	// initialize component
+	for (auto i = 0; i < inventoryComponent.inventorySize; i++)
+		inventoryComponent.itemIds[i] = -1;
+
+	return inventoryComponent;
 }
 
 void InventoryComponentManager::DeleteInventoryComponent(const int inventoryComponentId)
@@ -47,8 +53,22 @@ const bool InventoryComponentManager::HandleEvent(const Event* const event)
 		case EventType::DeleteGameObject:
 		{
 			const auto derivedEvent = (DeleteGameObjectEvent*)event;
+
 			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
 			DeleteInventoryComponent(gameObject.inventoryComponentId);
+
+			break;
+		}
+		case EventType::NpcDeath:
+		{
+			const auto derivedEvent = (NpcDeathEvent*)event;
+
+			const auto lootItemIds = derivedEvent->itemIds;
+			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
+			InventoryComponent& inventoryComponent = GetInventoryComponentById(gameObject.inventoryComponentId);
+			for (auto i = 0; i < lootItemIds.size(); i++)
+				inventoryComponent.itemIds[i] = lootItemIds.at(i);
+
 			break;
 		}
 	}

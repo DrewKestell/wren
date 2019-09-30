@@ -29,6 +29,7 @@ Game::Game(
 	ObjectManager& objectManager,
 	RenderComponentManager& renderComponentManager,
 	StatsComponentManager& statsComponentManager,
+	InventoryComponentManager& inventoryComponentManager,
 	ClientRepository& clientRepository,
 	CommonRepository& commonRepository,
 	ClientSocketManager& socketManager)
@@ -36,6 +37,7 @@ Game::Game(
 	  objectManager{ objectManager },
 	  renderComponentManager{ renderComponentManager },
 	  statsComponentManager{ statsComponentManager },
+	  inventoryComponentManager{ inventoryComponentManager },
 	  clientRepository{ clientRepository },
 	  commonRepository{ commonRepository },
 	  socketManager{ socketManager }
@@ -212,6 +214,7 @@ void Game::Render(const float updateTimer)
 	// this stuff has to be drawn after EndDraw is called to make sure it's on top of the d2d stuff
 	abilitiesContainer->DrawSprites();
 	hotbar->DrawSprites();
+	lootContainer->DrawSprites();
 
 	d3dContext->ResolveSubresource(deviceResources->GetBackBufferRenderTarget(), 0, deviceResources->GetOffscreenRenderTarget(), 0, DXGI_FORMAT_B8G8R8A8_UNORM);
 
@@ -809,7 +812,7 @@ void Game::InitializePanels()
 	lootPanelHeader->SetText("Loot");
 	lootPanel->AddChildComponent(*lootPanelHeader);
 
-	lootContainer = std::make_unique<UILootContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, blackBrush.Get(), d2dDeviceContext, d2dFactory);
+	lootContainer = std::make_unique<UILootContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, eventHandler, statsComponentManager, inventoryComponentManager, items, textures, blackBrush.Get(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
 	lootPanel->AddChildComponent(*lootContainer);
 }
 
@@ -895,7 +898,8 @@ void Game::InitializeTextures()
 		L"../../WrenClient/Textures/texture03.dds",     // 4
 		L"../../WrenClient/Textures/abilityicon02.dds", // 5
 		L"../../WrenClient/Textures/abilityicon03.dds", // 6
-		L"../../WrenClient/Textures/jade.dds"           // 7
+		L"../../WrenClient/Textures/jade.dds",          // 7
+		L"../../WrenClient/Textures/jade_gray.dds"      // 8
 	};
 
 	// clear calls the destructor of its elements, and ComPtr's destructor handles calling Release()
@@ -1117,10 +1121,16 @@ void Game::InitializeEventHandlers()
 		GameObject& player = objectManager.CreateGameObject(derivedEvent->position, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, PLAYER_SPEED, GameObjectType::Player, derivedEvent->name, derivedEvent->accountId);
 		const auto playerId = player.GetId();
 		this->player = &player;
+
 		RenderComponent& sphereRenderComponent = renderComponentManager.CreateRenderComponent(playerId, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 		player.renderComponentId = sphereRenderComponent.GetId();
+		
 		StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(playerId, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
 		player.statsComponentId = statsComponent.GetId();
+
+		InventoryComponent& inventoryComponent = inventoryComponentManager.CreateInventoryComponent(playerId);
+		player.inventoryComponentId = inventoryComponent.GetId();
+
 		gameMap.SetTileOccupied(player.localPosition, true);
 
 		auto d2dFactory = deviceResources->GetD2DFactory();
@@ -1182,8 +1192,12 @@ void Game::InitializeEventHandlers()
 			const RenderComponent& sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes[modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[textureId].Get());
 			obj.renderComponentId = sphereRenderComponent.GetId();
 
-			const StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.GetId(), agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
+			const StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObjectId, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
 			obj.statsComponentId = statsComponent.GetId();
+
+			const InventoryComponent& inventoryComponent = inventoryComponentManager.CreateInventoryComponent(gameObjectId);
+			obj.inventoryComponentId = inventoryComponent.GetId();
+
 			gameMap.SetTileOccupied(obj.localPosition, true);
 		}
 		else
@@ -1241,8 +1255,11 @@ void Game::InitializeEventHandlers()
 			const RenderComponent& sphereRenderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes.at(modelId).get(), vertexShader.Get(), pixelShader.Get(), textures.at(textureId).Get());
 			obj.renderComponentId = sphereRenderComponent.GetId();
 
-			const StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(obj.GetId(), agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
+			const StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObjectId, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
 			obj.statsComponentId = statsComponent.GetId();
+
+			const InventoryComponent& inventoryComponent = inventoryComponentManager.CreateInventoryComponent(gameObjectId);
+			obj.inventoryComponentId = inventoryComponent.GetId();
 		}
 		else
 		{
@@ -1403,10 +1420,12 @@ void Game::InitializeEventHandlers()
 	{
 		const auto derivedEvent = (DoubleLeftMouseDownEvent*)event;
 		
-		if (derivedEvent->clickedObject)
+		if (derivedEvent->clickedObject && !lootPanel->isVisible)
 		{
-			// TODO: set up loot
-			if (!lootPanel->isVisible)
+			const auto clickedObject = derivedEvent->clickedObject;
+			const auto statsComponent = statsComponentManager.GetStatsComponentById(clickedObject->statsComponentId);
+
+			if (!statsComponent.alive)
 				lootPanel->ToggleVisibility();
 		}
 	};

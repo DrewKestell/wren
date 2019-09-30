@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "AIComponentManager.h"
 #include <Components/StatsComponentManager.h>
-#include "InventoryComponentManager.h"
+#include <Components/InventoryComponentManager.h>
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
 #include "EventHandling/Events/DeleteGameObjectEvent.h"

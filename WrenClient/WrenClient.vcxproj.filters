@@ -33,6 +33,7 @@
     <ClCompile Include="Source\ClientSocketManager.cpp" />
     <ClCompile Include="Source\UI\UILootContainer.cpp" />
     <ClCompile Include="Source\Models\Item.cpp" />
+    <ClCompile Include="Source\UI\UIItem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
@@ -172,6 +173,8 @@
     <ClInclude Include="Source\UI\UILootContainer.h" />
     <ClInclude Include="Source\Models\Item.h" />
     <ClInclude Include="Source\Events\DoubleLeftMouseDownEvent.h" />
+    <ClInclude Include="Source\UI\UIItem.h" />
+    <ClInclude Include="Source\Events\UIItemDroppedEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

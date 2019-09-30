@@ -2,19 +2,50 @@
 #include "UILootContainer.h"
 #include "UIPanel.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "../Events/DoubleLeftMouseDownEvent.h"
 
 UILootContainer::UILootContainer(
 	std::vector<UIComponent*>& uiComponents,
 	const XMFLOAT2 position,
 	const Layer uiLayer,
 	const unsigned int zIndex,
+	EventHandler& eventHandler,
+	StatsComponentManager& statsComponentManager,
+	InventoryComponentManager& inventoryComponentManager,
+	std::vector<std::unique_ptr<Item>>& allItems,
+	std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures,
 	ID2D1SolidColorBrush* brush,
 	ID2D1DeviceContext1* d2dDeviceContext,
-	ID2D1Factory2* d2dFactory)
+	ID2D1Factory2* d2dFactory,
+	ID3D11Device* d3dDevice,
+	ID3D11DeviceContext* d3dDeviceContext,
+	ID2D1SolidColorBrush* highlightBrush,
+	ID3D11VertexShader* vertexShader,
+	ID3D11PixelShader* pixelShader,
+	const BYTE* vertexShaderBuffer,
+	const int vertexShaderSize,
+	const XMMATRIX projectionTransform,
+	const float clientWidth,
+	const float clientHeight)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	  eventHandler{ eventHandler },
+	  statsComponentManager{ statsComponentManager },
+	  inventoryComponentManager{ inventoryComponentManager },
+	  allItems{ allItems },
+	  allTextures{ allTextures },
 	  brush{ brush },
 	  d2dDeviceContext{ d2dDeviceContext },
-	  d2dFactory{ d2dFactory }
+	  d2dFactory{ d2dFactory },
+	  d3dDevice{ d3dDevice },
+	  d3dDeviceContext{ d3dDeviceContext },
+	  highlightBrush{ highlightBrush },
+	  vertexShader{ vertexShader },
+	  pixelShader{ pixelShader },
+	  vertexShaderBuffer{ vertexShaderBuffer },
+	  vertexShaderSize{ vertexShaderSize },
+	  projectionTransform{ projectionTransform },
+	  clientWidth{ clientWidth },
+	  clientHeight{ clientHeight }
 {
 }
 
@@ -31,6 +62,16 @@ void UILootContainer::Draw()
 	}
 }
 
+void UILootContainer::DrawSprites()
+{
+	for (auto i = 0; i < uiItems.size(); i++)
+	{
+		const auto uiItem = uiItems.at(i).get();
+		if (uiItem)
+			uiItem->DrawSprite();
+	}
+}
+
 const bool UILootContainer::HandleEvent(const Event* const event)
 {
 	const auto type = event->type;
@@ -44,6 +85,47 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 				isVisible = true;
 			else
 				isVisible = false;
+
+			break;
+		}
+		case EventType::DoubleLeftMouseDown:
+		{
+			const auto derivedEvent = (DoubleLeftMouseDownEvent*)event;
+
+			if (derivedEvent->clickedObject && !isVisible)
+			{
+				const auto clickedObject = derivedEvent->clickedObject;
+				const auto clickedObjectId = clickedObject->GetId();
+				const auto statsComponent = statsComponentManager.GetStatsComponentById(clickedObject->statsComponentId);
+				
+				if (!statsComponent.alive && clickedObjectId != currentGameObjectId)
+				{
+					currentGameObjectId = clickedObjectId;
+					
+					// reset state
+					items.clear();
+					uiItems.clear();
+
+					// initialize UIItems
+					const auto inventoryComponent = inventoryComponentManager.GetInventoryComponentById(clickedObject->inventoryComponentId);
+					for (auto i = 0; i < inventoryComponent.inventorySize; i++)
+					{
+						const auto itemId = inventoryComponent.itemIds[i];
+						if (itemId >= 0)
+						{
+							const auto item = allItems.at(itemId - 1).get();
+							items.push_back(item);
+
+							const auto xOffset = 5.0f + ((i % 3) * 45.0f);
+							const auto yOffset = 25.0f + ((i / 3) * 45.0f);
+							const auto texture = allTextures.at(item->GetSpriteId()).Get();
+							const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
+							uiItems.push_back(std::make_unique<UIItem>(uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3, eventHandler, itemId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform));
+							this->AddChildComponent(*uiItems.at(i).get());
+						}
+					}
+				}
+			}
 
 			break;
 		}
@@ -83,4 +165,9 @@ void UILootContainer::ReinitializeGeometry()
 		yOffset += 45.0f;
 		xOffset = 5.0f;
 	}
+}
+
+const std::string UILootContainer::GetUIItemRightClickBehavior() const
+{
+	return "LOOT";
 }
