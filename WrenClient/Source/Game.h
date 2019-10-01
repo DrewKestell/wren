@@ -33,6 +33,7 @@
 #include "UI/UICharacterHUD.h"
 #include "UI/UITargetHUD.h"
 #include "UI/UITextWindow.h"
+#include "UI/UIInventory.h"
 #include "EventHandling/EventHandler.h"
 #include "ClientSocketManager.h"
 
@@ -243,6 +244,7 @@ private:
 	std::unique_ptr<UILabel> skillsPanelHeader;
 	std::unique_ptr<UILabel> abilitiesPanelHeader;
 	std::unique_ptr<UILabel> lootPanelHeader;
+	std::unique_ptr<UILabel> inventoryPanelHeader;
 
 	// Panels
 	std::unique_ptr<UIPanel> gameSettingsPanel;
@@ -251,9 +253,11 @@ private:
 	std::unique_ptr<UIPanel> abilitiesPanel;
 	std::unique_ptr<UIPanel> lootPanel;
 	std::unique_ptr<UIPanel> skillsPanel;
+	std::unique_ptr<UIPanel> inventoryPanel;
 
 	// Containers
 	std::unique_ptr<UIAbilitiesContainer> abilitiesContainer;
 	std::unique_ptr<UILootContainer> lootContainer;
 	std::unique_ptr<UISkillsContainer> skillsContainer;
+	std::unique_ptr<UIInventory> inventory;
 };

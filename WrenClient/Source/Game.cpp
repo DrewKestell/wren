@@ -814,6 +814,18 @@ void Game::InitializePanels()
 
 	lootContainer = std::make_unique<UILootContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, eventHandler, statsComponentManager, inventoryComponentManager, items, textures, blackBrush.Get(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
 	lootPanel->AddChildComponent(*lootContainer);
+
+	// Inventory
+	const auto inventoryPanelX{ 500.0f };
+	const auto inventoryPanelY{ 350.0f };
+	inventoryPanel = std::make_unique<UIPanel>(uiComponents, XMFLOAT2{ lootPanelX, lootPanelY }, InGame, 1, eventHandler, true, 185.0f, 185.0f, VK_F5, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get(), d2dDeviceContext, d2dFactory);
+
+	inventoryPanelHeader = std::make_unique<UILabel>(uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 3, 185.0f, blackBrush.Get(), textFormatHeaders.Get(), d2dDeviceContext, writeFactory, d2dFactory);
+	inventoryPanelHeader->SetText("Inventory");
+	inventoryPanel->AddChildComponent(*inventoryPanelHeader);
+
+	inventory = std::make_unique<UIInventory>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, eventHandler, items, textures, blackBrush.Get(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
+	inventoryPanel->AddChildComponent(*inventory);
 }
 
 UICharacterListing* Game::GetCurrentlySelectedCharacterListing()

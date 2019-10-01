@@ -57,6 +57,7 @@
     <ClCompile Include="Source\UI\UIHotbar.cpp" />
     <ClCompile Include="Source\UI\UIInputGroup.cpp" />
     <ClCompile Include="Source\UI\UIComponent.cpp" />
+    <ClCompile Include="Source\UI\UIInventory.cpp" />
     <ClCompile Include="Source\UI\UIItem.cpp" />
     <ClCompile Include="Source\UI\UILootContainer.cpp" />
     <ClCompile Include="Source\UI\UIPanel.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="Source\UI\UIHotbar.h" />
     <ClInclude Include="Source\UI\UIInputGroup.h" />
     <ClInclude Include="Source\UI\UIComponent.h" />
+    <ClInclude Include="Source\UI\UIInventory.h" />
     <ClInclude Include="Source\UI\UIItem.h" />
     <ClInclude Include="Source\UI\UILootContainer.h" />
     <ClInclude Include="Source\UI\UIPanel.h" />

@@ -34,6 +34,7 @@
     <ClCompile Include="Source\UI\UILootContainer.cpp" />
     <ClCompile Include="Source\Models\Item.cpp" />
     <ClCompile Include="Source\UI\UIItem.cpp" />
+    <ClCompile Include="Source\UI\UIInventory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
@@ -175,6 +176,7 @@
     <ClInclude Include="Source\Events\DoubleLeftMouseDownEvent.h" />
     <ClInclude Include="Source\UI\UIItem.h" />
     <ClInclude Include="Source\Events\UIItemDroppedEvent.h" />
+    <ClInclude Include="Source\UI\UIInventory.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />
