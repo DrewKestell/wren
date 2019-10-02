@@ -7,11 +7,12 @@
 #include <Components/StatsComponentManager.h>
 #include <Components/InventoryComponentManager.h>
 
-constexpr auto LOOT_CONTAINER_SIZE = 12;
+constexpr int LOOT_CONTAINER_SIZE = 12;
 
 class UILootContainer : public UIComponent
 {
 	EventHandler& eventHandler;
+	ClientSocketManager& socketManager;
 	StatsComponentManager& statsComponentManager;
 	InventoryComponentManager& inventoryComponentManager;
 	std::vector<std::unique_ptr<Item>>& allItems;
@@ -32,6 +33,8 @@ class UILootContainer : public UIComponent
 	const int vertexShaderSize;
 
 	void ReinitializeGeometry();
+
+	friend class UIItem;
 public:
 	float clientWidth;
 	float clientHeight;
@@ -43,6 +46,7 @@ public:
 		const Layer uiLayer,
 		const unsigned int zIndex,
 		EventHandler& eventHandler,
+		ClientSocketManager& socketManager,
 		StatsComponentManager& statsComponentManager,
 		InventoryComponentManager& inventoryComponentManager,
 		std::vector<std::unique_ptr<Item>>& allItems,

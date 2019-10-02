@@ -10,6 +10,7 @@ UILootContainer::UILootContainer(
 	const Layer uiLayer,
 	const unsigned int zIndex,
 	EventHandler& eventHandler,
+	ClientSocketManager& socketManager,
 	StatsComponentManager& statsComponentManager,
 	InventoryComponentManager& inventoryComponentManager,
 	std::vector<std::unique_ptr<Item>>& allItems,
@@ -29,6 +30,7 @@ UILootContainer::UILootContainer(
 	const float clientHeight)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
 	  eventHandler{ eventHandler },
+	  socketManager{ socketManager },
 	  statsComponentManager{ statsComponentManager },
 	  inventoryComponentManager{ inventoryComponentManager },
 	  allItems{ allItems },
@@ -58,17 +60,6 @@ void UILootContainer::Draw()
 
 	for (auto i = 0; i < 12; i++)
 		d2dDeviceContext->DrawGeometry(geometry[i].Get(), brush, 2.0f);
-
-	d2dDeviceContext->EndDraw();
-
-	for (auto i = 0; i < uiItems.size(); i++)
-	{
-		const auto uiItem = uiItems.at(i).get();
-		if (uiItem)
-			uiItem->DrawSprite();
-	}
-
-	d2dDeviceContext->BeginDraw();
 }
 
 const bool UILootContainer::HandleEvent(const Event* const event)
@@ -119,7 +110,7 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 							const auto yOffset = 25.0f + ((i / 3) * 45.0f);
 							const auto texture = allTextures.at(item->GetSpriteId()).Get();
 							const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
-							uiItems.push_back(std::make_unique<UIItem>(uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3, eventHandler, itemId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform));
+							uiItems.push_back(std::make_unique<UIItem>(uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3, eventHandler, socketManager, itemId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform));
 							this->AddChildComponent(*uiItems.at(i).get());
 						}
 					}

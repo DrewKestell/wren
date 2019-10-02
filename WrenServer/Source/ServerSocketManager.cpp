@@ -623,4 +623,16 @@ void ServerSocketManager::InitializeMessageHandlers()
 		PlayerComponent& comp = GetPlayerComponent(accountId);
 		comp.rightMouseDownDir = dir;
 	};
+
+	messageHandlers[OpCode::LootItem] = [this](const std::vector<std::string>& args)
+	{
+		const auto accountId = std::stoi(args.at(0));
+		const std::string& token = args.at(1);
+		const auto gameObjectId = std::stoi(args.at(2));
+		const auto slot = std::stoi(args.at(3));
+
+		ValidateToken(accountId, token);
+
+		// check if item exists, then move it from target inventory to player inventory, then send message to client
+	};
 }

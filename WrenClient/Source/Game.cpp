@@ -807,7 +807,7 @@ void Game::InitializePanels()
 	lootPanelHeader->SetText("Loot");
 	lootPanel->AddChildComponent(*lootPanelHeader);
 
-	lootContainer = std::make_unique<UILootContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, eventHandler, statsComponentManager, inventoryComponentManager, items, textures, blackBrush.Get(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
+	lootContainer = std::make_unique<UILootContainer>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, eventHandler, socketManager, statsComponentManager, inventoryComponentManager, items, textures, blackBrush.Get(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
 	lootPanel->AddChildComponent(*lootContainer);
 
 	// Inventory

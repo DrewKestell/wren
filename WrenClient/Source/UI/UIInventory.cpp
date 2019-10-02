@@ -52,19 +52,7 @@ void UIInventory::Draw()
 	ReinitializeGeometry();
 
 	for (auto i = 0; i < INVENTORY_SIZE; i++)
-	{
 		d2dDeviceContext->DrawGeometry(geometry[i].Get(), brush, 2.0f);
-	}
-}
-
-void UIInventory::DrawSprites()
-{
-	for (auto i = 0; i < uiItems.size(); i++)
-	{
-		const auto uiItem = uiItems.at(i).get();
-		if (uiItem)
-			uiItem->DrawSprite();
-	}
 }
 
 const bool UIInventory::HandleEvent(const Event* const event)

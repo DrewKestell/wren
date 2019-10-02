@@ -3,10 +3,12 @@
 #include "UIComponent.h"
 #include "../Sprite.h"
 #include "EventHandling/EventHandler.h"
+#include "../ClientSocketManager.h"
 
 class UIItem : public UIComponent
 {
 	EventHandler& eventHandler;
+	ClientSocketManager& socketManager;
 	const float SPRITE_SIZE{ 36.0f };
 	bool isHovered{ false };
 	bool isPressed{ false };
@@ -39,6 +41,7 @@ public:
 		const Layer uiLayer,
 		const unsigned int zIndex,
 		EventHandler& eventHandler,
+		ClientSocketManager& socketManager,
 		const int itemId,
 		ID2D1DeviceContext1* d2dDeviceContext,
 		ID2D1Factory2* d2dFactory,
@@ -60,5 +63,4 @@ public:
 
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
-	void DrawSprite();
 };

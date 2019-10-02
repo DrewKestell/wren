@@ -55,7 +55,6 @@ public:
 		const float clientHeight);
 
 	void Draw() override;
-	void DrawSprites();
 	const bool HandleEvent(const Event* const event) override;
 	const std::string GetUIItemDragBehavior() const override;
 };
