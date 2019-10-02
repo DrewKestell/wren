@@ -90,6 +90,12 @@ void UIAbility::Draw()
 	if (isToggled)
 		d2dDeviceContext->DrawGeometry(highlightGeometry.Get(), abilityToggledBrush, 4.0f);
 
+	d2dDeviceContext->EndDraw();
+
+	sprite->Draw(d3dDeviceContext, projectionTransform);
+
+	d2dDeviceContext->BeginDraw();
+
 	if (abilityCopy)
 		abilityCopy->Draw();
 }
@@ -227,13 +233,4 @@ const bool UIAbility::HandleEvent(const Event* const event)
 	}
 
 	return false;
-}
-
-void UIAbility::DrawSprite()
-{
-	if (!isVisible) return;
-
-	sprite->Draw(d3dDeviceContext, projectionTransform);
-	if (abilityCopy)
-		abilityCopy->DrawSprite();
 }

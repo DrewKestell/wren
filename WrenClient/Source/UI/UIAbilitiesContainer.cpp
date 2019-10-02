@@ -132,14 +132,6 @@ void UIAbilitiesContainer::AddAbility(Ability* ability, ID3D11ShaderResourceView
 	this->AddChildComponent(*uiAbility);
 }
 
-void UIAbilitiesContainer::DrawSprites()
-{
-	for (auto i = 0; i < uiAbilities.size(); i++)
-	{
-		uiAbilities.at(i)->DrawSprite();
-	}
-}
-
 const std::string UIAbilitiesContainer::GetUIAbilityDragBehavior() const
 {
 	return "COPY";

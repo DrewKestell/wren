@@ -211,11 +211,6 @@ void Game::Render(const float updateTimer)
 
 	d2dContext->EndDraw();
 
-	// this stuff has to be drawn after EndDraw is called to make sure it's on top of the d2d stuff
-	abilitiesContainer->DrawSprites();
-	hotbar->DrawSprites();
-	lootContainer->DrawSprites();
-
 	d3dContext->ResolveSubresource(deviceResources->GetBackBufferRenderTarget(), 0, deviceResources->GetOffscreenRenderTarget(), 0, DXGI_FORMAT_B8G8R8A8_UNORM);
 
 	// Show the new frame.

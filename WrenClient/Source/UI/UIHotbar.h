@@ -30,5 +30,4 @@ public:
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	const std::string GetUIAbilityDragBehavior() const override;
-	void DrawSprites();
 };

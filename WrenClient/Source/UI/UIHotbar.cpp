@@ -116,15 +116,6 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 	return false;
 }
 
-void UIHotbar::DrawSprites()
-{
-	for (auto i = 0; i < 10; i++)
-	{
-		if (uiAbilities[i])
-			uiAbilities[i]->DrawSprite();
-	}
-}
-
 const std::string UIHotbar::GetUIAbilityDragBehavior() const
 {
 	return "MOVE";

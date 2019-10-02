@@ -67,5 +67,4 @@ public:
 		const float mousePosY = 0.0f);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
-	void DrawSprite();
 };

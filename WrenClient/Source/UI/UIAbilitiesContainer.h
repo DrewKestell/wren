@@ -67,5 +67,4 @@ public:
 	void ClearAbilities();
 	void AddAbility(Ability* ability, ID3D11ShaderResourceView* texture);
 	const std::string GetUIAbilityDragBehavior() const override;
-	void DrawSprites();
 };

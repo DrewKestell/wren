@@ -57,19 +57,18 @@ void UILootContainer::Draw()
 	ReinitializeGeometry();
 
 	for (auto i = 0; i < 12; i++)
-	{
 		d2dDeviceContext->DrawGeometry(geometry[i].Get(), brush, 2.0f);
-	}
-}
 
-void UILootContainer::DrawSprites()
-{
+	d2dDeviceContext->EndDraw();
+
 	for (auto i = 0; i < uiItems.size(); i++)
 	{
 		const auto uiItem = uiItems.at(i).get();
 		if (uiItem)
 			uiItem->DrawSprite();
 	}
+
+	d2dDeviceContext->BeginDraw();
 }
 
 const bool UILootContainer::HandleEvent(const Event* const event)
