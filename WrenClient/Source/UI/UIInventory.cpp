@@ -51,7 +51,7 @@ void UIInventory::Draw()
 	// FIXME: this should be optimized. see comment below in HandleEvent.
 	ReinitializeGeometry();
 
-	for (auto i = 0; i < 12; i++)
+	for (auto i = 0; i < INVENTORY_SIZE; i++)
 	{
 		d2dDeviceContext->DrawGeometry(geometry[i].Get(), brush, 2.0f);
 	}
@@ -111,9 +111,9 @@ void UIInventory::ReinitializeGeometry()
 	auto yOffset = 25.0f;
 	for (auto i = 0; i < 4; i++)
 	{
-		for (auto j = 0; j < 3; j++)
+		for (auto j = 0; j < 4; j++)
 		{
-			d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + xOffset, position.y + yOffset, position.x + xOffset + width, position.y + yOffset + width), geometry[j + (3 * i)].ReleaseAndGetAddressOf());
+			d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + xOffset, position.y + yOffset, position.x + xOffset + width, position.y + yOffset + width), geometry[j + (4 * i)].ReleaseAndGetAddressOf());
 			xOffset += 45.0f;
 		}
 
