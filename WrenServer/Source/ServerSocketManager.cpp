@@ -445,6 +445,22 @@ void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, cons
 	SendPacket(playerComponent.GetFromSockAddr(), OpCode::ActivateAbilitySuccess, args);
 }
 
+void ServerSocketManager::LootItem(const int gameObjectId, const int slot)
+{
+	// check if item exists, then move it from target inventory to player inventory, then send message to client
+	const GameObject& gameObject = objectManager.GetGameObjectById(gameObjectId);
+	const auto inventoryComponentManager = componentOrchestrator.GetInventoryComponentManager();
+	const InventoryComponent& inventoryComponent = inventoryComponentManager->GetInventoryComponentById(gameObject.inventoryComponentId);
+	const auto itemId = inventoryComponent.itemIds[slot]; // TODO: validate array bounds passed from client
+
+	if (itemId >= 0)
+	{
+		// TODO: confirm player has an empty slot in their inventory, otherwise return an error message
+		std::vector<std::string> args{ args.at(2), args.at(3) };
+		SendPacketToAllClients(OpCode::LootItemSuccess, args);
+	}
+}
+
 void ServerSocketManager::InitializeMessageHandlers()
 {
 	messageHandlers[OpCode::Connect] = [this](const std::vector<std::string>& args)
@@ -633,6 +649,6 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 		ValidateToken(accountId, token);
 
-		// check if item exists, then move it from target inventory to player inventory, then send message to client
+		LootItem(gameObjectId, slot);
 	};
 }
