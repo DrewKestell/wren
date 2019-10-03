@@ -57,7 +57,7 @@ void ServerSocketManager::Initialize()
 
 	// initialize test dummy
 	// we need to move ListNpcs to CommonRepository
-	const std::string dummyName{ "Dummy" };
+	const std::string dummyName{ "Dummy1" };
 	GameObject& dummyGameObject = objectManager.CreateGameObject(XMFLOAT3{ 30.0f, 0.0f, 30.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 30.0f, GameObjectType::Npc, dummyName, 101, false, 2, 4);
 	const auto dummyId = dummyGameObject.GetId();
 
@@ -73,10 +73,24 @@ void ServerSocketManager::Initialize()
 	InventoryComponent& dummyInventoryComponent = inventoryComponentManager->CreateInventoryComponent(dummyId);
 	dummyGameObject.inventoryComponentId = dummyInventoryComponent.GetId();
 	dummyInventoryComponent.AddItem(1);
-	dummyInventoryComponent.AddItem(1);
-	dummyInventoryComponent.AddItem(1);
-
+	dummyInventoryComponent.AddItem(2);
 	gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
+
+	const std::string dummyName2{ "Dummy2" };
+	GameObject& dummyGameObject2 = objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 30.0f, GameObjectType::Npc, dummyName2, 102, false, 2, 4);
+	const auto dummyId2 = dummyGameObject2.GetId();
+
+	const AIComponent& dummyAIComponent2 = aiComponentManager->CreateAIComponent(dummyId2);
+	dummyGameObject2.aiComponentId = dummyAIComponent2.GetId();
+
+	const StatsComponent& dummyStatsComponent2 = statsComponentManager->CreateStatsComponent(dummyId2, 10, 10, 10, 10, 10, 10, 10, 100, 100, 100, 100, 100, 100);
+	dummyGameObject2.statsComponentId = dummyStatsComponent2.GetId();
+
+	InventoryComponent& dummyInventoryComponent2 = inventoryComponentManager->CreateInventoryComponent(dummyId2);
+	dummyGameObject2.inventoryComponentId = dummyInventoryComponent2.GetId();
+	dummyInventoryComponent2.AddItem(2);
+	dummyInventoryComponent2.AddItem(3);
+	gameMap.SetTileOccupied(dummyGameObject2.localPosition, true);
 }
 
 void ServerSocketManager::SendPacket(const sockaddr_in& to, const OpCode opCode, const std::vector<std::string>& args)

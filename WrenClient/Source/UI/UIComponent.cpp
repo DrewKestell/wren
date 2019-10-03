@@ -33,6 +33,7 @@ UIComponent::~UIComponent()
 	uiComponents.erase(std::find(uiComponents.begin(), uiComponents.end(), this));
 }
 
+// TODO: this is broken because we have unique_ptrs and this blows up when we try to delete them
 void UIComponent::ClearChildren()
 {
 	for (auto i = 0; i < children.size(); i++)

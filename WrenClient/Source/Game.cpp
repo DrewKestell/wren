@@ -906,7 +906,11 @@ void Game::InitializeTextures()
 		L"../../WrenClient/Textures/abilityicon02.dds", // 5
 		L"../../WrenClient/Textures/abilityicon03.dds", // 6
 		L"../../WrenClient/Textures/jade.dds",          // 7
-		L"../../WrenClient/Textures/jade_gray.dds"      // 8
+		L"../../WrenClient/Textures/jade_gray.dds",     // 8
+		L"../../WrenClient/Textures/ruby.dds",          // 9
+		L"../../WrenClient/Textures/ruby_gray.dds",     // 10
+		L"../../WrenClient/Textures/sapphire.dds",      // 11
+		L"../../WrenClient/Textures/sapphire_gray.dds", // 12
 	};
 
 	// clear calls the destructor of its elements, and ComPtr's destructor handles calling Release()
