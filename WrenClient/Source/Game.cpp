@@ -333,7 +333,7 @@ void Game::CreateWindowSizeDependentResources()
 	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0, eventHandler, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
 
 	// init textWindow
-	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, eventHandler, objectManager, textWindowMessages, textWindowMessageIndex, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
+	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, eventHandler, objectManager, items, textWindowMessages, textWindowMessageIndex, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
 
 	if (skills.size() > 0)
 		skillsContainer->Initialize(skills);
@@ -819,7 +819,7 @@ void Game::InitializePanels()
 	inventoryPanelHeader->SetText("Inventory");
 	inventoryPanel->AddChildComponent(*inventoryPanelHeader);
 
-	inventory = std::make_unique<UIInventory>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, eventHandler, items, textures, blackBrush.Get(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
+	inventory = std::make_unique<UIInventory>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, eventHandler, socketManager, items, textures, blackBrush.Get(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
 	inventoryPanel->AddChildComponent(*inventory);
 }
 

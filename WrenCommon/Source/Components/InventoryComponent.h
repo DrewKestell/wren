@@ -11,9 +11,12 @@ class InventoryComponent
 
 	friend class InventoryComponentManager;
 public:
-	static const int inventorySize{ 12 };
-	int itemIds[inventorySize] = { -1 };
+	std::vector<int> itemIds = std::vector<int>(INVENTORY_SIZE, -1);
 
 	const int GetId() const;
 	const int GetGameObjectId() const;
+	
+	const bool IsInventoryFull() const;
+	const int AddItem(const int itemId);
+	const bool AddItemAtSlot(const int itemId, const int slot);
 };

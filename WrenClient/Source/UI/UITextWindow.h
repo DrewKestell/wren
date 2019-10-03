@@ -7,6 +7,7 @@
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
 #include <ObjectManager.h>
+#include "../Models/Item.h"
 
 constexpr int MESSAGES_PER_PAGE = 13;
 constexpr float TEXT_WINDOW_HEIGHT = 220.0f;
@@ -16,6 +17,7 @@ class UITextWindow : public UIComponent
 {
 	EventHandler& eventHandler;
 	ObjectManager& objectManager;
+	std::vector<std::unique_ptr<Item>>& allItems;
 	int playerId{ 0 };
 	bool inputActive{ false };
 	wchar_t inputValue[60];
@@ -62,6 +64,7 @@ public:
 		const unsigned int zIndex,
 		EventHandler& eventHandler,
 		ObjectManager& objectManager,
+		std::vector<std::unique_ptr<Item>>& allItems,
 		std::string* messages[MESSAGE_BUFFER_SIZE],
 		unsigned int* messageIndex,
 		ID2D1SolidColorBrush* backgroundBrush,

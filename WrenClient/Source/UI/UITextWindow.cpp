@@ -2,6 +2,7 @@
 #include "UITextWindow.h"
 #include "Events/AttackMissEvent.h"
 #include "Events/AttackHitEvent.h"
+#include "Events/LootItemSuccessEvent.h"
 #include <EventHandling/Events/MouseEvent.h>
 #include <EventHandling/Events/KeyDownEvent.h>
 #include <EventHandling/Events/SystemKeyDownEvent.h>
@@ -19,6 +20,7 @@ UITextWindow::UITextWindow(
 	const unsigned int zIndex,
 	EventHandler& eventHandler,
 	ObjectManager& objectManager,
+	std::vector<std::unique_ptr<Item>>& allItems,
 	std::string* messages[MESSAGE_BUFFER_SIZE],
 	unsigned int* messageIndex,
 	ID2D1SolidColorBrush* backgroundBrush,
@@ -37,6 +39,7 @@ UITextWindow::UITextWindow(
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
 	  eventHandler{ eventHandler },
 	  objectManager{ objectManager },
+	  allItems{ allItems },
 	  messages{ messages },
 	  messageIndex{ messageIndex },
 	  backgroundBrush{ backgroundBrush },
@@ -332,6 +335,15 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 
 			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
 			AddMessage(new std::string(gameObject.name + " has been slain."));
+
+			break;
+		}
+		case EventType::LootItemSuccess:
+		{
+			const auto derivedEvent = (LootItemSuccessEvent*)event;
+
+			const std::string& itemName = allItems.at(derivedEvent->itemId - 1).get()->GetName();
+			AddMessage(new std::string("You loot " + itemName));
 
 			break;
 		}

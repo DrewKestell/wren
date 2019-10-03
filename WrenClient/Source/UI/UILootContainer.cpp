@@ -3,6 +3,7 @@
 #include "UIPanel.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../Events/DoubleLeftMouseDownEvent.h"
+#include "../Events/LootItemSuccessEvent.h"
 
 UILootContainer::UILootContainer(
 	std::vector<UIComponent*>& uiComponents,
@@ -98,9 +99,9 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 
 					// initialize UIItems
 					const auto inventoryComponent = inventoryComponentManager.GetInventoryComponentById(clickedObject->inventoryComponentId);
-					for (auto i = 0; i < inventoryComponent.inventorySize; i++)
+					for (auto i = 0; i < INVENTORY_SIZE; i++)
 					{
-						const auto itemId = inventoryComponent.itemIds[i];
+						const auto itemId = inventoryComponent.itemIds.at(i);
 						if (itemId >= 0)
 						{
 							const auto item = allItems.at(itemId - 1).get();
@@ -111,12 +112,28 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 							const auto texture = allTextures.at(item->GetSpriteId()).Get();
 							const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
 							uiItems.push_back(std::make_unique<UIItem>(uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3, eventHandler, socketManager, itemId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform));
-							this->AddChildComponent(*uiItems.at(i).get());
+							AddChildComponent(*uiItems.at(i).get());
 						}
 					}
 				}
 			}
 
+			break;
+		}
+		case EventType::LootItemSuccess:
+		{
+			const auto derivedEvent = (LootItemSuccessEvent*)event;
+
+			if (isVisible && derivedEvent->gameObjectId == currentGameObjectId)
+			{
+				const auto slot = derivedEvent->slot;
+
+				RemoveChildComponent(uiItems.at(slot).get());
+				items.at(slot) = nullptr;
+				uiItems.at(slot) = nullptr;
+				
+			}
+			
 			break;
 		}
 		// this is a decent idea to optimize, but it's not working correctly.

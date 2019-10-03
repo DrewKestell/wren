@@ -17,6 +17,7 @@
 #include "EventHandling/Events/ServerMessageEvent.h"
 #include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
 #include "EventHandling/Events/NpcDeathEvent.h"
+#include "Events/LootItemSuccessEvent.h"
 
 ClientSocketManager::ClientSocketManager(EventHandler& eventHandler)
 	: eventHandler{ eventHandler }
@@ -413,6 +414,17 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const std::vector<int> itemIds = BuildItemIdsVector(args.at(1));
 
 		std::unique_ptr<Event> e = std::make_unique<NpcDeathEvent>(gameObjectId, itemIds);
+		eventHandler.QueueEvent(e);
+	};
+
+	messageHandlers[OpCode::LootItemSuccess] = [this](const std::vector<std::string>& args)
+	{
+		const int gameObjectId = std::stoi(args.at(0));
+		const int slot = std::stoi(args.at(1));
+		const int destinationSlot = std::stoi(args.at(2));
+		const int itemId = std::stoi(args.at(3));
+
+		std::unique_ptr<Event> e = std::make_unique<LootItemSuccessEvent>(gameObjectId, slot, destinationSlot, itemId);
 		eventHandler.QueueEvent(e);
 	};
 }

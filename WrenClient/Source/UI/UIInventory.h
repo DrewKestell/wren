@@ -4,16 +4,16 @@
 #include <EventHandling/EventHandler.h>
 #include "../Models/Item.h"
 #include "UIItem.h"
-
-constexpr auto INVENTORY_SIZE = 16;
+#include <Constants.h>
 
 class UIInventory : public UIComponent
 {
 	EventHandler& eventHandler;
+	ClientSocketManager& socketManager;
 	std::vector<std::unique_ptr<Item>>& allItems;
 	std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures;
-	std::vector<Item*> items{ INVENTORY_SIZE, nullptr };
-	std::vector<std::unique_ptr<UIItem>> uiItems{ INVENTORY_SIZE };
+	std::vector<Item*> items = std::vector<Item*>(INVENTORY_SIZE, nullptr);
+	std::vector<std::unique_ptr<UIItem>> uiItems = std::vector<std::unique_ptr<UIItem>>(INVENTORY_SIZE);
 	ComPtr<ID2D1RectangleGeometry> geometry[INVENTORY_SIZE];
 	ID2D1SolidColorBrush* brush;
 	ID2D1DeviceContext1* d2dDeviceContext;
@@ -38,6 +38,7 @@ public:
 		const Layer uiLayer,
 		const unsigned int zIndex,
 		EventHandler& eventHandler,
+		ClientSocketManager& socketManager,
 		std::vector<std::unique_ptr<Item>>& allItems,
 		std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures,
 		ID2D1SolidColorBrush* brush,

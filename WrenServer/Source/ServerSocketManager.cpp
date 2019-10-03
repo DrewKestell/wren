@@ -16,6 +16,7 @@ constexpr auto INVALID_ATTACK_TARGET = "You can't attack that!";
 constexpr auto DEAD_ATTACK_TARGET = "You can't attack something that is already dead.";
 constexpr auto NO_ATTACK_TARGET = "You need a target before attacking!";
 constexpr auto MESSAGE_TYPE_ERROR = "ERROR";
+constexpr auto INVENTORY_FULL = "Inventory is full.";
 
 ServerSocketManager::ServerSocketManager(
 	EventHandler& eventHandler,
@@ -71,9 +72,9 @@ void ServerSocketManager::Initialize()
 	const auto inventoryComponentManager = componentOrchestrator.GetInventoryComponentManager();
 	InventoryComponent& dummyInventoryComponent = inventoryComponentManager->CreateInventoryComponent(dummyId);
 	dummyGameObject.inventoryComponentId = dummyInventoryComponent.GetId();
-	dummyInventoryComponent.itemIds[0] = 1;
-	dummyInventoryComponent.itemIds[1] = 1;
-	dummyInventoryComponent.itemIds[2] = 1;
+	dummyInventoryComponent.AddItem(1);
+	dummyInventoryComponent.AddItem(1);
+	dummyInventoryComponent.AddItem(1);
 
 	gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
 }
@@ -297,6 +298,10 @@ void ServerSocketManager::EnterWorld(const int accountId, const std::string& cha
 	const SkillComponent& skillComponent = skillComponentManager->CreateSkillComponent(gameObjectId, skills);
 	gameObject.skillComponentId = skillComponent.GetId();
 
+	const auto inventoryComponentManager = componentOrchestrator.GetInventoryComponentManager();
+	const InventoryComponent& inventoryComponent = inventoryComponentManager->CreateInventoryComponent(gameObjectId);
+	gameObject.inventoryComponentId = inventoryComponent.GetId();
+
 	const auto pos = character.GetPosition();
 	const auto charId = character.GetId();
 	std::vector<std::string> args
@@ -445,19 +450,32 @@ void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, cons
 	SendPacket(playerComponent.GetFromSockAddr(), OpCode::ActivateAbilitySuccess, args);
 }
 
-void ServerSocketManager::LootItem(const int gameObjectId, const int slot)
+void ServerSocketManager::LootItem(const int accountId, const int gameObjectId, const int slot)
 {
 	// check if item exists, then move it from target inventory to player inventory, then send message to client
 	const GameObject& gameObject = objectManager.GetGameObjectById(gameObjectId);
 	const auto inventoryComponentManager = componentOrchestrator.GetInventoryComponentManager();
-	const InventoryComponent& inventoryComponent = inventoryComponentManager->GetInventoryComponentById(gameObject.inventoryComponentId);
-	const auto itemId = inventoryComponent.itemIds[slot]; // TODO: validate array bounds passed from client
+	InventoryComponent& inventoryComponent = inventoryComponentManager->GetInventoryComponentById(gameObject.inventoryComponentId);
+	const auto itemId = inventoryComponent.itemIds.at(slot); // TODO: validate array bounds passed from client
 
 	if (itemId >= 0)
 	{
-		// TODO: confirm player has an empty slot in their inventory, otherwise return an error message
-		std::vector<std::string> args{ args.at(2), args.at(3) };
-		SendPacketToAllClients(OpCode::LootItemSuccess, args);
+		const PlayerComponent& playerComponent = GetPlayerComponent(accountId);
+		const GameObject& player = objectManager.GetGameObjectById(playerComponent.GetGameObjectId());
+		InventoryComponent& playerInventoryComponent = inventoryComponentManager->GetInventoryComponentById(player.inventoryComponentId);
+
+		const auto destinationSlot = playerInventoryComponent.AddItem(itemId);
+		if (destinationSlot == -1)
+		{
+			std::vector<std::string> args{ INVENTORY_FULL, MESSAGE_TYPE_ERROR };
+			SendPacket(playerComponent.GetFromSockAddr(), OpCode::ServerMessage, args);
+		}
+		else
+		{
+			inventoryComponent.itemIds.at(slot) = -1;
+			std::vector<std::string> args{ std::to_string(gameObjectId), std::to_string(slot), std::to_string(destinationSlot), std::to_string(itemId) };
+			SendPacketToAllClients(OpCode::LootItemSuccess, args);
+		}
 	}
 }
 
@@ -649,6 +667,6 @@ void ServerSocketManager::InitializeMessageHandlers()
 
 		ValidateToken(accountId, token);
 
-		LootItem(gameObjectId, slot);
+		LootItem(accountId, gameObjectId, slot);
 	};
 }

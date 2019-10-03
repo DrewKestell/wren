@@ -98,12 +98,13 @@ void AIComponentManager::Update()
 			const InventoryComponent& inventoryComponent = inventoryComponentManager->GetInventoryComponentById(gameObject.inventoryComponentId);
 			
 			std::string itemIdString{ "" };
-			for (auto i = 0; i < inventoryComponent.inventorySize; i++)
+			for (auto i = 0; i < INVENTORY_SIZE; i++)
 			{
 				const auto itemId = inventoryComponent.itemIds[i];
-				if (itemId > 0)
+				if (itemId >= 0)
 					itemIdString += std::to_string(itemId) + ";";
 			}
+			
 			std::vector<std::string> args{ std::to_string(gameObject.GetId()), itemIdString };
 			socketManager.SendPacketToAllClients(OpCode::NpcDeath, args);
 		}

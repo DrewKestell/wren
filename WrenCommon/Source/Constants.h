@@ -27,3 +27,5 @@ const OpCode CHECKSUM{ OpCode::Checksum };
 constexpr auto PACKET_SIZE = 1024;
 constexpr auto SERVER_IP_ADDRESS = "127.0.0.1";
 constexpr auto SERVER_PORT_NUMBER = 27016;
+
+constexpr auto INVENTORY_SIZE = 16;

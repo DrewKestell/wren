@@ -177,6 +177,7 @@
     <ClInclude Include="Source\UI\UIItem.h" />
     <ClInclude Include="Source\Events\UIItemDroppedEvent.h" />
     <ClInclude Include="Source\UI\UIInventory.h" />
+    <ClInclude Include="Source\Events\LootItemSuccessEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

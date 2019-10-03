@@ -2,6 +2,7 @@
 #include "UIInventory.h"
 #include "UIPanel.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "../Events/LootItemSuccessEvent.h"
 
 UIInventory::UIInventory(
 	std::vector<UIComponent*>& uiComponents,
@@ -9,6 +10,7 @@ UIInventory::UIInventory(
 	const Layer uiLayer,
 	const unsigned int zIndex,
 	EventHandler& eventHandler,
+	ClientSocketManager& socketManager,
 	std::vector<std::unique_ptr<Item>>& allItems,
 	std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures,
 	ID2D1SolidColorBrush* brush,
@@ -25,22 +27,23 @@ UIInventory::UIInventory(
 	const float clientWidth,
 	const float clientHeight)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
-	eventHandler{ eventHandler },
-	allItems{ allItems },
-	allTextures{ allTextures },
-	brush{ brush },
-	d2dDeviceContext{ d2dDeviceContext },
-	d2dFactory{ d2dFactory },
-	d3dDevice{ d3dDevice },
-	d3dDeviceContext{ d3dDeviceContext },
-	highlightBrush{ highlightBrush },
-	vertexShader{ vertexShader },
-	pixelShader{ pixelShader },
-	vertexShaderBuffer{ vertexShaderBuffer },
-	vertexShaderSize{ vertexShaderSize },
-	projectionTransform{ projectionTransform },
-	clientWidth{ clientWidth },
-	clientHeight{ clientHeight }
+	  eventHandler{ eventHandler },
+	  socketManager{ socketManager },
+	  allItems{ allItems },
+	  allTextures{ allTextures },
+	  brush{ brush },
+	  d2dDeviceContext{ d2dDeviceContext },
+	  d2dFactory{ d2dFactory },
+	  d3dDevice{ d3dDevice },
+	  d3dDeviceContext{ d3dDeviceContext },
+	  highlightBrush{ highlightBrush },
+	  vertexShader{ vertexShader },
+	  pixelShader{ pixelShader },
+	  vertexShaderBuffer{ vertexShaderBuffer },
+	  vertexShaderSize{ vertexShaderSize },
+	  projectionTransform{ projectionTransform },
+	  clientWidth{ clientWidth },
+	  clientHeight{ clientHeight }
 {
 }
 
@@ -71,7 +74,30 @@ const bool UIInventory::HandleEvent(const Event* const event)
 
 			break;
 		}
-	
+		case EventType::LootItemSuccess:
+		{
+			const auto derivedEvent = (LootItemSuccessEvent*)event;
+			const auto destinationSlot = derivedEvent->destinationSlot;
+
+			const auto item = allItems.at(derivedEvent->itemId - 1).get();
+			items.at(destinationSlot) = item;
+			
+			const auto row = destinationSlot / 4;
+			const auto col = destinationSlot % 4;
+			const auto posX = 5.0f + (col * 45.0f);
+			const auto posY = 25.0f + (row * 45.0f);
+			const auto texture = allTextures.at(item->GetSpriteId()).Get();
+			const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
+			uiItems.at(destinationSlot) = std::make_unique<UIItem>(uiComponents, XMFLOAT2{ posX + 2.0f, posY + 2.0f }, uiLayer, zIndex + 1, eventHandler, socketManager, item->GetId(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform);
+			uiItems.at(destinationSlot)->isVisible = isVisible;
+			AddChildComponent(*uiItems.at(destinationSlot).get());
+
+			std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
+			eventHandler.QueueEvent(e);
+
+			break;
+		}
+	}
 	// this is a decent idea to optimize, but it's not working correctly.
 	// this component gets the MouseMove event BEFORE the UIPanel.
 	// so it reinitializes its geometry based on the UIPanel's old position
@@ -86,8 +112,7 @@ const bool UIInventory::HandleEvent(const Event* const event)
 
 		break;
 	}*/
-	}
-
+	
 	return false;
 }
 

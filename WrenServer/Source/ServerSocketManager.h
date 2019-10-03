@@ -34,7 +34,7 @@ class ServerSocketManager : public SocketManager
 	void DeleteCharacter(const int accountId, const std::string& characterName);
 	void PropagateChatMessage(const std::string& senderName, const std::string& message);
 	void ActivateAbility(PlayerComponent& player, const Ability& ability);
-	void LootItem(const int gameObjectId, const int slot);
+	void LootItem(const int accountId, const int gameObjectId, const int slot);
 	void InitializeMessageHandlers() override;
 
 public:

@@ -21,8 +21,8 @@ InventoryComponent& InventoryComponentManager::CreateInventoryComponent(const in
 	InventoryComponent& inventoryComponent = inventoryComponents[inventoryComponentIndex++];
 
 	// initialize component
-	for (auto i = 0; i < inventoryComponent.inventorySize; i++)
-		inventoryComponent.itemIds[i] = -1;
+	for (auto i = 0; i < INVENTORY_SIZE; i++)
+		inventoryComponent.itemIds.at(i) = -1;
 
 	return inventoryComponent;
 }
@@ -67,7 +67,7 @@ const bool InventoryComponentManager::HandleEvent(const Event* const event)
 			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
 			InventoryComponent& inventoryComponent = GetInventoryComponentById(gameObject.inventoryComponentId);
 			for (auto i = 0; i < lootItemIds.size(); i++)
-				inventoryComponent.itemIds[i] = lootItemIds.at(i);
+				inventoryComponent.itemIds.at(i) = lootItemIds.at(i);
 
 			break;
 		}

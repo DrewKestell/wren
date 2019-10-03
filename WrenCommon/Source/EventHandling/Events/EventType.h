@@ -45,5 +45,6 @@ enum class EventType
 	AttackMiss,
 	Pong,
 	SkillIncrease,
-	NpcDeath
+	NpcDeath,
+	LootItemSuccess
 };
