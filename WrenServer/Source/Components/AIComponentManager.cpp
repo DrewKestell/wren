@@ -4,7 +4,6 @@
 #include <Components/InventoryComponentManager.h>
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
-#include "EventHandling/Events/DeleteGameObjectEvent.h"
 
 constexpr XMFLOAT3 DIRECTIONS[8]
 {
@@ -19,57 +18,11 @@ constexpr XMFLOAT3 DIRECTIONS[8]
 };
 
 AIComponentManager::AIComponentManager(EventHandler& eventHandler, ObjectManager& objectManager, GameMap& gameMap, ServerComponentOrchestrator& componentOrchestrator, ServerSocketManager& socketManager)
-	: eventHandler{ eventHandler },
-	  objectManager{ objectManager },
+	: ComponentManager(eventHandler, objectManager),
 	  gameMap{ gameMap },
 	  componentOrchestrator{ componentOrchestrator },
 	  socketManager{ socketManager }
 {
-	eventHandler.Subscribe(*this);
-}
-
-AIComponent& AIComponentManager::CreateAIComponent(const int gameObjectId)
-{
-	if (aiComponentIndex == MAX_AICOMPONENTS_SIZE)
-		throw std::exception("Max AIComponents exceeded!");
-
-	aiComponents[aiComponentIndex].Initialize(aiComponentIndex, gameObjectId);
-	idIndexMap[aiComponentIndex] = aiComponentIndex;
-	return aiComponents[aiComponentIndex++];
-}
-
-void AIComponentManager::DeleteAIComponent(const int aiComponentId)
-{
-	// first copy the last AIComponent into the index that was deleted
-	const auto aiComponentToDeleteIndex = idIndexMap[aiComponentId];
-	const auto lastAIComponentIndex = --aiComponentIndex;
-	memcpy(&aiComponents[aiComponentToDeleteIndex], &aiComponents[lastAIComponentIndex], sizeof(AIComponent));
-
-	// then update the index of the moved AIComponent
-	const auto lastAIComponentId = aiComponents[aiComponentToDeleteIndex].id;
-	idIndexMap[lastAIComponentId] = aiComponentToDeleteIndex;
-}
-
-AIComponent& AIComponentManager::GetAIComponentById(const int aiComponentId)
-{
-	const auto index = idIndexMap[aiComponentId];
-	return aiComponents[index];
-}
-
-const bool AIComponentManager::HandleEvent(const Event* const event)
-{
-	const auto type = event->type;
-	switch (type)
-	{
-		case EventType::DeleteGameObject:
-		{
-			const auto derivedEvent = (DeleteGameObjectEvent*)event;
-			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-			DeleteAIComponent(gameObject.aiComponentId);
-			break;
-		}
-	}
-	return false;
 }
 
 void AIComponentManager::Update()
@@ -82,9 +35,9 @@ void AIComponentManager::Update()
 	const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
 	const auto inventoryComponentManager = componentOrchestrator.GetInventoryComponentManager();
 
-	for (auto i = 0; i < aiComponentIndex; i++)
+	for (auto i = 0; i < componentIndex; i++)
 	{
-		AIComponent& comp = aiComponents[i];
+		AIComponent& comp = components[i];
 		GameObject& gameObject = objectManager.GetGameObjectById(comp.gameObjectId);
 		StatsComponent& statsComponent = statsComponentManager->GetStatsComponentById(gameObject.statsComponentId);
 
@@ -221,7 +174,11 @@ void AIComponentManager::Update()
 	}
 }
 
-AIComponentManager::~AIComponentManager()
+AIComponent& AIComponentManager::CreateAIComponent(const int gameObjectId)
 {
-	eventHandler.Unsubscribe(*this);
+	AIComponent& aiComponent = CreateComponent(gameObjectId);
+
+	// component initialization here
+
+	return aiComponent;
 }

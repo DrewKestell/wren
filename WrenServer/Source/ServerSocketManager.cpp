@@ -62,6 +62,7 @@ void ServerSocketManager::Initialize()
 	const auto dummyId = dummyGameObject.GetId();
 
 	const auto aiComponentManager = componentOrchestrator.GetAIComponentManager();
+
 	const AIComponent& dummyAIComponent = aiComponentManager->CreateAIComponent(dummyId);
 	dummyGameObject.aiComponentId = dummyAIComponent.GetId();
 

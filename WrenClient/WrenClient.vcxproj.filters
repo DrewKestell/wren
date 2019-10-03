@@ -227,5 +227,11 @@
     <Image Include="Textures\texture03.DDS" />
     <Image Include="Textures\abilityicon02.DDS" />
     <Image Include="Textures\abilityicon03.DDS" />
+    <Image Include="Textures\jade.DDS" />
+    <Image Include="Textures\jade_gray.DDS" />
+    <Image Include="Textures\ruby.DDS" />
+    <Image Include="Textures\ruby_gray.DDS" />
+    <Image Include="Textures\sapphire.DDS" />
+    <Image Include="Textures\sapphire_gray.DDS" />
   </ItemGroup>
 </Project>

@@ -22,6 +22,8 @@
     <ClInclude Include="Include\sodium.h" />
     <ClInclude Include="Source\Components\AIComponent.h" />
     <ClInclude Include="Source\Components\AIComponentManager.h" />
+    <ClInclude Include="Source\Components\Component.h" />
+    <ClInclude Include="Source\Components\ComponentManager.h" />
     <ClInclude Include="Source\Components\PlayerComponent.h" />
     <ClInclude Include="Source\Components\PlayerComponentManager.h" />
     <ClInclude Include="Source\Components\ServerComponentOrchestrator.h" />
@@ -40,6 +42,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Components\AIComponent.cpp" />
     <ClCompile Include="Source\Components\AIComponentManager.cpp" />
+    <ClCompile Include="Source\Components\Component.cpp" />
     <ClCompile Include="Source\Components\PlayerComponent.cpp" />
     <ClCompile Include="Source\Components\PlayerComponentManager.cpp" />
     <ClCompile Include="Source\Components\ServerComponentOrchestrator.cpp" />

@@ -115,7 +115,7 @@ void PlayerComponentManager::Update()
 		{
 			comp.swingTimer = 0.0f;
 
-			AIComponent& targetAIComponent = aiComponentManager->GetAIComponentById(target.aiComponentId);
+			AIComponent& targetAIComponent = aiComponentManager->GetComponentById(target.aiComponentId);
 
 			const auto playerId = player.GetId();
 			const auto targetId = target.GetId();
