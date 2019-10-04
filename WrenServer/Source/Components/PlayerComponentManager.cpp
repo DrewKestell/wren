@@ -7,57 +7,23 @@
 #include <Components/StatsComponentManager.h>
 
 PlayerComponentManager::PlayerComponentManager(EventHandler& eventHandler, ObjectManager& objectManager, GameMap& gameMap, ServerComponentOrchestrator& componentOrchestrator, ServerSocketManager& socketManager)
-	: eventHandler{ eventHandler },
-	  objectManager{ objectManager },
+	: ComponentManager(eventHandler, objectManager),
 	  gameMap{ gameMap },
 	  componentOrchestrator{ componentOrchestrator },
 	  socketManager{ socketManager }
 {
-	eventHandler.Subscribe(*this);
 }
 
 PlayerComponent& PlayerComponentManager::CreatePlayerComponent(const int gameObjectId, const std::string token, const std::string ipAndPort, const sockaddr_in fromSockAddr, const unsigned __int64 lastHeartbeat)
 {
-	if (playerComponentIndex == MAX_PLAYERCOMPONENTS_SIZE)
-		throw std::exception("Max PlayerComponents exceeded!");
+	PlayerComponent& playerComponent = CreateComponent(gameObjectId);
 
-	playerComponents[playerComponentIndex].Initialize(playerComponentIndex, gameObjectId, token, ipAndPort, fromSockAddr, lastHeartbeat);
-	idIndexMap[playerComponentIndex] = playerComponentIndex;
-	return playerComponents[playerComponentIndex++];
-}
+	playerComponent.token = token;
+	playerComponent.ipAndPort = ipAndPort;
+	playerComponent.fromSockAddr = fromSockAddr;
+	playerComponent.lastHeartbeat = lastHeartbeat;
 
-void PlayerComponentManager::DeletePlayerComponent(const int playerComponentId)
-{
-	// first copy the last AIComponent into the index that was deleted
-	const auto playerComponentToDeleteIndex = idIndexMap[playerComponentId];
-	const auto lastPlayerComponentIndex = --playerComponentIndex;
-	memcpy(&playerComponents[playerComponentToDeleteIndex], &playerComponents[lastPlayerComponentIndex], sizeof(PlayerComponent));
-
-	// then update the index of the moved AIComponent
-	const auto lastAIComponentId = playerComponents[playerComponentToDeleteIndex].id;
-	idIndexMap[lastAIComponentId] = playerComponentToDeleteIndex;
-}
-
-PlayerComponent& PlayerComponentManager::GetPlayerComponentById(const int playerComponentId)
-{
-	const auto index = idIndexMap[playerComponentId];
-	return playerComponents[index];
-}
-
-const bool PlayerComponentManager::HandleEvent(const Event* const event)
-{
-	const auto type{ event->type };
-	switch (type)
-	{
-		case EventType::DeleteGameObject:
-		{
-			const auto derivedEvent = (DeleteGameObjectEvent*)event;
-			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-			DeletePlayerComponent(gameObject.playerComponentId);
-			break;
-		}
-	}
-	return false;
+	return playerComponent;
 }
 
 void PlayerComponentManager::Update()
@@ -69,9 +35,9 @@ void PlayerComponentManager::Update()
 	const auto aiComponentManager = componentOrchestrator.GetAIComponentManager();
 	const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
 
-	for (auto i = 0; i < playerComponentIndex; i++)
+	for (auto i = 0; i < componentIndex; i++)
 	{
-		PlayerComponent& comp = playerComponents[i];
+		PlayerComponent& comp = components[i];
 		GameObject& player = objectManager.GetGameObjectById(comp.gameObjectId);
 		
 		// first handle movement
@@ -163,15 +129,10 @@ const XMFLOAT3 PlayerComponentManager::GetDestinationVector(const XMFLOAT3 right
 
 PlayerComponent* PlayerComponentManager::GetPlayerComponents()
 {
-	return playerComponents;
+	return components;
 }
 
 const int PlayerComponentManager::GetPlayerComponentIndex()
 {
-	return playerComponentIndex;
-}
-
-PlayerComponentManager::~PlayerComponentManager()
-{
-	eventHandler.Unsubscribe(*this);
+	return componentIndex;
 }

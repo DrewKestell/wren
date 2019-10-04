@@ -115,7 +115,7 @@ const bool ServerSocketManager::ValidateToken(const int accountId, const std::st
 {
 	const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
 	const auto gameObject = objectManager.GetGameObjectById(accountId);
-	const auto playerComponent = playerComponentManager->GetPlayerComponentById(gameObject.playerComponentId);
+	const auto playerComponent = playerComponentManager->GetComponentById(gameObject.playerComponentId);
 	
 	return token == playerComponent.GetToken();
 }
@@ -125,7 +125,7 @@ PlayerComponent& ServerSocketManager::GetPlayerComponent(const int accountId)
 	const auto playerComponentManager = componentOrchestrator.GetPlayerComponentManager();
 	const auto gameObject = objectManager.GetGameObjectById(accountId);
 
-	return playerComponentManager->GetPlayerComponentById(gameObject.playerComponentId);
+	return playerComponentManager->GetComponentById(gameObject.playerComponentId);
 }
 
 void ServerSocketManager::HandleTimeout()
@@ -399,7 +399,7 @@ void ServerSocketManager::UpdateClients()
 			}
 			else if (type == GameObjectType::Player)
 			{
-				const PlayerComponent& otherPlayer = playerComponentManager->GetPlayerComponentById(gameObject.playerComponentId);
+				const PlayerComponent& otherPlayer = playerComponentManager->GetComponentById(gameObject.playerComponentId);
 				std::vector<std::string> args{ id, posX, posY, posZ, movX, movY, movZ, std::to_string(otherPlayer.modelId), std::to_string(otherPlayer.textureId), gameObject.name, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina };
 				SendPacket(playerToUpdate.GetFromSockAddr(), OpCode::PlayerUpdate, args);
 			}

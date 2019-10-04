@@ -4,7 +4,7 @@
 #include "AIComponent.h"
 #include <GameMap/GameMap.h>
 #include "../ServerSocketManager.h"
-#include "ComponentManager.h"
+#include <Components/ComponentManager.h>
 
 class AIComponentManager : public ComponentManager<AIComponent, 100000>
 {

@@ -6,40 +6,23 @@
 #include "../Events/AttackMissEvent.h"
 
 SkillComponentManager::SkillComponentManager(EventHandler& eventHandler, ObjectManager& objectManager, ServerComponentOrchestrator& componentOrchestrator, ServerSocketManager& socketManager)
-	: eventHandler{ eventHandler },
-	  objectManager{ objectManager },
+	: ComponentManager(eventHandler, objectManager),
 	  componentOrchestrator{ componentOrchestrator },
 	  socketManager{ socketManager }
 {
-	eventHandler.Subscribe(*this);
 }
 
 SkillComponent& SkillComponentManager::CreateSkillComponent(const int gameObjectId, std::vector<WrenCommon::Skill>& skills)
 {
-	if (skillComponentIndex == MAX_SKILLCOMPONENTS_SIZE)
-		throw std::exception("Max SkillComponents exceeded!");
+	SkillComponent& skillComponent = CreateComponent(gameObjectId);
 
-	skillComponents[skillComponentIndex].Initialize(skillComponentIndex, gameObjectId, skills);
-	idIndexMap[skillComponentIndex] = skillComponentIndex;
-	return skillComponents[skillComponentIndex++];
-}
+	for (auto i = 0; i < skills.size(); i++)
+	{
+		const auto skill = skills.at(i);
+		skillComponent.skills.push_back(std::make_unique<WrenServer::Skill>(skill.skillId, skill.value));
+	}
 
-void SkillComponentManager::DeleteSkillComponent(const int skillComponentId)
-{
-	// first copy the last SkillComponent into the index that was deleted
-	auto skillComponentToDeleteIndex = idIndexMap[skillComponentId];
-	auto lastSkillComponentIndex = --skillComponentIndex;
-	memcpy(&skillComponents[skillComponentToDeleteIndex], &skillComponents[lastSkillComponentIndex], sizeof(SkillComponent));
-
-	// then update the index of the moved SkillComponent
-	auto lastSkillComponentId = skillComponents[skillComponentToDeleteIndex].id;
-	idIndexMap[lastSkillComponentId] = skillComponentToDeleteIndex;
-}
-
-SkillComponent& SkillComponentManager::GetSkillComponentById(const int skillComponentId)
-{
-	const auto index = idIndexMap[skillComponentId];
-	return skillComponents[index];
+	return skillComponent;
 }
 
 const bool SkillComponentManager::HandleEvent(const Event* const event)
@@ -50,8 +33,9 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 		case EventType::DeleteGameObject:
 		{
 			const auto derivedEvent = (DeleteGameObjectEvent*)event;
-			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-			DeleteSkillComponent(gameObject.skillComponentId);
+			
+			ComponentManager::HandleEvent(event);
+
 			break;
 		}
 		case EventType::AttackHit:
@@ -71,13 +55,13 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 
 			if (attacker.skillComponentId >= 0) // this is initialized as -1, so we check if this object has a skillComponent (NPCs don't for now)
 			{
-				const SkillComponent& attackerSkillComp = GetSkillComponentById(attacker.skillComponentId);
-				const PlayerComponent& attackerPlayerComp = playerComponentManager->GetPlayerComponentById(attacker.playerComponentId);
+				const SkillComponent& attackerSkillComp = GetComponentById(attacker.skillComponentId);
+				const PlayerComponent& attackerPlayerComp = playerComponentManager->GetComponentById(attacker.playerComponentId);
 
 				for (auto i = 0; i < derivedEvent->weaponSkillArrLen; i++)
 				{
 					const auto weaponSkillId = derivedEvent->weaponSkillIds[i];
-					auto weaponSkill = attackerSkillComp.skills[weaponSkillId];
+					auto weaponSkill = attackerSkillComp.skills[weaponSkillId - 1].get();
 
 					// 100 is the max skill level, so we skip this weapon skill in that case
 					if (weaponSkill->value < 100)
@@ -95,15 +79,15 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 			}
 
 			// next try to increase the defender's skills
-			const auto target = objectManager.GetGameObjectById(derivedEvent->targetId);
+			const GameObject& target = objectManager.GetGameObjectById(derivedEvent->targetId);
 			
 			if (target.skillComponentId >= 0) // this is initialized as -1, so we check if this object has a skillComponent (NPCs don't for now)
 			{
-				const auto targetSkillComp = GetSkillComponentById(target.skillComponentId);
-				const auto targetPlayerComp = playerComponentManager->GetPlayerComponentById(target.playerComponentId);
+				const SkillComponent& targetSkillComp = GetComponentById(target.skillComponentId);
+				const PlayerComponent& targetPlayerComp = playerComponentManager->GetComponentById(target.playerComponentId);
 
 				const auto defenseSkillId = 2;
-				WrenServer::Skill* defenseSkill = targetSkillComp.skills[defenseSkillId];
+				WrenServer::Skill* defenseSkill = targetSkillComp.skills[defenseSkillId - 1].get();
 
 				// 100 is the max skill level, so we skip this weapon skill in that case
 				if (defenseSkill->value < 100)
@@ -125,11 +109,11 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (AttackMissEvent*)event;
 
-			const auto attacker = objectManager.GetGameObjectById(derivedEvent->attackerId);
-			const auto attackerSkillComp = GetSkillComponentById(attacker.skillComponentId);
+			const GameObject& attacker = objectManager.GetGameObjectById(derivedEvent->attackerId);
+			const SkillComponent& attackerSkillComp = GetComponentById(attacker.skillComponentId);
 
-			const auto target = objectManager.GetGameObjectById(derivedEvent->targetId);
-			const auto targetSkillComp = GetSkillComponentById(attacker.skillComponentId);
+			const GameObject& target = objectManager.GetGameObjectById(derivedEvent->targetId);
+			const SkillComponent& targetSkillComp = GetComponentById(attacker.skillComponentId);
 
 			break;
 		}
@@ -140,9 +124,4 @@ const bool SkillComponentManager::HandleEvent(const Event* const event)
 void SkillComponentManager::Update()
 {
 	
-}
-
-SkillComponentManager::~SkillComponentManager()
-{
-	eventHandler.Unsubscribe(*this);
 }

@@ -25,6 +25,15 @@ AIComponentManager::AIComponentManager(EventHandler& eventHandler, ObjectManager
 {
 }
 
+AIComponent& AIComponentManager::CreateAIComponent(const int gameObjectId)
+{
+	AIComponent& aiComponent = CreateComponent(gameObjectId);
+
+	// component initialization here
+
+	return aiComponent;
+}
+
 void AIComponentManager::Update()
 {
 	std::random_device dev;
@@ -38,7 +47,7 @@ void AIComponentManager::Update()
 	for (auto i = 0; i < componentIndex; i++)
 	{
 		AIComponent& comp = components[i];
-		GameObject& gameObject = objectManager.GetGameObjectById(comp.gameObjectId);
+		GameObject& gameObject = objectManager.GetGameObjectById(comp.GetGameObjectId());
 		StatsComponent& statsComponent = statsComponentManager->GetStatsComponentById(gameObject.statsComponentId);
 
 		if (!statsComponent.alive)
@@ -172,13 +181,4 @@ void AIComponentManager::Update()
 			}
 		}
 	}
-}
-
-AIComponent& AIComponentManager::CreateAIComponent(const int gameObjectId)
-{
-	AIComponent& aiComponent = CreateComponent(gameObjectId);
-
-	// component initialization here
-
-	return aiComponent;
 }

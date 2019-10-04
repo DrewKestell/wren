@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Components\Component.cpp" />
     <ClCompile Include="Source\Components\InventoryComponent.cpp" />
     <ClCompile Include="Source\Components\InventoryComponentManager.cpp" />
     <ClCompile Include="Source\Components\StatsComponent.cpp" />
@@ -51,6 +52,8 @@
   <ItemGroup>
     <ClInclude Include="Include\Span.h" />
     <ClInclude Include="Include\sqlite3.h" />
+    <ClInclude Include="Source\Components\Component.h" />
+    <ClInclude Include="Source\Components\ComponentManager.h" />
     <ClInclude Include="Source\Components\InventoryComponent.h" />
     <ClInclude Include="Source\Components\InventoryComponentManager.h" />
     <ClInclude Include="Source\Components\StatsComponent.h" />
