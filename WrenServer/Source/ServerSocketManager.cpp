@@ -25,8 +25,7 @@ ServerSocketManager::ServerSocketManager(
 	ServerComponentOrchestrator& componentOrchestrator,
 	ServerRepository& serverRepository,
 	CommonRepository& commonRepository)
-	: SocketManager{ SERVER_PORT_NUMBER },
-	  eventHandler{ eventHandler },
+	: SocketManager{ eventHandler, SERVER_PORT_NUMBER },
 	  gameMap{ gameMap },
 	  objectManager{ objectManager },
 	  componentOrchestrator{ componentOrchestrator },

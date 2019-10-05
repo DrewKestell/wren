@@ -20,7 +20,7 @@
 #include "Events/LootItemSuccessEvent.h"
 
 ClientSocketManager::ClientSocketManager(EventHandler& eventHandler)
-	: eventHandler{ eventHandler }
+	: SocketManager{ eventHandler }
 {
 	InitializeMessageHandlers();
 

@@ -12,7 +12,6 @@
 
 class ServerSocketManager : public SocketManager
 {
-	EventHandler& eventHandler;
 	GameMap& gameMap;
 	ObjectManager& objectManager;
 	ServerComponentOrchestrator& componentOrchestrator;

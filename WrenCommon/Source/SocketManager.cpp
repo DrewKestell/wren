@@ -2,7 +2,8 @@
 #include "SocketManager.h"
 #include "Constants.h"
 
-SocketManager::SocketManager(const int localPort)
+SocketManager::SocketManager(EventHandler& eventHandler, const int localPort)
+	: eventHandler{ eventHandler }
 {
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)

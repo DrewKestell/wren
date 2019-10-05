@@ -11,7 +11,6 @@ class Game;
 class ClientSocketManager : public SocketManager
 {
 private:
-	EventHandler& eventHandler;
 	Game* game;
 	int accountId{ -1 };
 	std::string token{ "" };
