@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "UIInventory.h"
-#include "UIPanel.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../Events/LootItemSuccessEvent.h"
 

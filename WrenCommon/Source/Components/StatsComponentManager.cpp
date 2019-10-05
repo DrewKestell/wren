@@ -1,13 +1,10 @@
 #include "stdafx.h"
 #include "StatsComponentManager.h"
-#include "EventHandling/Events/DeleteGameObjectEvent.h"
 #include "EventHandling/Events/NpcDeathEvent.h"
 
 StatsComponentManager::StatsComponentManager(EventHandler& eventHandler, ObjectManager& objectManager)
-	: eventHandler{ eventHandler },
-	  objectManager{ objectManager }	  
+	: ComponentManager(eventHandler, objectManager)
 {
-	eventHandler.Subscribe(*this);
 }
 
 StatsComponent& StatsComponentManager::CreateStatsComponent(
@@ -15,30 +12,23 @@ StatsComponent& StatsComponentManager::CreateStatsComponent(
 	const int agility, const int strength, const int wisdom, const int intelligence, const int charisma, const int luck, const int endurance,
 	const int health, const int maxHealth, const int mana, const int maxMana, const int stamina, const int maxStamina)
 {
-	if (statsComponentIndex == MAX_STATSCOMPONENTS_SIZE)
-		throw std::exception("Max StatsComponents exceeded!");
+	StatsComponent& statsComponent = CreateComponent(gameObjectId);
 
-	statsComponents[statsComponentIndex].Initialize(statsComponentIndex, gameObjectId, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, maxHealth, mana, maxMana, stamina, maxStamina);
-	idIndexMap[statsComponentIndex] = statsComponentIndex;
-	return statsComponents[statsComponentIndex++];
-}
+	statsComponent.agility = agility;
+	statsComponent.strength = strength;
+	statsComponent.wisdom = wisdom;
+	statsComponent.intelligence = intelligence;
+	statsComponent.charisma = charisma;
+	statsComponent.luck = luck;
+	statsComponent.endurance = endurance;
+	statsComponent.health = health;
+	statsComponent.maxHealth = maxHealth;
+	statsComponent.mana = mana;
+	statsComponent.maxMana = maxMana;
+	statsComponent.stamina = stamina;
+	statsComponent.maxStamina = maxStamina;
 
-void StatsComponentManager::DeleteStatsComponent(const int statsComponentId)
-{
-	// first copy the last StatsComponent into the index that was deleted
-	const auto statsComponentToDeleteIndex = idIndexMap[statsComponentId];
-	const auto lastStatsComponentIndex = --statsComponentIndex;
-	memcpy(&statsComponents[statsComponentToDeleteIndex], &statsComponents[lastStatsComponentIndex], sizeof(StatsComponent));
-
-	// then update the index of the moved StatsComponent
-	const auto lastStatsComponentId = statsComponents[statsComponentToDeleteIndex].id;
-	idIndexMap[lastStatsComponentId] = statsComponentToDeleteIndex;
-}
-
-StatsComponent& StatsComponentManager::GetStatsComponentById(const int statsComponentId)
-{
-	const auto index = idIndexMap[statsComponentId];
-	return statsComponents[index];
+	return statsComponent;
 }
 
 const bool StatsComponentManager::HandleEvent(const Event* const event)
@@ -50,8 +40,7 @@ const bool StatsComponentManager::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (DeleteGameObjectEvent*)event;
 
-			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-			DeleteStatsComponent(gameObject.statsComponentId);
+			ComponentManager::HandleEvent(event);
 
 			break;
 		}
@@ -60,16 +49,11 @@ const bool StatsComponentManager::HandleEvent(const Event* const event)
 			const auto derivedEvent = (NpcDeathEvent*)event;
 
 			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-			StatsComponent& statsComponent = GetStatsComponentById(gameObject.statsComponentId);
+			StatsComponent& statsComponent = GetComponentById(gameObject.statsComponentId);
 			statsComponent.alive = false;
 
 			break;
 		}
 	}
 	return false;
-}
-
-StatsComponentManager::~StatsComponentManager()
-{
-	eventHandler.Unsubscribe(*this);
 }

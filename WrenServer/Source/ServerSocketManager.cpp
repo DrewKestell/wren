@@ -376,7 +376,7 @@ void ServerSocketManager::UpdateClients()
 			const auto movY = std::to_string(mov.y);
 			const auto movZ = std::to_string(mov.z);
 
-			const StatsComponent& stats = statsComponentManager->GetStatsComponentById(gameObject.statsComponentId);
+			const StatsComponent& stats = statsComponentManager->GetComponentById(gameObject.statsComponentId);
 			const auto agility = std::to_string(stats.agility);
 			const auto strength = std::to_string(stats.strength);
 			const auto wisdom = std::to_string(stats.wisdom);
@@ -427,7 +427,7 @@ void ServerSocketManager::ActivateAbility(PlayerComponent& playerComponent, cons
 		const GameObject& target = objectManager.GetGameObjectById(playerComponent.targetId);
 
 		const auto statsComponentManager = componentOrchestrator.GetStatsComponentManager();
-		const StatsComponent& targetStatsComponent = statsComponentManager->GetStatsComponentById(target.statsComponentId);
+		const StatsComponent& targetStatsComponent = statsComponentManager->GetComponentById(target.statsComponentId);
 
 		if (!playerComponent.autoAttackOn && playerComponent.targetId == -1)
 		{
@@ -470,14 +470,14 @@ void ServerSocketManager::LootItem(const int accountId, const int gameObjectId, 
 	// check if item exists, then move it from target inventory to player inventory, then send message to client
 	const GameObject& gameObject = objectManager.GetGameObjectById(gameObjectId);
 	const auto inventoryComponentManager = componentOrchestrator.GetInventoryComponentManager();
-	InventoryComponent& inventoryComponent = inventoryComponentManager->GetInventoryComponentById(gameObject.inventoryComponentId);
+	InventoryComponent& inventoryComponent = inventoryComponentManager->GetComponentById(gameObject.inventoryComponentId);
 	const auto itemId = inventoryComponent.itemIds.at(slot); // TODO: validate array bounds passed from client
 
 	if (itemId >= 0)
 	{
 		const PlayerComponent& playerComponent = GetPlayerComponent(accountId);
 		const GameObject& player = objectManager.GetGameObjectById(playerComponent.GetGameObjectId());
-		InventoryComponent& playerInventoryComponent = inventoryComponentManager->GetInventoryComponentById(player.inventoryComponentId);
+		InventoryComponent& playerInventoryComponent = inventoryComponentManager->GetComponentById(player.inventoryComponentId);
 
 		const auto destinationSlot = playerInventoryComponent.AddItem(itemId);
 		if (destinationSlot == -1)

@@ -48,7 +48,7 @@ void AIComponentManager::Update()
 	{
 		AIComponent& comp = components[i];
 		GameObject& gameObject = objectManager.GetGameObjectById(comp.GetGameObjectId());
-		StatsComponent& statsComponent = statsComponentManager->GetStatsComponentById(gameObject.statsComponentId);
+		StatsComponent& statsComponent = statsComponentManager->GetComponentById(gameObject.statsComponentId);
 
 		if (!statsComponent.alive)
 			continue;
@@ -57,7 +57,7 @@ void AIComponentManager::Update()
 		{
 			statsComponent.alive = false;
 
-			const InventoryComponent& inventoryComponent = inventoryComponentManager->GetInventoryComponentById(gameObject.inventoryComponentId);
+			const InventoryComponent& inventoryComponent = inventoryComponentManager->GetComponentById(gameObject.inventoryComponentId);
 			
 			std::string itemIdString{ "" };
 			for (auto i = 0; i < INVENTORY_SIZE; i++)
@@ -158,7 +158,7 @@ void AIComponentManager::Update()
 						std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);
 						const auto dmg = distDamage(rng);
 
-						StatsComponent& targetStatsComponent = statsComponentManager->GetStatsComponentById(target.statsComponentId);
+						StatsComponent& targetStatsComponent = statsComponentManager->GetComponentById(target.statsComponentId);
 						targetStatsComponent.health = Utility::Max(0, targetStatsComponent.health - dmg);
 
 						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee

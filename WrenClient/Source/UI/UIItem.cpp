@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "UIItem.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "EventHandling/Events/MouseEvent.h"
 #include "Events/UIItemDroppedEvent.h"
 #include "UILootContainer.h"
 

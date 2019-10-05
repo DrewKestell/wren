@@ -1,11 +1,9 @@
 #include "stdafx.h"
-#include "EventHandling/EventHandler.h"
 #include "EventHandling/Events/SystemKeyUpEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "Game.h"
-#include "ClientSocketManager.h"
 
 static wchar_t szWindowClass[] = L"win32app";
 static wchar_t szTitle[] = L"Wren Client";

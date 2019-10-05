@@ -1,48 +1,19 @@
 #include "stdafx.h"
 #include "InventoryComponentManager.h"
-#include "EventHandling/Events/DeleteGameObjectEvent.h"
 #include "EventHandling/Events/NpcDeathEvent.h"
 
 InventoryComponentManager::InventoryComponentManager(EventHandler& eventHandler, ObjectManager& objectManager)
-	: eventHandler{ eventHandler },
-	  objectManager{ objectManager }
+	: ComponentManager(eventHandler, objectManager)
 {
-	eventHandler.Subscribe(*this);
 }
 
 InventoryComponent& InventoryComponentManager::CreateInventoryComponent(const int gameObjectId)
 {
-	if (inventoryComponentIndex == MAX_INVENTORYCOMPONENTS_SIZE)
-		throw std::exception("Max InventoryComponents exceeded!");
+	InventoryComponent& inventoryComponent = CreateComponent(gameObjectId);
 
-	inventoryComponents[inventoryComponentIndex].Initialize(inventoryComponentIndex, gameObjectId);
-	idIndexMap[inventoryComponentIndex] = inventoryComponentIndex;
-
-	InventoryComponent& inventoryComponent = inventoryComponents[inventoryComponentIndex++];
-
-	// initialize component
-	for (auto i = 0; i < INVENTORY_SIZE; i++)
-		inventoryComponent.itemIds.at(i) = -1;
+	// additional initialization here
 
 	return inventoryComponent;
-}
-
-void InventoryComponentManager::DeleteInventoryComponent(const int inventoryComponentId)
-{
-	// first copy the last InventoryComponent into the index that was deleted
-	const auto inventoryComponentToDeleteIndex = idIndexMap[inventoryComponentId];
-	const auto lastInventoryComponentIndex = --inventoryComponentIndex;
-	memcpy(&inventoryComponents[inventoryComponentToDeleteIndex], &inventoryComponents[lastInventoryComponentIndex], sizeof(InventoryComponent));
-
-	// then update the index of the moved InventoryComponent
-	const auto lastInventoryComponentId = inventoryComponents[inventoryComponentToDeleteIndex].id;
-	idIndexMap[lastInventoryComponentId] = inventoryComponentToDeleteIndex;
-}
-
-InventoryComponent& InventoryComponentManager::GetInventoryComponentById(const int inventoryComponentId)
-{
-	const auto index = idIndexMap[inventoryComponentId];
-	return inventoryComponents[index];
 }
 
 const bool InventoryComponentManager::HandleEvent(const Event* const event)
@@ -54,8 +25,7 @@ const bool InventoryComponentManager::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (DeleteGameObjectEvent*)event;
 
-			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-			DeleteInventoryComponent(gameObject.inventoryComponentId);
+			ComponentManager::HandleEvent(event);
 
 			break;
 		}
@@ -65,7 +35,7 @@ const bool InventoryComponentManager::HandleEvent(const Event* const event)
 
 			const auto lootItemIds = derivedEvent->itemIds;
 			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-			InventoryComponent& inventoryComponent = GetInventoryComponentById(gameObject.inventoryComponentId);
+			InventoryComponent& inventoryComponent = GetComponentById(gameObject.inventoryComponentId);
 			for (auto i = 0; i < lootItemIds.size(); i++)
 				inventoryComponent.itemIds.at(i) = lootItemIds.at(i);
 
@@ -78,9 +48,4 @@ const bool InventoryComponentManager::HandleEvent(const Event* const event)
 void InventoryComponentManager::Update()
 {
 	
-}
-
-InventoryComponentManager::~InventoryComponentManager()
-{
-	eventHandler.Unsubscribe(*this);
 }

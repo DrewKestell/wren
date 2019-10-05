@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "SkillComponentManager.h"
 #include "PlayerComponentManager.h"
-#include "EventHandling/Events/DeleteGameObjectEvent.h"
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
 

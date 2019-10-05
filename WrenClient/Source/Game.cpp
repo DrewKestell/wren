@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Game.h"
 #include "ConstantBufferOnce.h"
-#include "Events/UIAbilityDroppedEvent.h"
 #include "Events/SkillIncreaseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
@@ -202,7 +201,7 @@ void Game::Render(const float updateTimer)
 
 		gameMapRenderComponent->Draw(d3dContext, viewTransform, projectionTransform);
 
-		renderComponentManager.Render(d3dContext, viewTransform, projectionTransform, updateTimer);
+		renderComponentManager.Update(d3dContext, viewTransform, projectionTransform, updateTimer);
 	}
 
 	// foreach RenderComponent -> Draw
@@ -1217,7 +1216,7 @@ void Game::InitializeEventHandlers()
 			gameObject.localPosition = pos;
 			gameObject.movementVector = mov;
 
-			StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(gameObject.statsComponentId);
+			StatsComponent& statsComponent = statsComponentManager.GetComponentById(gameObject.statsComponentId);
 			statsComponent.agility = agility;
 			statsComponent.strength = strength;
 			statsComponent.wisdom = wisdom;
@@ -1278,7 +1277,7 @@ void Game::InitializeEventHandlers()
 			obj.localPosition = pos;
 			obj.movementVector = mov;
 
-			StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(obj.statsComponentId);
+			StatsComponent& statsComponent = statsComponentManager.GetComponentById(obj.statsComponentId);
 			statsComponent.agility = agility;
 			statsComponent.strength = strength;
 			statsComponent.wisdom = wisdom;
@@ -1332,7 +1331,7 @@ void Game::InitializeEventHandlers()
 			XMVECTOR rd = XMVector3Unproject(rdScreen, 0.0f, 0.0f, (float)clientWidth, (float)clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
 			rd = XMVector3Normalize(rd - ro);
 
-			RenderComponent& renderComponent = renderComponentManager.GetRenderComponentById(gameObject.renderComponentId);
+			RenderComponent& renderComponent = renderComponentManager.GetComponentById(gameObject.renderComponentId);
 			auto vertices = renderComponent.mesh->vertices;
 			auto indices = renderComponent.mesh->indices;
 
@@ -1361,7 +1360,7 @@ void Game::InitializeEventHandlers()
 		if (clickedGameObject)
 		{
 			const auto objectId = clickedGameObject->GetId();
-			StatsComponent& statsComponent = statsComponentManager.GetStatsComponentById(clickedGameObject->statsComponentId);
+			StatsComponent& statsComponent = statsComponentManager.GetComponentById(clickedGameObject->statsComponentId);
 			std::unique_ptr<Event> e = std::make_unique<SetTargetEvent>(objectId, clickedGameObject->name, &statsComponent);
 			eventHandler.QueueEvent(e);
 			std::vector<std::string> args{ std::to_string(objectId) };
@@ -1434,7 +1433,7 @@ void Game::InitializeEventHandlers()
 		if (derivedEvent->clickedObject && !lootPanel->isVisible)
 		{
 			const auto clickedObject = derivedEvent->clickedObject;
-			const auto statsComponent = statsComponentManager.GetStatsComponentById(clickedObject->statsComponentId);
+			const StatsComponent& statsComponent = statsComponentManager.GetComponentById(clickedObject->statsComponentId);
 
 			if (!statsComponent.alive)
 				lootPanel->ToggleVisibility();

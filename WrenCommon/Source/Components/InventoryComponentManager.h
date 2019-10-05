@@ -4,22 +4,13 @@
 #include <EventHandling/Observer.h>
 #include "InventoryComponent.h"
 #include "ObjectManager.h"
+#include <Components/ComponentManager.h>
 
-constexpr unsigned int MAX_INVENTORYCOMPONENTS_SIZE = 100000;
-
-class InventoryComponentManager : public Observer
+class InventoryComponentManager : public ComponentManager<InventoryComponent, 100000>
 {
-	EventHandler& eventHandler;
-	ObjectManager& objectManager;
-	std::map<int, int> idIndexMap;
-	InventoryComponent inventoryComponents[MAX_INVENTORYCOMPONENTS_SIZE];
-	int inventoryComponentIndex{ 0 };
 public:
 	InventoryComponentManager(EventHandler& eventHandler, ObjectManager& objectManager);
 	InventoryComponent& CreateInventoryComponent(const int gameObjectId);
-	void DeleteInventoryComponent(const int inventoryComponentId);
-	InventoryComponent& GetInventoryComponentById(const int inventoryComponentId);
 	virtual const bool HandleEvent(const Event* const event);
 	void Update();
-	~InventoryComponentManager();
 };

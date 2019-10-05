@@ -2,16 +2,6 @@
 #include "RenderComponent.h"
 #include "ConstantBufferPerObject.h"
 
-void RenderComponent::Initialize(const int id, const int gameObjectId, Mesh* mesh, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
-{
-	this->id = id;
-	this->gameObjectId = gameObjectId;
-	this->mesh = mesh;
-	this->vertexShader = vertexShader;
-	this->pixelShader = pixelShader;
-	this->texture = texture;
-}
-
 void RenderComponent::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX viewTransform, const XMMATRIX projectionTransform, const float updateLag, GameObject& gameObject)
 {
 	// TODO: update GameObjects position based on state and updateLag
@@ -49,5 +39,3 @@ void RenderComponent::Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX
 	immediateContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->DrawIndexed(mesh->GetIndexCount(), 0, 0);
 }
-
-const int RenderComponent::GetId() const { return id; }

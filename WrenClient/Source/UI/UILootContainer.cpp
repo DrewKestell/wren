@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "UILootContainer.h"
-#include "UIPanel.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../Events/DoubleLeftMouseDownEvent.h"
 #include "../Events/LootItemSuccessEvent.h"
@@ -87,7 +86,7 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 			{
 				const auto clickedObject = derivedEvent->clickedObject;
 				const auto clickedObjectId = clickedObject->GetId();
-				const auto statsComponent = statsComponentManager.GetStatsComponentById(clickedObject->statsComponentId);
+				const StatsComponent& statsComponent = statsComponentManager.GetComponentById(clickedObject->statsComponentId);
 				
 				if (!statsComponent.alive && clickedObjectId != currentGameObjectId)
 				{
@@ -99,7 +98,7 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 					ClearChildren(); // TODO: this blows up
 
 					// initialize UIItems
-					const auto inventoryComponent = inventoryComponentManager.GetInventoryComponentById(clickedObject->inventoryComponentId);
+					const InventoryComponent& inventoryComponent = inventoryComponentManager.GetComponentById(clickedObject->inventoryComponentId);
 					for (auto i = 0; i < INVENTORY_SIZE; i++)
 					{
 						const auto itemId = inventoryComponent.itemIds.at(i);

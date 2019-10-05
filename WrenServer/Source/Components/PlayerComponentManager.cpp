@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "PlayerComponentManager.h"
-#include "EventHandling/Events/DeleteGameObjectEvent.h"
 #include "../Events/AttackHitEvent.h"
 #include "../Events/AttackMissEvent.h"
 #include "AIComponentManager.h"
@@ -59,7 +58,7 @@ void PlayerComponentManager::Update()
 		// next handle combat
 		// if target dies, toggle off auto attack
 		const GameObject& target = objectManager.GetGameObjectById(comp.targetId);
-		const StatsComponent& targetStatsComponent = statsComponentManager->GetStatsComponentById(target.statsComponentId);
+		const StatsComponent& targetStatsComponent = statsComponentManager->GetComponentById(target.statsComponentId);
 
 		if (comp.autoAttackOn && !targetStatsComponent.alive)
 		{
@@ -95,7 +94,7 @@ void PlayerComponentManager::Update()
 				std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);
 				const auto dmg = distDamage(rng);
 
-				StatsComponent& statsComponent = statsComponentManager->GetStatsComponentById(target.statsComponentId);
+				StatsComponent& statsComponent = statsComponentManager->GetComponentById(target.statsComponentId);
 				statsComponent.health = Utility::Max(0, statsComponent.health - dmg);
 
 				const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
