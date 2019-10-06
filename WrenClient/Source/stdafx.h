@@ -29,7 +29,8 @@
 #include <iostream>
 #include <exception>
 #include <sstream>
-#include <fstream>  
+#include <fstream>
+#include <array>
 #include <vector>
 #include <map>
 #include <algorithm>

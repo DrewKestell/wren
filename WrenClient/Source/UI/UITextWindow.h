@@ -33,7 +33,7 @@ class UITextWindow : public UIComponent
 	ComPtr<ID2D1GeometrySink> sink;
 	ComPtr<IDWriteTextLayout> inputValueTextLayout;
 	ComPtr<IDWriteTextLayout> inputValueTextLayoutInactive;
-	std::string** messages;
+	std::array<std::string, MESSAGE_BUFFER_SIZE> messages;
 	unsigned int* messageIndex;
 	ComPtr<IDWriteTextLayout> textLayout;
 	ComPtr<ID2D1RectangleGeometry> windowGeometry;
@@ -65,7 +65,7 @@ public:
 		EventHandler& eventHandler,
 		ObjectManager& objectManager,
 		std::vector<std::unique_ptr<Item>>& allItems,
-		std::string* messages[MESSAGE_BUFFER_SIZE],
+		std::array<std::string, MESSAGE_BUFFER_SIZE> textWindowMessages,
 		unsigned int* messageIndex,
 		ID2D1SolidColorBrush* backgroundBrush,
 		ID2D1SolidColorBrush* borderBrush,
@@ -83,5 +83,5 @@ public:
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	void Update();
-	void AddMessage(std::string* message);
+	void AddMessage(const std::string& message);
 };

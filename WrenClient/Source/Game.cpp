@@ -332,7 +332,7 @@ void Game::CreateWindowSizeDependentResources()
 	hotbar = std::make_unique<UIHotbar>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0, eventHandler, blackBrush.Get(), d2dDeviceContext, d2dFactory, (float)clientHeight);
 
 	// init textWindow
-	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, eventHandler, objectManager, items, textWindowMessages, textWindowMessageIndex, statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
+	textWindow = std::make_unique<UITextWindow>(uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0, eventHandler, objectManager, items, textWindowMessages, textWindowMessageIndex.get(), statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), d2dDeviceContext, writeFactory, textFormatTextWindow.Get(), textFormatTextWindowInactive.Get(), d2dFactory);
 
 	if (skills.size() > 0)
 		skillsContainer->Initialize(skills);
@@ -1167,7 +1167,7 @@ void Game::InitializeEventHandlers()
 
 		std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 
-		textWindow->AddMessage(new std::string("Welcome to Wren!"));
+		textWindow->AddMessage("Welcome to Wren!");
 
 		SetActiveLayer(InGame);
 	};
@@ -1400,17 +1400,15 @@ void Game::InitializeEventHandlers()
 	eventHandlers[EventType::PropagateChatMessage] = [this](const Event* const event)
 	{
 		const auto derivedEvent = (PropagateChatMessageEvent*)event;
-
-		const auto msg{ new std::string("(" + derivedEvent->senderName + ") " + derivedEvent->message) };
-		textWindow->AddMessage(msg);
+		
+		textWindow->AddMessage("(" + derivedEvent->senderName + ") " + derivedEvent->message);
 	};
 
 	eventHandlers[EventType::ServerMessage] = [this](const Event* const event)
 	{
 		const auto derivedEvent = (ServerMessageEvent*)event;
 
-		const auto msg{ new std::string(derivedEvent->message) };
-		textWindow->AddMessage(msg);
+		textWindow->AddMessage(derivedEvent->message);
 	};
 
 	eventHandlers[EventType::SkillIncrease] = [this](const Event* const event)
@@ -1425,8 +1423,7 @@ void Game::InitializeEventHandlers()
 			if (skill->skillId == derivedEvent->skillId)
 			{
 				skill->value = derivedEvent->newValue;
-				const auto msg{ new std::string("Your skill in " + skill->name + " has increased to " + std::to_string(derivedEvent->newValue)) };
-				textWindow->AddMessage(msg);
+				textWindow->AddMessage("Your skill in " + skill->name + " has increased to " + std::to_string(derivedEvent->newValue));
 			}
 		}
 	};

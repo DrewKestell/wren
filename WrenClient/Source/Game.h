@@ -100,7 +100,7 @@ private:
 	GameMap gameMap;
 	std::unique_ptr<GameMapRenderComponent> gameMapRenderComponent;
 	GameObject* player;
-	std::vector<UIComponent*> uiComponents; // TODO: i think these should use smart pointers
+	std::vector<UIComponent*> uiComponents;
 	std::vector<std::unique_ptr<Mesh>> meshes;
 	std::vector<ComPtr<ID3D11ShaderResourceView>> textures;
 	std::vector<std::shared_ptr<Sprite>> sprites;
@@ -110,8 +110,8 @@ private:
 	std::unique_ptr<UITextWindow> textWindow;
 	std::vector<std::unique_ptr<WrenCommon::Skill>> skills;
 	std::vector<std::unique_ptr<Ability>> abilities;
-	unsigned int* textWindowMessageIndex = new unsigned int{ 0 };
-	std::string* textWindowMessages[MESSAGE_BUFFER_SIZE];
+	std::unique_ptr<unsigned int> textWindowMessageIndex = std::make_unique<unsigned int>(0);
+	std::array<std::string, MESSAGE_BUFFER_SIZE> textWindowMessages;
 	std::vector<std::unique_ptr<Npc>> npcs;
 	std::vector<std::unique_ptr<Item>> items;
 	std::map<EventType, std::function<void(const Event* const event)>> eventHandlers;

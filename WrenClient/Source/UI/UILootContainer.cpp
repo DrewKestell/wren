@@ -95,7 +95,7 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 					// reset state
 					items.clear();
 					uiItems.clear();
-					EmptyChildren(); // TODO: this blows up
+					ClearChildren();
 
 					// initialize UIItems
 					const InventoryComponent& inventoryComponent = inventoryComponentManager.GetComponentById(clickedObject->inventoryComponentId);

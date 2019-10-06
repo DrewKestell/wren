@@ -21,7 +21,7 @@ UITextWindow::UITextWindow(
 	EventHandler& eventHandler,
 	ObjectManager& objectManager,
 	std::vector<std::unique_ptr<Item>>& allItems,
-	std::string* messages[MESSAGE_BUFFER_SIZE],
+	std::array<std::string, MESSAGE_BUFFER_SIZE> textWindowMessages,
 	unsigned int* messageIndex,
 	ID2D1SolidColorBrush* backgroundBrush,
 	ID2D1SolidColorBrush* borderBrush,
@@ -215,12 +215,12 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 			if (derivedEvent->attackerId == playerId)
 			{
 				const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->targetId);
-				AddMessage(new std::string("You swing and hit " + gameObject.name + " for " + std::to_string(derivedEvent->damage) + " points of damage!"));
+				AddMessage("You swing and hit " + gameObject.name + " for " + std::to_string(derivedEvent->damage) + " points of damage!");
 			}
 			else if (derivedEvent->targetId == playerId)
 			{
 				const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->attackerId);
-				AddMessage(new std::string(gameObject.name + " swings and hits you for " + std::to_string(derivedEvent->damage) + " points of damage!"));
+				AddMessage(gameObject.name + " swings and hits you for " + std::to_string(derivedEvent->damage) + " points of damage!");
 			}
 
 			break;
@@ -232,12 +232,12 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 			if (derivedEvent->attackerId == playerId)
 			{
 				const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->targetId);
-				AddMessage(new std::string("You swing at " + gameObject.name + " and miss!"));
+				AddMessage("You swing at " + gameObject.name + " and miss!");
 			}
 			else if (derivedEvent->targetId == playerId)
 			{
 				const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->attackerId);
-				AddMessage(new std::string(gameObject.name + " swings at you and misses!"));
+				AddMessage(gameObject.name + " swings at you and misses!");
 			}
 
 			break;
@@ -334,7 +334,7 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 			const auto derivedEvent = (NpcDeathEvent*)event;
 
 			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-			AddMessage(new std::string(gameObject.name + " has been slain."));
+			AddMessage(gameObject.name + " has been slain.");
 
 			break;
 		}
@@ -343,7 +343,7 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 			const auto derivedEvent = (LootItemSuccessEvent*)event;
 
 			const std::string& itemName = allItems.at(derivedEvent->itemId - 1).get()->GetName();
-			AddMessage(new std::string("You loot " + itemName));
+			AddMessage("You loot " + itemName);
 
 			break;
 		}
@@ -359,7 +359,7 @@ void UITextWindow::UpdateMessages()
 	auto index = *messageIndex;
 	auto messagesToDisplay = std::min((int)index, MESSAGES_PER_PAGE);
 	for (auto i = scrollIndex; i < scrollIndex + messagesToDisplay; i++)
-		text << messages[i % MESSAGE_BUFFER_SIZE]->c_str() << std::endl;
+		text << messages[i % MESSAGE_BUFFER_SIZE].c_str() << std::endl;
 
 	ThrowIfFailed(writeFactory->CreateTextLayout(
 		text.str().c_str(),
@@ -371,11 +371,11 @@ void UITextWindow::UpdateMessages()
 	);
 }
 
-void UITextWindow::AddMessage(std::string* message)
+void UITextWindow::AddMessage(const std::string& message)
 {
 	unsigned int& index = *messageIndex;
 	auto normalizedIndex = index % MESSAGE_BUFFER_SIZE;
-	messages[normalizedIndex] = message;
+	messages[normalizedIndex] = std::string(message);
 	index++;
 
 	if (index >= MESSAGES_PER_PAGE)
