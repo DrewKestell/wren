@@ -25,11 +25,12 @@ class UIInventory : public UIComponent
 	ID3D11PixelShader* pixelShader;
 	const BYTE* vertexShaderBuffer;
 	const int vertexShaderSize;
-
+	
 	void ReinitializeGeometry();
 public:
 	float clientWidth;
 	float clientHeight;
+	int playerId;
 	XMMATRIX projectionTransform;
 
 	UIInventory(

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "InventoryComponentManager.h"
 #include "EventHandling/Events/NpcDeathEvent.h"
+#include <EventHandling/Events/LootItemSuccessEvent.h>
 
 InventoryComponentManager::InventoryComponentManager(EventHandler& eventHandler, ObjectManager& objectManager)
 	: ComponentManager(eventHandler, objectManager)
@@ -38,6 +39,16 @@ const bool InventoryComponentManager::HandleEvent(const Event* const event)
 			InventoryComponent& inventoryComponent = GetComponentById(gameObject.inventoryComponentId);
 			for (auto i = 0; i < lootItemIds.size(); i++)
 				inventoryComponent.itemIds.at(i) = lootItemIds.at(i);
+
+			break;
+		}
+		case EventType::LootItemSuccess:
+		{
+			const auto derivedEvent = (LootItemSuccessEvent*)event;
+
+			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
+			InventoryComponent& inventoryComponent = GetComponentById(gameObject.inventoryComponentId);
+			inventoryComponent.itemIds.at(derivedEvent->slot) = -1;
 
 			break;
 		}

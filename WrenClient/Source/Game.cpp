@@ -820,6 +820,9 @@ void Game::InitializePanels()
 
 	inventory = std::make_unique<UIInventory>(uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2, eventHandler, socketManager, items, textures, blackBrush.Get(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
 	inventoryPanel->AddChildComponent(*inventory);
+
+	if (player)
+		inventory->playerId = player->GetId();
 }
 
 UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
@@ -1156,6 +1159,8 @@ void Game::InitializeEventHandlers()
 			abilities.clear();
 		abilities = std::move(derivedEvent->abilities);
 		InitializeAbilitiesContainer();
+
+		inventory->playerId = player.GetId();
 
 		// init characterHUD
 		characterHUD = std::make_unique<UICharacterHUD>(uiComponents, XMFLOAT2{ 10.0f, 12.0f }, InGame, 0, d2dDeviceContext, writeFactory, textFormatSuccessMessage.Get(), d2dFactory, statsComponent, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get(), derivedEvent->name.c_str());

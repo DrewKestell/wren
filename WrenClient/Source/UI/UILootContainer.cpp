@@ -2,7 +2,7 @@
 #include "UILootContainer.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../Events/DoubleLeftMouseDownEvent.h"
-#include "../Events/LootItemSuccessEvent.h"
+#include "EventHandling/Events/LootItemSuccessEvent.h"
 
 UILootContainer::UILootContainer(
 	std::vector<UIComponent*>& uiComponents,
@@ -91,11 +91,11 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 				if (!statsComponent.alive && clickedObjectId != currentGameObjectId)
 				{
 					currentGameObjectId = clickedObjectId;
-					
+
 					// reset state
 					items.clear();
 					uiItems.clear();
-					ClearChildren(); // TODO: this blows up
+					EmptyChildren(); // TODO: this blows up
 
 					// initialize UIItems
 					const InventoryComponent& inventoryComponent = inventoryComponentManager.GetComponentById(clickedObject->inventoryComponentId);
@@ -131,7 +131,6 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 				RemoveChildComponent(uiItems.at(slot).get());
 				items.at(slot) = nullptr;
 				uiItems.at(slot) = nullptr;
-				
 			}
 			
 			break;

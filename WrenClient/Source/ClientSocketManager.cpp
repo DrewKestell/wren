@@ -17,7 +17,7 @@
 #include "EventHandling/Events/ServerMessageEvent.h"
 #include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
 #include "EventHandling/Events/NpcDeathEvent.h"
-#include "Events/LootItemSuccessEvent.h"
+#include "EventHandling/Events/LootItemSuccessEvent.h"
 
 ClientSocketManager::ClientSocketManager(EventHandler& eventHandler)
 	: SocketManager{ eventHandler }
@@ -423,8 +423,9 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const int slot = std::stoi(args.at(1));
 		const int destinationSlot = std::stoi(args.at(2));
 		const int itemId = std::stoi(args.at(3));
+		const int looterId = std::stoi(args.at(4));
 
-		std::unique_ptr<Event> e = std::make_unique<LootItemSuccessEvent>(gameObjectId, slot, destinationSlot, itemId);
+		std::unique_ptr<Event> e = std::make_unique<LootItemSuccessEvent>(gameObjectId, slot, destinationSlot, itemId, looterId);
 		eventHandler.QueueEvent(e);
 	};
 }

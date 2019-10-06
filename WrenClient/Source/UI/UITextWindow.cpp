@@ -2,7 +2,7 @@
 #include "UITextWindow.h"
 #include "Events/AttackMissEvent.h"
 #include "Events/AttackHitEvent.h"
-#include "Events/LootItemSuccessEvent.h"
+#include "EventHandling/Events/LootItemSuccessEvent.h"
 #include <EventHandling/Events/MouseEvent.h>
 #include <EventHandling/Events/KeyDownEvent.h>
 #include <EventHandling/Events/SystemKeyDownEvent.h>

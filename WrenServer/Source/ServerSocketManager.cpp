@@ -487,7 +487,7 @@ void ServerSocketManager::LootItem(const int accountId, const int gameObjectId, 
 		else
 		{
 			inventoryComponent.itemIds.at(slot) = -1;
-			std::vector<std::string> args{ std::to_string(gameObjectId), std::to_string(slot), std::to_string(destinationSlot), std::to_string(itemId) };
+			std::vector<std::string> args{ std::to_string(gameObjectId), std::to_string(slot), std::to_string(destinationSlot), std::to_string(itemId), std::to_string(player.GetId()) };
 			SendPacketToAllClients(OpCode::LootItemSuccess, args);
 		}
 	}

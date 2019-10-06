@@ -70,6 +70,7 @@
     <ClInclude Include="Source\EventHandling\Events\EnterWorldSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\Event.h" />
     <ClInclude Include="Source\EventHandling\Events\EventType.h" />
+    <ClInclude Include="Source\EventHandling\Events\LootItemSuccessEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\NpcDeathEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\NpcUpdateEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\ActivateAbilityEvent.h" />

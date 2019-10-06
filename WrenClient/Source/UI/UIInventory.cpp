@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "UIInventory.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
-#include "../Events/LootItemSuccessEvent.h"
+#include "EventHandling/Events/LootItemSuccessEvent.h"
 
 UIInventory::UIInventory(
 	std::vector<UIComponent*>& uiComponents,
@@ -76,23 +76,27 @@ const bool UIInventory::HandleEvent(const Event* const event)
 		case EventType::LootItemSuccess:
 		{
 			const auto derivedEvent = (LootItemSuccessEvent*)event;
-			const auto destinationSlot = derivedEvent->destinationSlot;
 
-			const auto item = allItems.at(derivedEvent->itemId - 1).get();
-			items.at(destinationSlot) = item;
-			
-			const auto row = destinationSlot / 4;
-			const auto col = destinationSlot % 4;
-			const auto posX = 5.0f + (col * 45.0f);
-			const auto posY = 25.0f + (row * 45.0f);
-			const auto texture = allTextures.at(item->GetSpriteId()).Get();
-			const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
-			uiItems.at(destinationSlot) = std::make_unique<UIItem>(uiComponents, XMFLOAT2{ posX + 2.0f, posY + 2.0f }, uiLayer, zIndex + 1, eventHandler, socketManager, item->GetId(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform);
-			uiItems.at(destinationSlot)->isVisible = isVisible;
-			AddChildComponent(*uiItems.at(destinationSlot).get());
+			if (playerId == derivedEvent->looterId)
+			{
+				const auto destinationSlot = derivedEvent->destinationSlot;
 
-			std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
-			eventHandler.QueueEvent(e);
+				const auto item = allItems.at(derivedEvent->itemId - 1).get();
+				items.at(destinationSlot) = item;
+
+				const auto row = destinationSlot / 4;
+				const auto col = destinationSlot % 4;
+				const auto posX = 5.0f + (col * 45.0f);
+				const auto posY = 25.0f + (row * 45.0f);
+				const auto texture = allTextures.at(item->GetSpriteId()).Get();
+				const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
+				uiItems.at(destinationSlot) = std::make_unique<UIItem>(uiComponents, XMFLOAT2{ posX + 2.0f, posY + 2.0f }, uiLayer, zIndex + 1, eventHandler, socketManager, item->GetId(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform);
+				uiItems.at(destinationSlot)->isVisible = isVisible;
+				AddChildComponent(*uiItems.at(destinationSlot).get());
+
+				std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
+				eventHandler.QueueEvent(e);
+			}
 
 			break;
 		}

@@ -31,6 +31,7 @@ public:
 		}
 	}
 	void ClearChildren();
+	void EmptyChildren();
 	void SetLocalPosition(const XMFLOAT2 pos) { this->localPosition = pos; }
 	virtual const std::string GetUIAbilityDragBehavior() const { return "NONE"; }
 	virtual const std::string GetUIItemDragBehavior() const { return "NONE"; }

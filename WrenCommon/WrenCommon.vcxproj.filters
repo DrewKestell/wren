@@ -129,6 +129,7 @@
     <ClInclude Include="Source\Components\InventoryComponentManager.h" />
     <ClInclude Include="Source\Components\Component.h" />
     <ClInclude Include="Source\Components\ComponentManager.h" />
+    <ClInclude Include="Source\EventHandling\Events\LootItemSuccessEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Wren.ruleset" />

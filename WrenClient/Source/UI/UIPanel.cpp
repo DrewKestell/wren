@@ -70,6 +70,19 @@ const bool UIPanel::HandleEvent(const Event* const event)
 	const auto type = event->type;
 	switch (type)
 	{
+		case EventType::RightMouseDown:
+		{
+			const auto mouseDownEvent = (MouseEvent*)event;
+
+			if (isVisible)
+			{
+				const auto position = GetWorldPosition();
+				if (Utility::DetectClick(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
+					return true;
+			}
+
+			break;
+		}
 		case EventType::LeftMouseDown:
 		{
 			const auto mouseDownEvent = (MouseEvent*)event;
