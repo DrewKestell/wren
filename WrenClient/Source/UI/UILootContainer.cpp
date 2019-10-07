@@ -27,7 +27,13 @@ UILootContainer::UILootContainer(
 	const int vertexShaderSize,
 	const XMMATRIX projectionTransform,
 	const float clientWidth,
-	const float clientHeight)
+	const float clientHeight,
+	ID2D1SolidColorBrush* bodyBrush,
+	ID2D1SolidColorBrush* borderBrush,
+	ID2D1SolidColorBrush* textBrush,
+	IDWriteTextFormat* textFormatTitle,
+	IDWriteTextFormat* textFormatDescription,
+	IDWriteFactory2* writeFactory)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
 	  eventHandler{ eventHandler },
 	  socketManager{ socketManager },
@@ -47,7 +53,13 @@ UILootContainer::UILootContainer(
 	  vertexShaderSize{ vertexShaderSize },
 	  projectionTransform{ projectionTransform },
 	  clientWidth{ clientWidth },
-	  clientHeight{ clientHeight }
+	  clientHeight{ clientHeight },
+	  bodyBrush{ bodyBrush },
+	  borderBrush{ borderBrush },
+	  textBrush{ textBrush },
+	  textFormatTitle{ textFormatTitle },
+	  textFormatDescription{ textFormatDescription },
+	  writeFactory{ writeFactory }
 {
 }
 
@@ -111,10 +123,13 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 							const auto yOffset = 25.0f + ((i / 3) * 45.0f);
 							const auto texture = allTextures.at(item->GetSpriteId()).Get();
 							const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
-							uiItems.push_back(std::make_unique<UIItem>(uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3, eventHandler, socketManager, itemId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform));
+							uiItems.push_back(std::make_unique<UIItem>(uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3, eventHandler, socketManager, itemId, item->GetName(), item->GetDescription(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription, writeFactory));
 							AddChildComponent(*uiItems.at(i).get());
 						}
 					}
+
+					std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
+					eventHandler.QueueEvent(e);
 				}
 			}
 

@@ -12,6 +12,8 @@ UIItem::UIItem(
 	EventHandler& eventHandler,
 	ClientSocketManager& socketManager,
 	const int itemId,
+	const std::string& name,
+	const std::string& description,
 	ID2D1DeviceContext1* d2dDeviceContext,
 	ID2D1Factory2* d2dFactory,
 	ID3D11Device* d3dDevice,
@@ -26,6 +28,12 @@ UIItem::UIItem(
 	const float clientWidth,
 	const float clientHeight,
 	const XMMATRIX projectionTransform,
+	ID2D1SolidColorBrush* bodyBrush,
+	ID2D1SolidColorBrush* borderBrush,
+	ID2D1SolidColorBrush* textBrush,
+	IDWriteTextFormat* textFormatTitle,
+	IDWriteTextFormat* textFormatDescription,
+	IDWriteFactory2* writeFactory,
 	const bool isDragging,
 	const float mousePosX,
 	const float mousePosY)
@@ -33,6 +41,8 @@ UIItem::UIItem(
 	  eventHandler{ eventHandler },
 	  socketManager{ socketManager },
 	  itemId{ itemId },
+	  name{ name },
+	  description{ description },
 	  d2dDeviceContext{ d2dDeviceContext },
 	  d2dFactory{ d2dFactory },
 	  clientWidth{ clientWidth },
@@ -47,10 +57,18 @@ UIItem::UIItem(
 	  d3dDeviceContext{ d3dDeviceContext },
 	  highlightBrush{ highlightBrush },
 	  projectionTransform{ projectionTransform },
+	  bodyBrush{ bodyBrush },
+	  borderBrush{ borderBrush },
+	  textBrush{ textBrush },
+	  textFormatTitle{ textFormatTitle },
+	  textFormatDescription{ textFormatDescription },
+	  writeFactory{ writeFactory },
 	  isDragging{ isDragging },
 	  lastDragX{ mousePosX },
 	  lastDragY{ mousePosY }
 {
+	tooltip = std::make_unique<UITooltip>(uiComponents, XMFLOAT2{ -3.0f, 42.0f }, uiLayer, zIndex + 1, eventHandler, name, description, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription, writeFactory, d2dDeviceContext, d2dFactory);
+	AddChildComponent(*tooltip.get());
 }
 
 void UIItem::Draw()
@@ -102,22 +120,25 @@ const bool UIItem::HandleEvent(const Event* const event)
 		}
 		case EventType::MouseMove:
 		{
+			if (!isVisible)
+				return false;
+
 			const auto derivedEvent = (MouseEvent*)event;
 			const auto mousePosX = derivedEvent->mousePosX;
 			const auto mousePosY = derivedEvent->mousePosY;
 
-			if (isVisible && GetParent()->GetUIItemDragBehavior() == "MOVE")
-			{
-				const auto worldPos = GetWorldPosition();
-				if (Utility::DetectClick(worldPos.x, worldPos.y, worldPos.x + 38.0f, worldPos.y + 38.0f, mousePosX, mousePosY))
-					isHovered = true;
-				else
-					isHovered = false;
+			const auto worldPos = GetWorldPosition();
+			if (Utility::DetectClick(worldPos.x, worldPos.y, worldPos.x + 38.0f, worldPos.y + 38.0f, mousePosX, mousePosY))
+				isHovered = true;
+			else
+				isHovered = false;
 
+			if (GetParent()->GetUIItemDragBehavior() == "MOVE")
+			{
 				// if the button is pressed, and the mouse starts moving, let's move the UIItem
 				if (isPressed && !isDragging && !itemCopy)
 				{
-					itemCopy = new UIItem(uiComponents, worldPos, uiLayer, 2, eventHandler, socketManager, itemId, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, true, mousePosX, mousePosY);
+					itemCopy = new UIItem(uiComponents, worldPos, uiLayer, 2, eventHandler, socketManager, itemId, name, description, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription, writeFactory, true, mousePosX, mousePosY);
 					itemCopy->isVisible = true;
 
 					/*std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(clientHeight, mousePosX, mousePosY));
@@ -135,6 +156,11 @@ const bool UIItem::HandleEvent(const Event* const event)
 					lastDragY = mousePosY;
 				}
 			}
+
+			if (isHovered)
+				tooltip->isVisible = true;
+			else
+				tooltip->isVisible = false;
 
 			break;
 		}

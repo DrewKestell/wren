@@ -35,6 +35,7 @@
     <ClCompile Include="Source\Models\Item.cpp" />
     <ClCompile Include="Source\UI\UIItem.cpp" />
     <ClCompile Include="Source\UI\UIInventory.cpp" />
+    <ClCompile Include="Source\UI\UITooltip.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
@@ -177,6 +178,7 @@
     <ClInclude Include="Source\UI\UIItem.h" />
     <ClInclude Include="Source\Events\UIItemDroppedEvent.h" />
     <ClInclude Include="Source\UI\UIInventory.h" />
+    <ClInclude Include="Source\UI\UITooltip.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

@@ -24,7 +24,13 @@ UIInventory::UIInventory(
 	const int vertexShaderSize,
 	const XMMATRIX projectionTransform,
 	const float clientWidth,
-	const float clientHeight)
+	const float clientHeight,
+	ID2D1SolidColorBrush* bodyBrush,
+	ID2D1SolidColorBrush* borderBrush,
+	ID2D1SolidColorBrush* textBrush,
+	IDWriteTextFormat* textFormatTitle,
+	IDWriteTextFormat* textFormatDescription,
+	IDWriteFactory2* writeFactory)
 	: UIComponent(uiComponents, position, uiLayer, zIndex),
 	  eventHandler{ eventHandler },
 	  socketManager{ socketManager },
@@ -42,7 +48,13 @@ UIInventory::UIInventory(
 	  vertexShaderSize{ vertexShaderSize },
 	  projectionTransform{ projectionTransform },
 	  clientWidth{ clientWidth },
-	  clientHeight{ clientHeight }
+	  clientHeight{ clientHeight },
+	  bodyBrush{ bodyBrush },
+	  borderBrush{ borderBrush },
+	  textBrush{ textBrush },
+	  textFormatTitle{ textFormatTitle },
+	  textFormatDescription{ textFormatDescription },
+	  writeFactory{ writeFactory }
 {
 }
 
@@ -90,7 +102,7 @@ const bool UIInventory::HandleEvent(const Event* const event)
 				const auto posY = 25.0f + (row * 45.0f);
 				const auto texture = allTextures.at(item->GetSpriteId()).Get();
 				const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
-				uiItems.at(destinationSlot) = std::make_unique<UIItem>(uiComponents, XMFLOAT2{ posX + 2.0f, posY + 2.0f }, uiLayer, zIndex + 1, eventHandler, socketManager, item->GetId(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform);
+				uiItems.at(destinationSlot) = std::make_unique<UIItem>(uiComponents, XMFLOAT2{ posX + 2.0f, posY + 2.0f }, uiLayer, zIndex + 1, eventHandler, socketManager, item->GetId(), item->GetName(), item->GetDescription(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription, writeFactory);
 				uiItems.at(destinationSlot)->isVisible = isVisible;
 				AddChildComponent(*uiItems.at(destinationSlot).get());
 

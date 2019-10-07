@@ -69,8 +69,8 @@ void PlayerComponentManager::Update()
 		}
 
 		const auto weaponSpeed = 3.0f;
-		const auto damageMin = 4;
-		const auto damageMax = 30;
+		const auto damageMin = 50;
+		const auto damageMax = 100;
 
 		if (comp.swingTimer < weaponSpeed)
 			comp.swingTimer += UPDATE_FREQUENCY;
@@ -88,7 +88,7 @@ void PlayerComponentManager::Update()
 			if (targetAIComponent.targetId == -1)
 				targetAIComponent.targetId = playerId;
 
-			const auto hit = dist100(rng) > 30;
+			const auto hit = dist100(rng) > 0;
 			if (hit)
 			{
 				std::uniform_int_distribution<std::mt19937::result_type> distDamage(damageMin, damageMax);

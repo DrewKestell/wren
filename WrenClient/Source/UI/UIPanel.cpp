@@ -189,7 +189,8 @@ void UIPanel::SetChildrenAsVisible(UIComponent* uiComponent)
 	for (auto i = 0; i < children.size(); i++)
 	{
 		auto uiComponent = (UIComponent*)children.at(i);
-		uiComponent->isVisible = !uiComponent->isVisible;
+		if (uiComponent->followParentVisibility)
+			uiComponent->isVisible = !uiComponent->isVisible;
 
 		SetChildrenAsVisible(uiComponent);
 	}

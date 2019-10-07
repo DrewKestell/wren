@@ -25,7 +25,13 @@ class UIInventory : public UIComponent
 	ID3D11PixelShader* pixelShader;
 	const BYTE* vertexShaderBuffer;
 	const int vertexShaderSize;
-	
+	ID2D1SolidColorBrush* bodyBrush;
+	ID2D1SolidColorBrush* borderBrush;
+	ID2D1SolidColorBrush* textBrush;
+	IDWriteTextFormat* textFormatTitle;
+	IDWriteTextFormat* textFormatDescription;
+	IDWriteFactory2* writeFactory;
+
 	void ReinitializeGeometry();
 public:
 	float clientWidth;
@@ -54,7 +60,13 @@ public:
 		const int vertexShaderSize,
 		const XMMATRIX projectionTransform,
 		const float clientWidth,
-		const float clientHeight);
+		const float clientHeight,
+		ID2D1SolidColorBrush* bodyBrush,
+		ID2D1SolidColorBrush* borderBrush,
+		ID2D1SolidColorBrush* textBrush,
+		IDWriteTextFormat* textFormatTitle,
+		IDWriteTextFormat* textFormatDescription,
+		IDWriteFactory2* writeFactory);
 
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;

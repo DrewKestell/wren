@@ -158,6 +158,8 @@ private:
 	ComPtr<IDWriteTextFormat> textFormatErrorMessage;
 	ComPtr<IDWriteTextFormat> textFormatTextWindow;
 	ComPtr<IDWriteTextFormat> textFormatTextWindowInactive;
+	ComPtr<IDWriteTextFormat> textFormatTooltipTitle;
+	ComPtr<IDWriteTextFormat> textFormatTooltipDescription;
 
 	// Brushes
 	ComPtr<ID2D1SolidColorBrush> grayBrush;

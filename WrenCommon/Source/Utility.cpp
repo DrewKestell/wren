@@ -19,6 +19,17 @@ std::string Utility::ws2s(const std::wstring& wstr)
 	return strTo;
 }
 
+std::wstring Utility::s2ws(const std::string& str)
+{
+	if (str.empty())
+		return std::wstring();
+	int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+	std::wstring wstrTo(size_needed, 0);
+	MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+
+	return wstrTo;
+}
+
 const char Utility::GetHotbarIndex(const float clientHeight, const float mousePosX, const float mousePosY)
 {
 	if (mousePosX < 5.0f || mousePosX >= 405.0f || mousePosY < clientHeight - 45.0f || mousePosY > clientHeight - 5.0f)

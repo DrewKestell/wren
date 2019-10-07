@@ -2,7 +2,7 @@
 #include "ClientRepository.h"
 
 constexpr char LIST_NPCS_QUERY[] = "SELECT id, name, model_id, texture_id, speed FROM Npcs;";
-constexpr char LIST_ITEMS_QUERY[] = "SELECT id, name, sprite_id, gray_sprite_id, stackable FROM Items;";
+constexpr char LIST_ITEMS_QUERY[] = "SELECT id, name, description, sprite_id, gray_sprite_id, stackable FROM Items;";
 
 std::vector<std::unique_ptr<Npc>> ClientRepository::ListNpcs()
 {
@@ -55,12 +55,14 @@ std::vector<std::unique_ptr<Item>> ClientRepository::ListItems()
 	{
 		while (result == SQLITE_ROW)
 		{
-			const auto id = sqlite3_column_int(statement, 0);
-			const auto name = reinterpret_cast<const char*>(sqlite3_column_text(statement, 1));
-			const auto spriteId = sqlite3_column_int(statement, 2);
-			const auto graySpriteId = sqlite3_column_int(statement, 3);
-			const auto stackable = sqlite3_column_int(statement, 4) == 1;
-			items.push_back(std::make_unique<Item>(id, name, spriteId, graySpriteId, stackable));
+			auto i = 0;
+			const auto id = sqlite3_column_int(statement, i++);
+			const auto name = reinterpret_cast<const char*>(sqlite3_column_text(statement, i++));
+			const auto description = reinterpret_cast<const char*>(sqlite3_column_text(statement, i++));
+			const auto spriteId = sqlite3_column_int(statement, i++);
+			const auto graySpriteId = sqlite3_column_int(statement, i++);
+			const auto stackable = sqlite3_column_int(statement, i++) == 1;
+			items.push_back(std::make_unique<Item>(id, name, description, spriteId, graySpriteId, stackable));
 			result = sqlite3_step(statement);
 		}
 		sqlite3_finalize(statement);
