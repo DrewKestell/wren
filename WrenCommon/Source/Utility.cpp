@@ -9,10 +9,14 @@ const bool Utility::DetectClick(const float topLeftX, const float topLeftY, cons
 
 std::string Utility::ws2s(const std::wstring& wstr)
 {
-	using convert_typeX = std::codecvt_utf8<wchar_t>;
-	std::wstring_convert<convert_typeX, wchar_t> converterX;
+	if (wstr.empty())
+		return std::string();
 
-	return converterX.to_bytes(wstr);
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+	std::string strTo(size_needed, 0);
+	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+
+	return strTo;
 }
 
 const char Utility::GetHotbarIndex(const float clientHeight, const float mousePosX, const float mousePosY)
