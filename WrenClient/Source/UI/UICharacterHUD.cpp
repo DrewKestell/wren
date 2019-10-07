@@ -67,7 +67,7 @@ void UICharacterHUD::Draw()
 
 	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + 86.0f, position.y + 16.0f), nameTextLayout.Get(), nameBrush);
 
-	const auto healthPercent = Utility::Max(0.0f, (float)statsComponent.health / (float)statsComponent.maxHealth);
+	const auto healthPercent = Utility::Max<float>(0.0f, (float)statsComponent.health / (float)statsComponent.maxHealth);
 	auto statPosX = 144.0f * healthPercent;
 	d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 34.0f, position.x + 88.0F + statPosX, position.y + 44.0f), healthGeometry.ReleaseAndGetAddressOf());
 
@@ -75,7 +75,7 @@ void UICharacterHUD::Draw()
 	d2dDeviceContext->FillGeometry(healthGeometry.Get(), healthBrush);
 	d2dDeviceContext->DrawGeometry(maxHealthGeometry.Get(), nameBrush, 2.0f);
 
-	const auto manaPercent = Utility::Max(0.0f, (float)statsComponent.mana / (float)statsComponent.maxMana);
+	const auto manaPercent = Utility::Max<float>(0.0f, (float)statsComponent.mana / (float)statsComponent.maxMana);
 	statPosX = 144.0f * manaPercent;
 	d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 48.0f, position.x + 88.0F + + statPosX, position.y + 58.0f), manaGeometry.ReleaseAndGetAddressOf());
 
@@ -83,7 +83,7 @@ void UICharacterHUD::Draw()
 	d2dDeviceContext->FillGeometry(manaGeometry.Get(), manaBrush);
 	d2dDeviceContext->DrawGeometry(maxManaGeometry.Get(), nameBrush, 2.0f);
 
-	const auto staminaPercent = Utility::Max(0.0f, (float)statsComponent.stamina / (float)statsComponent.maxStamina);
+	const auto staminaPercent = Utility::Max<float>(0.0f, (float)statsComponent.stamina / (float)statsComponent.maxStamina);
 	statPosX = 144.0f * staminaPercent;
 	d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 62.0f, position.x + 88.0F + + statPosX, position.y + 72.0f), staminaGeometry.ReleaseAndGetAddressOf());
 

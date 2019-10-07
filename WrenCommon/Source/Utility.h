@@ -10,6 +10,14 @@ public:
 	static const bool CheckOutOfBounds(const XMFLOAT3 pos);
 	static void GetMapTileXYFromPos(const XMFLOAT3 pos, int& row, int& col);
 	static const bool AreOnAdjacentOrDiagonalTiles(const XMFLOAT3 pos1, const XMFLOAT3 pos2);
-	static const float Max(const float l, const float r);
-	static const int Max(const int l, const int r);
+	template <typename T> static const T Max(const T l, const T r);
 };
+
+template <typename T>
+const T Utility::Max(const T l, const T r)
+{
+	if (r > l)
+		return r;
+
+	return l;
+}

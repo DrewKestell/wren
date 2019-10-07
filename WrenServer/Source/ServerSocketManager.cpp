@@ -77,7 +77,7 @@ void ServerSocketManager::Initialize()
 	gameMap.SetTileOccupied(dummyGameObject.localPosition, true);
 
 	const std::string dummyName2{ "Dummy2" };
-	GameObject& dummyGameObject2 = objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 90.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 30.0f, GameObjectType::Npc, dummyName2, 102, false, 2, 4);
+	GameObject& dummyGameObject2 = objectManager.CreateGameObject(XMFLOAT3{ 90.0f, 0.0f, 60.0f }, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 30.0f, GameObjectType::Npc, dummyName2, 102, false, 2, 4);
 	const auto dummyId2 = dummyGameObject2.GetId();
 
 	const AIComponent& dummyAIComponent2 = aiComponentManager->CreateAIComponent(dummyId2);

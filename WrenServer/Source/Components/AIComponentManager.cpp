@@ -159,7 +159,7 @@ void AIComponentManager::Update()
 						const auto dmg = distDamage(rng);
 
 						StatsComponent& targetStatsComponent = statsComponentManager->GetComponentById(target.statsComponentId);
-						targetStatsComponent.health = Utility::Max(0, targetStatsComponent.health - dmg);
+						targetStatsComponent.health = Utility::Max<int>(0, targetStatsComponent.health - dmg);
 
 						const int* const weaponSkillIds = new int[2]{ 1, 2 }; // Hand-to-Hand Combat, Melee
 						std::unique_ptr<Event> e = std::make_unique<AttackHitEvent>(gameObjectId, targetId, (int)dmg, weaponSkillIds, 2);
