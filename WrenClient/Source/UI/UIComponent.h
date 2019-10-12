@@ -3,10 +3,13 @@
 #include "Layer.h"
 #include "Utility.h"
 #include "EventHandling/Observer.h"
+#include "../DeviceResources.h"
+#include "UIComponentArgs.h"
 
 class UIComponent : public Observer
 {
 protected:
+	DX::DeviceResources* deviceResources;
 	std::vector<UIComponent*>& uiComponents;
 	const Layer uiLayer;
 	XMFLOAT2 localPosition;
@@ -16,7 +19,7 @@ public:
 	bool isVisible{ false };
 	unsigned int zIndex;
 	const bool followParentVisibility;
-	UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT2 localPosition, const Layer uiLayer, const unsigned int zIndex, const bool followParentVisibility = true);
+	UIComponent(UIComponentArgs uiComponentArgs, const bool followParentVisibility = true);
 	void Translate(XMFLOAT2 vector) { localPosition = localPosition + vector; }
 	std::vector<UIComponent*>& GetChildren() { return children; }
 	XMFLOAT2 GetWorldPosition() const;

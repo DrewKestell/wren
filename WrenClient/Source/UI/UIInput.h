@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "UIComponent.h"
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
@@ -21,15 +22,10 @@ class UIInput : public UIComponent
     ID2D1SolidColorBrush* inputBorderBrush;
     ID2D1SolidColorBrush* inputValueBrush;
     IDWriteTextFormat* inputValueTextFormat;
-    IDWriteFactory2* writeFactory;
-    ID2D1DeviceContext1* d2dDeviceContext;
    
 public:
 	UIInput(
-		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT2 position,
-		const Layer uiLayer,
-		const unsigned int zIndex,
+		UIComponentArgs uiComponentArgs,
 		const bool secure,
 		const float labelWidth,
 		const float inputWidth,
@@ -40,10 +36,7 @@ public:
 		ID2D1SolidColorBrush* inputBorderBrush,
 		ID2D1SolidColorBrush* inputValueBrush,
 		IDWriteTextFormat* inputValueTextFormat,
-		ID2D1DeviceContext1* d2dDeviceContext,
-		IDWriteFactory2* writeFactory,
-		IDWriteTextFormat* labelTextFormat,
-		ID2D1Factory2* d2dFactory);
+		IDWriteTextFormat* labelTextFormat);
     void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
     const wchar_t* GetInputValue() const;

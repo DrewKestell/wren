@@ -8,10 +8,7 @@
 using namespace DX;
 
 UIInput::UIInput(
-	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT2 position,
-	const Layer uiLayer,
-	const unsigned int zIndex,
+	UIComponentArgs uiComponentArgs,
 	const bool secure,
 	const float labelWidth,
 	const float inputWidth,
@@ -22,11 +19,8 @@ UIInput::UIInput(
 	ID2D1SolidColorBrush* inputBorderBrush,
 	ID2D1SolidColorBrush* inputValueBrush,
 	IDWriteTextFormat* inputValueTextFormat,
-	ID2D1DeviceContext1* d2dDeviceContext,
-	IDWriteFactory2* writeFactory,
-	IDWriteTextFormat* labelTextFormat,
-	ID2D1Factory2* d2dFactory)
-	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	IDWriteTextFormat* labelTextFormat)
+	: UIComponent(uiComponentArgs),
 	  secure{ secure },
 	  labelWidth{ labelWidth },
 	  inputWidth{ inputWidth },
@@ -35,9 +29,7 @@ UIInput::UIInput(
 	  inputBrush{ inputBrush },
 	  inputBorderBrush{ inputBorderBrush },
 	  inputValueBrush{ inputValueBrush },
-	  inputValueTextFormat{ inputValueTextFormat },
-	  writeFactory{ writeFactory },
-	  d2dDeviceContext{ d2dDeviceContext }
+	  inputValueTextFormat{ inputValueTextFormat }
 {
 	ZeroMemory(inputValue, sizeof(inputValue));
 

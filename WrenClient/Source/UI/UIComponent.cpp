@@ -4,11 +4,12 @@
 
 extern EventHandler g_eventHandler;
 
-UIComponent::UIComponent(std::vector<UIComponent*>& uiComponents, const XMFLOAT2 localPosition, const Layer uiLayer, const unsigned int zIndex, const bool followParentVisibility)
-	: uiComponents{ uiComponents },
-	  localPosition{ localPosition },
-	  uiLayer{ uiLayer },
-	  zIndex{ zIndex },
+UIComponent::UIComponent(UIComponentArgs uiComponentArgs, const bool followParentVisibility)
+	: deviceResources{ uiComponentArgs.deviceResources },
+	  uiComponents{ uiComponentArgs.uiComponents },
+	  localPosition{ uiComponentArgs.position },
+	  uiLayer{ uiComponentArgs.uiLayer },
+	  zIndex{ uiComponentArgs.zIndex },
 	  followParentVisibility{ followParentVisibility }
 {
 	uiComponents.push_back(this);
