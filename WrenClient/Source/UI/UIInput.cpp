@@ -13,7 +13,7 @@ UIInput::UIInput(
 	const float labelWidth,
 	const float inputWidth,
 	const float height,
-	const char* inLabelText,
+	const char* labelText,
 	ID2D1SolidColorBrush* labelBrush,
 	ID2D1SolidColorBrush* inputBrush,
 	ID2D1SolidColorBrush* inputBorderBrush,
@@ -25,19 +25,21 @@ UIInput::UIInput(
 	  labelWidth{ labelWidth },
 	  inputWidth{ inputWidth },
 	  height{ height },
+	  labelText{ labelText },
 	  labelBrush{ labelBrush },
 	  inputBrush{ inputBrush },
 	  inputBorderBrush{ inputBorderBrush },
 	  inputValueBrush{ inputValueBrush },
-	  inputValueTextFormat{ inputValueTextFormat }
+	  inputValueTextFormat{ inputValueTextFormat },
+	  labelTextFormat{ labelTextFormat }
 {
-	ZeroMemory(inputValue, sizeof(inputValue));
+	const auto position = GetWorldPosition();
 
 	std::wostringstream outLabelText;
-	outLabelText << inLabelText;
+	outLabelText << labelText;
 	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(outLabelText.str().c_str(), (UINT32)outLabelText.str().size(), labelTextFormat, labelWidth, height, labelTextLayout.ReleaseAndGetAddressOf()));
 
-	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(uiComponentArgs.position.x + labelWidth + 10, uiComponentArgs.position.y, uiComponentArgs.position.x + labelWidth + inputWidth, uiComponentArgs.position.y + height), 3.0f, 3.0f), inputGeometry.ReleaseAndGetAddressOf());
+	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x + labelWidth + 10, position.y, position.x + labelWidth + inputWidth, position.y + height), 3.0f, 3.0f), inputGeometry.ReleaseAndGetAddressOf());
 }
 
 void UIInput::Draw()
@@ -67,11 +69,6 @@ void UIInput::Draw()
 
 	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), inputValueTextFormat, inputWidth, height - 2, inputValueTextLayout.ReleaseAndGetAddressOf())); // (height - 2) takes the border into account, and looks more natural
 	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x + labelWidth + 14, position.y), inputValueTextLayout.Get(), inputValueBrush);
-}
-
-const wchar_t* UIInput::GetInputValue() const
-{
-    return inputValue;
 }
 
 const bool UIInput::HandleEvent(const Event* const event)
@@ -138,12 +135,6 @@ const bool UIInput::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
-			active = false;
-			
-			// Clear input text
-			inputIndex = 0;
-			ZeroMemory(inputValue, sizeof(inputValue));
-
 			if (derivedEvent->layer == uiLayer)
 				isVisible = true;
 			else
@@ -154,4 +145,17 @@ const bool UIInput::HandleEvent(const Event* const event)
 	}
 
 	return false;
+}
+
+const wchar_t* UIInput::GetInputValue() const
+{
+	return inputValue;
+}
+
+void UIInput::ClearInput()
+{
+	active = false;
+
+	inputIndex = 0;
+	ZeroMemory(inputValue, sizeof(inputValue));
 }

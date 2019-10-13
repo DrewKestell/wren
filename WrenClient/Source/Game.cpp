@@ -46,7 +46,7 @@ Game::Game(
 
 	eventHandler.Subscribe(*this);
 
-	InitializeEventHandlers();
+	CreateEventHandlers();
 }
 
 void Game::PublishEvents()
@@ -95,6 +95,21 @@ void Game::Initialize(HWND window, int width, int height)
 	deviceResources->SetWindow(window, width, height);
 
 	deviceResources->CreateDeviceResources();
+
+	CreateBrushes();
+	CreateTextFormats();
+	CreateInputs();
+	CreateLabels();
+	CreateTextures();
+	CreateShaders();
+	CreateBuffers();
+	CreateMeshes();
+	CreateNpcs();
+	CreateItems();
+	CreateStaticObjects();
+	CreateRasterStates();
+	CreateSprites();
+
 	CreateDeviceDependentResources();
 
 	deviceResources->CreateWindowSizeDependentResources();
@@ -283,20 +298,6 @@ void Game::OnWindowSizeChanged(int width, int height)
 // These are the resources that depend on the device.
 void Game::CreateDeviceDependentResources()
 {
-	InitializeBrushes();
-	InitializeTextFormats();
-	InitializeInputs();
-	InitializeLabels();
-	InitializeTextures();
-	InitializeShaders();
-	InitializeBuffers();
-	InitializeMeshes();
-	InitializeNpcs();
-	InitializeItems();
-	InitializeStaticObjects();
-	InitializeRasterStates();
-	InitializeSprites();
-
 	gameMapRenderComponent = std::make_unique<GameMapRenderComponent>(deviceResources->GetD3DDevice(), vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures.at(2).Get());
 
 	// init targetHUD
@@ -316,8 +317,8 @@ void Game::CreateWindowSizeDependentResources()
 {
 	projectionTransform = XMMatrixOrthographicLH((float)clientWidth, (float)clientHeight, 0.0f, 5000.0f);
 
-	InitializeButtons();
-	InitializePanels();
+	CreateButtons();
+	CreatePanels();
 
 	// init hotbar
 	hotbar = std::make_unique<UIHotbar>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0 }, eventHandler, blackBrush.Get(), (float)clientHeight);
@@ -329,7 +330,7 @@ void Game::CreateWindowSizeDependentResources()
 		skillsContainer->Initialize(skills);
 
 	if (abilities.size() > 0)
-		InitializeAbilitiesContainer();
+		CreateAbilitiesContainer();
 
 	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 }
@@ -376,17 +377,17 @@ ShaderBuffer Game::LoadShader(const std::wstring filename)
 	return sb;
 }
 
-void Game::InitializeNpcs()
+void Game::CreateNpcs()
 {
 	npcs = clientRepository.ListNpcs();
 }
 
-void Game::InitializeItems()
+void Game::CreateItems()
 {
 	items = clientRepository.ListItems();
 }
 
-void Game::InitializeStaticObjects()
+void Game::CreateStaticObjects()
 {
 	auto staticObjects = commonRepository.ListStaticObjects();
 
@@ -406,7 +407,7 @@ void Game::InitializeStaticObjects()
 	}	
 }
 
-void Game::InitializeBrushes()
+void Game::CreateBrushes()
 {
 	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
@@ -431,7 +432,7 @@ void Game::InitializeBrushes()
 	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.65f, 0.65f, 0.65f, 1.0f), scrollBarBrush.ReleaseAndGetAddressOf());
 }
 
-void Game::InitializeTextFormats()
+void Game::CreateTextFormats()
 {
 	auto arialFontFamily{ L"Arial" };
 	auto locale{ L"en-US" };
@@ -494,7 +495,7 @@ void Game::InitializeTextFormats()
 	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 }
 
-void Game::InitializeInputs()
+void Game::CreateInputs()
 {
 	// LoginScreen
 	loginScreen_accountNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, 20.0f }, Login, 0 }, false, 120.0f, 260.0f, 24.0f, "Account Name:", blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
@@ -516,7 +517,7 @@ void Game::InitializeInputs()
 	createCharacter_inputGroup->AddInput(createCharacter_characterNameInput.get());
 }
 
-void Game::InitializeButtons()
+void Game::CreateButtons()
 {
 	const auto onClickLoginButton = [this]()
 	{
@@ -688,7 +689,7 @@ void Game::InitializeButtons()
 	deleteCharacter_cancelButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 120.0f, 30.0f }, DeleteCharacter, 0 }, 100.0f, 24.0f, "CANCEL", onClickDeleteCharacterCancel, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
 }
 
-void Game::InitializeLabels()
+void Game::CreateLabels()
 {
 	loginScreen_successMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 30.0f, 170.0f }, Login, 0 }, 400.0f, successMessageBrush.Get(), textFormatSuccessMessage.Get());
 	loginScreen_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 30.0f, 170.0f }, Login, 0 }, 400.0f, errorMessageBrush.Get(), textFormatErrorMessage.Get());
@@ -712,7 +713,7 @@ void Game::InitializeLabels()
 	enteringWorld_statusLabel->SetText("Entering World...");
 }
 
-void Game::InitializePanels()
+void Game::CreatePanels()
 {
 	// Game Settings
 	const auto gameSettingsPanelX{ (clientWidth - 400.0f) / 2.0f };
@@ -818,7 +819,7 @@ UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
 	return nullptr;
 }
 
-void Game::InitializeShaders()
+void Game::CreateShaders()
 {
 	auto d3dDevice = deviceResources->GetD3DDevice();
 
@@ -835,7 +836,7 @@ void Game::InitializeShaders()
 	d3dDevice->CreatePixelShader(spritePixelShaderBuffer.buffer, spritePixelShaderBuffer.size, nullptr, spritePixelShader.ReleaseAndGetAddressOf());
 }
 
-void Game::InitializeBuffers()
+void Game::CreateBuffers()
 {
 	auto d3dDevice = deviceResources->GetD3DDevice();
 	auto d3dContext = deviceResources->GetD3DDeviceContext();
@@ -862,7 +863,7 @@ void Game::InitializeBuffers()
 	d3dContext->PSSetConstantBuffers(0, 1, &constantBufferOnce);
 }
 
-void Game::InitializeRasterStates()
+void Game::CreateRasterStates()
 {
 	auto d3dDevice{ deviceResources->GetD3DDevice() };
 
@@ -877,7 +878,7 @@ void Game::InitializeRasterStates()
 	d3dDevice->CreateRasterizerState(&solidRasterStateDesc, solidRasterState.ReleaseAndGetAddressOf());
 }
 
-void Game::InitializeTextures()
+void Game::CreateTextures()
 {
 	auto d3dDevice = deviceResources->GetD3DDevice();
 
@@ -909,7 +910,7 @@ void Game::InitializeTextures()
 	}
 }
 
-void Game::InitializeMeshes()
+void Game::CreateMeshes()
 {
 	auto d3dDevice = deviceResources->GetD3DDevice();
 
@@ -927,7 +928,7 @@ void Game::InitializeMeshes()
 		meshes.push_back(std::make_unique<Mesh>(paths.at(i), d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size));
 }
 
-void Game::InitializeSprites()
+void Game::CreateSprites()
 {
 	auto d3dDevice = deviceResources->GetD3DDevice();
 	
@@ -966,7 +967,7 @@ Game::~Game()
 	eventHandler.Unsubscribe(*this);
 }
 
-void Game::InitializeAbilitiesContainer()
+void Game::CreateAbilitiesContainer()
 {
 	abilitiesContainer->ClearAbilities();
 	for (auto i = 0; i < abilities.size(); i++)
@@ -989,7 +990,7 @@ void Game::OnPong(unsigned int pingId)
 	this->pingId++;
 }
 
-void Game::InitializeEventHandlers()
+void Game::CreateEventHandlers()
 {
 	eventHandlers[EventType::RightMouseDown] = [this](const Event* const event)
 	{
@@ -1043,6 +1044,9 @@ void Game::InitializeEventHandlers()
 
 	eventHandlers[EventType::CreateAccountSuccess] = [this](const Event* const event)
 	{
+		createAccount_accountNameInput->ClearInput();
+		createAccount_passwordInput->ClearInput();
+
 		createAccount_errorMessageLabel->SetText("");
 		loginScreen_successMessageLabel->SetText("Account created successfully.");
 		SetActiveLayer(Login);
@@ -1060,6 +1064,9 @@ void Game::InitializeEventHandlers()
 	{
 		const auto derivedEvent = (LoginSuccessEvent*)event;
 
+		loginScreen_accountNameInput->ClearInput();
+		loginScreen_passwordInput->ClearInput();
+
 		RecreateCharacterListings(derivedEvent->characterList);
 		SetActiveLayer(CharacterSelect);
 	};
@@ -1074,6 +1081,8 @@ void Game::InitializeEventHandlers()
 	eventHandlers[EventType::CreateCharacterSuccess] = [this](const Event* const event)
 	{
 		const auto derivedEvent = (CreateCharacterSuccessEvent*)event;
+
+		createCharacter_characterNameInput->ClearInput();
 
 		RecreateCharacterListings(derivedEvent->characterList);
 		createCharacter_errorMessageLabel->SetText("");
@@ -1133,7 +1142,7 @@ void Game::InitializeEventHandlers()
 		if (abilities.size() > 0)
 			abilities.clear();
 		abilities = std::move(derivedEvent->abilities);
-		InitializeAbilitiesContainer();
+		CreateAbilitiesContainer();
 
 		inventory->playerId = player.GetId();
 

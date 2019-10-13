@@ -11,17 +11,19 @@ class UIInput : public UIComponent
 	ComPtr<IDWriteTextLayout> inputValueTextLayout;
 	ComPtr<ID2D1RoundedRectangleGeometry> inputGeometry;
 	int inputIndex{ 0 };
-    wchar_t inputValue[30];
+	wchar_t inputValue[30] = { 0 };
 	bool active{ false };
 	bool secure{ false };
 	float labelWidth{ 0.0f };
 	float inputWidth{ 0.0f };
 	float height{ 0.0f };
+	std::string labelText;
 	ID2D1SolidColorBrush* labelBrush;
     ID2D1SolidColorBrush* inputBrush;
     ID2D1SolidColorBrush* inputBorderBrush;
     ID2D1SolidColorBrush* inputValueBrush;
     IDWriteTextFormat* inputValueTextFormat;
+	IDWriteTextFormat* labelTextFormat;
    
 public:
 	UIInput(
@@ -30,7 +32,7 @@ public:
 		const float labelWidth,
 		const float inputWidth,
 		const float height,
-		const char* inLabelText,
+		const char* labelText,
 		ID2D1SolidColorBrush* labelBrush,
 		ID2D1SolidColorBrush* inputBrush,
 		ID2D1SolidColorBrush* inputBorderBrush,
@@ -40,6 +42,7 @@ public:
     void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
     const wchar_t* GetInputValue() const;
+	void ClearInput();
 	const bool IsActive() const { return active; }
 	void SetActive(const bool active) { this->active = active; }
 };
