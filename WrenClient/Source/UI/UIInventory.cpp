@@ -4,19 +4,12 @@
 #include "EventHandling/Events/LootItemSuccessEvent.h"
 
 UIInventory::UIInventory(
-	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT2 position,
-	const Layer uiLayer,
-	const unsigned int zIndex,
+	UIComponentArgs uiComponentArgs,
 	EventHandler& eventHandler,
 	ClientSocketManager& socketManager,
 	std::vector<std::unique_ptr<Item>>& allItems,
 	std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures,
 	ID2D1SolidColorBrush* brush,
-	ID2D1DeviceContext1* d2dDeviceContext,
-	ID2D1Factory2* d2dFactory,
-	ID3D11Device* d3dDevice,
-	ID3D11DeviceContext* d3dDeviceContext,
 	ID2D1SolidColorBrush* highlightBrush,
 	ID3D11VertexShader* vertexShader,
 	ID3D11PixelShader* pixelShader,
@@ -29,18 +22,13 @@ UIInventory::UIInventory(
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1SolidColorBrush* textBrush,
 	IDWriteTextFormat* textFormatTitle,
-	IDWriteTextFormat* textFormatDescription,
-	IDWriteFactory2* writeFactory)
-	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	IDWriteTextFormat* textFormatDescription)
+	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  socketManager{ socketManager },
 	  allItems{ allItems },
 	  allTextures{ allTextures },
 	  brush{ brush },
-	  d2dDeviceContext{ d2dDeviceContext },
-	  d2dFactory{ d2dFactory },
-	  d3dDevice{ d3dDevice },
-	  d3dDeviceContext{ d3dDeviceContext },
 	  highlightBrush{ highlightBrush },
 	  vertexShader{ vertexShader },
 	  pixelShader{ pixelShader },
@@ -53,8 +41,7 @@ UIInventory::UIInventory(
 	  borderBrush{ borderBrush },
 	  textBrush{ textBrush },
 	  textFormatTitle{ textFormatTitle },
-	  textFormatDescription{ textFormatDescription },
-	  writeFactory{ writeFactory }
+	  textFormatDescription{ textFormatDescription }
 {
 }
 
@@ -66,7 +53,7 @@ void UIInventory::Draw()
 	ReinitializeGeometry();
 
 	for (auto i = 0; i < INVENTORY_SIZE; i++)
-		d2dDeviceContext->DrawGeometry(geometry[i].Get(), brush, 2.0f);
+		deviceResources->GetD2DDeviceContext()->DrawGeometry(geometry[i].Get(), brush, 2.0f);
 }
 
 const bool UIInventory::HandleEvent(const Event* const event)
@@ -102,7 +89,7 @@ const bool UIInventory::HandleEvent(const Event* const event)
 				const auto posY = 25.0f + (row * 45.0f);
 				const auto texture = allTextures.at(item->GetSpriteId()).Get();
 				const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
-				uiItems.at(destinationSlot) = std::make_unique<UIItem>(uiComponents, XMFLOAT2{ posX + 2.0f, posY + 2.0f }, uiLayer, zIndex + 1, eventHandler, socketManager, item->GetId(), item->GetName(), item->GetDescription(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription, writeFactory);
+				uiItems.at(destinationSlot) = std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, XMFLOAT2{ posX + 2.0f, posY + 2.0f }, uiLayer, zIndex + 1 }, eventHandler, socketManager, item->GetId(), item->GetName(), item->GetDescription(), vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
 				uiItems.at(destinationSlot)->isVisible = isVisible;
 				AddChildComponent(*uiItems.at(destinationSlot).get());
 
@@ -141,7 +128,7 @@ void UIInventory::ReinitializeGeometry()
 	{
 		for (auto j = 0; j < 4; j++)
 		{
-			d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + xOffset, position.y + yOffset, position.x + xOffset + width, position.y + yOffset + width), geometry[j + (4 * i)].ReleaseAndGetAddressOf());
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + xOffset, position.y + yOffset, position.x + xOffset + width, position.y + yOffset + width), geometry[j + (4 * i)].ReleaseAndGetAddressOf());
 			xOffset += 45.0f;
 		}
 

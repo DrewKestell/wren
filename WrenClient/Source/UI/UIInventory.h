@@ -16,10 +16,6 @@ class UIInventory : public UIComponent
 	std::vector<std::unique_ptr<UIItem>> uiItems = std::vector<std::unique_ptr<UIItem>>(INVENTORY_SIZE);
 	ComPtr<ID2D1RectangleGeometry> geometry[INVENTORY_SIZE];
 	ID2D1SolidColorBrush* brush;
-	ID2D1DeviceContext1* d2dDeviceContext;
-	ID2D1Factory2* d2dFactory;
-	ID3D11Device* d3dDevice;
-	ID3D11DeviceContext* d3dDeviceContext;
 	ID2D1SolidColorBrush* highlightBrush;
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
@@ -30,7 +26,6 @@ class UIInventory : public UIComponent
 	ID2D1SolidColorBrush* textBrush;
 	IDWriteTextFormat* textFormatTitle;
 	IDWriteTextFormat* textFormatDescription;
-	IDWriteFactory2* writeFactory;
 
 	void ReinitializeGeometry();
 public:
@@ -40,19 +35,12 @@ public:
 	XMMATRIX projectionTransform;
 
 	UIInventory(
-		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT2 position,
-		const Layer uiLayer,
-		const unsigned int zIndex,
+		UIComponentArgs uiComponentArgs,
 		EventHandler& eventHandler,
 		ClientSocketManager& socketManager,
 		std::vector<std::unique_ptr<Item>>& allItems,
 		std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures,
 		ID2D1SolidColorBrush* brush,
-		ID2D1DeviceContext1* d2dDeviceContext,
-		ID2D1Factory2* d2dFactory,
-		ID3D11Device* d3dDevice,
-		ID3D11DeviceContext* d3dDeviceContext,
 		ID2D1SolidColorBrush* highlightBrush,
 		ID3D11VertexShader* vertexShader,
 		ID3D11PixelShader* pixelShader,
@@ -65,8 +53,7 @@ public:
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1SolidColorBrush* textBrush,
 		IDWriteTextFormat* textFormatTitle,
-		IDWriteTextFormat* textFormatDescription,
-		IDWriteFactory2* writeFactory);
+		IDWriteTextFormat* textFormatDescription);
 
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;

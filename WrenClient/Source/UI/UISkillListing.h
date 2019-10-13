@@ -9,19 +9,12 @@ class UISkillListing : public UIComponent
 	ComPtr<IDWriteTextLayout> nameTextLayout;
 	ComPtr<IDWriteTextLayout> valueTextLayout;
 	ID2D1SolidColorBrush* textBrush;
-	ID2D1DeviceContext1* d2dDeviceContext;
-	IDWriteFactory2* writeFactory;
 	IDWriteTextFormat* textFormat;
 public:
 	UISkillListing(
-		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT2 position,
-		const Layer uiLayer,
-		const unsigned int zIndex,
+		UIComponentArgs uiComponentArgs,
 		WrenCommon::Skill* skill,
 		ID2D1SolidColorBrush* textBrush,
-		ID2D1DeviceContext1* d2dDeviceContext,
-		IDWriteFactory2* writeFactory,
 		IDWriteTextFormat* textFormat);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;

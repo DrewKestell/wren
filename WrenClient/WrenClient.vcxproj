@@ -191,6 +191,7 @@
     <ClInclude Include="Source\UI\UIAbilitiesContainer.h" />
     <ClInclude Include="Source\UI\UICharacterHUD.h" />
     <ClInclude Include="Source\UI\UIAbility.h" />
+    <ClInclude Include="Source\UI\UIComponentArgs.h" />
     <ClInclude Include="Source\UI\UIHotbar.h" />
     <ClInclude Include="Source\UI\UIInputGroup.h" />
     <ClInclude Include="Source\UI\UIComponent.h" />

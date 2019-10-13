@@ -18,14 +18,10 @@ class UICharacterListing : public UIComponent
     ID2D1SolidColorBrush* selectedBrush;
     ID2D1SolidColorBrush* borderBrush;
     ID2D1SolidColorBrush* textBrush;
-    ID2D1DeviceContext1* d2dDeviceContext;
     
 public:
 	UICharacterListing(
-		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT2 position,
-		const Layer uiLayer,
-		const unsigned int zIndex,
+		UIComponentArgs uiComponentArgs,
 		EventHandler& eventHandler,
 		const float width,
 		const float height,
@@ -34,10 +30,7 @@ public:
 		ID2D1SolidColorBrush* selectedBrush,
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1SolidColorBrush* textBrush,
-		ID2D1DeviceContext1* d2dDeviceContext,
-		IDWriteFactory2* writeFactory,
-		IDWriteTextFormat* textFormat,
-		ID2D1Factory2* d2dFactory);
+		IDWriteTextFormat* textFormat);
     void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	const std::string& GetName() const { return characterName; }

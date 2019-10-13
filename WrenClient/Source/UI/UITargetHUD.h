@@ -21,21 +21,12 @@ class UITargetHUD : public UIComponent
 	ID2D1SolidColorBrush* statBorderBrush;
 	ID2D1SolidColorBrush* nameBrush;
 	ID2D1SolidColorBrush* whiteBrush;
-	ID2D1DeviceContext1* d2dDeviceContext;
 	IDWriteTextFormat* nameTextFormat;
-	ID2D1Factory2* d2dFactory;
-	IDWriteFactory2* writeFactory;
 	StatsComponent* statsComponent;
 public:
 	UITargetHUD(
-		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT2 position,
-		const Layer uiLayer,
-		const unsigned int zIndex,
-		ID2D1DeviceContext1* d2dDeviceContext,
-		IDWriteFactory2* writeFactory,
+		UIComponentArgs uiComponentArgs,
 		IDWriteTextFormat* nameTextFormat,
-		ID2D1Factory2* d2dFactory,
 		ID2D1SolidColorBrush* healthBrush,
 		ID2D1SolidColorBrush* manaBrush,
 		ID2D1SolidColorBrush* staminaBrush,

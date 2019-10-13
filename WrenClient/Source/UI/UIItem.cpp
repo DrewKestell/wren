@@ -5,19 +5,12 @@
 #include "UILootContainer.h"
 
 UIItem::UIItem(
-	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT2 position,
-	const Layer uiLayer,
-	const unsigned int zIndex,
+	UIComponentArgs uiComponentArgs,
 	EventHandler& eventHandler,
 	ClientSocketManager& socketManager,
 	const int itemId,
 	const std::string& name,
 	const std::string& description,
-	ID2D1DeviceContext1* d2dDeviceContext,
-	ID2D1Factory2* d2dFactory,
-	ID3D11Device* d3dDevice,
-	ID3D11DeviceContext* d3dDeviceContext,
 	ID3D11VertexShader* vertexShader,
 	ID3D11PixelShader* pixelShader,
 	ID3D11ShaderResourceView* texture,
@@ -33,28 +26,23 @@ UIItem::UIItem(
 	ID2D1SolidColorBrush* textBrush,
 	IDWriteTextFormat* textFormatTitle,
 	IDWriteTextFormat* textFormatDescription,
-	IDWriteFactory2* writeFactory,
 	const bool isDragging,
 	const float mousePosX,
 	const float mousePosY)
-	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  socketManager{ socketManager },
 	  itemId{ itemId },
 	  name{ name },
 	  description{ description },
-	  d2dDeviceContext{ d2dDeviceContext },
-	  d2dFactory{ d2dFactory },
 	  clientWidth{ clientWidth },
 	  clientHeight{ clientHeight },
-	  d3dDevice{ d3dDevice },
 	  vertexShader{ vertexShader },
 	  pixelShader{ pixelShader },
 	  texture{ texture },
 	  grayTexture{ grayTexture },
 	  vertexShaderBuffer{ vertexShaderBuffer },
 	  vertexShaderSize{ vertexShaderSize },
-	  d3dDeviceContext{ d3dDeviceContext },
 	  highlightBrush{ highlightBrush },
 	  projectionTransform{ projectionTransform },
 	  bodyBrush{ bodyBrush },
@@ -62,12 +50,11 @@ UIItem::UIItem(
 	  textBrush{ textBrush },
 	  textFormatTitle{ textFormatTitle },
 	  textFormatDescription{ textFormatDescription },
-	  writeFactory{ writeFactory },
 	  isDragging{ isDragging },
 	  lastDragX{ mousePosX },
 	  lastDragY{ mousePosY }
 {
-	tooltip = std::make_unique<UITooltip>(uiComponents, XMFLOAT2{ -3.0f, 42.0f }, uiLayer, zIndex + 1, eventHandler, name, description, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription, writeFactory, d2dDeviceContext, d2dFactory);
+	tooltip = std::make_unique<UITooltip>(UIComponentArgs{ deviceResources, uiComponents, XMFLOAT2{ -3.0f, 42.0f }, uiLayer, zIndex + 1 }, eventHandler, name, description, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
 	AddChildComponent(*tooltip.get());
 }
 
@@ -78,7 +65,7 @@ void UIItem::Draw()
 	const auto worldPos = GetWorldPosition();
 
 	// create highlight
-	d2dFactory->CreateRectangleGeometry(D2D1::RectF(worldPos.x, worldPos.y, worldPos.x + SPRITE_SIZE, worldPos.y + SPRITE_SIZE), highlightGeometry.ReleaseAndGetAddressOf());
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(worldPos.x, worldPos.y, worldPos.x + SPRITE_SIZE, worldPos.y + SPRITE_SIZE), highlightGeometry.ReleaseAndGetAddressOf());
 
 	XMFLOAT3 pos{ worldPos.x + 18.0f, worldPos.y + 18.0f, 0.0f };
 	FXMVECTOR v = XMLoadFloat3(&pos);
@@ -88,18 +75,18 @@ void UIItem::Draw()
 	auto res = XMVector3Unproject(v, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, view, world);
 	XMFLOAT3 vec;
 	XMStoreFloat3(&vec, res);
-	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, d3dDevice, vec.x, vec.y, SPRITE_SIZE, SPRITE_SIZE);
+	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_SIZE, SPRITE_SIZE);
 
 	if (isHovered && !isDragging)
 	{
-		d2dDeviceContext->DrawGeometry(highlightGeometry.Get(), highlightBrush, 3.0f);
+		deviceResources->GetD2DDeviceContext()->DrawGeometry(highlightGeometry.Get(), highlightBrush, 3.0f);
 	}
 
-	d2dDeviceContext->EndDraw();
+	deviceResources->GetD2DDeviceContext()->EndDraw();
 
-	sprite->Draw(d3dDeviceContext, projectionTransform);
+	sprite->Draw(deviceResources->GetD3DDeviceContext(), projectionTransform);
 
-	d2dDeviceContext->BeginDraw();
+	deviceResources->GetD2DDeviceContext()->BeginDraw();
 }
 
 const bool UIItem::HandleEvent(const Event* const event)
@@ -138,7 +125,7 @@ const bool UIItem::HandleEvent(const Event* const event)
 				// if the button is pressed, and the mouse starts moving, let's move the UIItem
 				if (isPressed && !isDragging && !itemCopy)
 				{
-					itemCopy = new UIItem(uiComponents, worldPos, uiLayer, 2, eventHandler, socketManager, itemId, name, description, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription, writeFactory, true, mousePosX, mousePosY);
+					itemCopy = new UIItem(UIComponentArgs{ deviceResources, uiComponents, worldPos, uiLayer, 2 }, eventHandler, socketManager, itemId, name, description, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription, true, mousePosX, mousePosY);
 					itemCopy->isVisible = true;
 
 					/*std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(clientHeight, mousePosX, mousePosY));

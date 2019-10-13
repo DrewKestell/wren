@@ -21,20 +21,12 @@ class UICharacterHUD : public UIComponent
 	ID2D1SolidColorBrush* statBorderBrush;
 	ID2D1SolidColorBrush* nameBrush;
 	ID2D1SolidColorBrush* whiteBrush;
-	ID2D1DeviceContext1* d2dDeviceContext;
 	IDWriteTextFormat* buttonTextFormat;
-	ID2D1Factory2* d2dFactory;
 	StatsComponent& statsComponent;
 public:
 	UICharacterHUD(
-		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT2 position,
-		const Layer uiLayer,
-		const unsigned int zIndex,
-		ID2D1DeviceContext1* d2dDeviceContext,
-		IDWriteFactory2* writeFactory,
+		UIComponentArgs uiComponentArgs,
 		IDWriteTextFormat* buttonTextFormat,
-		ID2D1Factory2* d2dFactory,
 		StatsComponent& statsComponent,
 		ID2D1SolidColorBrush* healthBrush,
 		ID2D1SolidColorBrush* manaBrush,

@@ -7,10 +7,7 @@
 extern unsigned int g_zIndex;
 
 UIPanel::UIPanel(
-	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT2 position,
-	const Layer uiLayer,
-	const unsigned int zIndex,
+	UIComponentArgs uiComponentArgs,
 	EventHandler& eventHandler,
 	const bool isDraggable,
 	const float width,
@@ -18,10 +15,8 @@ UIPanel::UIPanel(
 	const WPARAM showKey,
 	ID2D1SolidColorBrush* headerBrush,
 	ID2D1SolidColorBrush* bodyBrush,
-	ID2D1SolidColorBrush* borderBrush,
-	ID2D1DeviceContext1* d2dDeviceContext,
-	ID2D1Factory2* d2dFactory)
-	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	ID2D1SolidColorBrush* borderBrush)
+	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  isDraggable{ isDraggable },
 	  width{ width },
@@ -29,17 +24,16 @@ UIPanel::UIPanel(
 	  showKey{ showKey },
 	  headerBrush{ headerBrush },
 	  bodyBrush{ bodyBrush },
-	  borderBrush{ borderBrush },
-	  d2dDeviceContext{ d2dDeviceContext },
-	  d2dFactory{ d2dFactory }
+	  borderBrush{ borderBrush }
 {
+	const auto position = uiComponentArgs.position;
 	float startHeight = position.y;
 	if (isDraggable)
 	{
-		d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT), 3.0f, 3.0f), headerGeometry.ReleaseAndGetAddressOf());
+		deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT), 3.0f, 3.0f), headerGeometry.ReleaseAndGetAddressOf());
 		startHeight += HEADER_HEIGHT;
 	}
-	d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, startHeight, position.x + width, startHeight + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
+	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, startHeight, position.x + width, startHeight + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
 }
 
 void UIPanel::Draw()
@@ -50,19 +44,19 @@ void UIPanel::Draw()
 	const float borderWeight = 2.0f;
 	if (isDraggable)
 	{
-		d2dDeviceContext->FillGeometry(headerGeometry.Get(), headerBrush);
-		d2dDeviceContext->DrawGeometry(headerGeometry.Get(), borderBrush, borderWeight);
+		deviceResources->GetD2DDeviceContext()->FillGeometry(headerGeometry.Get(), headerBrush);
+		deviceResources->GetD2DDeviceContext()->DrawGeometry(headerGeometry.Get(), borderBrush, borderWeight);
 	}
-	d2dDeviceContext->FillGeometry(bodyGeometry.Get(), bodyBrush);
-	d2dDeviceContext->DrawGeometry(bodyGeometry.Get(), borderBrush, borderWeight);
+	deviceResources->GetD2DDeviceContext()->FillGeometry(bodyGeometry.Get(), bodyBrush);
+	deviceResources->GetD2DDeviceContext()->DrawGeometry(bodyGeometry.Get(), borderBrush, borderWeight);
 
 	// Draw "X" Button
 	const auto position = GetWorldPosition();
 	auto startingX = position.x + width - 17.0f;
 	auto startingY = position.y + 4.0f;
 
-	d2dDeviceContext->DrawLine(D2D1::Point2F(startingX, startingY), D2D1::Point2F(startingX + 12.0f, startingY + 12.0f), borderBrush, 2.0f);
-	d2dDeviceContext->DrawLine(D2D1::Point2F(startingX + 12.0f, startingY), D2D1::Point2F(startingX, startingY + 12.0f), borderBrush, 2.0f);
+	deviceResources->GetD2DDeviceContext()->DrawLine(D2D1::Point2F(startingX, startingY), D2D1::Point2F(startingX + 12.0f, startingY + 12.0f), borderBrush, 2.0f);
+	deviceResources->GetD2DDeviceContext()->DrawLine(D2D1::Point2F(startingX + 12.0f, startingY), D2D1::Point2F(startingX, startingY + 12.0f), borderBrush, 2.0f);
 }
 
 const bool UIPanel::HandleEvent(const Event* const event)
@@ -146,8 +140,8 @@ const bool UIPanel::HandleEvent(const Event* const event)
 
 				const auto currentPosition = GetWorldPosition();
 
-				d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT), 3.0f, 3.0f), headerGeometry.ReleaseAndGetAddressOf());
-				d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y + HEADER_HEIGHT, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
+				deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT), 3.0f, 3.0f), headerGeometry.ReleaseAndGetAddressOf());
+				deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y + HEADER_HEIGHT, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
 			}
 
 			break;

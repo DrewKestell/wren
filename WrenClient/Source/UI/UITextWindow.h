@@ -9,9 +9,9 @@
 #include <ObjectManager.h>
 #include "../Models/Item.h"
 
-constexpr int MESSAGES_PER_PAGE = 13;
-constexpr float TEXT_WINDOW_HEIGHT = 220.0f;
-constexpr float TEXT_WINDOW_WIDTH = 600.0f;
+constexpr auto MESSAGES_PER_PAGE = 13;
+constexpr auto TEXT_WINDOW_HEIGHT = 220.0f;
+constexpr auto TEXT_WINDOW_WIDTH = 600.0f;
 
 class UITextWindow : public UIComponent
 {
@@ -48,20 +48,14 @@ class UITextWindow : public UIComponent
 	ID2D1SolidColorBrush* textBrush;
 	ID2D1SolidColorBrush* scrollBarBackgroundBrush;
 	ID2D1SolidColorBrush* scrollBarBrush;
-	ID2D1DeviceContext1* d2dDeviceContext;
-	IDWriteFactory2* writeFactory;
 	IDWriteTextFormat* textFormat;
 	IDWriteTextFormat* textFormatInactive;
-	ID2D1Factory2* d2dFactory;
 
 	void UpdateMessages();
 
 public:
 	UITextWindow(
-		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT2 position,
-		const Layer uiLayer,
-		const unsigned int zIndex,
+		UIComponentArgs uiComponentArgs,
 		EventHandler& eventHandler,
 		ObjectManager& objectManager,
 		std::vector<std::unique_ptr<Item>>& allItems,
@@ -75,11 +69,8 @@ public:
 		ID2D1SolidColorBrush* textBrush,
 		ID2D1SolidColorBrush* scrollBarBackgroundBrush,
 		ID2D1SolidColorBrush* scrollBarBrush,
-		ID2D1DeviceContext1* d2dDeviceContext,
-		IDWriteFactory2* writeFactory,
 		IDWriteTextFormat* textFormat,
-		IDWriteTextFormat* textFormatInactive,
-		ID2D1Factory2* d2dFactory);
+		IDWriteTextFormat* textFormatInactive);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	void Update();

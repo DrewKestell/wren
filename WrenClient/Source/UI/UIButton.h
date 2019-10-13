@@ -18,15 +18,10 @@ class UIButton : public UIComponent
     ID2D1SolidColorBrush* pressedButtonBrush;
     ID2D1SolidColorBrush* buttonBorderBrush;
     ID2D1SolidColorBrush* buttonTextBrush;
-    ID2D1DeviceContext1* d2dDeviceContext;
-	ID2D1Factory2* d2dFactory;
     
 public:
 	UIButton(
-		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT2 position,
-		const Layer uiLayer,
-		const unsigned int zIndex,
+		UIComponentArgs uiComponentArgs,
 		const float width,
 		const float height,
 		const char* inButtonText,
@@ -35,10 +30,7 @@ public:
 		ID2D1SolidColorBrush* pressedButtonBrush,
 		ID2D1SolidColorBrush* buttonBorderBrush,
 		ID2D1SolidColorBrush* buttonTextBrush,
-		ID2D1DeviceContext1* d2dDeviceContext,
-		IDWriteFactory2* writeFactory,
-		IDWriteTextFormat* buttonTextFormat,
-		ID2D1Factory2* d2dFactory);
+		IDWriteTextFormat* buttonTextFormat);
     void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 };

@@ -5,26 +5,20 @@
 #include "EventHandling/Events/StartDraggingUIAbilityEvent.h"
 
 UIHotbar::UIHotbar(
-	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT2 position,
-	const Layer uiLayer,
-	const unsigned int zIndex,
+	UIComponentArgs uiComponentArgs,
 	EventHandler& eventHandler,
 	ID2D1SolidColorBrush* brush,
-	ID2D1DeviceContext1* d2dDeviceContext,
-	ID2D1Factory2* d2dFactory,
 	const float clientHeight)
-	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  brush{ brush },
-	  d2dDeviceContext{ d2dDeviceContext },
-	  d2dFactory{ d2dFactory },
 	  clientHeight{ clientHeight }
 {
 	const auto width = 40.0f;
 	for (auto i = 0; i < 10; i++)
 	{
-		d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + (i * width), position.y, position.x + (i * width) + width, position.y + width), geometry[i].ReleaseAndGetAddressOf());
+		const auto position = uiComponentArgs.position;
+		deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + (i * width), position.y, position.x + (i * width) + width, position.y + width), geometry[i].ReleaseAndGetAddressOf());
 	}
 }
 
@@ -34,7 +28,7 @@ void UIHotbar::Draw()
 
 	for (auto i = 0; i < 10; i++)
 	{
-		d2dDeviceContext->DrawGeometry(geometry[i].Get(), brush, 2.0f);
+		deviceResources->GetD2DDeviceContext()->DrawGeometry(geometry[i].Get(), brush, 2.0f);
 	}
 }
 

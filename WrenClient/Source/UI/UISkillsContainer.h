@@ -9,25 +9,12 @@
 class UISkillsContainer : public UIComponent
 {
 	bool initialized{ false };
-	ID2D1DeviceContext1* d2dDeviceContext;
-	ID2D1Factory2* d2dFactory;
-	ID3D11Device* d3dDevice;
-	ID3D11DeviceContext* d3dDeviceContext;
-	IDWriteFactory2* writeFactory;
 	ID2D1SolidColorBrush* brush;
 	IDWriteTextFormat* textFormat;
 	std::unique_ptr<UISkillListing>* skillListings;
 public:
 	UISkillsContainer(
-		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT2 position,
-		const Layer uiLayer,
-		const unsigned int zIndex,
-		ID2D1DeviceContext1* d2dDeviceContext,
-		ID2D1Factory2* d2dFactory,
-		ID3D11Device* d3dDevice,
-		ID3D11DeviceContext* d3dDeviceContext,
-		IDWriteFactory2* writeFactory,
+		UIComponentArgs uiComponentArgs,
 		ID2D1SolidColorBrush* brush,
 		IDWriteTextFormat* textFormat);
 	void Draw() override;

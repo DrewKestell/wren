@@ -2,8 +2,9 @@
 
 #include <vector>
 #include <DirectXMath.h>
-#include "UIComponent.h"
-#include "../DeviceResources.h"
+#include <Layer.h>
+
+class UIComponent;
 
 struct UIComponentArgs
 {

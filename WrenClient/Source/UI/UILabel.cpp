@@ -5,22 +5,14 @@
 using namespace DX;
 
 UILabel::UILabel(
-	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT2 position,
-	const Layer uiLayer,
-	const unsigned int zIndex,
+	UIComponentArgs uiComponentArgs,
 	const float width,
 	ID2D1SolidColorBrush* textBrush,
-	IDWriteTextFormat* textFormat,
-	ID2D1DeviceContext1* d2dDeviceContext,
-	IDWriteFactory2* writeFactory,
-	ID2D1Factory2* d2dFactory)
-	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	IDWriteTextFormat* textFormat)
+	: UIComponent(uiComponentArgs),
 	  width{ width },
 	  textBrush{ textBrush },
-	  textFormat{ textFormat },	
-	  writeFactory{ writeFactory },
-	  d2dDeviceContext{ d2dDeviceContext }
+	  textFormat{ textFormat }
 {
 	ZeroMemory(text, sizeof(text));
 }
@@ -32,10 +24,10 @@ void UILabel::Draw()
     std::wostringstream outInputValue;
     outInputValue << text;
 
-	ThrowIfFailed(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormat, width, 24.0f, textLayout.ReleaseAndGetAddressOf()));
+	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormat, width, 24.0f, textLayout.ReleaseAndGetAddressOf()));
 
     const auto position = GetWorldPosition();
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y), textLayout.Get(), textBrush);
+    deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x, position.y), textLayout.Get(), textBrush);
 }
 
 void UILabel::SetText(const char* arr)

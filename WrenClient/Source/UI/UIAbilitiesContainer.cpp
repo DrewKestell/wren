@@ -5,16 +5,8 @@
 using namespace DX;
 
 UIAbilitiesContainer::UIAbilitiesContainer(
-	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT2 position,
-	const Layer uiLayer,
-	const unsigned int zIndex,
+	UIComponentArgs uiComponentArgs,
 	EventHandler& eventHandler,
-	ID2D1DeviceContext1* d2dDeviceContext,
-	ID2D1Factory2* d2dFactory,
-	ID3D11Device* d3dDevice,
-	ID3D11DeviceContext* d3dDeviceContext,
-	IDWriteFactory2* writeFactory,
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1SolidColorBrush* highlightBrush,
 	ID2D1SolidColorBrush* headerBrush,
@@ -28,13 +20,8 @@ UIAbilitiesContainer::UIAbilitiesContainer(
 	const XMMATRIX projectionTransform,
 	const float clientWidth,
 	const float clientHeight)
-	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
-	  d2dDeviceContext{ d2dDeviceContext },
-	  d2dFactory{ d2dFactory },
-	  d3dDevice{ d3dDevice },
-	  d3dDeviceContext{ d3dDeviceContext },
-	  writeFactory{ writeFactory },
 	  borderBrush{ borderBrush },
 	  highlightBrush{ highlightBrush },
 	  headerBrush{ headerBrush },
@@ -61,7 +48,7 @@ void UIAbilitiesContainer::Draw()
 
 	for (auto i = 0; i < headers.size(); i++)
 	{
-		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(worldPos.x + 12.0f, worldPos.y + 30.0f + (i * 70.0f)), headers.at(i).Get(), headerBrush);
+		deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(worldPos.x + 12.0f, worldPos.y + 30.0f + (i * 70.0f)), headers.at(i).Get(), headerBrush);
 		// if mouse hover, draw highlight
 
 		// Draw Borders
@@ -70,9 +57,9 @@ void UIAbilitiesContainer::Draw()
 		auto yOffset = 50.0f + (borderGeometries.size() * 70.0f);
 		auto positionX = worldPos.x + xOffset;
 		auto positionY = worldPos.y + yOffset;
-		d2dFactory->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + BORDER_WIDTH, positionY + BORDER_WIDTH), borderGeometry.ReleaseAndGetAddressOf());
+		deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + ABILITIES_CONTAINER_BORDER_WIDTH, positionY + ABILITIES_CONTAINER_BORDER_WIDTH), borderGeometry.ReleaseAndGetAddressOf());
 		borderGeometries.push_back(borderGeometry);
-		d2dDeviceContext->DrawGeometry(borderGeometries.at(i).Get(), borderBrush, 2.0f);
+		deviceResources->GetD2DDeviceContext()->DrawGeometry(borderGeometries.at(i).Get(), borderBrush, 2.0f);
 	}
 }
 
@@ -108,12 +95,12 @@ void UIAbilitiesContainer::AddAbility(Ability* ability, ID3D11ShaderResourceView
 	ComPtr<IDWriteTextLayout> headerTextLayout;
 	std::wostringstream buttonText;
 	buttonText << ability->name.c_str();
-	ThrowIfFailed(writeFactory->CreateTextLayout(
+	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(
 		buttonText.str().c_str(),
 		(UINT32)buttonText.str().size(),
 		headerTextFormat,
-		HEADER_WIDTH,
-		HEADER_HEIGHT,
+		ABILITIES_CONTAINER_HEADER_WIDTH,
+		ABILITIES_CONTAINER_HEADER_HEIGHT,
 		headerTextLayout.ReleaseAndGetAddressOf())
 	);
 	headers.push_back(headerTextLayout);
@@ -127,7 +114,7 @@ void UIAbilitiesContainer::AddAbility(Ability* ability, ID3D11ShaderResourceView
 	auto positionY = worldPos.y + yOffset;
 
 	// create UIAbility
-	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility(uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3, eventHandler, ability->abilityId, ability->toggled, d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform));
+	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility({ deviceResources, uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3 }, eventHandler, ability->abilityId, ability->toggled, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform));
 	uiAbilities.push_back(uiAbility);
 	this->AddChildComponent(*uiAbility);
 }

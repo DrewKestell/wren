@@ -14,10 +14,7 @@
 using namespace DX;
 
 UITextWindow::UITextWindow(
-	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT2 position,
-	const Layer uiLayer,
-	const unsigned int zIndex,
+	UIComponentArgs uiComponentArgs,
 	EventHandler& eventHandler,
 	ObjectManager& objectManager,
 	std::vector<std::unique_ptr<Item>>& allItems,
@@ -31,12 +28,9 @@ UITextWindow::UITextWindow(
 	ID2D1SolidColorBrush* textBrush,
 	ID2D1SolidColorBrush* scrollBarBackgroundBrush,
 	ID2D1SolidColorBrush* scrollBarBrush,
-	ID2D1DeviceContext1* d2dDeviceContext,
-	IDWriteFactory2* writeFactory,
 	IDWriteTextFormat* textFormat,
-	IDWriteTextFormat* textFormatInactive,
-	ID2D1Factory2* d2dFactory)
-	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	IDWriteTextFormat* textFormatInactive)
+	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  objectManager{ objectManager },
 	  allItems{ allItems },
@@ -50,21 +44,19 @@ UITextWindow::UITextWindow(
 	  textBrush{ textBrush },
 	  scrollBarBackgroundBrush{ scrollBarBackgroundBrush },
 	  scrollBarBrush{ scrollBarBrush },
-	  d2dDeviceContext{ d2dDeviceContext },
-	  writeFactory{ writeFactory },
 	  textFormat{ textFormat },
-	  textFormatInactive{ textFormatInactive },
-	  d2dFactory{ d2dFactory }
+	  textFormatInactive{ textFormatInactive }
 {
 	UpdateMessages();
 
-	d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x, position.y, position.x + TEXT_WINDOW_WIDTH, position.y + TEXT_WINDOW_HEIGHT), windowGeometry.ReleaseAndGetAddressOf());
-	d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x, position.y + TEXT_WINDOW_HEIGHT, position.x + TEXT_WINDOW_WIDTH, position.y + 245.0f), inputGeometry.ReleaseAndGetAddressOf());
-	d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + TEXT_WINDOW_WIDTH - 20.0f, position.y, position.x + TEXT_WINDOW_WIDTH, position.y + TEXT_WINDOW_HEIGHT), scrollBarBackgroundGeometry.ReleaseAndGetAddressOf());
+	const auto position = uiComponentArgs.position;
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y, position.x + TEXT_WINDOW_WIDTH, position.y + TEXT_WINDOW_HEIGHT), windowGeometry.ReleaseAndGetAddressOf());
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y + TEXT_WINDOW_HEIGHT, position.x + TEXT_WINDOW_WIDTH, position.y + 245.0f), inputGeometry.ReleaseAndGetAddressOf());
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + TEXT_WINDOW_WIDTH - 20.0f, position.y, position.x + TEXT_WINDOW_WIDTH, position.y + TEXT_WINDOW_HEIGHT), scrollBarBackgroundGeometry.ReleaseAndGetAddressOf());
 
 	std::wostringstream outInputValue;
 	outInputValue << "Enter a message...";
-	ThrowIfFailed(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormatInactive, TEXT_WINDOW_WIDTH, 25.0f, inputValueTextLayoutInactive.ReleaseAndGetAddressOf())); // (height - 2) takes the border into account, and looks more natural
+	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormatInactive, TEXT_WINDOW_WIDTH, 25.0f, inputValueTextLayoutInactive.ReleaseAndGetAddressOf())); // (height - 2) takes the border into account, and looks more natural
 }
 
 void UITextWindow::Draw()
@@ -72,11 +64,11 @@ void UITextWindow::Draw()
 	if (!isVisible) return;
 
 	// Draw window
-	d2dDeviceContext->FillGeometry(windowGeometry.Get(), backgroundBrush);
-	d2dDeviceContext->FillGeometry(inputGeometry.Get(), inputBrush);
-	d2dDeviceContext->FillGeometry(scrollBarBackgroundGeometry.Get(), scrollBarBackgroundBrush);
-	d2dDeviceContext->DrawGeometry(windowGeometry.Get(), borderBrush, 2.0f);
-	d2dDeviceContext->DrawGeometry(inputGeometry.Get(), borderBrush, 2.0f);
+	deviceResources->GetD2DDeviceContext()->FillGeometry(windowGeometry.Get(), backgroundBrush);
+	deviceResources->GetD2DDeviceContext()->FillGeometry(inputGeometry.Get(), inputBrush);
+	deviceResources->GetD2DDeviceContext()->FillGeometry(scrollBarBackgroundGeometry.Get(), scrollBarBackgroundBrush);
+	deviceResources->GetD2DDeviceContext()->DrawGeometry(windowGeometry.Get(), borderBrush, 2.0f);
+	deviceResources->GetD2DDeviceContext()->DrawGeometry(inputGeometry.Get(), borderBrush, 2.0f);
 	
 	const auto position = GetWorldPosition();
 
@@ -93,10 +85,10 @@ void UITextWindow::Draw()
 	auto yOffset = reductionSegmentSize * ((maxScrollIndex - scrollIndex + MESSAGE_BUFFER_SIZE) % MESSAGE_BUFFER_SIZE);
 	scrollBarTopPosY = position.y + 20.0f + 180.0f - scrollBarHeight - yOffset;
 	scrollBarBottomPosY = position.y + 20.0f + 180.0f - yOffset;
-	d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + TEXT_WINDOW_WIDTH - 18.0f, scrollBarTopPosY, position.x + TEXT_WINDOW_WIDTH - 2.0f, scrollBarBottomPosY), scrollBarGeometry.ReleaseAndGetAddressOf());
-	d2dDeviceContext->FillGeometry(scrollBarGeometry.Get(), scrollBarBrush);
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + TEXT_WINDOW_WIDTH - 18.0f, scrollBarTopPosY, position.x + TEXT_WINDOW_WIDTH - 2.0f, scrollBarBottomPosY), scrollBarGeometry.ReleaseAndGetAddressOf());
+	deviceResources->GetD2DDeviceContext()->FillGeometry(scrollBarGeometry.Get(), scrollBarBrush);
 
-	ThrowIfFailed(d2dFactory->CreatePathGeometry(pathGeometry.ReleaseAndGetAddressOf()));
+	ThrowIfFailed(deviceResources->GetD2DFactory()->CreatePathGeometry(pathGeometry.ReleaseAndGetAddressOf()));
 	ThrowIfFailed(pathGeometry->Open(sink.ReleaseAndGetAddressOf()));
 
 	// scrollbar up arrow
@@ -118,10 +110,10 @@ void UITextWindow::Draw()
 	sink->EndFigure(D2D1_FIGURE_END_CLOSED);
 
 	sink->Close();
-	d2dDeviceContext->FillGeometry(pathGeometry.Get(), scrollBarBrush);
+	deviceResources->GetD2DDeviceContext()->FillGeometry(pathGeometry.Get(), scrollBarBrush);
 
 	// Draw text
-	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + 5.0f, position.y + 5.0f), textLayout.Get(), textBrush);
+	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x + 5.0f, position.y + 5.0f), textLayout.Get(), textBrush);
 
 	// Draw Input Text
 	std::wostringstream outInputValue;
@@ -135,11 +127,11 @@ void UITextWindow::Draw()
 	}
 	if (inputIndex > 0 || inputActive)
 	{
-		ThrowIfFailed(writeFactory->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormat, TEXT_WINDOW_WIDTH, 25.0f, inputValueTextLayout.ReleaseAndGetAddressOf())); // (height - 2) takes the border into account, and looks more natural
-		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + 4.0f, position.y + 224.0f), inputValueTextLayout.Get(), inputTextBrush);
+		ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormat, TEXT_WINDOW_WIDTH, 25.0f, inputValueTextLayout.ReleaseAndGetAddressOf())); // (height - 2) takes the border into account, and looks more natural
+		deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x + 4.0f, position.y + 224.0f), inputValueTextLayout.Get(), inputTextBrush);
 	}
 	else
-		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + 4.0f, position.y + 224.0f), inputValueTextLayoutInactive.Get(), inputTextBrushInactive);
+		deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x + 4.0f, position.y + 224.0f), inputValueTextLayoutInactive.Get(), inputTextBrushInactive);
 }
 
 const bool UITextWindow::HandleEvent(const Event* const event)
@@ -361,7 +353,7 @@ void UITextWindow::UpdateMessages()
 	for (auto i = scrollIndex; i < scrollIndex + messagesToDisplay; i++)
 		text << messages[i % MESSAGE_BUFFER_SIZE].c_str() << std::endl;
 
-	ThrowIfFailed(writeFactory->CreateTextLayout(
+	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(
 		text.str().c_str(),
 		(UINT32)text.str().size(),
 		textFormat,

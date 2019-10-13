@@ -5,10 +5,7 @@
 #include "EventHandling/Events/LootItemSuccessEvent.h"
 
 UILootContainer::UILootContainer(
-	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT2 position,
-	const Layer uiLayer,
-	const unsigned int zIndex,
+	UIComponentArgs uiComponentArgs,
 	EventHandler& eventHandler,
 	ClientSocketManager& socketManager,
 	StatsComponentManager& statsComponentManager,
@@ -16,10 +13,6 @@ UILootContainer::UILootContainer(
 	std::vector<std::unique_ptr<Item>>& allItems,
 	std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures,
 	ID2D1SolidColorBrush* brush,
-	ID2D1DeviceContext1* d2dDeviceContext,
-	ID2D1Factory2* d2dFactory,
-	ID3D11Device* d3dDevice,
-	ID3D11DeviceContext* d3dDeviceContext,
 	ID2D1SolidColorBrush* highlightBrush,
 	ID3D11VertexShader* vertexShader,
 	ID3D11PixelShader* pixelShader,
@@ -32,9 +25,8 @@ UILootContainer::UILootContainer(
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1SolidColorBrush* textBrush,
 	IDWriteTextFormat* textFormatTitle,
-	IDWriteTextFormat* textFormatDescription,
-	IDWriteFactory2* writeFactory)
-	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	IDWriteTextFormat* textFormatDescription)
+	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  socketManager{ socketManager },
 	  statsComponentManager{ statsComponentManager },
@@ -42,10 +34,6 @@ UILootContainer::UILootContainer(
 	  allItems{ allItems },
 	  allTextures{ allTextures },
 	  brush{ brush },
-	  d2dDeviceContext{ d2dDeviceContext },
-	  d2dFactory{ d2dFactory },
-	  d3dDevice{ d3dDevice },
-	  d3dDeviceContext{ d3dDeviceContext },
 	  highlightBrush{ highlightBrush },
 	  vertexShader{ vertexShader },
 	  pixelShader{ pixelShader },
@@ -58,8 +46,7 @@ UILootContainer::UILootContainer(
 	  borderBrush{ borderBrush },
 	  textBrush{ textBrush },
 	  textFormatTitle{ textFormatTitle },
-	  textFormatDescription{ textFormatDescription },
-	  writeFactory{ writeFactory }
+	  textFormatDescription{ textFormatDescription }
 {
 }
 
@@ -71,7 +58,7 @@ void UILootContainer::Draw()
 	ReinitializeGeometry();
 
 	for (auto i = 0; i < 12; i++)
-		d2dDeviceContext->DrawGeometry(geometry[i].Get(), brush, 2.0f);
+		deviceResources->GetD2DDeviceContext()->DrawGeometry(geometry[i].Get(), brush, 2.0f);
 }
 
 const bool UILootContainer::HandleEvent(const Event* const event)
@@ -123,7 +110,7 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 							const auto yOffset = 25.0f + ((i / 3) * 45.0f);
 							const auto texture = allTextures.at(item->GetSpriteId()).Get();
 							const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
-							uiItems.push_back(std::make_unique<UIItem>(uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3, eventHandler, socketManager, itemId, item->GetName(), item->GetDescription(), d2dDeviceContext, d2dFactory, d3dDevice, d3dDeviceContext, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription, writeFactory));
+							uiItems.push_back(std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3 }, eventHandler, socketManager, itemId, item->GetName(), item->GetDescription(), vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription));
 							AddChildComponent(*uiItems.at(i).get());
 						}
 					}
@@ -179,7 +166,7 @@ void UILootContainer::ReinitializeGeometry()
 	{
 		for (auto j = 0; j < 3; j++)
 		{
-			d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + xOffset, position.y + yOffset, position.x + xOffset + width, position.y + yOffset + width), geometry[j + (3 * i)].ReleaseAndGetAddressOf());
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + xOffset, position.y + yOffset, position.x + xOffset + width, position.y + yOffset + width), geometry[j + (3 * i)].ReleaseAndGetAddressOf());
 			xOffset += 45.0f;
 		}
 

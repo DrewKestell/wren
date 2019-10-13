@@ -6,11 +6,11 @@
 #include "../ClientSocketManager.h"
 #include "UITooltip.h"
 
+static constexpr auto SPRITE_SIZE = 36.0f;
 class UIItem : public UIComponent
 {
 	EventHandler& eventHandler;
 	ClientSocketManager& socketManager;
-	const float SPRITE_SIZE{ 36.0f };
 	bool isHovered{ false };
 	bool isPressed{ false };
 	bool isDragging;
@@ -24,10 +24,6 @@ class UIItem : public UIComponent
 	const std::string& name;
 	const std::string& description;
 	ID2D1SolidColorBrush* highlightBrush;
-	ID2D1Factory2* d2dFactory;
-	ID2D1DeviceContext1* d2dDeviceContext;
-	ID3D11Device* d3dDevice;
-	ID3D11DeviceContext* d3dDeviceContext;
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
 	ID3D11ShaderResourceView* texture;
@@ -37,7 +33,6 @@ class UIItem : public UIComponent
 	ID2D1SolidColorBrush* textBrush;
 	IDWriteTextFormat* textFormatTitle;
 	IDWriteTextFormat* textFormatDescription;
-	IDWriteFactory2* writeFactory;
 	const BYTE* vertexShaderBuffer;
 	const int vertexShaderSize;
 	const XMMATRIX projectionTransform;
@@ -46,19 +41,12 @@ class UIItem : public UIComponent
 
 public:
 	UIItem(
-		std::vector<UIComponent*>& uiComponents,
-		const XMFLOAT2 position,
-		const Layer uiLayer,
-		const unsigned int zIndex,
+		UIComponentArgs uiComponentArgs,
 		EventHandler& eventHandler,
 		ClientSocketManager& socketManager,
 		const int itemId,
 		const std::string& name,
 		const std::string& description,
-		ID2D1DeviceContext1* d2dDeviceContext,
-		ID2D1Factory2* d2dFactory,
-		ID3D11Device* d3dDevice,
-		ID3D11DeviceContext* d3dDeviceContext,
 		ID3D11VertexShader* vertexShader,
 		ID3D11PixelShader* pixelShader,
 		ID3D11ShaderResourceView* texture,
@@ -74,7 +62,6 @@ public:
 		ID2D1SolidColorBrush* textBrush,
 		IDWriteTextFormat* textFormatTitle,
 		IDWriteTextFormat* textFormatDescription,
-		IDWriteFactory2* writeFactory,
 		const bool isDragging = false,
 		const float mousePosX = 0.0f,
 		const float mousePosY = 0.0f);

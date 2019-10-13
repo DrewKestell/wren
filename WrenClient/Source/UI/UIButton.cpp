@@ -6,10 +6,7 @@
 using namespace DX;
 
 UIButton::UIButton(
-	std::vector<UIComponent*>& uiComponents,
-	const XMFLOAT2 position,
-	const Layer uiLayer,
-	const unsigned int zIndex,
+	UIComponentArgs uiComponentArgs,
 	const float width,
 	const float height,
 	const char* inButtonText,
@@ -18,24 +15,19 @@ UIButton::UIButton(
 	ID2D1SolidColorBrush* pressedButtonBrush,
 	ID2D1SolidColorBrush* buttonBorderBrush,
 	ID2D1SolidColorBrush* buttonTextBrush,
-	ID2D1DeviceContext1* d2dDeviceContext,
-	IDWriteFactory2* writeFactory,
-	IDWriteTextFormat* buttonTextFormat,
-	ID2D1Factory2* d2dFactory)
-	: UIComponent(uiComponents, position, uiLayer, zIndex),
+	IDWriteTextFormat* buttonTextFormat)
+	: UIComponent(uiComponentArgs),
 	  width{ width },
 	  height{ height },
 	  onClick{ onClick },
 	  buttonBrush{ buttonBrush },
 	  pressedButtonBrush{ pressedButtonBrush },
 	  buttonBorderBrush{ buttonBorderBrush },
-	  buttonTextBrush{ buttonTextBrush },
-	  d2dDeviceContext{ d2dDeviceContext },
-	  d2dFactory{ d2dFactory }
+	  buttonTextBrush{ buttonTextBrush }
 {
 	std::wostringstream buttonText;
 	buttonText << inButtonText;
-	ThrowIfFailed(writeFactory->CreateTextLayout(
+	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(
 		buttonText.str().c_str(),
 		(UINT32)buttonText.str().size(),
 		buttonTextFormat,
@@ -61,13 +53,13 @@ void UIButton::Draw()
     else
         buttonColor = buttonBrush;
 
-	d2dFactory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), buttonGeometry.ReleaseAndGetAddressOf());
+	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), buttonGeometry.ReleaseAndGetAddressOf());
 
-    d2dDeviceContext->FillGeometry(buttonGeometry.Get(), buttonColor);
-    d2dDeviceContext->DrawGeometry(buttonGeometry.Get(), buttonBorderBrush, borderWeight);
+    deviceResources->GetD2DDeviceContext()->FillGeometry(buttonGeometry.Get(), buttonColor);
+	deviceResources->GetD2DDeviceContext()->DrawGeometry(buttonGeometry.Get(), buttonBorderBrush, borderWeight);
     
     // Draw Input Text    
-    d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y + 1), buttonTextLayout.Get(), buttonTextBrush); // (location + 1) looks better
+	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x, position.y + 1), buttonTextLayout.Get(), buttonTextBrush); // (location + 1) looks better
 }
 
 const bool UIButton::HandleEvent(const Event* const event)
