@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "ConstantBufferOnce.h"
 #include "Events/SkillIncreaseEvent.h"
+#include "Events/WindowResizeEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -270,18 +271,7 @@ void Game::OnWindowMoved()
 
 void Game::OnWindowSizeChanged(int width, int height)
 {
-	if (!deviceResources->WindowSizeChanged(width, height))
-		return;
-
-	clientWidth = width;
-	clientHeight = height;
-
-	abilitiesContainer->clientWidth = static_cast<float>(width);
-	abilitiesContainer->clientHeight = static_cast<float>(height);
-
-	CreateWindowSizeDependentResources();
-
-	SetActiveLayer(activeLayer);
+	
 }
 #pragma endregion
 
@@ -1469,5 +1459,20 @@ void Game::CreateEventHandlers()
 			if (!statsComponent.alive)
 				lootPanel->ToggleVisibility();
 		}
+	};
+
+	eventHandlers[EventType::WindowResize] = [this](const Event* const event)
+	{
+		const auto derivedEvent = (WindowResizeEvent*)event;
+
+		if (!deviceResources->WindowSizeChanged(derivedEvent->width, derivedEvent->height))
+			return;
+
+		clientWidth = derivedEvent->width;
+		clientHeight = derivedEvent->height;
+								
+		CreateWindowSizeDependentResources();
+
+		SetActiveLayer(activeLayer);
 	};
 }

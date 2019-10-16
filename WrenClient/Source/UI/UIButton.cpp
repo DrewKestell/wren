@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UIButton.h"
+#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 

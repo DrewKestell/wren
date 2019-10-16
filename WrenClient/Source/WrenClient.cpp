@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Events/WindowResizeEvent.h"
 #include "EventHandling/Events/SystemKeyUpEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
@@ -183,7 +184,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		else if (!s_in_sizemove && game)
 		{
-			game->OnWindowSizeChanged(LOWORD(lParam), HIWORD(lParam));
+			e = std::make_unique<WindowResizeEvent>(LOWORD(lParam), HIWORD(lParam));
+			eventHandler.QueueEvent(e);
 		}
 		break;
 
@@ -198,7 +200,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			RECT rc;
 			GetClientRect(hWnd, &rc);
 
-			game->OnWindowSizeChanged(rc.right - rc.left, rc.bottom - rc.top);
+			const auto width = static_cast<float>(rc.right - rc.left);
+			const auto height = static_cast<float>(rc.bottom - rc.top);
+			e = std::make_unique<WindowResizeEvent>(width, height);
+			eventHandler.QueueEvent(e);
 		}
 		break;
 

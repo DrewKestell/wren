@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UIAbilitiesContainer.h"
+#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 
 using namespace DX;
@@ -76,6 +77,15 @@ const bool UIAbilitiesContainer::HandleEvent(const Event* const event)
 				isVisible = true;
 			else
 				isVisible = false;
+
+			break;
+		}
+		case EventType::WindowResize:
+		{
+			const auto derivedEvent = (WindowResizeEvent*)event;
+
+			clientWidth = derivedEvent->width;
+			clientHeight = derivedEvent->height;
 
 			break;
 		}

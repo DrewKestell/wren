@@ -46,5 +46,6 @@ enum class EventType
 	Pong,
 	SkillIncrease,
 	NpcDeath,
-	LootItemSuccess
+	LootItemSuccess,
+	WindowResize
 };

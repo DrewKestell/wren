@@ -180,6 +180,7 @@
     <ClInclude Include="Source\UI\UIInventory.h" />
     <ClInclude Include="Source\UI\UITooltip.h" />
     <ClInclude Include="Source\UI\UIComponentArgs.h" />
+    <ClInclude Include="Source\Events\WindowResizeEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />
