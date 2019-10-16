@@ -20,7 +20,7 @@ namespace DX
 		void SetWindow(HWND window, int width, int height);
 		bool WindowSizeChanged(int width, int height);
 		void HandleDeviceLost();
-		void RegisterDeviceNotify(IDeviceNotify* deviceNotify) { deviceNotify = deviceNotify; }
+		void RegisterDeviceNotify(IDeviceNotify* deviceNotify) { this->deviceNotify = deviceNotify; }
 		void Present();
 
 		// Device Accessors.

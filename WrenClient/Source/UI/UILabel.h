@@ -9,14 +9,13 @@ class UILabel : public UIComponent
 	ComPtr<IDWriteTextLayout> textLayout;
 	const float width{ 0.0f };
     char text[200];
-	ID2D1SolidColorBrush* textBrush;
-	IDWriteTextFormat* textFormat;
+	ID2D1SolidColorBrush* textBrush{ nullptr };
+	IDWriteTextFormat* textFormat{ nullptr };
 public:
 	UILabel(
 		UIComponentArgs uiComponentArgs,
-		const float width,
-		ID2D1SolidColorBrush* textBrush,
-		IDWriteTextFormat* textFormat);
+		const float width);
+	void Initialize(ID2D1SolidColorBrush* textBrush, IDWriteTextFormat* textFormat);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
     void SetText(const char* arr);

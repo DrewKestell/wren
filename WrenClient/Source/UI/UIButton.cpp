@@ -9,31 +9,39 @@ UIButton::UIButton(
 	UIComponentArgs uiComponentArgs,
 	const float width,
 	const float height,
-	const char* inButtonText,
-	const std::function<void()> onClick,
+	const char* buttonText,
+	const std::function<void()> onClick)
+	: UIComponent(uiComponentArgs),
+	  width{ width },
+	  height{ height },
+	  buttonText{ buttonText },
+	  onClick{ onClick }
+{
+}
+
+void UIButton::Initialize(
+	XMFLOAT2 position,
 	ID2D1SolidColorBrush* buttonBrush,
 	ID2D1SolidColorBrush* pressedButtonBrush,
 	ID2D1SolidColorBrush* buttonBorderBrush,
 	ID2D1SolidColorBrush* buttonTextBrush,
 	IDWriteTextFormat* buttonTextFormat)
-	: UIComponent(uiComponentArgs),
-	  width{ width },
-	  height{ height },
-	  onClick{ onClick },
-	  buttonBrush{ buttonBrush },
-	  pressedButtonBrush{ pressedButtonBrush },
-	  buttonBorderBrush{ buttonBorderBrush },
-	  buttonTextBrush{ buttonTextBrush }
 {
-	std::wostringstream buttonText;
-	buttonText << inButtonText;
-	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(
-		buttonText.str().c_str(),
-		(UINT32)buttonText.str().size(),
-		buttonTextFormat,
-		width,
-		height,
-		buttonTextLayout.ReleaseAndGetAddressOf())
+	this->localPosition = position;
+	this->buttonBrush = buttonBrush;
+	this->pressedButtonBrush = pressedButtonBrush;
+	this->buttonBorderBrush = buttonBorderBrush;
+	this->buttonTextBrush = buttonTextBrush;
+
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			Utility::s2ws(buttonText).c_str(),
+			static_cast<unsigned int>(buttonText.size()),
+			buttonTextFormat,
+			width,
+			height,
+			buttonTextLayout.ReleaseAndGetAddressOf()
+		)
 	);
 }
 

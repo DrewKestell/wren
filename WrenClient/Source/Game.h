@@ -54,8 +54,8 @@ public:
 	void Tick();
 
 	// IDeviceNotify
-	virtual void OnDeviceLost() override;
-	virtual void OnDeviceRestored() override;
+	void OnDeviceLost() override;
+	void OnDeviceRestored() override;
 
 	// Messages
 	void OnActivated();
@@ -129,22 +129,21 @@ private:
 	void QuitGame();
 
 	void CreateEventHandlers();
-	void CreateNpcs();
-	void CreateItems();
 	void CreateStaticObjects();
 	void CreateBrushes();
 	void CreateTextFormats();
 	void CreateInputs();
 	void InitializeInputs();
 	void CreateButtons();
+	void InitializeButtons();
 	void CreateLabels();
+	void InitializeLabels();
 	void CreatePanels();
 	void CreateShaders();
 	void CreateBuffers();
 	void CreateTextures();
 	void CreateMeshes();
 	void CreateRasterStates();
-	void CreateSprites();
 	void CreateAbilitiesContainer();
 	void RecreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();

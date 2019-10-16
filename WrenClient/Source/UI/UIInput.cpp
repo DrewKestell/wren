@@ -13,32 +13,36 @@ UIInput::UIInput(
 	const float labelWidth,
 	const float inputWidth,
 	const float height,
-	const char* labelText,
+	const char* labelText)
+	: UIComponent(uiComponentArgs),
+	  secure{ secure },
+	  labelWidth{ labelWidth },
+	  inputWidth{ inputWidth },
+	  height{ height },
+	  labelText{ labelText }
+{
+}
+
+void UIInput::Initialize(
 	ID2D1SolidColorBrush* labelBrush,
 	ID2D1SolidColorBrush* inputBrush,
 	ID2D1SolidColorBrush* inputBorderBrush,
 	ID2D1SolidColorBrush* inputValueBrush,
 	IDWriteTextFormat* inputValueTextFormat,
 	IDWriteTextFormat* labelTextFormat)
-	: UIComponent(uiComponentArgs),
-	  secure{ secure },
-	  labelWidth{ labelWidth },
-	  inputWidth{ inputWidth },
-	  height{ height },
-	  labelText{ labelText },
-	  labelBrush{ labelBrush },
-	  inputBrush{ inputBrush },
-	  inputBorderBrush{ inputBorderBrush },
-	  inputValueBrush{ inputValueBrush },
-	  inputValueTextFormat{ inputValueTextFormat },
-	  labelTextFormat{ labelTextFormat }
 {
-	const auto position = GetWorldPosition();
+	this->labelBrush = labelBrush;
+	this->inputBrush = inputBrush;
+	this->inputBorderBrush = inputBorderBrush;
+	this->inputValueBrush = inputValueBrush;
+	this->inputValueTextFormat = inputValueTextFormat;
+	this->labelTextFormat = labelTextFormat;
 
 	std::wostringstream outLabelText;
-	outLabelText << labelText;
+	outLabelText << labelText.c_str();
 	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(outLabelText.str().c_str(), (UINT32)outLabelText.str().size(), labelTextFormat, labelWidth, height, labelTextLayout.ReleaseAndGetAddressOf()));
 
+	const auto position = GetWorldPosition();
 	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x + labelWidth + 10, position.y, position.x + labelWidth + inputWidth, position.y + height), 3.0f, 3.0f), inputGeometry.ReleaseAndGetAddressOf());
 }
 
@@ -48,7 +52,8 @@ void UIInput::Draw()
 
     // Draw Label
     const auto position = GetWorldPosition();
-    deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x, position.y), labelTextLayout.Get(), labelBrush);
+	auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y), labelTextLayout.Get(), labelBrush);
 
     // Draw Input
     const float borderWeight = active ? 2.0f : 1.0f;

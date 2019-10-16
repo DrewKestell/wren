@@ -18,12 +18,12 @@ class UIInput : public UIComponent
 	float inputWidth{ 0.0f };
 	float height{ 0.0f };
 	std::string labelText;
-	ID2D1SolidColorBrush* labelBrush;
-    ID2D1SolidColorBrush* inputBrush;
-    ID2D1SolidColorBrush* inputBorderBrush;
-    ID2D1SolidColorBrush* inputValueBrush;
-    IDWriteTextFormat* inputValueTextFormat;
-	IDWriteTextFormat* labelTextFormat;
+	ID2D1SolidColorBrush* labelBrush{ nullptr };
+    ID2D1SolidColorBrush* inputBrush{ nullptr };
+    ID2D1SolidColorBrush* inputBorderBrush{ nullptr };
+    ID2D1SolidColorBrush* inputValueBrush{ nullptr };
+    IDWriteTextFormat* inputValueTextFormat{ nullptr };
+	IDWriteTextFormat* labelTextFormat{ nullptr };
    
 public:
 	UIInput(
@@ -32,7 +32,8 @@ public:
 		const float labelWidth,
 		const float inputWidth,
 		const float height,
-		const char* labelText,
+		const char* labelText);
+	void Initialize(
 		ID2D1SolidColorBrush* labelBrush,
 		ID2D1SolidColorBrush* inputBrush,
 		ID2D1SolidColorBrush* inputBorderBrush,

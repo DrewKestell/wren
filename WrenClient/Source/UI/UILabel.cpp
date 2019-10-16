@@ -6,15 +6,17 @@ using namespace DX;
 
 UILabel::UILabel(
 	UIComponentArgs uiComponentArgs,
-	const float width,
-	ID2D1SolidColorBrush* textBrush,
-	IDWriteTextFormat* textFormat)
+	const float width)
 	: UIComponent(uiComponentArgs),
-	  width{ width },
-	  textBrush{ textBrush },
-	  textFormat{ textFormat }
+	  width{ width }
 {
 	ZeroMemory(text, sizeof(text));
+}
+
+void UILabel::Initialize(ID2D1SolidColorBrush* textBrush, IDWriteTextFormat* textFormat)
+{
+	this->textBrush = textBrush;
+	this->textFormat = textFormat;
 }
 
 void UILabel::Draw()
