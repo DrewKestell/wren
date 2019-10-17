@@ -110,7 +110,7 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 							const auto yOffset = 25.0f + ((i / 3) * 45.0f);
 							const auto texture = allTextures.at(item->GetSpriteId()).Get();
 							const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
-							uiItems.push_back(std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3 }, eventHandler, socketManager, itemId, item->GetName(), item->GetDescription(), vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription));
+							uiItems.push_back(std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, 3 }, eventHandler, socketManager, itemId, item->GetName(), item->GetDescription(), vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription));
 							AddChildComponent(*uiItems.at(i).get());
 						}
 					}

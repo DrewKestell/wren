@@ -21,14 +21,12 @@ UIButton::UIButton(
 }
 
 void UIButton::Initialize(
-	XMFLOAT2 position,
 	ID2D1SolidColorBrush* buttonBrush,
 	ID2D1SolidColorBrush* pressedButtonBrush,
 	ID2D1SolidColorBrush* buttonBorderBrush,
 	ID2D1SolidColorBrush* buttonTextBrush,
 	IDWriteTextFormat* buttonTextFormat)
 {
-	this->localPosition = position;
 	this->buttonBrush = buttonBrush;
 	this->pressedButtonBrush = pressedButtonBrush;
 	this->buttonBorderBrush = buttonBorderBrush;

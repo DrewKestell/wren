@@ -5,6 +5,8 @@
 
 class UICharacterHUD : public UIComponent
 {
+	StatsComponent& statsComponent;
+	std::string nameText;
 	ComPtr<ID2D1RectangleGeometry> characterPortraitGeometry;
 	ComPtr<ID2D1RectangleGeometry> statsContainerGeometry;
 	ComPtr<ID2D1RectangleGeometry> healthGeometry;
@@ -14,28 +16,30 @@ class UICharacterHUD : public UIComponent
 	ComPtr<ID2D1RectangleGeometry> staminaGeometry;
 	ComPtr<ID2D1RectangleGeometry> maxStaminaGeometry;
 	ComPtr<IDWriteTextLayout> nameTextLayout;
-	ID2D1SolidColorBrush* healthBrush;
-	ID2D1SolidColorBrush* manaBrush;
-	ID2D1SolidColorBrush* staminaBrush;
-	ID2D1SolidColorBrush* statBackgroundBrush;
-	ID2D1SolidColorBrush* statBorderBrush;
-	ID2D1SolidColorBrush* nameBrush;
-	ID2D1SolidColorBrush* whiteBrush;
-	IDWriteTextFormat* buttonTextFormat;
-	StatsComponent& statsComponent;
+	IDWriteTextFormat* buttonTextFormat{ nullptr };
+	ID2D1SolidColorBrush* healthBrush{ nullptr };
+	ID2D1SolidColorBrush* manaBrush{ nullptr };
+	ID2D1SolidColorBrush* staminaBrush{ nullptr };
+	ID2D1SolidColorBrush* statBackgroundBrush{ nullptr };
+	ID2D1SolidColorBrush* statBorderBrush{ nullptr };
+	ID2D1SolidColorBrush* nameBrush{ nullptr };
+	ID2D1SolidColorBrush* whiteBrush{ nullptr };
+	
 public:
 	UICharacterHUD(
 		UIComponentArgs uiComponentArgs,
-		IDWriteTextFormat* buttonTextFormat,
 		StatsComponent& statsComponent,
+		const char* nameText);
+	void Initialize(
+		IDWriteTextFormat* buttonTextFormat,
 		ID2D1SolidColorBrush* healthBrush,
 		ID2D1SolidColorBrush* manaBrush,
 		ID2D1SolidColorBrush* staminaBrush,
 		ID2D1SolidColorBrush* statBackgroundBrush,
 		ID2D1SolidColorBrush* statBorderBrush,
 		ID2D1SolidColorBrush* nameBrush,
-		ID2D1SolidColorBrush* whiteBrush,
-		const char* inNameText);
+		ID2D1SolidColorBrush* whiteBrush
+	);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 };

@@ -7,7 +7,7 @@ extern EventHandler g_eventHandler;
 UIComponent::UIComponent(UIComponentArgs uiComponentArgs, const bool followParentVisibility)
 	: deviceResources{ uiComponentArgs.deviceResources },
 	  uiComponents{ uiComponentArgs.uiComponents },
-	  localPosition{ uiComponentArgs.position },
+	  calculatePosition{ uiComponentArgs.calculatePosition },
 	  uiLayer{ uiComponentArgs.uiLayer },
 	  zIndex{ uiComponentArgs.zIndex },
 	  followParentVisibility{ followParentVisibility }

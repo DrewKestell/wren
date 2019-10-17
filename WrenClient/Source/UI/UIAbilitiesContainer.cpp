@@ -8,6 +8,16 @@ using namespace DX;
 UIAbilitiesContainer::UIAbilitiesContainer(
 	UIComponentArgs uiComponentArgs,
 	EventHandler& eventHandler,
+	const float clientWidth,
+	const float clientHeight)
+	: UIComponent(uiComponentArgs),
+	  eventHandler{ eventHandler },
+	  clientWidth{ clientWidth },
+	  clientHeight{ clientHeight }
+{
+}
+
+void UIAbilitiesContainer::Initialize(
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1SolidColorBrush* highlightBrush,
 	ID2D1SolidColorBrush* headerBrush,
@@ -18,25 +28,19 @@ UIAbilitiesContainer::UIAbilitiesContainer(
 	ID3D11PixelShader* pixelShader,
 	const BYTE* vertexShaderBuffer,
 	const int vertexShaderSize,
-	const XMMATRIX projectionTransform,
-	const float clientWidth,
-	const float clientHeight)
-	: UIComponent(uiComponentArgs),
-	  eventHandler{ eventHandler },
-	  borderBrush{ borderBrush },
-	  highlightBrush{ highlightBrush },
-	  headerBrush{ headerBrush },
-	  abilityPressedBrush{ abilityPressedBrush },
-	  abilityToggledBrush{ abilityToggledBrush },
-	  headerTextFormat{ headerTextFormat },
-	  vertexShader{ vertexShader },
-	  pixelShader{ pixelShader },
-	  vertexShaderBuffer{ vertexShaderBuffer },
-	  vertexShaderSize{ vertexShaderSize },
-	  projectionTransform{ projectionTransform },
-	  clientWidth{ clientWidth },
-	  clientHeight{ clientHeight }
+	const XMMATRIX projectionTransform)
 {
+	this->borderBrush = borderBrush;
+	this->highlightBrush = highlightBrush;
+	this->headerBrush = headerBrush;
+	this->abilityPressedBrush = abilityPressedBrush;
+	this->abilityToggledBrush = abilityToggledBrush;
+	this->headerTextFormat = headerTextFormat;
+	this->vertexShader = vertexShader;
+	this->pixelShader = pixelShader;
+	this->vertexShaderBuffer = vertexShaderBuffer;
+	this->vertexShaderSize = vertexShaderSize;
+	this->projectionTransform = projectionTransform;
 }
 
 void UIAbilitiesContainer::Draw()
@@ -103,15 +107,16 @@ void UIAbilitiesContainer::AddAbility(Ability* ability, ID3D11ShaderResourceView
 
 	// construct the header
 	ComPtr<IDWriteTextLayout> headerTextLayout;
-	std::wostringstream buttonText;
-	buttonText << ability->name.c_str();
-	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(
-		buttonText.str().c_str(),
-		(UINT32)buttonText.str().size(),
-		headerTextFormat,
-		ABILITIES_CONTAINER_HEADER_WIDTH,
-		ABILITIES_CONTAINER_HEADER_HEIGHT,
-		headerTextLayout.ReleaseAndGetAddressOf())
+
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			Utility::s2ws(ability->name).c_str(),
+			static_cast<unsigned int>(ability->name.size()),
+			headerTextFormat,
+			ABILITIES_CONTAINER_HEADER_WIDTH,
+			ABILITIES_CONTAINER_HEADER_HEIGHT,
+			headerTextLayout.ReleaseAndGetAddressOf()
+		)
 	);
 	headers.push_back(headerTextLayout);
 
@@ -124,7 +129,8 @@ void UIAbilitiesContainer::AddAbility(Ability* ability, ID3D11ShaderResourceView
 	auto positionY = worldPos.y + yOffset;
 
 	// create UIAbility
-	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility({ deviceResources, uiComponents, XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }, uiLayer, 3 }, eventHandler, ability->abilityId, ability->toggled, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform));
+	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility({ deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, 3 }, eventHandler, ability->abilityId, ability->toggled, clientWidth, clientHeight));
+	uiAbility->Initialize(vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, projectionTransform);
 	uiAbilities.push_back(uiAbility);
 	this->AddChildComponent(*uiAbility);
 }

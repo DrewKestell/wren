@@ -7,44 +7,42 @@ using namespace DX;
 
 UICharacterHUD::UICharacterHUD(
 	UIComponentArgs uiComponentArgs,
-	IDWriteTextFormat* buttonTextFormat,
 	StatsComponent& statsComponent,
+	const char* nameText)
+	: UIComponent(uiComponentArgs),
+	  statsComponent{ statsComponent },
+	  nameText{ nameText }
+{
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			Utility::s2ws(nameText).c_str(),
+			static_cast<unsigned int>(this->nameText.size()),
+			buttonTextFormat,
+			200,
+			100,
+			nameTextLayout.ReleaseAndGetAddressOf()
+		)
+	);
+}
+
+void UICharacterHUD::Initialize(
+	IDWriteTextFormat* buttonTextFormat,
 	ID2D1SolidColorBrush* healthBrush,
 	ID2D1SolidColorBrush* manaBrush,
 	ID2D1SolidColorBrush* staminaBrush,
 	ID2D1SolidColorBrush* statBackgroundBrush,
 	ID2D1SolidColorBrush* statBorderBrush,
 	ID2D1SolidColorBrush* nameBrush,
-	ID2D1SolidColorBrush* whiteBrush,
-	const char* inNameText)
-	: UIComponent(uiComponentArgs),
-	  statsComponent{ statsComponent },
-	  healthBrush{ healthBrush },
-	  manaBrush{ manaBrush },
-	  staminaBrush{ staminaBrush },
-	  statBackgroundBrush{ statBackgroundBrush },
-	  statBorderBrush{ statBorderBrush },
-	  nameBrush{ nameBrush },
-	  whiteBrush{ whiteBrush }
+	ID2D1SolidColorBrush* whiteBrush)
 {
-	std::wostringstream nameText;
-	nameText << inNameText;
-	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(
-		nameText.str().c_str(),
-		(UINT32)nameText.str().size(),
-		buttonTextFormat,
-		200,
-		100,
-		nameTextLayout.ReleaseAndGetAddressOf())
-	);
-
-	const auto position = uiComponentArgs.position;
-
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y, position.x + 80.0f, position.y + 80.0f), characterPortraitGeometry.ReleaseAndGetAddressOf());
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 80.0f, position.y + 10.0f, position.x + 240.0f, position.y + 80.0f), statsContainerGeometry.ReleaseAndGetAddressOf());
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 34.0f, position.x + 232.0f, position.y + 44.0f), maxHealthGeometry.ReleaseAndGetAddressOf());
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 48.0f, position.x + 232.0f, position.y + 58.0f), maxManaGeometry.ReleaseAndGetAddressOf());
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 62.0f, position.x + 232.0f, position.y + 72.0f), maxStaminaGeometry.ReleaseAndGetAddressOf());
+	this->buttonTextFormat = buttonTextFormat;
+	this->healthBrush = healthBrush;
+	this->manaBrush = manaBrush;
+	this->staminaBrush = staminaBrush;
+	this->statBackgroundBrush = statBackgroundBrush;
+	this->statBorderBrush = statBorderBrush;
+	this->nameBrush = nameBrush;
+	this->whiteBrush = whiteBrush;
 }
 
 void UICharacterHUD::Draw()
@@ -118,6 +116,16 @@ const bool UICharacterHUD::HandleEvent(const Event* const event)
 				isVisible = false;
 
 			break;
+		}
+		case EventType::WindowResize:
+		{
+			const auto position = GetWorldPosition();
+
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y, position.x + 80.0f, position.y + 80.0f), characterPortraitGeometry.ReleaseAndGetAddressOf());
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 80.0f, position.y + 10.0f, position.x + 240.0f, position.y + 80.0f), statsContainerGeometry.ReleaseAndGetAddressOf());
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 34.0f, position.x + 232.0f, position.y + 44.0f), maxHealthGeometry.ReleaseAndGetAddressOf());
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 48.0f, position.x + 232.0f, position.y + 58.0f), maxManaGeometry.ReleaseAndGetAddressOf());
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 62.0f, position.x + 232.0f, position.y + 72.0f), maxStaminaGeometry.ReleaseAndGetAddressOf());
 		}
 	}
 

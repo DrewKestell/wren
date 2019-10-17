@@ -1,25 +1,23 @@
 #include "stdafx.h"
 #include "UIHotbar.h"
 #include "Events/UIAbilityDroppedEvent.h"
+#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/StartDraggingUIAbilityEvent.h"
 
 UIHotbar::UIHotbar(
 	UIComponentArgs uiComponentArgs,
 	EventHandler& eventHandler,
-	ID2D1SolidColorBrush* brush,
 	const float clientHeight)
 	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
-	  brush{ brush },
 	  clientHeight{ clientHeight }
 {
-	const auto width = 40.0f;
-	for (auto i = 0; i < 10; i++)
-	{
-		const auto position = uiComponentArgs.position;
-		deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + (i * width), position.y, position.x + (i * width) + width, position.y + width), geometry[i].ReleaseAndGetAddressOf());
-	}
+}
+
+void UIHotbar::Initialize(ID2D1SolidColorBrush* brush)
+{
+	this->brush = brush;
 }
 
 void UIHotbar::Draw()
@@ -27,9 +25,7 @@ void UIHotbar::Draw()
 	if (!isVisible) return;
 
 	for (auto i = 0; i < 10; i++)
-	{
 		deviceResources->GetD2DDeviceContext()->DrawGeometry(geometry[i].Get(), brush, 2.0f);
-	}
 }
 
 const bool UIHotbar::HandleEvent(const Event* const event)
@@ -101,9 +97,24 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 		case EventType::StartDraggingUIAbility:
 		{
 			const auto derivedEvent = (StartDraggingUIAbilityEvent*)event;
-			const auto hotbarIndex = derivedEvent->hotbarIndex;
 
-			draggingIndex = hotbarIndex;
+			draggingIndex = derivedEvent->hotbarIndex;
+
+			break;
+		}
+		case EventType::WindowResize:
+		{
+			const auto derivedEvent = (WindowResizeEvent*)event;
+
+			clientHeight = derivedEvent->height;
+
+			const auto position = GetWorldPosition();
+			const auto width = 40.0f;
+
+			for (auto i = 0; i < 10; i++)
+				deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + (i * width), position.y, position.x + (i * width) + width, position.y + width), geometry[i].ReleaseAndGetAddressOf());
+
+			break;
 		}
 	}
 

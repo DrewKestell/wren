@@ -11,12 +11,12 @@ struct UIComponentArgs
 	UIComponentArgs(
 		DX::DeviceResources* deviceResources,
 		std::vector<UIComponent*>& uiComponents,
-		const DirectX::XMFLOAT2 position,
+		const std::function<XMFLOAT2(const float width, const float height)> calculatePosition,
 		const Layer uiLayer,
 		const unsigned int zIndex)
 		: deviceResources{ deviceResources },
 		  uiComponents{ uiComponents },
-		  position{ position },
+		  calculatePosition{ calculatePosition },
 		  uiLayer{ uiLayer },
 		  zIndex{ zIndex }
 	{
@@ -24,7 +24,7 @@ struct UIComponentArgs
 
 	DX::DeviceResources* deviceResources;
 	std::vector<UIComponent*>& uiComponents;
-	const DirectX::XMFLOAT2 position;
+	const std::function<XMFLOAT2(const float width, const float height)> calculatePosition;
 	const Layer uiLayer;
 	const unsigned int zIndex;
 };

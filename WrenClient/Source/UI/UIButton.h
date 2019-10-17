@@ -28,7 +28,6 @@ public:
 		const char* buttonText,
 		const std::function<void()> onClick);
 	void Initialize(
-		XMFLOAT2 position,
 		ID2D1SolidColorBrush* buttonBrush,
 		ID2D1SolidColorBrush* pressedButtonBrush,
 		ID2D1SolidColorBrush* buttonBorderBrush,

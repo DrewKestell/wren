@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UIAbility.h"
+#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/ActivateAbilityEvent.h"
 #include "EventHandling/Events/StartDraggingUIAbilityEvent.h"
@@ -11,17 +12,8 @@ UIAbility::UIAbility(
 	EventHandler& eventHandler,
 	const int abilityId,
 	const bool toggled,
-	ID3D11VertexShader* vertexShader,
-	ID3D11PixelShader* pixelShader,
-	ID3D11ShaderResourceView* texture,
-	ID2D1SolidColorBrush* highlightBrush,
-	ID2D1SolidColorBrush* abilityPressedBrush,
-	ID2D1SolidColorBrush* abilityToggledBrush,
-	const BYTE* vertexShaderBuffer,
-	const int vertexShaderSize,
 	const float clientWidth,
 	const float clientHeight,
-	const XMMATRIX projectionTransform,
 	const bool isDragging,
 	const float mousePosX,
 	const float mousePosY)
@@ -31,19 +23,33 @@ UIAbility::UIAbility(
 	  toggled{ toggled },
 	  clientWidth{ clientWidth },
 	  clientHeight{ clientHeight },
-	  vertexShader{ vertexShader },
-	  pixelShader{ pixelShader },
-	  texture{ texture },
-	  vertexShaderBuffer{ vertexShaderBuffer },
-	  vertexShaderSize{ vertexShaderSize },
-	  highlightBrush{ highlightBrush },
-	  abilityPressedBrush{ abilityPressedBrush },
-	  abilityToggledBrush{ abilityToggledBrush },
-	  projectionTransform{ projectionTransform },
 	  isDragging{ isDragging },
 	  lastDragX{ mousePosX },
 	  lastDragY{ mousePosY }
 {
+}
+
+void UIAbility::Initialize(
+	ID3D11VertexShader* vertexShader,
+	ID3D11PixelShader* pixelShader,
+	ID3D11ShaderResourceView* texture,
+	ID2D1SolidColorBrush* highlightBrush,
+	ID2D1SolidColorBrush* abilityPressedBrush,
+	ID2D1SolidColorBrush* abilityToggledBrush,
+	const BYTE* vertexShaderBuffer,
+	const int vertexShaderSize,
+	const XMMATRIX projectionTransform
+)
+{
+	this->vertexShader = vertexShader;
+	this->pixelShader = pixelShader;
+	this->texture = texture;
+	this->highlightBrush = highlightBrush;
+	this->abilityPressedBrush = abilityPressedBrush;
+	this->abilityToggledBrush = abilityToggledBrush;
+	this->vertexShaderBuffer = vertexShaderBuffer;
+	this->vertexShaderSize = vertexShaderSize;
+	this->projectionTransform = projectionTransform;
 }
 
 void UIAbility::Draw()
@@ -126,7 +132,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 					if (dragBehavior == "COPY")
 					{
-						abilityCopy = new UIAbility(UIComponentArgs{ deviceResources, uiComponents, worldPos, uiLayer, 2 }, eventHandler, abilityId, toggled, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, true, mousePosX, mousePosY);
+						abilityCopy = new UIAbility(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, 2 }, eventHandler, abilityId, toggled, vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, true, mousePosX, mousePosY);
 						abilityCopy->isVisible = true;
 						abilityCopy->isToggled = isToggled;
 					}
@@ -218,6 +224,15 @@ const bool UIAbility::HandleEvent(const Event* const event)
 				std::unique_ptr<Event> e = std::make_unique<ActivateAbilityEvent>(abilityId);
 				eventHandler.QueueEvent(e);
 			}
+		}
+		case EventType::WindowResize:
+		{
+			const auto derivedEvent = (WindowResizeEvent*)event;
+
+			clientWidth = derivedEvent->width;
+			clientHeight = derivedEvent->height;
+
+			break;
 		}
 	}
 

@@ -12,13 +12,16 @@ protected:
 	DX::DeviceResources* deviceResources;
 	std::vector<UIComponent*>& uiComponents;
 	const Layer uiLayer;
-	XMFLOAT2 localPosition;
+	XMFLOAT2 localPosition{ 0.0f, 0.0f };
 	UIComponent* parent{ nullptr };
 	std::vector<UIComponent*> children;
+	
 public:
 	bool isVisible{ false };
 	unsigned int zIndex;
 	const bool followParentVisibility;
+	const std::function<XMFLOAT2(const float width, const float height)> calculatePosition;
+
 	UIComponent(UIComponentArgs uiComponentArgs, const bool followParentVisibility = true);
 	void Translate(XMFLOAT2 vector) { localPosition = localPosition + vector; }
 	std::vector<UIComponent*>& GetChildren() { return children; }

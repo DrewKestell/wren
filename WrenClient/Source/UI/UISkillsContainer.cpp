@@ -51,7 +51,7 @@ void UISkillsContainer::Initialize(const std::vector<std::unique_ptr<WrenCommon:
 	{
 		const auto posX = 2.0f;
 		const auto posY = (14.0f * i) + 22.0f;
-		skillListings[i] = std::make_unique<UISkillListing>(UIComponentArgs{ deviceResources, uiComponents, XMFLOAT2{ posX, posY }, InGame, 3 }, skills.at(i).get(), brush, textFormat);
+		skillListings[i] = std::make_unique<UISkillListing>(UIComponentArgs{ deviceResources, uiComponents, [posX, posY](const float, const float) { return XMFLOAT2{ posX, posY }; }, InGame, 3 }, skills.at(i).get(), brush, textFormat);
 		this->AddChildComponent(*skillListings[i].get());
 	}
 }

@@ -9,17 +9,18 @@
 class UIHotbar : public UIComponent
 {
 	EventHandler& eventHandler;
+	float clientHeight;
 	char draggingIndex{ -1 };
 	ComPtr<ID2D1RectangleGeometry> geometry[10];
 	UIAbility* uiAbilities[10] = { nullptr };
 	ID2D1SolidColorBrush* brush;
-	float clientHeight;
+	
 public:
 	UIHotbar(
 		UIComponentArgs uiComponentArgs,
 		EventHandler& eventHandler,
-		ID2D1SolidColorBrush* brush,
 		const float clientHeight);
+	void Initialize(ID2D1SolidColorBrush* brush);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	const std::string GetUIAbilityDragBehavior() const override;

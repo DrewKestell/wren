@@ -296,7 +296,7 @@ void Game::CreateDeviceDependentResources()
 	gameMapRenderComponent = std::make_unique<GameMapRenderComponent>(deviceResources->GetD3DDevice(), vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures.at(2).Get());
 
 	// init targetHUD
-	targetHUD = std::make_unique<UITargetHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 260.0f, 12.0f }, InGame, 0 }, textFormatSuccessMessage.Get(), healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
+	targetHUD = std::make_unique<UITargetHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 260.0f, 12.0f }; }, InGame, 0 }, textFormatSuccessMessage.Get(), healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
 }
 
 void Game::CreatePlayerDependentResources()
@@ -317,10 +317,10 @@ void Game::CreateWindowSizeDependentResources()
 	InitializeButtons();
 
 	// init hotbar
-	hotbar = std::make_unique<UIHotbar>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 5.0f, clientHeight - 45.0f }, InGame, 0 }, eventHandler, blackBrush.Get(), (float)clientHeight);
+	hotbar = std::make_unique<UIHotbar>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float height) { return XMFLOAT2{ 5.0f, height - 45.0f }; }, InGame, 0 }, eventHandler, blackBrush.Get(), (float)clientHeight);
 
 	// init textWindow
-	textWindow = std::make_unique<UITextWindow>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 5.0f, clientHeight - 300.0f }, InGame, 0 }, eventHandler, objectManager, items, textWindowMessages, textWindowMessageIndex.get(), statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), textFormatTextWindow.Get(), textFormatTextWindowInactive.Get());
+	textWindow = std::make_unique<UITextWindow>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float height) { return XMFLOAT2{ 5.0f, height - 300.0f }; }, InGame, 0 }, eventHandler, objectManager, items, textWindowMessages, textWindowMessageIndex.get(), statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), textFormatTextWindow.Get(), textFormatTextWindowInactive.Get());
 
 	if (skills.size() > 0)
 		skillsContainer->Initialize(skills);
@@ -484,21 +484,21 @@ void Game::CreateTextFormats()
 void Game::CreateInputs()
 {
 	// LoginScreen
-	loginScreen_accountNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, 20.0f }, Login, 0 }, false, 120.0f, 260.0f, 24.0f, "Account Name:");
-	loginScreen_passwordInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, 50.0f }, Login, 0 }, true, 120.0f, 260.0f, 24.0f, "Password:");
+	loginScreen_accountNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, Login, 0 }, false, 120.0f, 260.0f, 24.0f, "Account Name:");
+	loginScreen_passwordInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 50.0f }; }, Login, 0 }, true, 120.0f, 260.0f, 24.0f, "Password:");
 	loginScreen_inputGroup = std::make_unique<UIInputGroup>(Login, eventHandler);
 	loginScreen_inputGroup->AddInput(loginScreen_accountNameInput.get());
 	loginScreen_inputGroup->AddInput(loginScreen_passwordInput.get());
 
 	// CreateAccount
-	createAccount_accountNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, 20.0f }, CreateAccount, 0 }, false, 120.0f, 260.0f, 24.0f, "Account Name:");
-	createAccount_passwordInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, 50.0f  }, CreateAccount, 0 }, true, 120.0f, 260.0f, 24.0f, "Password:");
+	createAccount_accountNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, CreateAccount, 0 }, false, 120.0f, 260.0f, 24.0f, "Account Name:");
+	createAccount_passwordInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 50.0f }; }, CreateAccount, 0 }, true, 120.0f, 260.0f, 24.0f, "Password:");
 	createAccount_inputGroup = std::make_unique<UIInputGroup>(CreateAccount, eventHandler);
 	createAccount_inputGroup->AddInput(createAccount_accountNameInput.get());
 	createAccount_inputGroup->AddInput(createAccount_passwordInput.get());
 
 	// CreateCharacter
-	createCharacter_characterNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, 20.0f }, CreateCharacter, 0 }, false, 140.0f, 260.0f, 24.0f, "Character Name:");
+	createCharacter_characterNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, CreateCharacter, 0 }, false, 140.0f, 260.0f, 24.0f, "Character Name:");
 	createCharacter_inputGroup = std::make_unique<UIInputGroup>(CreateCharacter, eventHandler);
 	createCharacter_inputGroup->AddInput(createCharacter_characterNameInput.get());
 }
@@ -551,9 +551,9 @@ void Game::CreateButtons()
 	};
 
 	// LoginScreen
-	loginScreen_loginButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 145.0f, 96.0f }, Login, 0 }, 80.0f, 24.0f, "LOGIN", onClickLoginButton);
-	loginScreen_createAccountButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, Login, 0 }, 160.0f, 24.0f, "CREATE ACCOUNT", onClickLoginScreenCreateAccountButton);
-	loginScreen_quitGameButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ clientWidth - 95.0f, clientHeight - 40.0f }, Login, 0 }, 80.0f, 24.0f, "QUIT", onClickLoginScreeQuitGameButton);
+	loginScreen_loginButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 145.0f, 96.0f }; }, Login, 0 }, 80.0f, 24.0f, "LOGIN", onClickLoginButton);
+	loginScreen_createAccountButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float width, const float height) { return XMFLOAT2{ 15.0f, height - 40.0f }; }, Login, 0 }, 160.0f, 24.0f, "CREATE ACCOUNT", onClickLoginScreenCreateAccountButton);
+	loginScreen_quitGameButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float width, const float height) { return XMFLOAT2{ width - 95.0f, height - 40.0f }; }, Login, 0 }, 80.0f, 24.0f, "QUIT", onClickLoginScreeQuitGameButton);
 
 	const auto onClickCreateAccountCreateAccountButton = [this]()
 	{
@@ -584,8 +584,8 @@ void Game::CreateButtons()
 	};
 
 	// CreateAccount
-	createAccount_createAccountButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 145.0f, 96.0f }, CreateAccount, 0 }, 80.0f, 24.0f, "CREATE", onClickCreateAccountCreateAccountButton);
-	createAccount_cancelButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, CreateAccount, 0 }, 80.0f, 24.0f, "CANCEL", onClickCreateAccountCancelButton);
+	createAccount_createAccountButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 145.0f, 96.0f }; }, CreateAccount, 0 }, 80.0f, 24.0f, "CREATE", onClickCreateAccountCreateAccountButton);
+	createAccount_cancelButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float height) { return XMFLOAT2{ 15.0f, height - 40.0f }; }, CreateAccount, 0 }, 80.0f, 24.0f, "CANCEL", onClickCreateAccountCancelButton);
 
 	const auto onClickCharacterSelectNewCharacterButton = [this]()
 	{
@@ -636,10 +636,10 @@ void Game::CreateButtons()
 	};
 
 	// CharacterSelect
-	characterSelect_newCharacterButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, 20.0f }, CharacterSelect, 0 }, 140.0f, 24.0f, "NEW CHARACTER", onClickCharacterSelectNewCharacterButton);
-	characterSelect_enterWorldButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 170.0f, 20.0f }, CharacterSelect, 0 }, 120.0f, 24.0f, "ENTER WORLD", onClickCharacterSelectEnterWorldButton);
-	characterSelect_deleteCharacterButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 305.0f, 20.0f }, CharacterSelect, 0 }, 160.0f, 24.0f, "DELETE CHARACTER", onClickCharacterSelectDeleteCharacterButton);
-	characterSelect_logoutButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, CharacterSelect, 0 }, 80.0f, 24.0f, "LOGOUT", onClickCharacterSelectLogoutButton);
+	characterSelect_newCharacterButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, CharacterSelect, 0 }, 140.0f, 24.0f, "NEW CHARACTER", onClickCharacterSelectNewCharacterButton);
+	characterSelect_enterWorldButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 170.0f, 20.0f }; }, CharacterSelect, 0 }, 120.0f, 24.0f, "ENTER WORLD", onClickCharacterSelectEnterWorldButton);
+	characterSelect_deleteCharacterButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 305.0f, 20.0f }; }, CharacterSelect, 0 }, 160.0f, 24.0f, "DELETE CHARACTER", onClickCharacterSelectDeleteCharacterButton);
+	characterSelect_logoutButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float width, const float height) { return XMFLOAT2{ 15.0f, height - 40.0f }; }, CharacterSelect, 0 }, 80.0f, 24.0f, "LOGOUT", onClickCharacterSelectLogoutButton);
 
 	// CreateCharacter
 	const auto onClickCreateCharacterCreateCharacterButton = [this]()
@@ -664,8 +664,8 @@ void Game::CreateButtons()
 		SetActiveLayer(CharacterSelect);
 	};
 
-	createCharacter_createCharacterButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 165.0f, 64.0f }, CreateCharacter, 0 }, 160.0f, 24.0f, "CREATE CHARACTER", onClickCreateCharacterCreateCharacterButton);
-	createCharacter_backButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, clientHeight - 40.0f }, CreateCharacter, 0 }, 80.0f, 24.0f, "BACK", onClickCreateCharacterBackButton);
+	createCharacter_createCharacterButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 165.0f, 64.0f }; }, CreateCharacter, 0 }, 160.0f, 24.0f, "CREATE CHARACTER", onClickCreateCharacterCreateCharacterButton);
+	createCharacter_backButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float width, const float height) { return XMFLOAT2{ 15.0f, height - 40.0f }; }, CreateCharacter, 0 }, 80.0f, 24.0f, "BACK", onClickCreateCharacterBackButton);
 
 	// DeleteCharacter
 	const auto onClickDeleteCharacterConfirm = [this]()
@@ -680,52 +680,52 @@ void Game::CreateButtons()
 		SetActiveLayer(CharacterSelect);
 	};
 
-	deleteCharacter_confirmButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 10.0f, 30.0f }, DeleteCharacter, 0 }, 100.0f, 24.0f, "CONFIRM", onClickDeleteCharacterConfirm);
-	deleteCharacter_cancelButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 120.0f, 30.0f }, DeleteCharacter, 0 }, 100.0f, 24.0f, "CANCEL", onClickDeleteCharacterCancel);
+	deleteCharacter_confirmButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 30.0f }; }, DeleteCharacter, 0 }, 100.0f, 24.0f, "CONFIRM", onClickDeleteCharacterConfirm);
+	deleteCharacter_cancelButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 120.0f, 30.0f }; }, DeleteCharacter, 0 }, 100.0f, 24.0f, "CANCEL", onClickDeleteCharacterCancel);
 }
 
 void Game::InitializeButtons()
 {
-	loginScreen_loginButton->Initialize(XMFLOAT2{ 145.0f, 96.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	loginScreen_createAccountButton->Initialize(XMFLOAT2{ 15.0f, clientHeight - 40.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	loginScreen_quitGameButton->Initialize(XMFLOAT2{ clientWidth - 95.0f, clientHeight - 40.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	createAccount_createAccountButton->Initialize(XMFLOAT2{ 145.0f, 96.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	createAccount_cancelButton->Initialize(XMFLOAT2{ 15.0f, clientHeight - 40.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	characterSelect_newCharacterButton->Initialize(XMFLOAT2{ 15.0f, 20.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	characterSelect_enterWorldButton->Initialize(XMFLOAT2{ 170.0f, 20.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	characterSelect_deleteCharacterButton->Initialize(XMFLOAT2{ 305.0f, 20.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	characterSelect_logoutButton->Initialize(XMFLOAT2{ 15.0f, clientHeight - 40.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	createCharacter_createCharacterButton->Initialize(XMFLOAT2{ 165.0f, 64.0f },blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	createCharacter_backButton->Initialize(XMFLOAT2{ 15.0f, clientHeight - 40.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	deleteCharacter_confirmButton->Initialize(XMFLOAT2{ 10.0f, 30.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	deleteCharacter_cancelButton->Initialize(XMFLOAT2{ 120.0f, 30.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	loginScreen_loginButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	loginScreen_createAccountButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	loginScreen_quitGameButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	createAccount_createAccountButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	createAccount_cancelButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	characterSelect_newCharacterButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	characterSelect_enterWorldButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	characterSelect_deleteCharacterButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	characterSelect_logoutButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	createCharacter_createCharacterButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	createCharacter_backButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	deleteCharacter_confirmButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	deleteCharacter_cancelButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
 
 	// panels
-	gameSettings_logoutButton->Initialize(XMFLOAT2{ 10.0f, 26.0f }, blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	gameSettings_logoutButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
 
 }
 
 void Game::CreateLabels()
 {
-	loginScreen_successMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 30.0f, 170.0f }, Login, 0 }, 400.0f);
-	loginScreen_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 30.0f, 170.0f }, Login, 0 }, 400.0f);
+	loginScreen_successMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 170.0f }; }, Login, 0 }, 400.0f);
+	loginScreen_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 170.0f }; }, Login, 0 }, 400.0f);
 
-	createAccount_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 30.0f, 170.0f }, CreateAccount, 0 }, 400.0f);
+	createAccount_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 170.0f }; }, CreateAccount, 0 }, 400.0f);
 
-	connecting_statusLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, 20.0f }, Connecting, 0 }, 400.0f);
+	connecting_statusLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, Connecting, 0 }, 400.0f);
 	connecting_statusLabel->SetText("Connecting...");
 
-	characterSelect_successMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 30.0f, 400.0f }, CharacterSelect, 0 }, 400.0f);
-	characterSelect_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 30.0f, 400.0f }, CharacterSelect, 0 }, 400.0f);
-	characterSelect_headerLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 15.0f, 60.0f }, CharacterSelect, 0 }, 200.0f);
+	characterSelect_successMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 400.0f }; }, CharacterSelect, 0 }, 400.0f);
+	characterSelect_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 400.0f }; }, CharacterSelect, 0 }, 400.0f);
+	characterSelect_headerLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 60.0f }; }, CharacterSelect, 0 }, 200.0f);
 	characterSelect_headerLabel->SetText("Character List:");
 
-	createCharacter_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 30.0f, 170.0f }, CreateCharacter, 0 }, 400.0f);
+	createCharacter_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 170.0f }; }, CreateCharacter, 0 }, 400.0f);
 
-	deleteCharacter_headerLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 10.0f, 10.0f }, DeleteCharacter, 0 }, 400.0f);
+	deleteCharacter_headerLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 10.0f }; }, DeleteCharacter, 0 }, 400.0f);
 	deleteCharacter_headerLabel->SetText("Are you sure you want to delete this character?");
 
-	enteringWorld_statusLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 5.0f, 20.0f }, EnteringWorld, 0 }, 400.0f);
+	enteringWorld_statusLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 5.0f, 20.0f }; }, EnteringWorld, 0 }, 400.0f);
 	enteringWorld_statusLabel->SetText("Entering World...");
 }
 
@@ -758,93 +758,79 @@ void Game::InitializeLabels()
 void Game::CreatePanels()
 {
 	// Game Settings
-	const auto gameSettingsPanelX{ (clientWidth - 400.0f) / 2.0f };
-	const auto gameSettingsPanelY{ (clientHeight - 200.0f) / 2.0f };
 	const auto onClickGameSettingsLogoutButton = [this]()
 	{
 		socketManager.SendPacket(OpCode::Disconnect);
 		socketManager.Logout();
 		SetActiveLayer(Login);
 	};
-	gameSettingsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ gameSettingsPanelX, gameSettingsPanelY }, InGame, 1 }, eventHandler, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
-	gameSettings_logoutButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 10.0f, 26.0f }, InGame, 2 }, 80.0f, 24.0f, "LOGOUT", onClickGameSettingsLogoutButton);
-	gameSettingsPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 2 }, 200.0f);
+	gameSettingsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float width, const float height) { return XMFLOAT2{ (width - 400.0f) / 2.0f, (height - 200.0f) / 2.0f }; }, InGame, 1 }, eventHandler, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	gameSettings_logoutButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 26.0f }; }, InGame, 2 }, 80.0f, 24.0f, "LOGOUT", onClickGameSettingsLogoutButton);
+	gameSettingsPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 2 }, 200.0f);
 	gameSettingsPanelHeader->SetText("Game Settings");
 	gameSettingsPanel->AddChildComponent(*gameSettingsPanelHeader);
 	gameSettingsPanel->AddChildComponent(*gameSettings_logoutButton);
 
 	// Game Editor
-	const auto gameEditorPanelX{ 580.0f };
-	const auto gameEditorPanelY{ 5.0f };
-	gameEditorPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ gameEditorPanelX, gameEditorPanelY }, InGame, 1 }, eventHandler, true, 200.0f, 400.0f, VK_F1, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
-	gameEditorPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 2 }, 200.0f);
+	gameEditorPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 580.0f, 5.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 400.0f, VK_F1, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	gameEditorPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 2 }, 200.0f);
 	gameEditorPanelHeader->SetText("Game Editor");
 	gameEditorPanel->AddChildComponent(*gameEditorPanelHeader);
 
 	// Diagnostics
-	const auto diagnosticsPanelX{ 580.0f };
-	const auto diagnosticsPanelY{ 336.0f };
-	diagnosticsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ diagnosticsPanelX, diagnosticsPanelY }, InGame, 1 }, eventHandler, true, 200.0f, 200.0f, VK_F2, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	diagnosticsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 580.0f, 336.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 200.0f, VK_F2, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
 
-	diagnosticsPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 2 }, 280.0f);
+	diagnosticsPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 2 }, 280.0f);
 	diagnosticsPanelHeader->SetText("Diagnostics");
 	diagnosticsPanel->AddChildComponent(*diagnosticsPanelHeader);
 
-	mousePosLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 2.0f, 22.0f }, InGame, 2 }, 280.0f);
+	mousePosLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 22.0f }; }, InGame, 2 }, 280.0f);
 	diagnosticsPanel->AddChildComponent(*mousePosLabel);
 
-	fpsTextLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 2.0f, 36.0f }, InGame, 2 }, 280.0f);
+	fpsTextLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 46.0f }; }, InGame, 2 }, 280.0f);
 	diagnosticsPanel->AddChildComponent(*fpsTextLabel);
 
-	pingTextLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 2.0f, 50.0f }, InGame, 2 }, 280.0f);
+	pingTextLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 50.0f }; }, InGame, 2 }, 280.0f);
 	diagnosticsPanel->AddChildComponent(*pingTextLabel);
 
 	// Skills
-	const auto skillsPanelX{ 200.0f };
-	const auto skillsPanelY{ 200.0f };
-	skillsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ skillsPanelX, skillsPanelY }, InGame, 1 }, eventHandler, true, 200.0f, 200.0f, VK_F3, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	skillsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 200.0f, 200.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 200.0f, VK_F3, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
 
-	skillsPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 3 }, 280.0f);
+	skillsPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 280.0f);
 	skillsPanelHeader->SetText("Skills");
 	skillsPanel->AddChildComponent(*skillsPanelHeader);
 
-	skillsContainer = std::make_unique<UISkillsContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2 }, blackBrush.Get(), textFormatFPS.Get());
+	skillsContainer = std::make_unique<UISkillsContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, blackBrush.Get(), textFormatFPS.Get());
 	skillsPanel->AddChildComponent(*skillsContainer);
 
 	// Abilities
-	const auto abilitiesPanelX{ 10.0f };
-	const auto abilitiesPanelY{ 10.0f };
-	abilitiesPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ abilitiesPanelX, abilitiesPanelY }, InGame, 1 }, eventHandler, true, 240.0f, 400.0f, VK_F4, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	abilitiesPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 10.0f }; }, InGame, 1 }, eventHandler, true, 240.0f, 400.0f, VK_F4, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
 
-	abilitiesPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 3 }, 240.0f);
+	abilitiesPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 240.0f);
 	abilitiesPanelHeader->SetText("Abilities");
 	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
 
-	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2 }, eventHandler, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
+	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
 	abilitiesPanel->AddChildComponent(*abilitiesContainer);
 
 	// Loot
-	const auto lootPanelX{ 400.0f };
-	const auto lootPanelY{ 300.0f };
-	lootPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ lootPanelX, lootPanelY }, InGame, 1 }, eventHandler, true, 140.0f, 185.0f, 0, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	lootPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 400.0f, 300.0f }; }, InGame, 1 }, eventHandler, true, 140.0f, 185.0f, 0, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
 
-	lootPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 3 }, 140.0f);
+	lootPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 140.0f);
 	lootPanelHeader->SetText("Loot");
 	lootPanel->AddChildComponent(*lootPanelHeader);
 
-	lootContainer = std::make_unique<UILootContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2 }, eventHandler, socketManager, statsComponentManager, inventoryComponentManager, items, textures, blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
+	lootContainer = std::make_unique<UILootContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, statsComponentManager, inventoryComponentManager, items, textures, blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
 	lootPanel->AddChildComponent(*lootContainer);
 
 	// Inventory
-	const auto inventoryPanelX{ 500.0f };
-	const auto inventoryPanelY{ 350.0f };
-	inventoryPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ lootPanelX, lootPanelY }, InGame, 1 }, eventHandler, true, 185.0f, 185.0f, VK_F5, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	inventoryPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 500.0f, 350.0f }; }, InGame, 1 }, eventHandler, true, 185.0f, 185.0f, VK_F5, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
 
-	inventoryPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 2.0f, 2.0f }, InGame, 3 }, 185.0f);
+	inventoryPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 185.0f);
 	inventoryPanelHeader->SetText("Inventory");
 	inventoryPanel->AddChildComponent(*inventoryPanelHeader);
 
-	inventory = std::make_unique<UIInventory>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 0.0f, 0.0f }, InGame, 2 }, eventHandler, socketManager, items, textures, blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
+	inventory = std::make_unique<UIInventory>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, items, textures, blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
 	inventoryPanel->AddChildComponent(*inventory);
 
 	if (player)
@@ -976,7 +962,7 @@ void Game::RecreateCharacterListings(const std::vector<std::unique_ptr<std::stri
 
 	for (auto i = 0; i < characterNames.size(); i++)
 	{
-		characterList.push_back(std::make_unique<UICharacterListing>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 25.0f, 100.0f + (i * 40.0f) }, CharacterSelect, 1 }, eventHandler, 260.0f, 30.0f, characterNames.at(i)->c_str(), whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get()));
+		characterList.push_back(std::make_unique<UICharacterListing>(UIComponentArgs{ deviceResources.get(), uiComponents, [i](const float, const float) { return XMFLOAT2{ 25.0f, 100.0f + (i * 40.0f) }; }, CharacterSelect, 1 }, eventHandler, 260.0f, 30.0f, characterNames.at(i)->c_str(), whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get()));
 	}
 }
 
@@ -1181,8 +1167,14 @@ void Game::CreateEventHandlers()
 
 		inventory->playerId = player.GetId();
 
+		const auto onClickCreateAccountCancelButton = [this]()
+		{
+			createAccount_errorMessageLabel->SetText("");
+			SetActiveLayer(Login);
+		};
+
 		// init characterHUD
-		characterHUD = std::make_unique<UICharacterHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, XMFLOAT2{ 10.0f, 12.0f }, InGame, 0 }, textFormatSuccessMessage.Get(), statsComponent, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get(), derivedEvent->name.c_str());
+		characterHUD = std::make_unique<UICharacterHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 12.0f }; }, InGame, 0 }, textFormatSuccessMessage.Get(), statsComponent, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get(), derivedEvent->name.c_str());
 
 		std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 
@@ -1470,9 +1462,12 @@ void Game::CreateEventHandlers()
 
 		clientWidth = derivedEvent->width;
 		clientHeight = derivedEvent->height;
+
+		for (auto uiComponent : uiComponents)
+			uiComponent->calculatePosition(clientWidth, clientHeight);
 								
 		CreateWindowSizeDependentResources();
 
-		SetActiveLayer(activeLayer);
+		//SetActiveLayer(activeLayer);
 	};
 }
