@@ -7,24 +7,26 @@
 
 class UIInput : public UIComponent
 {
+	bool secure;
+	float labelWidth;
+	float inputWidth;
+	float height;
+	std::string labelText;
+	ID2D1SolidColorBrush* labelBrush{ nullptr };
+	ID2D1SolidColorBrush* inputBrush{ nullptr };
+	ID2D1SolidColorBrush* inputBorderBrush{ nullptr };
+	ID2D1SolidColorBrush* inputValueBrush{ nullptr };
+	IDWriteTextFormat* inputValueTextFormat{ nullptr };
+	IDWriteTextFormat* labelTextFormat{ nullptr };
 	ComPtr<IDWriteTextLayout> labelTextLayout;
 	ComPtr<IDWriteTextLayout> inputValueTextLayout;
 	ComPtr<ID2D1RoundedRectangleGeometry> inputGeometry;
 	int inputIndex{ 0 };
 	wchar_t inputValue[30] = { 0 };
 	bool active{ false };
-	bool secure{ false };
-	float labelWidth{ 0.0f };
-	float inputWidth{ 0.0f };
-	float height{ 0.0f };
-	std::string labelText;
-	ID2D1SolidColorBrush* labelBrush{ nullptr };
-    ID2D1SolidColorBrush* inputBrush{ nullptr };
-    ID2D1SolidColorBrush* inputBorderBrush{ nullptr };
-    ID2D1SolidColorBrush* inputValueBrush{ nullptr };
-    IDWriteTextFormat* inputValueTextFormat{ nullptr };
-	IDWriteTextFormat* labelTextFormat{ nullptr };
-   
+
+	void CreateTextLayout();
+	
 public:
 	UIInput(
 		UIComponentArgs uiComponentArgs,

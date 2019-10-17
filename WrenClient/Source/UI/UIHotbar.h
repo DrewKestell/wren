@@ -10,10 +10,10 @@ class UIHotbar : public UIComponent
 {
 	EventHandler& eventHandler;
 	float clientHeight;
+	ID2D1SolidColorBrush* brush;
 	char draggingIndex{ -1 };
 	ComPtr<ID2D1RectangleGeometry> geometry[10];
 	UIAbility* uiAbilities[10] = { nullptr };
-	ID2D1SolidColorBrush* brush;
 	
 public:
 	UIHotbar(

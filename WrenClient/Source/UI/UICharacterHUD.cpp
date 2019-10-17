@@ -13,20 +13,10 @@ UICharacterHUD::UICharacterHUD(
 	  statsComponent{ statsComponent },
 	  nameText{ nameText }
 {
-	ThrowIfFailed(
-		deviceResources->GetWriteFactory()->CreateTextLayout(
-			Utility::s2ws(nameText).c_str(),
-			static_cast<unsigned int>(this->nameText.size()),
-			buttonTextFormat,
-			200,
-			100,
-			nameTextLayout.ReleaseAndGetAddressOf()
-		)
-	);
 }
 
 void UICharacterHUD::Initialize(
-	IDWriteTextFormat* buttonTextFormat,
+	IDWriteTextFormat* textFormat,
 	ID2D1SolidColorBrush* healthBrush,
 	ID2D1SolidColorBrush* manaBrush,
 	ID2D1SolidColorBrush* staminaBrush,
@@ -35,7 +25,6 @@ void UICharacterHUD::Initialize(
 	ID2D1SolidColorBrush* nameBrush,
 	ID2D1SolidColorBrush* whiteBrush)
 {
-	this->buttonTextFormat = buttonTextFormat;
 	this->healthBrush = healthBrush;
 	this->manaBrush = manaBrush;
 	this->staminaBrush = staminaBrush;
@@ -43,6 +32,17 @@ void UICharacterHUD::Initialize(
 	this->statBorderBrush = statBorderBrush;
 	this->nameBrush = nameBrush;
 	this->whiteBrush = whiteBrush;
+
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			Utility::s2ws(nameText).c_str(),
+			static_cast<unsigned int>(nameText.size()),
+			textFormat,
+			200,
+			100,
+			nameTextLayout.ReleaseAndGetAddressOf()
+		)
+	);
 }
 
 void UICharacterHUD::Draw()

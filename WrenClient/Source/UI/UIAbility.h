@@ -19,9 +19,6 @@ class UIAbility : public UIComponent
 	bool isDragging;
 	float lastDragX;
 	float lastDragY;
-	bool isHovered{ false };
-	bool isPressed{ false };
-	bool isToggled{ false };
 	ID3D11VertexShader* vertexShader{ nullptr };
 	ID3D11PixelShader* pixelShader{ nullptr };
 	ID3D11ShaderResourceView* texture{ nullptr };
@@ -35,6 +32,9 @@ class UIAbility : public UIComponent
 	ComPtr<ID2D1RectangleGeometry> toggledGeometry;
 	std::shared_ptr<Sprite> sprite;
 	UIAbility* abilityCopy{ nullptr };
+	bool isHovered{ false };
+	bool isPressed{ false };
+	bool isToggled{ false };
 public:
 	UIAbility(
 		UIComponentArgs uiComponentArgs,

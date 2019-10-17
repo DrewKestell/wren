@@ -10,28 +10,40 @@ UICharacterListing::UICharacterListing(
 	EventHandler& eventHandler,
 	const float width,
 	const float height,
-	const char* inText,
-	ID2D1SolidColorBrush* brush,
-	ID2D1SolidColorBrush* selectedBrush,
-	ID2D1SolidColorBrush* borderBrush,
-	ID2D1SolidColorBrush* textBrush,
-	IDWriteTextFormat* textFormat)
+	const char* characterName)
 	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  width{ width },
 	  height{ height },
-	  brush{ brush },
-	  selectedBrush{ selectedBrush },
-	  borderBrush{ borderBrush },
-	  textBrush{ textBrush }
+	  characterName{ characterName }
 {
-	characterName = std::string(inText);
+}
 
-	std::wostringstream outText;
-	outText << inText;
-	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(outText.str().c_str(), (UINT32)outText.str().size(), textFormat, width, height, textLayout.ReleaseAndGetAddressOf()));
+void UICharacterListing::Initialize(
+	ID2D1SolidColorBrush* brush,
+	ID2D1SolidColorBrush* selectedBrush,
+	ID2D1SolidColorBrush* borderBrush,
+	ID2D1SolidColorBrush* textBrush,
+	IDWriteTextFormat* textFormat
+)
+{
+	this->brush = brush;
+	this->selectedBrush = selectedBrush;
+	this->borderBrush = borderBrush;
+	this->textBrush = textBrush;
 
-	const auto position = uiComponentArgs.position;
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			Utility::s2ws(characterName).c_str(),
+			static_cast<unsigned int>(characterName.size()),
+			textFormat,
+			width,
+			height,
+			textLayout.ReleaseAndGetAddressOf()
+		)
+	);
+
+	const auto position = GetWorldPosition();
 	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), geometry.ReleaseAndGetAddressOf());
 }
 
@@ -73,7 +85,6 @@ const bool UICharacterListing::HandleEvent(const Event* const event)
 				std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
 				eventHandler.QueueEvent(e);
 			}
-				
 			
 			break;
 		}

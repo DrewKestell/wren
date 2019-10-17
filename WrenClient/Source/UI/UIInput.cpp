@@ -38,9 +38,16 @@ void UIInput::Initialize(
 	this->inputValueTextFormat = inputValueTextFormat;
 	this->labelTextFormat = labelTextFormat;
 
-	std::wostringstream outLabelText;
-	outLabelText << labelText.c_str();
-	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(outLabelText.str().c_str(), (UINT32)outLabelText.str().size(), labelTextFormat, labelWidth, height, labelTextLayout.ReleaseAndGetAddressOf()));
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			Utility::s2ws(labelText).c_str(),
+			static_cast<unsigned int>(labelText.size()),
+			labelTextFormat,
+			labelWidth,
+			height,
+			labelTextLayout.ReleaseAndGetAddressOf()
+		)
+	);
 
 	const auto position = GetWorldPosition();
 	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x + labelWidth + 10, position.y, position.x + labelWidth + inputWidth, position.y + height), 3.0f, 3.0f), inputGeometry.ReleaseAndGetAddressOf());
@@ -61,19 +68,9 @@ void UIInput::Draw()
 	deviceResources->GetD2DDeviceContext()->DrawGeometry(inputGeometry.Get(), inputBorderBrush, borderWeight);
     
     // Draw Input Text
-    std::wostringstream outInputValue;
-    if (!secure)
-        outInputValue << inputValue;
-    else
-    {
-        for (auto i = 0; i < wcslen(inputValue); i++)
-            outInputValue << "*";
-    }
-    if (active)
-        outInputValue << "|";
-
-	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), inputValueTextFormat, inputWidth, height - 2, inputValueTextLayout.ReleaseAndGetAddressOf())); // (height - 2) takes the border into account, and looks more natural
-	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x + labelWidth + 14, position.y), inputValueTextLayout.Get(), inputValueBrush);
+    
+	if (inputIndex > 0)
+		deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x + labelWidth + 14, position.y), inputValueTextLayout.Get(), inputValueBrush);
 }
 
 const bool UIInput::HandleEvent(const Event* const event)
@@ -108,6 +105,8 @@ const bool UIInput::HandleEvent(const Event* const event)
 				{
 					inputValue[inputIndex] = keyDownEvent->charCode;
 					inputIndex++;
+
+					CreateTextLayout();
 				}
 			}
 			
@@ -128,6 +127,8 @@ const bool UIInput::HandleEvent(const Event* const event)
 						{
 							inputValue[inputIndex - 1] = 0;
 							inputIndex--;
+
+							CreateTextLayout();
 						}
 						break;
 					}
@@ -163,4 +164,29 @@ void UIInput::ClearInput()
 
 	inputIndex = 0;
 	ZeroMemory(inputValue, sizeof(inputValue));
+}
+
+void UIInput::CreateTextLayout()
+{
+	std::wostringstream outInputValue;
+	if (!secure)
+		outInputValue << inputValue;
+	else
+	{
+		for (auto i = 0; i < wcslen(inputValue); i++)
+			outInputValue << "*";
+	}
+	if (active)
+		outInputValue << "|";
+
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			outInputValue.str().c_str(),
+			(UINT32)outInputValue.str().size(),
+			inputValueTextFormat,
+			inputWidth,
+			height - 2, // (height - 2) takes the border into account, and looks more natural
+			inputValueTextLayout.ReleaseAndGetAddressOf()
+		)
+	);
 }

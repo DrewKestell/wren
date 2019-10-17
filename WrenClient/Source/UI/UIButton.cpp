@@ -48,8 +48,6 @@ void UIButton::Draw()
 {
 	if (!isVisible) return;
 
-	const auto position = GetWorldPosition();
-
     // Draw Input
     const float borderWeight = pressed ? 2.0f : 1.0f;
     ID2D1SolidColorBrush* buttonColor;
@@ -60,12 +58,11 @@ void UIButton::Draw()
     else
         buttonColor = buttonBrush;
 
-	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), buttonGeometry.ReleaseAndGetAddressOf());
-
     deviceResources->GetD2DDeviceContext()->FillGeometry(buttonGeometry.Get(), buttonColor);
 	deviceResources->GetD2DDeviceContext()->DrawGeometry(buttonGeometry.Get(), buttonBorderBrush, borderWeight);
     
-    // Draw Input Text    
+    // Draw Input Text   
+	const auto position = GetWorldPosition();
 	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x, position.y + 1), buttonTextLayout.Get(), buttonTextBrush); // (location + 1) looks better
 }
 
@@ -107,6 +104,13 @@ const bool UIButton::HandleEvent(const Event* const event)
 			else
 				isVisible = false;
 
+			break;
+		}
+		case EventType::WindowResize:
+		{
+			const auto position = GetWorldPosition();
+			deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), buttonGeometry.ReleaseAndGetAddressOf());
+		
 			break;
 		}
 	}

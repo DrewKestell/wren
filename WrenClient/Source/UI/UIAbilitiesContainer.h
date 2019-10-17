@@ -16,10 +16,6 @@ class UIAbilitiesContainer : public UIComponent
 	EventHandler& eventHandler;
 	float clientWidth;
 	float clientHeight;
-	std::vector<Ability*> abilities;
-	std::vector<ComPtr<IDWriteTextLayout>> headers;
-	std::vector<ComPtr<ID2D1RectangleGeometry>> borderGeometries;
-	std::vector<std::shared_ptr<UIAbility>> uiAbilities;
 	ID2D1SolidColorBrush* borderBrush{ nullptr };
 	ID2D1SolidColorBrush* highlightBrush{ nullptr };
 	ID2D1SolidColorBrush* headerBrush{ nullptr };
@@ -31,6 +27,10 @@ class UIAbilitiesContainer : public UIComponent
 	const BYTE* vertexShaderBuffer{ nullptr };
 	int vertexShaderSize{ 0 };
 	XMMATRIX projectionTransform{ XMMatrixIdentity() };
+	std::vector<Ability*> abilities;
+	std::vector<ComPtr<IDWriteTextLayout>> headers;
+	std::vector<ComPtr<ID2D1RectangleGeometry>> borderGeometries;
+	std::vector<std::shared_ptr<UIAbility>> uiAbilities;
 public:
 	UIAbilitiesContainer(
 		UIComponentArgs uiComponentArgs,

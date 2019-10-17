@@ -6,9 +6,9 @@
 
 class UIInputGroup : public Observer
 {
+	const Layer uiLayer{ Login };
 	EventHandler& eventHandler;
 	bool active{ false };
-	const Layer uiLayer{ Login };
 	std::vector<UIInput*> inputs;
 public:
 	UIInputGroup(const Layer uiLayer, EventHandler& eventHandler);

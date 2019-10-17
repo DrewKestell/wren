@@ -6,19 +6,19 @@
 
 class UIButton : public UIComponent
 {
-	ComPtr<IDWriteTextLayout> buttonTextLayout;
-	ComPtr<ID2D1RoundedRectangleGeometry> buttonGeometry;
-	bool pressed{ false };
-	bool enabled{ true };
-	ID2D1SolidColorBrush* disabledBrush{ nullptr };
-    float width;
+	float width;
 	float height;
 	std::string buttonText;
 	const std::function<void()> onClick;
+	ID2D1SolidColorBrush* disabledBrush{ nullptr };
 	ID2D1SolidColorBrush* buttonBrush{ nullptr };
 	ID2D1SolidColorBrush* pressedButtonBrush{ nullptr };
 	ID2D1SolidColorBrush* buttonBorderBrush{ nullptr };
 	ID2D1SolidColorBrush* buttonTextBrush{ nullptr };
+	ComPtr<IDWriteTextLayout> buttonTextLayout;
+	ComPtr<ID2D1RoundedRectangleGeometry> buttonGeometry;
+	bool pressed{ false };
+	bool enabled{ true };
     
 public:
 	UIButton(

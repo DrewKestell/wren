@@ -7,6 +7,13 @@ class UICharacterHUD : public UIComponent
 {
 	StatsComponent& statsComponent;
 	std::string nameText;
+	ID2D1SolidColorBrush* healthBrush{ nullptr };
+	ID2D1SolidColorBrush* manaBrush{ nullptr };
+	ID2D1SolidColorBrush* staminaBrush{ nullptr };
+	ID2D1SolidColorBrush* statBackgroundBrush{ nullptr };
+	ID2D1SolidColorBrush* statBorderBrush{ nullptr };
+	ID2D1SolidColorBrush* nameBrush{ nullptr };
+	ID2D1SolidColorBrush* whiteBrush{ nullptr };
 	ComPtr<ID2D1RectangleGeometry> characterPortraitGeometry;
 	ComPtr<ID2D1RectangleGeometry> statsContainerGeometry;
 	ComPtr<ID2D1RectangleGeometry> healthGeometry;
@@ -16,14 +23,6 @@ class UICharacterHUD : public UIComponent
 	ComPtr<ID2D1RectangleGeometry> staminaGeometry;
 	ComPtr<ID2D1RectangleGeometry> maxStaminaGeometry;
 	ComPtr<IDWriteTextLayout> nameTextLayout;
-	IDWriteTextFormat* buttonTextFormat{ nullptr };
-	ID2D1SolidColorBrush* healthBrush{ nullptr };
-	ID2D1SolidColorBrush* manaBrush{ nullptr };
-	ID2D1SolidColorBrush* staminaBrush{ nullptr };
-	ID2D1SolidColorBrush* statBackgroundBrush{ nullptr };
-	ID2D1SolidColorBrush* statBorderBrush{ nullptr };
-	ID2D1SolidColorBrush* nameBrush{ nullptr };
-	ID2D1SolidColorBrush* whiteBrush{ nullptr };
 	
 public:
 	UICharacterHUD(
@@ -31,7 +30,7 @@ public:
 		StatsComponent& statsComponent,
 		const char* nameText);
 	void Initialize(
-		IDWriteTextFormat* buttonTextFormat,
+		IDWriteTextFormat* textFormat,
 		ID2D1SolidColorBrush* healthBrush,
 		ID2D1SolidColorBrush* manaBrush,
 		ID2D1SolidColorBrush* staminaBrush,
