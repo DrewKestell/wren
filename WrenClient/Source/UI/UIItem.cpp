@@ -29,7 +29,8 @@ UIItem::UIItem(
 	  lastDragX{ mousePosX },
 	  lastDragY{ mousePosY }
 {
-	tooltip = std::make_unique<UITooltip>(UIComponentArgs{ deviceResources, uiComponents, [](const float, const float) { return XMFLOAT2{ -3.0f, 42.0f }; }, uiLayer, zIndex + 1 }, eventHandler, name, description, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
+	tooltip = std::make_unique<UITooltip>(UIComponentArgs{ deviceResources, uiComponents, [](const float, const float) { return XMFLOAT2{ -3.0f, 42.0f }; }, uiLayer, zIndex + 1 }, eventHandler, name, description);
+	tooltip->Initialize(bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
 	AddChildComponent(*tooltip.get());
 }
 

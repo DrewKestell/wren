@@ -11,7 +11,7 @@ class UIInventory : public UIComponent
 	EventHandler& eventHandler;
 	ClientSocketManager& socketManager;
 	std::vector<std::unique_ptr<Item>>& allItems;
-	std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures;
+	std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures;
 	float clientWidth;
 	float clientHeight;
 	std::vector<Item*> items = std::vector<Item*>(INVENTORY_SIZE, nullptr);
@@ -39,7 +39,7 @@ public:
 		EventHandler& eventHandler,
 		ClientSocketManager& socketManager,
 		std::vector<std::unique_ptr<Item>>& allItems,
-		std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures,
+		std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures,
 		const float clientWidth,
 		const float clientHeight);
 	void Initialize(

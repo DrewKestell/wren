@@ -55,17 +55,13 @@ Game::Game(
 void Game::Initialize(HWND window, int width, int height)
 {
 	CreateInputs();
-	CreateLabels();
 	CreateButtons();
-	CreateBrushes();
-	CreateTextFormats();
-	CreateTextures();
-	CreateShaders();
-	CreateBuffers();
-	CreateRasterStates();
-	CreateMeshes();
+	CreateLabels();
 	CreatePanels();
-	CreateStaticObjects();
+
+	targetHUD = std::make_unique<UITargetHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 260.0f, 12.0f }; }, InGame, 0 });
+	hotbar = std::make_unique<UIHotbar>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float height) { return XMFLOAT2{ 5.0f, height - 45.0f }; }, InGame, 0 }, eventHandler, (float)clientHeight);
+	textWindow = std::make_unique<UITextWindow>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float height) { return XMFLOAT2{ 5.0f, height - 300.0f }; }, InGame, 0 }, eventHandler, objectManager, items, textWindowMessages, textWindowMessageIndex.get());
 
 	deviceResources->SetWindow(window, width, height);
 	deviceResources->CreateDeviceResources();
@@ -80,17 +76,31 @@ void Game::Initialize(HWND window, int width, int height)
 
 void Game::CreateDeviceDependentResources()
 {
-	
-
-	
+	InitializeBrushes();
+	InitializeTextFormats();
+	InitializeShaders();
+	InitializeBuffers();
+	InitializeRasterStates();
+	InitializeTextures();
+	InitializeMeshes();
 
 	InitializeInputs();
+	InitializeButtons();
 	InitializeLabels();
+	InitializeStaticObjects();
 
+	InitializeAbilitiesContainer();
+	InitializeLootContainer();
+	InitializeInventory();
+
+	if (characterHUD)
+		InitializeCharacterHUD();
+	targetHUD->Initialize(textFormatSuccessMessage.Get(), healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
+	hotbar->Initialize(blackBrush.Get());
+	textWindow->Initialize(statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), textFormatTextWindow.Get(), textFormatTextWindowInactive.Get());
+
+	// TODO: fix me - split apart into ctor and Initialize
 	gameMapRenderComponent = std::make_unique<GameMapRenderComponent>(deviceResources->GetD3DDevice(), vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures.at(2).Get());
-
-	// init targetHUD
-	targetHUD = std::make_unique<UITargetHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 260.0f, 12.0f }; }, InGame, 0 }, textFormatSuccessMessage.Get(), healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -98,131 +108,13 @@ void Game::CreateWindowSizeDependentResources()
 {
 	projectionTransform = XMMatrixOrthographicLH((float)clientWidth, (float)clientHeight, 0.0f, 5000.0f);
 
-	CreatePanels();
-
-	InitializeButtons();
-
-	// init hotbar
-	hotbar = std::make_unique<UIHotbar>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float height) { return XMFLOAT2{ 5.0f, height - 45.0f }; }, InGame, 0 }, eventHandler, blackBrush.Get(), (float)clientHeight);
-
-	// init textWindow
-	textWindow = std::make_unique<UITextWindow>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float height) { return XMFLOAT2{ 5.0f, height - 300.0f }; }, InGame, 0 }, eventHandler, objectManager, items, textWindowMessages, textWindowMessageIndex.get(), statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), textFormatTextWindow.Get(), textFormatTextWindowInactive.Get());
-
 	if (skills.size() > 0)
 		skillsContainer->Initialize(blackBrush.Get(), textFormatFPS.Get(), skills);
 
 	if (abilities.size() > 0)
-		CreateAbilitiesContainer();
+		InitializeAbilitiesContainer();
 
 	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
-}
-
-void Game::CreateStaticObjects()
-{
-	auto staticObjects = commonRepository.ListStaticObjects();
-
-	for (auto i = 0; i < staticObjects.size(); i++)
-	{
-		const StaticObject* staticObject = staticObjects.at(i).get();
-		const auto pos = staticObject->GetPosition();
-		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true);
-		const auto gameObjectId = gameObject.GetId();
-
-		const RenderComponent& renderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes.at(staticObject->GetModelId()).get(), vertexShader.Get(), pixelShader.Get(), textures.at(staticObject->GetTextureId()).Get());
-		gameObject.renderComponentId = renderComponent.GetId();
-
-		const StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObjectId, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
-		gameObject.statsComponentId = statsComponent.GetId();
-		gameMap.SetTileOccupied(gameObject.localPosition, true);
-	}
-}
-
-void Game::CreateBrushes()
-{
-	auto d2dContext = deviceResources->GetD2DDeviceContext();
-
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.35f, 0.35f, 0.35f, 1.0f), grayBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.1f, 0.1f, 0.1f, 1.0f), blackBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f), whiteBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.619f, 0.854f, 1.0f, 1.0f), blueBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.301f, 0.729f, 1.0f, 1.0f), darkBlueBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.137f, 0.98f, 0.117f, 1.0f), successMessageBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.98f, 0.117f, 0.156f, 1.0f), errorMessageBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.921f, 1.0f, 0.921f, 1.0f), selectedCharacterBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.9f, 0.9f, 0.9f, 1.0f), lightGrayBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.619f, 0.854f, 1.0f, 0.75f), abilityHighlightBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.619f, 0.854f, 1.0f, 0.95f), abilityPressedBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(1.0f, 0.0f, 0.0f, 1.0f), healthBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 1.0f, 1.0f), manaBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.0f, 1.0f, 0.0f, 1.0f), staminaBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.95f, 0.95f, 0.95f, 1.0f), statBackgroundBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.3f, 0.3f, 0.3f, 1.0f), darkGrayBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.6f, 0.6f, 0.6f, 1.0f), mediumGrayBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.85f, 0.85f, 0.85f, 1.0f), scrollBarBackgroundBrush.ReleaseAndGetAddressOf());
-	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.65f, 0.65f, 0.65f, 1.0f), scrollBarBrush.ReleaseAndGetAddressOf());
-}
-
-void Game::CreateTextFormats()
-{
-	auto arialFontFamily{ L"Arial" };
-	auto locale{ L"en-US" };
-
-	auto writeFactory = deviceResources->GetWriteFactory();
-
-	// FPS / MousePos
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 10.0f, locale, textFormatFPS.ReleaseAndGetAddressOf());
-	textFormatFPS->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-	textFormatFPS->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
-
-	// Account Creds Input Values
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatAccountCredsInputValue.ReleaseAndGetAddressOf());
-	textFormatAccountCredsInputValue->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-	textFormatAccountCredsInputValue->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-
-	// Account Creds Labels
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatAccountCreds.ReleaseAndGetAddressOf());
-	textFormatAccountCreds->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING);
-	textFormatAccountCreds->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-
-	// Headers
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatHeaders.ReleaseAndGetAddressOf());
-	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
-
-	// Button Text
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, textFormatButtonText.ReleaseAndGetAddressOf());
-	textFormatButtonText->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
-	textFormatButtonText->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-
-	// SuccessMessage Text
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, textFormatSuccessMessage.ReleaseAndGetAddressOf());
-	textFormatSuccessMessage->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-	textFormatSuccessMessage->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
-
-	// ErrorMessage Message
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, textFormatErrorMessage.ReleaseAndGetAddressOf());
-	textFormatErrorMessage->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-	textFormatErrorMessage->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
-
-	// UITextWindow
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTextWindow.ReleaseAndGetAddressOf());
-	textFormatTextWindow->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-	textFormatTextWindow->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
-
-	// UITextWindow inactive
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_ITALIC, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTextWindowInactive.ReleaseAndGetAddressOf());
-	textFormatTextWindowInactive->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-	textFormatTextWindowInactive->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
-
-	// Tooltip Title
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 16.0f, locale, textFormatTooltipTitle.ReleaseAndGetAddressOf());
-	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
-
-	// Tooltip Description
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTooltipDescription.ReleaseAndGetAddressOf());
-	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 }
 
 void Game::CreateInputs()
@@ -423,24 +315,14 @@ void Game::CreateLabels()
 {
 	loginScreen_successMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 170.0f }; }, Login, 0 }, 400.0f);
 	loginScreen_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 170.0f }; }, Login, 0 }, 400.0f);
-
 	createAccount_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 170.0f }; }, CreateAccount, 0 }, 400.0f);
-
 	connecting_statusLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, Connecting, 0 }, 400.0f);
-	connecting_statusLabel->SetText("Connecting...");
-
 	characterSelect_successMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 400.0f }; }, CharacterSelect, 0 }, 400.0f);
 	characterSelect_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 400.0f }; }, CharacterSelect, 0 }, 400.0f);
 	characterSelect_headerLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 60.0f }; }, CharacterSelect, 0 }, 200.0f);
-	characterSelect_headerLabel->SetText("Character List:");
-
 	createCharacter_errorMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 170.0f }; }, CreateCharacter, 0 }, 400.0f);
-
 	deleteCharacter_headerLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 10.0f }; }, DeleteCharacter, 0 }, 400.0f);
-	deleteCharacter_headerLabel->SetText("Are you sure you want to delete this character?");
-
 	enteringWorld_statusLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 5.0f, 20.0f }; }, EnteringWorld, 0 }, 400.0f);
-	enteringWorld_statusLabel->SetText("Entering World...");
 }
 
 void Game::CreatePanels()
@@ -452,24 +334,20 @@ void Game::CreatePanels()
 		socketManager.Logout();
 		SetActiveLayer(Login);
 	};
-	gameSettingsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float width, const float height) { return XMFLOAT2{ (width - 400.0f) / 2.0f, (height - 200.0f) / 2.0f }; }, InGame, 1 }, eventHandler, false, 400.0f, 200.0f, VK_ESCAPE, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	gameSettingsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float width, const float height) { return XMFLOAT2{ (width - 400.0f) / 2.0f, (height - 200.0f) / 2.0f }; }, InGame, 1 }, eventHandler, false, 400.0f, 200.0f, VK_ESCAPE);
 	gameSettings_logoutButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 26.0f }; }, InGame, 2 }, 80.0f, 24.0f, "LOGOUT", onClickGameSettingsLogoutButton);
 	gameSettingsPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 2 }, 200.0f);
-	gameSettingsPanelHeader->SetText("Game Settings");
 	gameSettingsPanel->AddChildComponent(*gameSettingsPanelHeader);
 	gameSettingsPanel->AddChildComponent(*gameSettings_logoutButton);
 
 	// Game Editor
-	gameEditorPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 580.0f, 5.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 400.0f, VK_F1, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	gameEditorPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 580.0f, 5.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 400.0f, VK_F1);
 	gameEditorPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 2 }, 200.0f);
-	gameEditorPanelHeader->SetText("Game Editor");
 	gameEditorPanel->AddChildComponent(*gameEditorPanelHeader);
 
 	// Diagnostics
-	diagnosticsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 580.0f, 336.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 200.0f, VK_F2, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
-
+	diagnosticsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 580.0f, 336.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 200.0f, VK_F2);
 	diagnosticsPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 2 }, 280.0f);
-	diagnosticsPanelHeader->SetText("Diagnostics");
 	diagnosticsPanel->AddChildComponent(*diagnosticsPanelHeader);
 
 	mousePosLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 22.0f }; }, InGame, 2 }, 280.0f);
@@ -482,156 +360,41 @@ void Game::CreatePanels()
 	diagnosticsPanel->AddChildComponent(*pingTextLabel);
 
 	// Skills
-	skillsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 200.0f, 200.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 200.0f, VK_F3, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
-
+	skillsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 200.0f, 200.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 200.0f, VK_F3);
 	skillsPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 280.0f);
-	skillsPanelHeader->SetText("Skills");
 	skillsPanel->AddChildComponent(*skillsPanelHeader);
 
 	skillsContainer = std::make_unique<UISkillsContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 });
 	skillsPanel->AddChildComponent(*skillsContainer);
 
 	// Abilities
-	abilitiesPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 10.0f }; }, InGame, 1 }, eventHandler, true, 240.0f, 400.0f, VK_F4, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
-
+	abilitiesPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 10.0f }; }, InGame, 1 }, eventHandler, true, 240.0f, 400.0f, VK_F4);
 	abilitiesPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 240.0f);
-	abilitiesPanelHeader->SetText("Abilities");
 	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
 
-	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight);
+	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, (float)clientWidth, (float)clientHeight);
 	abilitiesPanel->AddChildComponent(*abilitiesContainer);
 
 	// Loot
-	lootPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 400.0f, 300.0f }; }, InGame, 1 }, eventHandler, true, 140.0f, 185.0f, 0, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	lootPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 400.0f, 300.0f }; }, InGame, 1 }, eventHandler, true, 140.0f, 185.0f, 0);
 
 	lootPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 140.0f);
-	lootPanelHeader->SetText("Loot");
 	lootPanel->AddChildComponent(*lootPanelHeader);
 
-	lootContainer = std::make_unique<UILootContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, statsComponentManager, inventoryComponentManager, items, textures, blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
+	lootContainer = std::make_unique<UILootContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, statsComponentManager, inventoryComponentManager, items, textures, (float)clientWidth, (float)clientHeight);
 	lootPanel->AddChildComponent(*lootContainer);
 
 	// Inventory
-	inventoryPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 500.0f, 350.0f }; }, InGame, 1 }, eventHandler, true, 185.0f, 185.0f, VK_F5, darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	inventoryPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 500.0f, 350.0f }; }, InGame, 1 }, eventHandler, true, 185.0f, 185.0f, VK_F5);
 
 	inventoryPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 185.0f);
-	inventoryPanelHeader->SetText("Inventory");
 	inventoryPanel->AddChildComponent(*inventoryPanelHeader);
 
-	inventory = std::make_unique<UIInventory>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, items, textures, blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, (float)clientWidth, (float)clientHeight, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
+	inventory = std::make_unique<UIInventory>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, items, textures, (float)clientWidth, (float)clientHeight);
 	inventoryPanel->AddChildComponent(*inventory);
 
 	if (player)
 		inventory->playerId = player->GetId();
-}
-
-void Game::CreateShaders()
-{
-	auto d3dDevice = deviceResources->GetD3DDevice();
-
-	vertexShaderBuffer = LoadShader(L"VertexShader.cso");
-	d3dDevice->CreateVertexShader(vertexShaderBuffer.buffer, vertexShaderBuffer.size, nullptr, vertexShader.ReleaseAndGetAddressOf());
-
-	pixelShaderBuffer = LoadShader(L"PixelShader.cso");
-	d3dDevice->CreatePixelShader(pixelShaderBuffer.buffer, pixelShaderBuffer.size, nullptr, pixelShader.ReleaseAndGetAddressOf());
-
-	spriteVertexShaderBuffer = LoadShader(L"SpriteVertexShader.cso");
-	d3dDevice->CreateVertexShader(spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, nullptr, spriteVertexShader.ReleaseAndGetAddressOf());
-
-	spritePixelShaderBuffer = LoadShader(L"SpritePixelShader.cso");
-	d3dDevice->CreatePixelShader(spritePixelShaderBuffer.buffer, spritePixelShaderBuffer.size, nullptr, spritePixelShader.ReleaseAndGetAddressOf());
-}
-
-void Game::CreateBuffers()
-{
-	auto d3dDevice = deviceResources->GetD3DDevice();
-	auto d3dContext = deviceResources->GetD3DDeviceContext();
-
-	// create constant buffer
-	D3D11_BUFFER_DESC bufferDesc;
-	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
-	bufferDesc.MiscFlags = 0;
-	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	bufferDesc.ByteWidth = sizeof(ConstantBufferOnce);
-
-	ID3D11Buffer* constantBufferOnce{ nullptr };
-	DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bufferDesc, nullptr, &constantBufferOnce));
-
-	// map ConstantBuffer
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	d3dContext->Map(constantBufferOnce, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	auto pCB{ reinterpret_cast<ConstantBufferOnce*>(mappedResource.pData) };
-	XMStoreFloat4(&pCB->directionalLight, XMVECTOR{ 0.0f, -1.0f, 0.5f, 0.0f });
-	d3dContext->Unmap(constantBufferOnce, 0);
-
-	d3dContext->PSSetConstantBuffers(0, 1, &constantBufferOnce);
-}
-
-void Game::CreateRasterStates()
-{
-	auto d3dDevice{ deviceResources->GetD3DDevice() };
-
-	CD3D11_RASTERIZER_DESC wireframeRasterStateDesc{ D3D11_FILL_WIREFRAME, D3D11_CULL_BACK, FALSE,
-		D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
-		D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE };
-	d3dDevice->CreateRasterizerState(&wireframeRasterStateDesc, wireframeRasterState.ReleaseAndGetAddressOf());
-
-	CD3D11_RASTERIZER_DESC solidRasterStateDesc{ D3D11_FILL_SOLID, D3D11_CULL_BACK, FALSE,
-		D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
-		D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE };
-	d3dDevice->CreateRasterizerState(&solidRasterStateDesc, solidRasterState.ReleaseAndGetAddressOf());
-}
-
-void Game::CreateTextures()
-{
-	auto d3dDevice = deviceResources->GetD3DDevice();
-
-	const std::vector<const wchar_t*> paths
-	{
-		L"../../WrenClient/Textures/texture01.dds",     // 0
-		L"../../WrenClient/Textures/texture02.dds",     // 1
-		L"../../WrenClient/Textures/grass01.dds",       // 2
-		L"../../WrenClient/Textures/abilityicon01.dds", // 3
-		L"../../WrenClient/Textures/texture03.dds",     // 4
-		L"../../WrenClient/Textures/abilityicon02.dds", // 5
-		L"../../WrenClient/Textures/abilityicon03.dds", // 6
-		L"../../WrenClient/Textures/jade.dds",          // 7
-		L"../../WrenClient/Textures/jade_gray.dds",     // 8
-		L"../../WrenClient/Textures/ruby.dds",          // 9
-		L"../../WrenClient/Textures/ruby_gray.dds",     // 10
-		L"../../WrenClient/Textures/sapphire.dds",      // 11
-		L"../../WrenClient/Textures/sapphire_gray.dds", // 12
-	};
-
-	// clear calls the destructor of its elements, and ComPtr's destructor handles calling Release()
-	textures.clear();
-
-	for (auto i = 0; i < paths.size(); i++)
-	{
-		ComPtr<ID3D11ShaderResourceView> ptr;
-		CreateDDSTextureFromFile(d3dDevice, paths.at(i), nullptr, ptr.ReleaseAndGetAddressOf());
-		textures.push_back(ptr);
-	}
-}
-
-void Game::CreateMeshes()
-{
-	auto d3dDevice = deviceResources->GetD3DDevice();
-
-	const std::vector<std::string> paths
-	{
-		"../../WrenClient/Models/sphere.blend",  // 0
-		"../../WrenClient/Models/tree.blend",    // 1
-		"../../WrenClient/Models/dummy.blend"    // 2
-	};
-
-	// clear calls the destructor of its elements, and unique_ptr's destructor handles cleaning itself up
-	meshes.clear();
-
-	for (auto i = 0; i < paths.size(); i++)
-		meshes.push_back(std::make_unique<Mesh>(paths.at(i), d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size));
 }
 
 void Game::PublishEvents()
@@ -672,6 +435,203 @@ void Game::PublishEvents()
 	}
 }
 
+void Game::InitializeBrushes()
+{
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
+
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.35f, 0.35f, 0.35f, 1.0f), grayBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.1f, 0.1f, 0.1f, 1.0f), blackBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f), whiteBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.619f, 0.854f, 1.0f, 1.0f), blueBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.301f, 0.729f, 1.0f, 1.0f), darkBlueBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.137f, 0.98f, 0.117f, 1.0f), successMessageBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.98f, 0.117f, 0.156f, 1.0f), errorMessageBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.921f, 1.0f, 0.921f, 1.0f), selectedCharacterBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.9f, 0.9f, 0.9f, 1.0f), lightGrayBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.619f, 0.854f, 1.0f, 0.75f), abilityHighlightBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.619f, 0.854f, 1.0f, 0.95f), abilityPressedBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(1.0f, 0.0f, 0.0f, 1.0f), healthBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 1.0f, 1.0f), manaBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.0f, 1.0f, 0.0f, 1.0f), staminaBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.95f, 0.95f, 0.95f, 1.0f), statBackgroundBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.3f, 0.3f, 0.3f, 1.0f), darkGrayBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.6f, 0.6f, 0.6f, 1.0f), mediumGrayBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.85f, 0.85f, 0.85f, 1.0f), scrollBarBackgroundBrush.ReleaseAndGetAddressOf());
+	d2dContext->CreateSolidColorBrush(D2D1::ColorF(0.65f, 0.65f, 0.65f, 1.0f), scrollBarBrush.ReleaseAndGetAddressOf());
+}
+
+void Game::InitializeTextFormats()
+{
+	auto arialFontFamily{ L"Arial" };
+	auto locale{ L"en-US" };
+
+	auto writeFactory = deviceResources->GetWriteFactory();
+
+	// FPS / MousePos
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 10.0f, locale, textFormatFPS.ReleaseAndGetAddressOf());
+	textFormatFPS->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatFPS->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	// Account Creds Input Values
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatAccountCredsInputValue.ReleaseAndGetAddressOf());
+	textFormatAccountCredsInputValue->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatAccountCredsInputValue->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+
+	// Account Creds Labels
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatAccountCreds.ReleaseAndGetAddressOf());
+	textFormatAccountCreds->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING);
+	textFormatAccountCreds->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+
+	// Headers
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatHeaders.ReleaseAndGetAddressOf());
+	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	// Button Text
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, textFormatButtonText.ReleaseAndGetAddressOf());
+	textFormatButtonText->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+	textFormatButtonText->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+
+	// SuccessMessage Text
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, textFormatSuccessMessage.ReleaseAndGetAddressOf());
+	textFormatSuccessMessage->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatSuccessMessage->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	// ErrorMessage Message
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, textFormatErrorMessage.ReleaseAndGetAddressOf());
+	textFormatErrorMessage->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatErrorMessage->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	// UITextWindow
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTextWindow.ReleaseAndGetAddressOf());
+	textFormatTextWindow->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatTextWindow->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	// UITextWindow inactive
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_ITALIC, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTextWindowInactive.ReleaseAndGetAddressOf());
+	textFormatTextWindowInactive->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatTextWindowInactive->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	// Tooltip Title
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 16.0f, locale, textFormatTooltipTitle.ReleaseAndGetAddressOf());
+	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	// Tooltip Description
+	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTooltipDescription.ReleaseAndGetAddressOf());
+	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+}
+
+void Game::InitializeShaders()
+{
+	auto d3dDevice = deviceResources->GetD3DDevice();
+
+	vertexShaderBuffer = LoadShader(L"VertexShader.cso");
+	d3dDevice->CreateVertexShader(vertexShaderBuffer.buffer, vertexShaderBuffer.size, nullptr, vertexShader.ReleaseAndGetAddressOf());
+
+	pixelShaderBuffer = LoadShader(L"PixelShader.cso");
+	d3dDevice->CreatePixelShader(pixelShaderBuffer.buffer, pixelShaderBuffer.size, nullptr, pixelShader.ReleaseAndGetAddressOf());
+
+	spriteVertexShaderBuffer = LoadShader(L"SpriteVertexShader.cso");
+	d3dDevice->CreateVertexShader(spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, nullptr, spriteVertexShader.ReleaseAndGetAddressOf());
+
+	spritePixelShaderBuffer = LoadShader(L"SpritePixelShader.cso");
+	d3dDevice->CreatePixelShader(spritePixelShaderBuffer.buffer, spritePixelShaderBuffer.size, nullptr, spritePixelShader.ReleaseAndGetAddressOf());
+}
+
+void Game::InitializeBuffers()
+{
+	auto d3dDevice = deviceResources->GetD3DDevice();
+	auto d3dContext = deviceResources->GetD3DDeviceContext();
+
+	// create constant buffer
+	D3D11_BUFFER_DESC bufferDesc;
+	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
+	bufferDesc.MiscFlags = 0;
+	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	bufferDesc.ByteWidth = sizeof(ConstantBufferOnce);
+
+	ID3D11Buffer* constantBufferOnce{ nullptr };
+	DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bufferDesc, nullptr, &constantBufferOnce));
+
+	// map ConstantBuffer
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	d3dContext->Map(constantBufferOnce, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	auto pCB{ reinterpret_cast<ConstantBufferOnce*>(mappedResource.pData) };
+	XMStoreFloat4(&pCB->directionalLight, XMVECTOR{ 0.0f, -1.0f, 0.5f, 0.0f });
+	d3dContext->Unmap(constantBufferOnce, 0);
+
+	d3dContext->PSSetConstantBuffers(0, 1, &constantBufferOnce);
+}
+
+void Game::InitializeRasterStates()
+{
+	auto d3dDevice{ deviceResources->GetD3DDevice() };
+
+	CD3D11_RASTERIZER_DESC wireframeRasterStateDesc{ D3D11_FILL_WIREFRAME, D3D11_CULL_BACK, FALSE,
+		D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
+		D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE };
+	d3dDevice->CreateRasterizerState(&wireframeRasterStateDesc, wireframeRasterState.ReleaseAndGetAddressOf());
+
+	CD3D11_RASTERIZER_DESC solidRasterStateDesc{ D3D11_FILL_SOLID, D3D11_CULL_BACK, FALSE,
+		D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
+		D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE };
+	d3dDevice->CreateRasterizerState(&solidRasterStateDesc, solidRasterState.ReleaseAndGetAddressOf());
+}
+
+void Game::InitializeTextures()
+{
+	auto d3dDevice = deviceResources->GetD3DDevice();
+
+	const std::vector<const wchar_t*> paths
+	{
+		L"../../WrenClient/Textures/texture01.dds",     // 0
+		L"../../WrenClient/Textures/texture02.dds",     // 1
+		L"../../WrenClient/Textures/grass01.dds",       // 2
+		L"../../WrenClient/Textures/abilityicon01.dds", // 3
+		L"../../WrenClient/Textures/texture03.dds",     // 4
+		L"../../WrenClient/Textures/abilityicon02.dds", // 5
+		L"../../WrenClient/Textures/abilityicon03.dds", // 6
+		L"../../WrenClient/Textures/jade.dds",          // 7
+		L"../../WrenClient/Textures/jade_gray.dds",     // 8
+		L"../../WrenClient/Textures/ruby.dds",          // 9
+		L"../../WrenClient/Textures/ruby_gray.dds",     // 10
+		L"../../WrenClient/Textures/sapphire.dds",      // 11
+		L"../../WrenClient/Textures/sapphire_gray.dds", // 12
+	};
+
+	// clear calls the destructor of its elements, and ComPtr's destructor handles calling Release()
+	textures.clear();
+
+	for (auto i = 0; i < paths.size(); i++)
+	{
+		ComPtr<ID3D11ShaderResourceView> ptr;
+		CreateDDSTextureFromFile(d3dDevice, paths.at(i), nullptr, ptr.ReleaseAndGetAddressOf());
+		textures.push_back(ptr);
+	}
+}
+
+void Game::InitializeMeshes()
+{
+	auto d3dDevice = deviceResources->GetD3DDevice();
+
+	const std::vector<std::string> paths
+	{
+		"../../WrenClient/Models/sphere.blend",  // 0
+		"../../WrenClient/Models/tree.blend",    // 1
+		"../../WrenClient/Models/dummy.blend"    // 2
+	};
+
+	// clear calls the destructor of its elements, and unique_ptr's destructor handles cleaning itself up
+	meshes.clear();
+
+	for (auto i = 0; i < paths.size(); i++)
+		meshes.push_back(std::make_unique<Mesh>(paths.at(i), d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size));
+}
+
 void Game::InitializeInputs()
 {
 	loginScreen_accountNameInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
@@ -707,24 +667,106 @@ void Game::InitializeLabels()
 	loginScreen_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
 	createAccount_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
 	connecting_statusLabel->Initialize(blackBrush.Get(), textFormatAccountCreds.Get());
+	connecting_statusLabel->SetText("Connecting...");
 	characterSelect_successMessageLabel->Initialize(successMessageBrush.Get(), textFormatSuccessMessage.Get());
 	characterSelect_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
 	characterSelect_headerLabel->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	characterSelect_headerLabel->SetText("Character List:");
 	createCharacter_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
 	deleteCharacter_headerLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
+	deleteCharacter_headerLabel->SetText("Are you sure you want to delete this character?");
 	enteringWorld_statusLabel->Initialize(blackBrush.Get(), textFormatAccountCreds.Get());
+	enteringWorld_statusLabel->SetText("Entering World...");
 
 	// inputs in panels
 	gameSettingsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	gameSettingsPanelHeader->SetText("Game Settings");
 	gameEditorPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	gameEditorPanelHeader->SetText("Game Editor");
 	diagnosticsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	diagnosticsPanelHeader->SetText("Diagnostics");
 	mousePosLabel->Initialize(blackBrush.Get(), textFormatFPS.Get());
 	fpsTextLabel->Initialize(blackBrush.Get(), textFormatFPS.Get());
 	pingTextLabel->Initialize(blackBrush.Get(), textFormatFPS.Get());
 	skillsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	skillsPanelHeader->SetText("Skills");
 	abilitiesPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	abilitiesPanelHeader->SetText("Abilities");
 	lootPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	lootPanelHeader->SetText("Loot");
 	inventoryPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	inventoryPanelHeader->SetText("Inventory");
+}
+
+void Game::InitializePanels()
+{
+	gameSettingsPanel->Initialize(darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	gameEditorPanel->Initialize(darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	diagnosticsPanel->Initialize(darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	skillsPanel->Initialize(darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	abilitiesPanel->Initialize(darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	lootPanel->Initialize(darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+	inventoryPanel->Initialize(darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
+
+}
+
+void Game::InitializeStaticObjects()
+{
+	auto staticObjects = commonRepository.ListStaticObjects();
+
+	for (auto i = 0; i < staticObjects.size(); i++)
+	{
+		const StaticObject* staticObject = staticObjects.at(i).get();
+		const auto pos = staticObject->GetPosition();
+		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true);
+		const auto gameObjectId = gameObject.GetId();
+
+		const RenderComponent& renderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes.at(staticObject->GetModelId()).get(), vertexShader.Get(), pixelShader.Get(), textures.at(staticObject->GetTextureId()).Get());
+		gameObject.renderComponentId = renderComponent.GetId();
+
+		const StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObjectId, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
+		gameObject.statsComponentId = statsComponent.GetId();
+		gameMap.SetTileOccupied(gameObject.localPosition, true);
+	}
+}
+
+void Game::InitializeAbilitiesContainer()
+{
+	abilitiesContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform);
+
+	abilitiesContainer->ClearAbilities();
+	for (auto i = 0; i < abilities.size(); i++)
+	{
+		Ability* ability = abilities.at(i).get();
+		abilitiesContainer->AddAbility(ability, textures.at(ability->spriteId).Get());
+	}
+}
+
+void Game::InitializeLootContainer()
+{
+	lootContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
+}
+
+void Game::InitializeInventory()
+{
+	inventory->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
+}
+
+void Game::InitializeCharacterHUD()
+{
+	characterHUD->Initialize(textFormatSuccessMessage.Get(), healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
+}
+
+// TODO: refactor me into Create/Initialize
+void Game::RecreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames)
+{
+	characterList.clear();
+
+	for (auto i = 0; i < characterNames.size(); i++)
+	{
+		characterList.push_back(std::make_unique<UICharacterListing>(UIComponentArgs{ deviceResources.get(), uiComponents, [i](const float, const float) { return XMFLOAT2{ 25.0f, 100.0f + (i * 40.0f) }; }, CharacterSelect, 1 }, eventHandler, 260.0f, 30.0f, characterNames.at(i)->c_str()));
+		characterList.at(i)->Initialize(whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get());
+	}
 }
 
 #pragma region Frame Update
@@ -944,8 +986,6 @@ ShaderBuffer Game::LoadShader(const std::wstring filename)
 	return sb;
 }
 
-
-
 UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
 {
 	for (auto i = 0; i < characterList.size(); i++)
@@ -954,16 +994,6 @@ UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
 			return characterList.at(i).get();
 	}
 	return nullptr;
-}
-
-void Game::RecreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames)
-{
-	characterList.clear();
-
-	for (auto i = 0; i < characterNames.size(); i++)
-	{
-		characterList.push_back(std::make_unique<UICharacterListing>(UIComponentArgs{ deviceResources.get(), uiComponents, [i](const float, const float) { return XMFLOAT2{ 25.0f, 100.0f + (i * 40.0f) }; }, CharacterSelect, 1 }, eventHandler, 260.0f, 30.0f, characterNames.at(i)->c_str(), whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get()));
-	}
 }
 
 const bool Game::HandleEvent(const Event* const event)
@@ -986,16 +1016,6 @@ void Game::SetActiveLayer(const Layer layer)
 Game::~Game()
 {
 	eventHandler.Unsubscribe(*this);
-}
-
-void Game::CreateAbilitiesContainer()
-{
-	abilitiesContainer->ClearAbilities();
-	for (auto i = 0; i < abilities.size(); i++)
-	{
-		Ability* ability = abilities.at(i).get();
-		abilitiesContainer->AddAbility(ability, textures.at(ability->spriteId).Get());
-	}
 }
 
 void Game::QuitGame()
@@ -1163,7 +1183,7 @@ void Game::CreateEventHandlers()
 		if (abilities.size() > 0)
 			abilities.clear();
 		abilities = std::move(derivedEvent->abilities);
-		CreateAbilitiesContainer();
+		InitializeAbilitiesContainer();
 
 		inventory->playerId = player.GetId();
 
@@ -1174,7 +1194,8 @@ void Game::CreateEventHandlers()
 		};
 
 		// init characterHUD
-		characterHUD = std::make_unique<UICharacterHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 12.0f }; }, InGame, 0 }, textFormatSuccessMessage.Get(), statsComponent, healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get(), derivedEvent->name.c_str());
+		characterHUD = std::make_unique<UICharacterHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 12.0f }; }, InGame, 0 }, statsComponent, derivedEvent->name.c_str());
+		InitializeCharacterHUD();
 
 		std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 

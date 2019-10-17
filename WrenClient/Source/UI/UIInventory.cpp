@@ -9,7 +9,7 @@ UIInventory::UIInventory(
 	EventHandler& eventHandler,
 	ClientSocketManager& socketManager,
 	std::vector<std::unique_ptr<Item>>& allItems,
-	std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures,
+	std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures,
 	const float clientWidth,
 	const float clientHeight)
 	: UIComponent(uiComponentArgs),
@@ -95,7 +95,8 @@ const bool UIInventory::HandleEvent(const Event* const event)
 				const auto posY = 25.0f + (row * 45.0f);
 				const auto texture = allTextures.at(item->GetSpriteId()).Get();
 				const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
-				uiItems.at(destinationSlot) = std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, [posX, posY](const float, const float) { return XMFLOAT2{ posX + 2.0f, posY + 2.0f }; }, uiLayer, zIndex + 1 }, eventHandler, socketManager, item->GetId(), item->GetName(), item->GetDescription(), vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
+				uiItems.at(destinationSlot) = std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, [posX, posY](const float, const float) { return XMFLOAT2{ posX + 2.0f, posY + 2.0f }; }, uiLayer, zIndex + 1 }, eventHandler, socketManager, item->GetId(), item->GetName(), item->GetDescription(), clientWidth, clientHeight);
+				uiItems.at(destinationSlot)->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
 				uiItems.at(destinationSlot)->isVisible = isVisible;
 				AddChildComponent(*uiItems.at(destinationSlot).get());
 

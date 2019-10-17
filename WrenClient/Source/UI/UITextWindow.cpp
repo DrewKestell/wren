@@ -27,7 +27,6 @@ UITextWindow::UITextWindow(
 	  messages{ messages },
 	  messageIndex{ messageIndex }
 {
-	UpdateMessages();
 }
 
 void UITextWindow::Initialize(
@@ -62,6 +61,8 @@ void UITextWindow::Initialize(
 			inputValueTextLayoutInactive.ReleaseAndGetAddressOf()
 		)
 	);
+
+	UpdateMessages();
 }
 
 void UITextWindow::Draw()

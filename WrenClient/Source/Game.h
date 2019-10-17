@@ -129,22 +129,29 @@ private:
 	void QuitGame();
 
 	void CreateEventHandlers();
-	void CreateStaticObjects();
-	void CreateBrushes();
-	void CreateTextFormats();
-	void CreateInputs();
-	void InitializeInputs();
-	void CreateButtons();
-	void InitializeButtons();
+		
+	void CreateInputs();	
+	void CreateButtons();	
 	void CreateLabels();
-	void InitializeLabels();
 	void CreatePanels();
-	void CreateShaders();
-	void CreateBuffers();
-	void CreateTextures();
-	void CreateMeshes();
-	void CreateRasterStates();
-	void CreateAbilitiesContainer();
+
+	void InitializeBrushes();
+	void InitializeTextFormats();
+	void InitializeShaders();
+	void InitializeBuffers();
+	void InitializeRasterStates();
+	void InitializeTextures();
+	void InitializeMeshes();
+	void InitializeInputs();
+	void InitializeButtons();
+	void InitializeLabels();
+	void InitializePanels();
+	void InitializeStaticObjects();
+	void InitializeAbilitiesContainer();
+	void InitializeLootContainer();
+	void InitializeInventory();
+	void InitializeCharacterHUD();
+
 	void RecreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();
 

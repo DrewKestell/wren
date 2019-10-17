@@ -16,7 +16,7 @@ class UILootContainer : public UIComponent
 	StatsComponentManager& statsComponentManager;
 	InventoryComponentManager& inventoryComponentManager;
 	std::vector<std::unique_ptr<Item>>& allItems;
-	std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures;
+	std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures;
 	float clientWidth;
 	float clientHeight;
 	ID2D1SolidColorBrush* brush{ nullptr };
@@ -47,7 +47,7 @@ public:
 		StatsComponentManager& statsComponentManager,
 		InventoryComponentManager& inventoryComponentManager,
 		std::vector<std::unique_ptr<Item>>& allItems,
-		std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures,
+		std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures,
 		const float clientWidth,
 		const float clientHeight);
 	void Initialize(
