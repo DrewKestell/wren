@@ -19,7 +19,18 @@ UITextWindow::UITextWindow(
 	ObjectManager& objectManager,
 	std::vector<std::unique_ptr<Item>>& allItems,
 	std::array<std::string, MESSAGE_BUFFER_SIZE> textWindowMessages,
-	unsigned int* messageIndex,
+	unsigned int* messageIndex)
+	: UIComponent(uiComponentArgs),
+	  eventHandler{ eventHandler },
+	  objectManager{ objectManager },
+	  allItems{ allItems },
+	  messages{ messages },
+	  messageIndex{ messageIndex }
+{
+	UpdateMessages();
+}
+
+void UITextWindow::Initialize(
 	ID2D1SolidColorBrush* backgroundBrush,
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1SolidColorBrush* inputBrush,
@@ -30,33 +41,27 @@ UITextWindow::UITextWindow(
 	ID2D1SolidColorBrush* scrollBarBrush,
 	IDWriteTextFormat* textFormat,
 	IDWriteTextFormat* textFormatInactive)
-	: UIComponent(uiComponentArgs),
-	  eventHandler{ eventHandler },
-	  objectManager{ objectManager },
-	  allItems{ allItems },
-	  messages{ messages },
-	  messageIndex{ messageIndex },
-	  backgroundBrush{ backgroundBrush },
-	  borderBrush{ borderBrush },
-	  inputBrush{ inputBrush },
-	  inputTextBrush{ inputTextBrush },
-	  inputTextBrushInactive{ inputTextBrushInactive },
-	  textBrush{ textBrush },
-	  scrollBarBackgroundBrush{ scrollBarBackgroundBrush },
-	  scrollBarBrush{ scrollBarBrush },
-	  textFormat{ textFormat },
-	  textFormatInactive{ textFormatInactive }
 {
-	UpdateMessages();
+	this->backgroundBrush = backgroundBrush;
+	this->borderBrush = borderBrush;
+	this->inputBrush = inputBrush;
+	this->inputTextBrush = inputTextBrush;
+	this->inputTextBrushInactive = inputTextBrushInactive;
+	this->textBrush = textBrush;
+	this->scrollBarBackgroundBrush = scrollBarBackgroundBrush;
+	this->scrollBarBrush = scrollBarBrush;
+	this->textFormat = textFormat;
 
-	const auto position = uiComponentArgs.position;
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y, position.x + TEXT_WINDOW_WIDTH, position.y + TEXT_WINDOW_HEIGHT), windowGeometry.ReleaseAndGetAddressOf());
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y + TEXT_WINDOW_HEIGHT, position.x + TEXT_WINDOW_WIDTH, position.y + 245.0f), inputGeometry.ReleaseAndGetAddressOf());
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + TEXT_WINDOW_WIDTH - 20.0f, position.y, position.x + TEXT_WINDOW_WIDTH, position.y + TEXT_WINDOW_HEIGHT), scrollBarBackgroundGeometry.ReleaseAndGetAddressOf());
-
-	std::wostringstream outInputValue;
-	outInputValue << "Enter a message...";
-	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(outInputValue.str().c_str(), (UINT32)outInputValue.str().size(), textFormatInactive, TEXT_WINDOW_WIDTH, 25.0f, inputValueTextLayoutInactive.ReleaseAndGetAddressOf())); // (height - 2) takes the border into account, and looks more natural
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			ENTER_MESSAGE.c_str(),
+			static_cast<unsigned int>(ENTER_MESSAGE.size()),
+			textFormatInactive,
+			TEXT_WINDOW_WIDTH,
+			25.0f,
+			inputValueTextLayoutInactive.ReleaseAndGetAddressOf()
+		)
+	);
 }
 
 void UITextWindow::Draw()
@@ -339,6 +344,13 @@ const bool UITextWindow::HandleEvent(const Event* const event)
 
 			break;
 		}
+		case EventType::WindowResize:
+		{
+			const auto position = GetWorldPosition();
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y, position.x + TEXT_WINDOW_WIDTH, position.y + TEXT_WINDOW_HEIGHT), windowGeometry.ReleaseAndGetAddressOf());
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y + TEXT_WINDOW_HEIGHT, position.x + TEXT_WINDOW_WIDTH, position.y + 245.0f), inputGeometry.ReleaseAndGetAddressOf());
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + TEXT_WINDOW_WIDTH - 20.0f, position.y, position.x + TEXT_WINDOW_WIDTH, position.y + TEXT_WINDOW_HEIGHT), scrollBarBackgroundGeometry.ReleaseAndGetAddressOf());
+		}
 	}
 
 	return false;
@@ -353,13 +365,15 @@ void UITextWindow::UpdateMessages()
 	for (auto i = scrollIndex; i < scrollIndex + messagesToDisplay; i++)
 		text << messages[i % MESSAGE_BUFFER_SIZE].c_str() << std::endl;
 
-	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(
-		text.str().c_str(),
-		(UINT32)text.str().size(),
-		textFormat,
-		590.0f,
-		210.0f,
-		textLayout.ReleaseAndGetAddressOf())
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			text.str().c_str(),
+			(UINT32)text.str().size(),
+			textFormat,
+			590.0f,
+			210.0f,
+			textLayout.ReleaseAndGetAddressOf()
+		)
 	);
 }
 

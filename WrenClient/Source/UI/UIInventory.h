@@ -54,8 +54,7 @@ public:
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1SolidColorBrush* textBrush,
 		IDWriteTextFormat* textFormatTitle,
-		IDWriteTextFormat* textFormatDescription
-	);
+		IDWriteTextFormat* textFormatDescription);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	const std::string GetUIItemDragBehavior() const override;

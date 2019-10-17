@@ -6,8 +6,12 @@
 
 using namespace DX;
 
-UITargetHUD::UITargetHUD(
-	UIComponentArgs uiComponentArgs,
+UITargetHUD::UITargetHUD(UIComponentArgs uiComponentArgs)
+	: UIComponent(uiComponentArgs)
+{
+}
+
+void UITargetHUD::Initialize(
 	IDWriteTextFormat* nameTextFormat,
 	ID2D1SolidColorBrush* healthBrush,
 	ID2D1SolidColorBrush* manaBrush,
@@ -15,18 +19,19 @@ UITargetHUD::UITargetHUD(
 	ID2D1SolidColorBrush* statBackgroundBrush,
 	ID2D1SolidColorBrush* statBorderBrush,
 	ID2D1SolidColorBrush* nameBrush,
-	ID2D1SolidColorBrush* whiteBrush)
-	: UIComponent(uiComponentArgs),
-	  nameTextFormat{ nameTextFormat },
-	  healthBrush{ healthBrush },
-	  manaBrush{ manaBrush },
-	  staminaBrush{ staminaBrush },
-	  statBackgroundBrush{ statBackgroundBrush },
-	  statBorderBrush{ statBorderBrush },
-	  nameBrush{ nameBrush },
-	  whiteBrush{ whiteBrush }
+	ID2D1SolidColorBrush* whiteBrush
+)
 {
-	const auto position = uiComponentArgs.position;
+	this->nameTextFormat = nameTextFormat;
+	this->healthBrush = healthBrush;
+	this->manaBrush = manaBrush;
+	this->staminaBrush = staminaBrush;
+	this->statBackgroundBrush = statBackgroundBrush;
+	this->statBorderBrush = statBorderBrush;
+	this->nameBrush = nameBrush;
+	this->whiteBrush = whiteBrush;
+
+	const auto position = GetWorldPosition();
 	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y + 10.0f, position.x + 160.0f, position.y + 80.0f), statsContainerGeometry.ReleaseAndGetAddressOf());
 	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 8.0f, position.y + 34.0f, position.x + 152.0f, position.y + 44.0f), maxHealthGeometry.ReleaseAndGetAddressOf());
 	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 8.0f, position.y + 48.0f, position.x + 152.0f, position.y + 58.0f), maxManaGeometry.ReleaseAndGetAddressOf());
@@ -108,11 +113,10 @@ const bool UITargetHUD::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (SetTargetEvent*)event;
 
-			std::wostringstream nameText;
-			nameText << derivedEvent->targetName.c_str();
+			const auto targetName = derivedEvent->targetName;
 			ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(
-				nameText.str().c_str(),
-				(UINT32)nameText.str().size(),
+				Utility::s2ws(targetName).c_str(),
+				static_cast<unsigned int>(targetName.size()),
 				nameTextFormat,
 				200,
 				100,

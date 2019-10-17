@@ -32,8 +32,7 @@ public:
 		ID2D1SolidColorBrush* pressedButtonBrush,
 		ID2D1SolidColorBrush* buttonBorderBrush,
 		ID2D1SolidColorBrush* buttonTextBrush,
-		IDWriteTextFormat* buttonTextFormat
-	);
+		IDWriteTextFormat* buttonTextFormat);
     void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 };

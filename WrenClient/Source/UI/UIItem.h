@@ -11,31 +11,31 @@ class UIItem : public UIComponent
 {
 	EventHandler& eventHandler;
 	ClientSocketManager& socketManager;
-	bool isHovered{ false };
-	bool isPressed{ false };
-	bool isDragging;
-	float lastDragX;
-	float lastDragY;
-	ComPtr<ID2D1RectangleGeometry> highlightGeometry;
-	std::shared_ptr<Sprite> sprite;
-	const float clientWidth;
-	const float clientHeight;
 	const int itemId;
 	const std::string& name;
 	const std::string& description;
-	ID2D1SolidColorBrush* highlightBrush;
-	ID3D11VertexShader* vertexShader;
-	ID3D11PixelShader* pixelShader;
-	ID3D11ShaderResourceView* texture;
-	ID3D11ShaderResourceView* grayTexture;
-	ID2D1SolidColorBrush* bodyBrush;
-	ID2D1SolidColorBrush* borderBrush;
-	ID2D1SolidColorBrush* textBrush;
-	IDWriteTextFormat* textFormatTitle;
-	IDWriteTextFormat* textFormatDescription;
-	const BYTE* vertexShaderBuffer;
-	const int vertexShaderSize;
-	const XMMATRIX projectionTransform;
+	float clientWidth;
+	float clientHeight;
+	bool isDragging;
+	float lastDragX;
+	float lastDragY;
+	ID3D11VertexShader* vertexShader{ nullptr };
+	ID3D11PixelShader* pixelShader{ nullptr };
+	ID3D11ShaderResourceView* texture{ nullptr };
+	ID3D11ShaderResourceView* grayTexture{ nullptr };
+	ID2D1SolidColorBrush* highlightBrush{ nullptr };
+	const BYTE* vertexShaderBuffer{ nullptr };
+	int vertexShaderSize{ 0 };
+	XMMATRIX projectionTransform{ XMMatrixIdentity() };
+	ID2D1SolidColorBrush* bodyBrush{ nullptr };
+	ID2D1SolidColorBrush* borderBrush{ nullptr };
+	ID2D1SolidColorBrush* textBrush{ nullptr };
+	IDWriteTextFormat* textFormatTitle{ nullptr };
+	IDWriteTextFormat* textFormatDescription{ nullptr };
+	bool isHovered{ false };
+	bool isPressed{ false };
+	ComPtr<ID2D1RectangleGeometry> highlightGeometry;
+	std::shared_ptr<Sprite> sprite;
 	UIItem* itemCopy{ nullptr };
 	std::unique_ptr<UITooltip> tooltip;
 
@@ -47,6 +47,12 @@ public:
 		const int itemId,
 		const std::string& name,
 		const std::string& description,
+		const float clientWidth,
+		const float clientHeight,
+		const bool isDragging = false,
+		const float mousePosX = 0.0f,
+		const float mousePosY = 0.0f);
+	void Initialize(
 		ID3D11VertexShader* vertexShader,
 		ID3D11PixelShader* pixelShader,
 		ID3D11ShaderResourceView* texture,
@@ -54,18 +60,12 @@ public:
 		ID2D1SolidColorBrush* highlightBrush,
 		const BYTE* vertexShaderBuffer,
 		const int vertexShaderSize,
-		const float clientWidth,
-		const float clientHeight,
 		const XMMATRIX projectionTransform,
 		ID2D1SolidColorBrush* bodyBrush,
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1SolidColorBrush* textBrush,
 		IDWriteTextFormat* textFormatTitle,
-		IDWriteTextFormat* textFormatDescription,
-		const bool isDragging = false,
-		const float mousePosX = 0.0f,
-		const float mousePosY = 0.0f);
-
+		IDWriteTextFormat* textFormatDescription);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 };

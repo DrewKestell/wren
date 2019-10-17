@@ -5,17 +5,18 @@
 
 class UISkillListing : public UIComponent
 {
-	int value;
+	ID2D1SolidColorBrush* textBrush{ nullptr };
+	IDWriteTextFormat* textFormat{ nullptr };
 	ComPtr<IDWriteTextLayout> nameTextLayout;
 	ComPtr<IDWriteTextLayout> valueTextLayout;
-	ID2D1SolidColorBrush* textBrush;
-	IDWriteTextFormat* textFormat;
+	const std::string name;
+	int value;
+
+	void CreateValueTextLayout();
+
 public:
-	UISkillListing(
-		UIComponentArgs uiComponentArgs,
-		WrenCommon::Skill* skill,
-		ID2D1SolidColorBrush* textBrush,
-		IDWriteTextFormat* textFormat);
+	UISkillListing(UIComponentArgs uiComponentArgs, WrenCommon::Skill* skill);
+	void Initialize(ID2D1SolidColorBrush* textBrush, IDWriteTextFormat* textFormat);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	void SetValue(const int value);

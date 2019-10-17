@@ -12,21 +12,26 @@ UIPanel::UIPanel(
 	const bool isDraggable,
 	const float width,
 	const float height,
-	const WPARAM showKey,
-	ID2D1SolidColorBrush* headerBrush,
-	ID2D1SolidColorBrush* bodyBrush,
-	ID2D1SolidColorBrush* borderBrush)
+	const WPARAM showKey)
 	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  isDraggable{ isDraggable },
 	  width{ width },
 	  height{ height },
-	  showKey{ showKey },
-	  headerBrush{ headerBrush },
-	  bodyBrush{ bodyBrush },
-	  borderBrush{ borderBrush }
+	  showKey{ showKey }
 {
-	const auto position = uiComponentArgs.position;
+}
+
+void UIPanel::Initialize(
+	ID2D1SolidColorBrush* headerBrush,
+	ID2D1SolidColorBrush* bodyBrush,
+	ID2D1SolidColorBrush* borderBrush)
+{
+	this->headerBrush = headerBrush;
+	this->bodyBrush;
+	this->borderBrush;
+
+	const auto position = GetWorldPosition();
 	float startHeight = position.y;
 	if (isDraggable)
 	{

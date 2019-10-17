@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UIInventory.h"
+#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/LootItemSuccessEvent.h"
 
@@ -9,6 +10,19 @@ UIInventory::UIInventory(
 	ClientSocketManager& socketManager,
 	std::vector<std::unique_ptr<Item>>& allItems,
 	std::vector<ComPtr<ID3D11ShaderResourceView>> allTextures,
+	const float clientWidth,
+	const float clientHeight)
+	: UIComponent(uiComponentArgs),
+	  eventHandler{ eventHandler },
+	  socketManager{ socketManager },
+	  allItems{ allItems },
+	  allTextures{ allTextures },
+	  clientWidth{ clientWidth },
+	  clientHeight{ clientHeight }
+{
+}
+
+void UIInventory::Initialize(
 	ID2D1SolidColorBrush* brush,
 	ID2D1SolidColorBrush* highlightBrush,
 	ID3D11VertexShader* vertexShader,
@@ -16,33 +30,25 @@ UIInventory::UIInventory(
 	const BYTE* vertexShaderBuffer,
 	const int vertexShaderSize,
 	const XMMATRIX projectionTransform,
-	const float clientWidth,
-	const float clientHeight,
 	ID2D1SolidColorBrush* bodyBrush,
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1SolidColorBrush* textBrush,
 	IDWriteTextFormat* textFormatTitle,
-	IDWriteTextFormat* textFormatDescription)
-	: UIComponent(uiComponentArgs),
-	  eventHandler{ eventHandler },
-	  socketManager{ socketManager },
-	  allItems{ allItems },
-	  allTextures{ allTextures },
-	  brush{ brush },
-	  highlightBrush{ highlightBrush },
-	  vertexShader{ vertexShader },
-	  pixelShader{ pixelShader },
-	  vertexShaderBuffer{ vertexShaderBuffer },
-	  vertexShaderSize{ vertexShaderSize },
-	  projectionTransform{ projectionTransform },
-	  clientWidth{ clientWidth },
-	  clientHeight{ clientHeight },
-	  bodyBrush{ bodyBrush },
-	  borderBrush{ borderBrush },
-	  textBrush{ textBrush },
-	  textFormatTitle{ textFormatTitle },
-	  textFormatDescription{ textFormatDescription }
+	IDWriteTextFormat* textFormatDescription
+)
 {
+	this->brush = brush;
+	this->highlightBrush = highlightBrush;
+	this->vertexShader = vertexShader;
+	this->pixelShader = pixelShader;
+	this->vertexShaderBuffer = vertexShaderBuffer;
+	this->vertexShaderSize = vertexShaderSize;
+	this->projectionTransform = projectionTransform;
+	this->bodyBrush = bodyBrush;
+	this->borderBrush = borderBrush;
+	this->textBrush = textBrush;
+	this->textFormatTitle = textFormatTitle;
+	this->textFormatDescription = textFormatDescription;
 }
 
 void UIInventory::Draw()
@@ -96,6 +102,15 @@ const bool UIInventory::HandleEvent(const Event* const event)
 				std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
 				eventHandler.QueueEvent(e);
 			}
+
+			break;
+		}
+		case EventType::WindowResize:
+		{
+			const auto derivedEvent = (WindowResizeEvent*)event;
+
+			clientWidth = derivedEvent->width;
+			clientHeight = derivedEvent->height;
 
 			break;
 		}

@@ -8,16 +8,16 @@
 
 class UISkillsContainer : public UIComponent
 {
-	bool initialized{ false };
-	ID2D1SolidColorBrush* brush;
-	IDWriteTextFormat* textFormat;
+	ID2D1SolidColorBrush* brush{ nullptr };
+	IDWriteTextFormat* textFormat{ nullptr };
 	std::unique_ptr<UISkillListing>* skillListings;
 public:
-	UISkillsContainer(
-		UIComponentArgs uiComponentArgs,
+	UISkillsContainer(UIComponentArgs uiComponentArgs);
+	void Initialize(
 		ID2D1SolidColorBrush* brush,
-		IDWriteTextFormat* textFormat);
+		IDWriteTextFormat* textFormat,
+		const std::vector<std::unique_ptr<WrenCommon::Skill>>& skills);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
-	void Initialize(const std::vector<std::unique_ptr<WrenCommon::Skill>>& skills);
+	void Initialize();
 };

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UIItem.h"
+#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "Events/UIItemDroppedEvent.h"
 #include "UILootContainer.h"
@@ -11,21 +12,8 @@ UIItem::UIItem(
 	const int itemId,
 	const std::string& name,
 	const std::string& description,
-	ID3D11VertexShader* vertexShader,
-	ID3D11PixelShader* pixelShader,
-	ID3D11ShaderResourceView* texture,
-	ID3D11ShaderResourceView* grayTexture,
-	ID2D1SolidColorBrush* highlightBrush,
-	const BYTE* vertexShaderBuffer,
-	const int vertexShaderSize,
 	const float clientWidth,
 	const float clientHeight,
-	const XMMATRIX projectionTransform,
-	ID2D1SolidColorBrush* bodyBrush,
-	ID2D1SolidColorBrush* borderBrush,
-	ID2D1SolidColorBrush* textBrush,
-	IDWriteTextFormat* textFormatTitle,
-	IDWriteTextFormat* textFormatDescription,
 	const bool isDragging,
 	const float mousePosX,
 	const float mousePosY)
@@ -37,25 +25,43 @@ UIItem::UIItem(
 	  description{ description },
 	  clientWidth{ clientWidth },
 	  clientHeight{ clientHeight },
-	  vertexShader{ vertexShader },
-	  pixelShader{ pixelShader },
-	  texture{ texture },
-	  grayTexture{ grayTexture },
-	  vertexShaderBuffer{ vertexShaderBuffer },
-	  vertexShaderSize{ vertexShaderSize },
-	  highlightBrush{ highlightBrush },
-	  projectionTransform{ projectionTransform },
-	  bodyBrush{ bodyBrush },
-	  borderBrush{ borderBrush },
-	  textBrush{ textBrush },
-	  textFormatTitle{ textFormatTitle },
-	  textFormatDescription{ textFormatDescription },
 	  isDragging{ isDragging },
 	  lastDragX{ mousePosX },
 	  lastDragY{ mousePosY }
 {
 	tooltip = std::make_unique<UITooltip>(UIComponentArgs{ deviceResources, uiComponents, [](const float, const float) { return XMFLOAT2{ -3.0f, 42.0f }; }, uiLayer, zIndex + 1 }, eventHandler, name, description, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
 	AddChildComponent(*tooltip.get());
+}
+
+void UIItem::Initialize(
+	ID3D11VertexShader* vertexShader,
+	ID3D11PixelShader* pixelShader,
+	ID3D11ShaderResourceView* texture,
+	ID3D11ShaderResourceView* grayTexture,
+	ID2D1SolidColorBrush* highlightBrush,
+	const BYTE* vertexShaderBuffer,
+	const int vertexShaderSize,
+	const XMMATRIX projectionTransform,
+	ID2D1SolidColorBrush* bodyBrush,
+	ID2D1SolidColorBrush* borderBrush,
+	ID2D1SolidColorBrush* textBrush,
+	IDWriteTextFormat* textFormatTitle,
+	IDWriteTextFormat* textFormatDescription
+)
+{
+	this->vertexShader = vertexShader;
+	this->pixelShader = pixelShader;
+	this->texture = texture;
+	this->grayTexture = grayTexture;
+	this->highlightBrush = highlightBrush;
+	this->vertexShaderBuffer = vertexShaderBuffer;
+	this->vertexShaderSize = vertexShaderSize;
+	this->projectionTransform = projectionTransform;
+	this->bodyBrush = bodyBrush;
+	this->borderBrush = borderBrush;
+	this->textBrush = textBrush;
+	this->textFormatTitle = textFormatTitle;
+	this->textFormatDescription = textFormatDescription;
 }
 
 void UIItem::Draw()
@@ -125,7 +131,8 @@ const bool UIItem::HandleEvent(const Event* const event)
 				// if the button is pressed, and the mouse starts moving, let's move the UIItem
 				if (isPressed && !isDragging && !itemCopy)
 				{
-					itemCopy = new UIItem(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, 2 }, eventHandler, socketManager, itemId, name, description, vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, clientWidth, clientHeight, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription, true, mousePosX, mousePosY);
+					itemCopy = new UIItem(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, 2 }, eventHandler, socketManager, itemId, name, description,  clientWidth, clientHeight, true, mousePosX, mousePosY);
+					itemCopy->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
 					itemCopy->isVisible = true;
 
 					/*std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(clientHeight, mousePosX, mousePosY));
@@ -209,6 +216,17 @@ const bool UIItem::HandleEvent(const Event* const event)
 
 				return true;
 			}
+
+			break;
+		}
+		case EventType::WindowResize:
+		{
+			const auto derivedEvent = (WindowResizeEvent*)event;
+
+			clientWidth = derivedEvent->width;
+			clientHeight = derivedEvent->height;
+
+			break;
 		}
 	}
 

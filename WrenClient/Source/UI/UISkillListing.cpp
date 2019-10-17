@@ -3,21 +3,31 @@
 
 using namespace DX;
 
-UISkillListing::UISkillListing(
-	UIComponentArgs uiComponentArgs,
-	WrenCommon::Skill* skill,
-	ID2D1SolidColorBrush* textBrush,
-	IDWriteTextFormat* textFormat)
+UISkillListing::UISkillListing(UIComponentArgs uiComponentArgs, WrenCommon::Skill* skill)
 	: UIComponent(uiComponentArgs),
 	  value{ skill->value },
-	  textBrush{ textBrush },
-	  textFormat{ textFormat }
+	  name{ skill->name }
 {
-	std::wostringstream nameOutText;
-	nameOutText << skill->name.c_str();
-	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(nameOutText.str().c_str(), (UINT32)nameOutText.str().size(), textFormat, 140.0f, 20.0f, nameTextLayout.ReleaseAndGetAddressOf()));
-
 	SetValue(skill->value);
+}
+
+void UISkillListing::Initialize(ID2D1SolidColorBrush* textBrush, IDWriteTextFormat* textFormat)
+{
+	this->textBrush = textBrush;
+	this->textFormat = textFormat;
+
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			Utility::s2ws(name).c_str(),
+			static_cast<unsigned int>(name.size()),
+			textFormat,
+			140.0f,
+			20.0f,
+			nameTextLayout.ReleaseAndGetAddressOf()
+		)
+	);
+
+	CreateValueTextLayout();
 }
 
 void UISkillListing::Draw()
@@ -34,9 +44,25 @@ void UISkillListing::Draw()
 
 void UISkillListing::SetValue(const int value)
 {
-	std::wostringstream valueOutText;
-	valueOutText << std::to_string(value).c_str();
-	ThrowIfFailed(deviceResources->GetWriteFactory()->CreateTextLayout(valueOutText.str().c_str(), (UINT32)valueOutText.str().size(), textFormat, 20.0f, 30.0f, valueTextLayout.ReleaseAndGetAddressOf()));
+	this->value = value;
+
+	CreateValueTextLayout();
+}
+
+void UISkillListing::CreateValueTextLayout()
+{
+	const auto valueString = std::to_string(value);
+
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			Utility::s2ws(valueString).c_str(),
+			static_cast<unsigned int>(valueString.size()),
+			textFormat,
+			20.0f,
+			30.0f,
+			valueTextLayout.ReleaseAndGetAddressOf()
+		)
+	);
 }
 
 const bool UISkillListing::HandleEvent(const Event* const event)

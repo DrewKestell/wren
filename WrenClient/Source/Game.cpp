@@ -3,6 +3,7 @@
 #include "ConstantBufferOnce.h"
 #include "Events/SkillIncreaseEvent.h"
 #include "Events/WindowResizeEvent.h"
+#include "Events/DoubleLeftMouseDownEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -18,7 +19,6 @@
 #include "EventHandling/Events/SendChatMessage.h"
 #include "EventHandling/Events/PropagateChatMessageEvent.h"
 #include "EventHandling/Events/ServerMessageEvent.h"
-#include "Events/DoubleLeftMouseDownEvent.h"
 
 unsigned int g_zIndex{ 0 };
 
@@ -52,56 +52,23 @@ Game::Game(
 	CreateEventHandlers();
 }
 
-void Game::PublishEvents()
-{
-	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
-	std::queue<std::unique_ptr<const Event>>& eventQueue = eventHandler.GetEventQueue();
-	while (!eventQueue.empty())
-	{
-		auto event = std::move(eventQueue.front());
-		eventQueue.pop();
-
-		// We pass events to the UIComponents first, because those are usually overlaid on top
-		//   of 3D GameObjects, and therefore we want certain events like clicks, etc to hit
-		//   the UIComponents first.
-		// These UIComponents are sorted in ascending order of their z-index.
-		auto stopPropagation = false;
-
-		for (auto i = (int)uiComponents.size() - 1; i >= 0; i--)
-		{
-			stopPropagation = uiComponents.at(i)->HandleEvent(event.get());
-			if (stopPropagation)
-				break;
-		}
-
-		// There are times where we want to avoid having events propagate to GameObjects if they're
-		//   handled by a UIComponent, so if any UIComponent returns true, we skip passing that event
-		//   to the GameObjects and move to the next iteration of the while loop.
-		if (stopPropagation)
-			continue;
-
-		std::list<Observer*>& observers = eventHandler.GetObservers();
-		for (auto observer : observers)
-		{
-			stopPropagation = observer->HandleEvent(event.get());
-			if (stopPropagation)
-				break;
-		}
-	}
-}
-
-// General initialization that would likely be shared between any D3D application
-//   should go in DeviceResources.cpp
-// Game-specific initialization should go in Game.cpp
 void Game::Initialize(HWND window, int width, int height)
 {
-	deviceResources->SetWindow(window, width, height);
-	deviceResources->CreateDeviceResources();
-
 	CreateInputs();
 	CreateLabels();
 	CreateButtons();
+	CreateBrushes();
+	CreateTextFormats();
+	CreateTextures();
+	CreateShaders();
+	CreateBuffers();
+	CreateRasterStates();
+	CreateMeshes();
+	CreatePanels();
+	CreateStaticObjects();
 
+	deviceResources->SetWindow(window, width, height);
+	deviceResources->CreateDeviceResources();
 	CreateDeviceDependentResources();
 
 	deviceResources->CreateWindowSizeDependentResources();
@@ -111,184 +78,11 @@ void Game::Initialize(HWND window, int width, int height)
 	SetActiveLayer(Login);
 }
 
-#pragma region Frame Update
-void Game::Tick()
-{
-	timer.Tick();
-
-	socketManager.ProcessPackets();
-
-	// to get an accurate ping, we should handle this outside of the main update loop which is locked at 60 updates / second
-	if (activeLayer == InGame)
-	{
-		if (pingStart == 0.0f)
-		{
-			pingStart = timer.TotalTime();
-
-			std::vector<std::string> args{ std::to_string(pingId) };
-			socketManager.SendPacket(OpCode::Ping, args);
-		}
-	}
-
-	// reset double click timer if necessary
-	if (timer.TotalTime() - doubleClickStart > 0.5f)
-		doubleClickStart = 0.0f;
-	
-	updateTimer += timer.DeltaTime();
-	if (updateTimer >= UPDATE_FREQUENCY)
-	{
-		if (activeLayer == InGame)
-		{
-			camera.Update(player->GetWorldPosition(), UPDATE_FREQUENCY);
-			
-			textWindow->Update(); // this should be handled by objectManager.Update()...
-			objectManager.Update();
-		}
-		
-		PublishEvents();
-
-		updateTimer -= UPDATE_FREQUENCY;
-	}
-	
-	Render(updateTimer);
-}
-#pragma endregion
-
-#pragma region Frame Render
-void Game::Render(const float updateTimer)
-{
-	// Don't try to render anything before the first Update.
-	if (timer.TotalTime() == 0)
-		return;
-
-	Clear();
-
-	auto d3dContext = deviceResources->GetD3DDeviceContext();
-	auto d2dContext = deviceResources->GetD2DDeviceContext();
-
-	d2dContext->BeginDraw();
-
-	// used for FPS text
-	static int frameCnt = 0;
-	static float timeElapsed = 0.0f;
-	frameCnt++;
-	
-	// update FPS text
-	if (timer.TotalTime() - timeElapsed >= 1)
-	{
-		const float mspf = 1000.0f / frameCnt;
-		const auto fpsText = "FPS: " + std::to_string(frameCnt) + ", MSPF: " + std::to_string(mspf);
-		fpsTextLabel->SetText(fpsText.c_str());
-
-		frameCnt = 0;
-		timeElapsed += 1.0f;
-
-		if (socketManager.Connected())
-			socketManager.SendPacket(OpCode::Heartbeat);
-	}
-
-	// update ping
-	const auto pingText = "Ping: " + std::to_string(ping) + " ms";
-	pingTextLabel->SetText(pingText.c_str());
-
-	// update MousePos text
-	const auto mousePosText = "MousePosX: " + std::to_string((int)mousePosX) + ", MousePosY: " + std::to_string((int)mousePosY);
-	mousePosLabel->SetText(mousePosText.c_str());
-
-	if (activeLayer == InGame)
-	{
-		const auto camPos{ camera.GetPosition() };
-		const XMVECTORF32 s_Eye{ camPos.x, camPos.y, camPos.z, 0.0f };
-		const XMVECTORF32 s_At{ camPos.x - 500.0f, 0.0f, camPos.z + 500.0f, 0.0f };
-		const XMVECTORF32 s_Up{ 0.0f, 1.0f, 0.0f, 0.0f };
-		viewTransform = XMMatrixLookAtLH(s_Eye, s_At, s_Up);
-
-		d3dContext->RSSetState(solidRasterState.Get());
-		//d3dContext->RSSetState(wireframeRasterState);
-
-		gameMapRenderComponent->Draw(d3dContext, viewTransform, projectionTransform);
-
-		renderComponentManager.Update(d3dContext, viewTransform, projectionTransform, updateTimer);
-	}
-
-	// foreach RenderComponent -> Draw
-	for (auto i = 0; i < uiComponents.size(); i++)
-		uiComponents.at(i)->Draw();
-
-	d2dContext->EndDraw();
-
-	d3dContext->ResolveSubresource(deviceResources->GetBackBufferRenderTarget(), 0, deviceResources->GetOffscreenRenderTarget(), 0, DXGI_FORMAT_B8G8R8A8_UNORM);
-
-	// Show the new frame.
-	deviceResources->Present();
-}
-
-void Game::Clear()
-{
-	// Clear the views.
-	auto context = deviceResources->GetD3DDeviceContext();
-	auto renderTarget = deviceResources->GetOffscreenRenderTargetView();
-	auto depthStencil = deviceResources->GetDepthStencilView();
-
-	context->ClearRenderTargetView(renderTarget, Colors::CornflowerBlue);
-	context->ClearDepthStencilView(depthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	context->OMSetRenderTargets(1, &renderTarget, depthStencil);
-
-	// Set the viewport.
-	const auto viewport = deviceResources->GetScreenViewport();
-	context->RSSetViewports(1, &viewport);
-}
-#pragma endregion
-
-#pragma region Message Handlers
-void Game::OnActivated()
-{
-	// TODO: Game is becoming active window.
-}
-
-void Game::OnDeactivated()
-{
-	// TODO: Game is becoming background window.
-}
-
-void Game::OnSuspending()
-{
-	// TODO: Game is being power-suspended (or minimized).
-}
-
-void Game::OnResuming()
-{
-	timer.Reset();
-
-	// TODO: Game is being power-resumed (or returning from minimize).
-}
-
-void Game::OnWindowMoved()
-{
-	const auto r = deviceResources->GetOutputSize();
-	deviceResources->WindowSizeChanged(r.right, r.bottom);
-}
-
-void Game::OnWindowSizeChanged(int width, int height)
-{
-	
-}
-#pragma endregion
-
-#pragma region Direct3D Resources
-// These are the resources that depend on the device.
 void Game::CreateDeviceDependentResources()
 {
-	CreateBrushes();
-	CreateTextFormats();
-	CreateTextures();	
-	CreateShaders();
-	CreateBuffers();
-	CreateRasterStates();
-	CreateMeshes();
+	
 
-	CreatePanels();
-	CreateStaticObjects();
+	
 
 	InitializeInputs();
 	InitializeLabels();
@@ -297,14 +91,6 @@ void Game::CreateDeviceDependentResources()
 
 	// init targetHUD
 	targetHUD = std::make_unique<UITargetHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 260.0f, 12.0f }; }, InGame, 0 }, textFormatSuccessMessage.Get(), healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
-}
-
-void Game::CreatePlayerDependentResources()
-{
-	// i think you need to move certain things into here (ui elements that depend on the player existing, etc)
-	// you should call this when receiving the EnterWorldSuccess event, and also conditionally when
-	// calling CreateDeviceResources, call this IF the player exists (this will happen when resizing the window
-	// after entering the game)
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -323,54 +109,12 @@ void Game::CreateWindowSizeDependentResources()
 	textWindow = std::make_unique<UITextWindow>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float height) { return XMFLOAT2{ 5.0f, height - 300.0f }; }, InGame, 0 }, eventHandler, objectManager, items, textWindowMessages, textWindowMessageIndex.get(), statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), textFormatTextWindow.Get(), textFormatTextWindowInactive.Get());
 
 	if (skills.size() > 0)
-		skillsContainer->Initialize(skills);
+		skillsContainer->Initialize(blackBrush.Get(), textFormatFPS.Get(), skills);
 
 	if (abilities.size() > 0)
 		CreateAbilitiesContainer();
 
 	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
-}
-
-void Game::OnDeviceLost()
-{
-	// TODO: Add Direct3D resource cleanup here.
-}
-
-void Game::OnDeviceRestored()
-{
-	CreateDeviceDependentResources();
-
-	CreateWindowSizeDependentResources();
-
-	SetActiveLayer(activeLayer);
-}
-#pragma endregion
-
-ShaderBuffer Game::LoadShader(const std::wstring filename)
-{
-	// load precompiled shaders from .cso objects
-	ShaderBuffer sb{ nullptr, 0 };
-	byte* fileData{ nullptr };
-
-	// open the file
-	std::ifstream csoFile(filename, std::ios::in | std::ios::binary | std::ios::ate);
-
-	if (csoFile.is_open())
-	{
-		// get shader size
-		sb.size = (unsigned int)csoFile.tellg();
-
-		// collect shader data
-		fileData = new byte[sb.size];
-		csoFile.seekg(0, std::ios::beg);
-		csoFile.read(reinterpret_cast<char*>(fileData), sb.size);
-		csoFile.close();
-		sb.buffer = fileData;
-	}
-	else
-		throw std::exception("Critical error: Unable to open the compiled shader object!");
-
-	return sb;
 }
 
 void Game::CreateStaticObjects()
@@ -383,14 +127,14 @@ void Game::CreateStaticObjects()
 		const auto pos = staticObject->GetPosition();
 		GameObject& gameObject = objectManager.CreateGameObject(pos, XMFLOAT3{ 14.0f, 14.0f, 14.0f }, 0.0f, GameObjectType::StaticObject, staticObject->GetName(), staticObject->GetId(), true);
 		const auto gameObjectId = gameObject.GetId();
-		
+
 		const RenderComponent& renderComponent = renderComponentManager.CreateRenderComponent(gameObjectId, meshes.at(staticObject->GetModelId()).get(), vertexShader.Get(), pixelShader.Get(), textures.at(staticObject->GetTextureId()).Get());
 		gameObject.renderComponentId = renderComponent.GetId();
 
 		const StatsComponent& statsComponent = statsComponentManager.CreateStatsComponent(gameObjectId, 100, 100, 100, 100, 100, 100, 10, 10, 10, 10, 10, 10, 10);
 		gameObject.statsComponentId = statsComponent.GetId();
 		gameMap.SetTileOccupied(gameObject.localPosition, true);
-	}	
+	}
 }
 
 void Game::CreateBrushes()
@@ -501,15 +245,6 @@ void Game::CreateInputs()
 	createCharacter_characterNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, CreateCharacter, 0 }, false, 140.0f, 260.0f, 24.0f, "Character Name:");
 	createCharacter_inputGroup = std::make_unique<UIInputGroup>(CreateCharacter, eventHandler);
 	createCharacter_inputGroup->AddInput(createCharacter_characterNameInput.get());
-}
-
-void Game::InitializeInputs()
-{
-	loginScreen_accountNameInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
-	loginScreen_passwordInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
-	createAccount_accountNameInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
-	createAccount_passwordInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
-	createCharacter_characterNameInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
 }
 
 void Game::CreateButtons()
@@ -684,27 +419,6 @@ void Game::CreateButtons()
 	deleteCharacter_cancelButton = std::make_unique<UIButton>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 120.0f, 30.0f }; }, DeleteCharacter, 0 }, 100.0f, 24.0f, "CANCEL", onClickDeleteCharacterCancel);
 }
 
-void Game::InitializeButtons()
-{
-	loginScreen_loginButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	loginScreen_createAccountButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	loginScreen_quitGameButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	createAccount_createAccountButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	createAccount_cancelButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	characterSelect_newCharacterButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	characterSelect_enterWorldButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	characterSelect_deleteCharacterButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	characterSelect_logoutButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	createCharacter_createCharacterButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	createCharacter_backButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	deleteCharacter_confirmButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-	deleteCharacter_cancelButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-
-	// panels
-	gameSettings_logoutButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
-
-}
-
 void Game::CreateLabels()
 {
 	loginScreen_successMessageLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 30.0f, 170.0f }; }, Login, 0 }, 400.0f);
@@ -729,32 +443,6 @@ void Game::CreateLabels()
 	enteringWorld_statusLabel->SetText("Entering World...");
 }
 
-
-void Game::InitializeLabels()
-{
-	loginScreen_successMessageLabel->Initialize(successMessageBrush.Get(), textFormatSuccessMessage.Get());
-	loginScreen_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
-	createAccount_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
-	connecting_statusLabel->Initialize(blackBrush.Get(), textFormatAccountCreds.Get());
-	characterSelect_successMessageLabel->Initialize(successMessageBrush.Get(), textFormatSuccessMessage.Get());
-	characterSelect_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
-	characterSelect_headerLabel->Initialize(blackBrush.Get(), textFormatHeaders.Get());
-	createCharacter_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
-	deleteCharacter_headerLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
-	enteringWorld_statusLabel->Initialize(blackBrush.Get(), textFormatAccountCreds.Get());
-
-	// inputs in panels
-	gameSettingsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
-	gameEditorPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
-	diagnosticsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
-	mousePosLabel->Initialize(blackBrush.Get(), textFormatFPS.Get());
-	fpsTextLabel->Initialize(blackBrush.Get(), textFormatFPS.Get());
-	pingTextLabel->Initialize(blackBrush.Get(), textFormatFPS.Get());
-	skillsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
-	abilitiesPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
-	lootPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
-	inventoryPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
-}
 void Game::CreatePanels()
 {
 	// Game Settings
@@ -800,7 +488,7 @@ void Game::CreatePanels()
 	skillsPanelHeader->SetText("Skills");
 	skillsPanel->AddChildComponent(*skillsPanelHeader);
 
-	skillsContainer = std::make_unique<UISkillsContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, blackBrush.Get(), textFormatFPS.Get());
+	skillsContainer = std::make_unique<UISkillsContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 });
 	skillsPanel->AddChildComponent(*skillsContainer);
 
 	// Abilities
@@ -835,16 +523,6 @@ void Game::CreatePanels()
 
 	if (player)
 		inventory->playerId = player->GetId();
-}
-
-UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
-{
-	for (auto i = 0; i < characterList.size(); i++)
-	{
-		if (characterList.at(i)->IsSelected())
-			return characterList.at(i).get();
-	}
-	return nullptr;
 }
 
 void Game::CreateShaders()
@@ -954,6 +632,328 @@ void Game::CreateMeshes()
 
 	for (auto i = 0; i < paths.size(); i++)
 		meshes.push_back(std::make_unique<Mesh>(paths.at(i), d3dDevice, vertexShaderBuffer.buffer, vertexShaderBuffer.size));
+}
+
+void Game::PublishEvents()
+{
+	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
+	std::queue<std::unique_ptr<const Event>>& eventQueue = eventHandler.GetEventQueue();
+	while (!eventQueue.empty())
+	{
+		auto event = std::move(eventQueue.front());
+		eventQueue.pop();
+
+		// We pass events to the UIComponents first, because those are usually overlaid on top
+		//   of 3D GameObjects, and therefore we want certain events like clicks, etc to hit
+		//   the UIComponents first.
+		// These UIComponents are sorted in ascending order of their z-index.
+		auto stopPropagation = false;
+
+		for (auto i = (int)uiComponents.size() - 1; i >= 0; i--)
+		{
+			stopPropagation = uiComponents.at(i)->HandleEvent(event.get());
+			if (stopPropagation)
+				break;
+		}
+
+		// There are times where we want to avoid having events propagate to GameObjects if they're
+		//   handled by a UIComponent, so if any UIComponent returns true, we skip passing that event
+		//   to the GameObjects and move to the next iteration of the while loop.
+		if (stopPropagation)
+			continue;
+
+		std::list<Observer*>& observers = eventHandler.GetObservers();
+		for (auto observer : observers)
+		{
+			stopPropagation = observer->HandleEvent(event.get());
+			if (stopPropagation)
+				break;
+		}
+	}
+}
+
+void Game::InitializeInputs()
+{
+	loginScreen_accountNameInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
+	loginScreen_passwordInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
+	createAccount_accountNameInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
+	createAccount_passwordInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
+	createCharacter_characterNameInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
+}
+
+void Game::InitializeButtons()
+{
+	loginScreen_loginButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	loginScreen_createAccountButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	loginScreen_quitGameButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	createAccount_createAccountButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	createAccount_cancelButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	characterSelect_newCharacterButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	characterSelect_enterWorldButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	characterSelect_deleteCharacterButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	characterSelect_logoutButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	createCharacter_createCharacterButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	createCharacter_backButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	deleteCharacter_confirmButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+	deleteCharacter_cancelButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+
+	// panels
+	gameSettings_logoutButton->Initialize(blueBrush.Get(), darkBlueBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatButtonText.Get());
+}
+
+void Game::InitializeLabels()
+{
+	loginScreen_successMessageLabel->Initialize(successMessageBrush.Get(), textFormatSuccessMessage.Get());
+	loginScreen_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
+	createAccount_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
+	connecting_statusLabel->Initialize(blackBrush.Get(), textFormatAccountCreds.Get());
+	characterSelect_successMessageLabel->Initialize(successMessageBrush.Get(), textFormatSuccessMessage.Get());
+	characterSelect_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
+	characterSelect_headerLabel->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	createCharacter_errorMessageLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
+	deleteCharacter_headerLabel->Initialize(errorMessageBrush.Get(), textFormatErrorMessage.Get());
+	enteringWorld_statusLabel->Initialize(blackBrush.Get(), textFormatAccountCreds.Get());
+
+	// inputs in panels
+	gameSettingsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	gameEditorPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	diagnosticsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	mousePosLabel->Initialize(blackBrush.Get(), textFormatFPS.Get());
+	fpsTextLabel->Initialize(blackBrush.Get(), textFormatFPS.Get());
+	pingTextLabel->Initialize(blackBrush.Get(), textFormatFPS.Get());
+	skillsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	abilitiesPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	lootPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+	inventoryPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
+}
+
+#pragma region Frame Update
+void Game::Tick()
+{
+	timer.Tick();
+
+	socketManager.ProcessPackets();
+
+	// to get an accurate ping, we should handle this outside of the main update loop which is locked at 60 updates / second
+	if (activeLayer == InGame)
+	{
+		if (pingStart == 0.0f)
+		{
+			pingStart = timer.TotalTime();
+
+			std::vector<std::string> args{ std::to_string(pingId) };
+			socketManager.SendPacket(OpCode::Ping, args);
+		}
+	}
+
+	// reset double click timer if necessary
+	if (timer.TotalTime() - doubleClickStart > 0.5f)
+		doubleClickStart = 0.0f;
+	
+	updateTimer += timer.DeltaTime();
+	if (updateTimer >= UPDATE_FREQUENCY)
+	{
+		if (activeLayer == InGame)
+		{
+			camera.Update(player->GetWorldPosition(), UPDATE_FREQUENCY);
+			
+			textWindow->Update(); // this should be handled by objectManager.Update()...
+			objectManager.Update();
+		}
+		
+		PublishEvents();
+
+		updateTimer -= UPDATE_FREQUENCY;
+	}
+	
+	Render(updateTimer);
+}
+#pragma endregion
+
+#pragma region Frame Render
+void Game::Render(const float updateTimer)
+{
+	// Don't try to render anything before the first Update.
+	if (timer.TotalTime() == 0)
+		return;
+
+	Clear();
+
+	auto d3dContext = deviceResources->GetD3DDeviceContext();
+	auto d2dContext = deviceResources->GetD2DDeviceContext();
+
+	d2dContext->BeginDraw();
+
+	// used for FPS text
+	static int frameCnt = 0;
+	static float timeElapsed = 0.0f;
+	frameCnt++;
+	
+	// update FPS text
+	if (timer.TotalTime() - timeElapsed >= 1)
+	{
+		const float mspf = 1000.0f / frameCnt;
+		const auto fpsText = "FPS: " + std::to_string(frameCnt) + ", MSPF: " + std::to_string(mspf);
+		fpsTextLabel->SetText(fpsText.c_str());
+
+		frameCnt = 0;
+		timeElapsed += 1.0f;
+
+		if (socketManager.Connected())
+			socketManager.SendPacket(OpCode::Heartbeat);
+	}
+
+	// update ping
+	const auto pingText = "Ping: " + std::to_string(ping) + " ms";
+	pingTextLabel->SetText(pingText.c_str());
+
+	// update MousePos text
+	const auto mousePosText = "MousePosX: " + std::to_string((int)mousePosX) + ", MousePosY: " + std::to_string((int)mousePosY);
+	mousePosLabel->SetText(mousePosText.c_str());
+
+	if (activeLayer == InGame)
+	{
+		const auto camPos{ camera.GetPosition() };
+		const XMVECTORF32 s_Eye{ camPos.x, camPos.y, camPos.z, 0.0f };
+		const XMVECTORF32 s_At{ camPos.x - 500.0f, 0.0f, camPos.z + 500.0f, 0.0f };
+		const XMVECTORF32 s_Up{ 0.0f, 1.0f, 0.0f, 0.0f };
+		viewTransform = XMMatrixLookAtLH(s_Eye, s_At, s_Up);
+
+		d3dContext->RSSetState(solidRasterState.Get());
+		//d3dContext->RSSetState(wireframeRasterState);
+
+		gameMapRenderComponent->Draw(d3dContext, viewTransform, projectionTransform);
+
+		renderComponentManager.Update(d3dContext, viewTransform, projectionTransform, updateTimer);
+	}
+
+	// foreach RenderComponent -> Draw
+	for (auto i = 0; i < uiComponents.size(); i++)
+		uiComponents.at(i)->Draw();
+
+	d2dContext->EndDraw();
+
+	d3dContext->ResolveSubresource(deviceResources->GetBackBufferRenderTarget(), 0, deviceResources->GetOffscreenRenderTarget(), 0, DXGI_FORMAT_B8G8R8A8_UNORM);
+
+	// Show the new frame.
+	deviceResources->Present();
+}
+
+void Game::Clear()
+{
+	// Clear the views.
+	auto context = deviceResources->GetD3DDeviceContext();
+	auto renderTarget = deviceResources->GetOffscreenRenderTargetView();
+	auto depthStencil = deviceResources->GetDepthStencilView();
+
+	context->ClearRenderTargetView(renderTarget, Colors::CornflowerBlue);
+	context->ClearDepthStencilView(depthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	context->OMSetRenderTargets(1, &renderTarget, depthStencil);
+
+	// Set the viewport.
+	const auto viewport = deviceResources->GetScreenViewport();
+	context->RSSetViewports(1, &viewport);
+}
+#pragma endregion
+
+#pragma region Message Handlers
+void Game::OnActivated()
+{
+	// TODO: Game is becoming active window.
+}
+
+void Game::OnDeactivated()
+{
+	// TODO: Game is becoming background window.
+}
+
+void Game::OnSuspending()
+{
+	// TODO: Game is being power-suspended (or minimized).
+}
+
+void Game::OnResuming()
+{
+	timer.Reset();
+
+	// TODO: Game is being power-resumed (or returning from minimize).
+}
+
+void Game::OnWindowMoved()
+{
+	const auto r = deviceResources->GetOutputSize();
+	deviceResources->WindowSizeChanged(r.right, r.bottom);
+}
+
+void Game::OnWindowSizeChanged(int width, int height)
+{
+	
+}
+#pragma endregion
+
+#pragma region Direct3D Resources
+// These are the resources that depend on the device.
+
+void Game::CreatePlayerDependentResources()
+{
+	// i think you need to move certain things into here (ui elements that depend on the player existing, etc)
+	// you should call this when receiving the EnterWorldSuccess event, and also conditionally when
+	// calling CreateDeviceResources, call this IF the player exists (this will happen when resizing the window
+	// after entering the game)
+}
+
+void Game::OnDeviceLost()
+{
+	// TODO: Add Direct3D resource cleanup here.
+}
+
+void Game::OnDeviceRestored()
+{
+	CreateDeviceDependentResources();
+
+	CreateWindowSizeDependentResources();
+
+	SetActiveLayer(activeLayer);
+}
+#pragma endregion
+
+ShaderBuffer Game::LoadShader(const std::wstring filename)
+{
+	// load precompiled shaders from .cso objects
+	ShaderBuffer sb{ nullptr, 0 };
+	byte* fileData{ nullptr };
+
+	// open the file
+	std::ifstream csoFile(filename, std::ios::in | std::ios::binary | std::ios::ate);
+
+	if (csoFile.is_open())
+	{
+		// get shader size
+		sb.size = (unsigned int)csoFile.tellg();
+
+		// collect shader data
+		fileData = new byte[sb.size];
+		csoFile.seekg(0, std::ios::beg);
+		csoFile.read(reinterpret_cast<char*>(fileData), sb.size);
+		csoFile.close();
+		sb.buffer = fileData;
+	}
+	else
+		throw std::exception("Critical error: Unable to open the compiled shader object!");
+
+	return sb;
+}
+
+
+
+UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
+{
+	for (auto i = 0; i < characterList.size(); i++)
+	{
+		if (characterList.at(i)->IsSelected())
+			return characterList.at(i).get();
+	}
+	return nullptr;
 }
 
 void Game::RecreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames)
@@ -1158,7 +1158,7 @@ void Game::CreateEventHandlers()
 		if (skills.size() > 0)
 			skills.clear();
 		skills = std::move(derivedEvent->skills);
-		skillsContainer->Initialize(skills);
+		skillsContainer->Initialize(blackBrush.Get(), textFormatFPS.Get(), skills);
 
 		if (abilities.size() > 0)
 			abilities.clear();
