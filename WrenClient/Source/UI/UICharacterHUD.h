@@ -28,7 +28,9 @@ public:
 	UICharacterHUD(
 		UIComponentArgs uiComponentArgs,
 		StatsComponent& statsComponent,
-		const char* nameText);
+		const char* nameText,
+		const float clientWidth,
+		const float clientHeight);
 	void Initialize(
 		IDWriteTextFormat* textFormat,
 		ID2D1SolidColorBrush* healthBrush,
@@ -41,4 +43,5 @@ public:
 	);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
+	void CreateGeometry();
 };

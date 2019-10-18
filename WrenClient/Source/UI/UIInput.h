@@ -27,6 +27,7 @@ class UIInput : public UIComponent
 
 	void CreateTextLayout();
 	
+	friend class UIInputGroup;
 public:
 	UIInput(
 		UIComponentArgs uiComponentArgs,

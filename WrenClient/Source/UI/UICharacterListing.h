@@ -25,7 +25,9 @@ public:
 		EventHandler& eventHandler,
 		const float width,
 		const float height,
-		const char* text);
+		const char* text,
+		const float clientWidth,
+		const float clientHeight);
 	void Initialize(
 		ID2D1SolidColorBrush* brush,
 		ID2D1SolidColorBrush* selectedBrush,
@@ -37,4 +39,5 @@ public:
 	const bool HandleEvent(const Event* const event) override;
 	const std::string& GetName() const { return characterName; }
 	const bool IsSelected() const { return selected; }
+	void CreateGeometry();
 };

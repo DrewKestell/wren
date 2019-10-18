@@ -10,13 +10,17 @@ UICharacterListing::UICharacterListing(
 	EventHandler& eventHandler,
 	const float width,
 	const float height,
-	const char* characterName)
+	const char* characterName,
+	const float clientWidth,
+	const float clientHeight)
 	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  width{ width },
 	  height{ height },
 	  characterName{ characterName }
 {
+	localPosition = uiComponentArgs.calculatePosition(clientWidth, clientHeight);
+	CreateGeometry();
 }
 
 void UICharacterListing::Initialize(
@@ -42,9 +46,6 @@ void UICharacterListing::Initialize(
 			textLayout.ReleaseAndGetAddressOf()
 		)
 	);
-
-	const auto position = GetWorldPosition();
-	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), geometry.ReleaseAndGetAddressOf());
 }
 
 void UICharacterListing::Draw()
@@ -107,7 +108,18 @@ const bool UICharacterListing::HandleEvent(const Event* const event)
 
 			break;
 		}
+		case EventType::WindowResize:
+		{
+			CreateGeometry();
+			break;
+		}
 	}
 
 	return false;
+}
+
+void UICharacterListing::CreateGeometry()
+{
+	const auto position = GetWorldPosition();
+	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + height), 3.0f, 3.0f), geometry.ReleaseAndGetAddressOf());
 }

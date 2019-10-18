@@ -38,15 +38,23 @@ const bool UIInputGroup::HandleEvent(const Event* const event)
 					if ((it + 1) != inputs.end() && (*it)->IsActive())
 					{
 						(*it)->SetActive(false);
+						(*it)->CreateTextLayout();
 						(*(it + 1))->SetActive(true);
+						(*(it + 1))->CreateTextLayout();
 						activeInputExists = true;
 						break;
 					}
 					if ((it + 1) == inputs.end())
+					{
 						(*it)->SetActive(false);
+						(*it)->CreateTextLayout();
+					}
 				}
 				if (!activeInputExists)
+				{
 					(*inputs.begin())->SetActive(true);
+					(*inputs.begin())->CreateTextLayout();
+				}
 
 				return true;
 			}

@@ -4,7 +4,7 @@
 constexpr char ACCOUNT_EXISTS_QUERY[] = "SELECT id FROM Accounts WHERE account_name = '%s' LIMIT 1;";
 constexpr char CHARACTER_EXISTS_QUERY[] = "SELECT id FROM Characters WHERE character_name = '%s' LIMIT 1;";
 constexpr char CREATE_ACCOUNT_QUERY[] = "INSERT INTO Accounts (account_name, hashed_password) VALUES('%s', '%s');";
-constexpr char CREATE_CHARACTER_QUERY[] = "INSERT INTO Characters (character_name, account_id, position_x, position_y, position_z) VALUES('%s', '%d', 0.0, 0.0, 0.0);";
+constexpr char CREATE_CHARACTER_QUERY[] = "INSERT INTO Characters (character_name, account_id, position_x, position_y, position_z, model_id, texture_id, agility, strength, wisdom, intelligence, charisma, luck, endurance, health, max_health, mana, max_mana, stamina, max_stamina) VALUES('%s', '%d', 0.0, 0.0, 0.0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 100, 100, 100, 100, 100, 100);";
 constexpr char GET_ACCOUNT_QUERY[] = "SELECT * FROM Accounts WHERE account_name = '%s' LIMIT 1;";
 constexpr char LIST_CHARACTERS_QUERY[] = "SELECT * FROM Characters WHERE account_id = '%d';";
 constexpr char DELETE_CHARACTER_QUERY[] = "DELETE FROM Characters WHERE character_name = '%s';";
@@ -90,7 +90,7 @@ void ServerRepository::CreateCharacter(const std::string& characterName, const i
 {
 	const auto dbConnection = GetConnection();
 
-	char query[300];
+	char query[500];
 	sprintf_s(query, CREATE_CHARACTER_QUERY, characterName.c_str(), accountId);
 
 	const auto statement = PrepareStatement(dbConnection, query);

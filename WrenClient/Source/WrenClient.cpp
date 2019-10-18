@@ -184,8 +184,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		else if (!s_in_sizemove && game)
 		{
-			e = std::make_unique<WindowResizeEvent>(LOWORD(lParam), HIWORD(lParam));
-			eventHandler.QueueEvent(e);
+			game->OnWindowSizeChanged(LOWORD(lParam), HIWORD(lParam));
 		}
 		break;
 
@@ -200,10 +199,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			RECT rc;
 			GetClientRect(hWnd, &rc);
 
-			const auto width = static_cast<float>(rc.right - rc.left);
-			const auto height = static_cast<float>(rc.bottom - rc.top);
-			e = std::make_unique<WindowResizeEvent>(width, height);
-			eventHandler.QueueEvent(e);
+			game->OnWindowSizeChanged(rc.right - rc.left, rc.bottom - rc.top);
 		}
 		break;
 

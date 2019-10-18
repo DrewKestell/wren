@@ -48,9 +48,6 @@ void UIInput::Initialize(
 			labelTextLayout.ReleaseAndGetAddressOf()
 		)
 	);
-
-	const auto position = GetWorldPosition();
-	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x + labelWidth + 10, position.y, position.x + labelWidth + inputWidth, position.y + height), 3.0f, 3.0f), inputGeometry.ReleaseAndGetAddressOf());
 }
 
 void UIInput::Draw()
@@ -80,6 +77,7 @@ const bool UIInput::HandleEvent(const Event* const event)
 	{
 		case EventType::LeftMouseDown:
 		{
+			const auto wasActive = active;
 			active = false;
 
 			const auto mouseDownEvent = (MouseEvent*)event;
@@ -88,9 +86,10 @@ const bool UIInput::HandleEvent(const Event* const event)
 			{
 				const auto position = GetWorldPosition();
 				if (Utility::DetectClick(position.x + labelWidth, position.y, position.x + inputWidth + labelWidth, position.y + height, mouseDownEvent->mousePosX, mouseDownEvent->mousePosY))
-				{
 					active = true;
-				}
+
+				if(wasActive != active)
+					CreateTextLayout();
 			}
 
 			break;
@@ -147,6 +146,11 @@ const bool UIInput::HandleEvent(const Event* const event)
 				isVisible = false;
 
 			break;
+		}
+		case EventType::WindowResize:
+		{
+			const auto position = GetWorldPosition();
+			deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x + labelWidth + 10, position.y, position.x + labelWidth + inputWidth, position.y + height), 3.0f, 3.0f), inputGeometry.ReleaseAndGetAddressOf());
 		}
 	}
 

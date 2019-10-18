@@ -8,7 +8,6 @@ UISkillListing::UISkillListing(UIComponentArgs uiComponentArgs, WrenCommon::Skil
 	  value{ skill->value },
 	  name{ skill->name }
 {
-	SetValue(skill->value);
 }
 
 void UISkillListing::Initialize(ID2D1SolidColorBrush* textBrush, IDWriteTextFormat* textFormat)

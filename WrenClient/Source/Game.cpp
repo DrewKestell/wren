@@ -114,6 +114,12 @@ void Game::CreateWindowSizeDependentResources()
 	if (abilities.size() > 0)
 		InitializeAbilitiesContainer();
 
+	for (auto uiComponent : uiComponents)
+		uiComponent->SetLocalPosition(uiComponent->calculatePosition(clientWidth, clientHeight));
+
+	std::unique_ptr<Event> e = std::make_unique<WindowResizeEvent>(clientWidth, clientHeight);
+	eventHandler.QueueEvent(e);
+
 	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 }
 
@@ -764,7 +770,7 @@ void Game::RecreateCharacterListings(const std::vector<std::unique_ptr<std::stri
 
 	for (auto i = 0; i < characterNames.size(); i++)
 	{
-		characterList.push_back(std::make_unique<UICharacterListing>(UIComponentArgs{ deviceResources.get(), uiComponents, [i](const float, const float) { return XMFLOAT2{ 25.0f, 100.0f + (i * 40.0f) }; }, CharacterSelect, 1 }, eventHandler, 260.0f, 30.0f, characterNames.at(i)->c_str()));
+		characterList.push_back(std::make_unique<UICharacterListing>(UIComponentArgs{ deviceResources.get(), uiComponents, [i](const float, const float) { return XMFLOAT2{ 25.0f, 100.0f + (i * 40.0f) }; }, CharacterSelect, 1 }, eventHandler, 260.0f, 30.0f, characterNames.at(i)->c_str(), clientWidth, clientHeight));
 		characterList.at(i)->Initialize(whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get());
 	}
 }
@@ -929,7 +935,13 @@ void Game::OnWindowMoved()
 
 void Game::OnWindowSizeChanged(int width, int height)
 {
-	
+	if (!deviceResources->WindowSizeChanged(width, height))
+		return;
+
+	clientWidth = width;
+	clientHeight = height;
+
+	CreateWindowSizeDependentResources();
 }
 #pragma endregion
 
@@ -1194,7 +1206,7 @@ void Game::CreateEventHandlers()
 		};
 
 		// init characterHUD
-		characterHUD = std::make_unique<UICharacterHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 12.0f }; }, InGame, 0 }, statsComponent, derivedEvent->name.c_str());
+		characterHUD = std::make_unique<UICharacterHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 12.0f }; }, InGame, 0 }, statsComponent, derivedEvent->name.c_str(), clientWidth, clientHeight);
 		InitializeCharacterHUD();
 
 		std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
@@ -1472,23 +1484,5 @@ void Game::CreateEventHandlers()
 			if (!statsComponent.alive)
 				lootPanel->ToggleVisibility();
 		}
-	};
-
-	eventHandlers[EventType::WindowResize] = [this](const Event* const event)
-	{
-		const auto derivedEvent = (WindowResizeEvent*)event;
-
-		if (!deviceResources->WindowSizeChanged(derivedEvent->width, derivedEvent->height))
-			return;
-
-		clientWidth = derivedEvent->width;
-		clientHeight = derivedEvent->height;
-
-		for (auto uiComponent : uiComponents)
-			uiComponent->calculatePosition(clientWidth, clientHeight);
-								
-		CreateWindowSizeDependentResources();
-
-		//SetActiveLayer(activeLayer);
 	};
 }

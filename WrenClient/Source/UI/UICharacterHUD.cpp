@@ -8,11 +8,15 @@ using namespace DX;
 UICharacterHUD::UICharacterHUD(
 	UIComponentArgs uiComponentArgs,
 	StatsComponent& statsComponent,
-	const char* nameText)
+	const char* nameText,
+	const float clientWidth,
+	const float clientHeight)
 	: UIComponent(uiComponentArgs),
 	  statsComponent{ statsComponent },
 	  nameText{ nameText }
 {
+	localPosition = uiComponentArgs.calculatePosition(clientWidth, clientHeight);
+	CreateGeometry();
 }
 
 void UICharacterHUD::Initialize(
@@ -119,15 +123,22 @@ const bool UICharacterHUD::HandleEvent(const Event* const event)
 		}
 		case EventType::WindowResize:
 		{
-			const auto position = GetWorldPosition();
+			CreateGeometry();
 
-			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y, position.x + 80.0f, position.y + 80.0f), characterPortraitGeometry.ReleaseAndGetAddressOf());
-			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 80.0f, position.y + 10.0f, position.x + 240.0f, position.y + 80.0f), statsContainerGeometry.ReleaseAndGetAddressOf());
-			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 34.0f, position.x + 232.0f, position.y + 44.0f), maxHealthGeometry.ReleaseAndGetAddressOf());
-			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 48.0f, position.x + 232.0f, position.y + 58.0f), maxManaGeometry.ReleaseAndGetAddressOf());
-			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 62.0f, position.x + 232.0f, position.y + 72.0f), maxStaminaGeometry.ReleaseAndGetAddressOf());
+			break;
 		}
 	}
 
 	return false;
+}
+
+void UICharacterHUD::CreateGeometry()
+{
+	const auto position = GetWorldPosition();
+
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y, position.x + 80.0f, position.y + 80.0f), characterPortraitGeometry.ReleaseAndGetAddressOf());
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 80.0f, position.y + 10.0f, position.x + 240.0f, position.y + 80.0f), statsContainerGeometry.ReleaseAndGetAddressOf());
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 34.0f, position.x + 232.0f, position.y + 44.0f), maxHealthGeometry.ReleaseAndGetAddressOf());
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 48.0f, position.x + 232.0f, position.y + 58.0f), maxManaGeometry.ReleaseAndGetAddressOf());
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 88.0f, position.y + 62.0f, position.x + 232.0f, position.y + 72.0f), maxStaminaGeometry.ReleaseAndGetAddressOf());
 }
