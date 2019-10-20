@@ -28,9 +28,7 @@ public:
 	UICharacterHUD(
 		UIComponentArgs uiComponentArgs,
 		StatsComponent& statsComponent,
-		const char* nameText,
-		const float clientWidth,
-		const float clientHeight);
+		const char* nameText);
 	void Initialize(
 		IDWriteTextFormat* textFormat,
 		ID2D1SolidColorBrush* healthBrush,

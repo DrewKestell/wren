@@ -2,7 +2,6 @@
 #include "UILootContainer.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "../Events/DoubleLeftMouseDownEvent.h"
-#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/LootItemSuccessEvent.h"
 
 UILootContainer::UILootContainer(
@@ -12,18 +11,14 @@ UILootContainer::UILootContainer(
 	StatsComponentManager& statsComponentManager,
 	InventoryComponentManager& inventoryComponentManager,
 	std::vector<std::unique_ptr<Item>>& allItems,
-	std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures,
-	const float clientWidth,
-	const float clientHeight)
+	std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures)
 	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  socketManager{ socketManager },
 	  statsComponentManager{ statsComponentManager },
 	  inventoryComponentManager{ inventoryComponentManager },
 	  allItems{ allItems },
-	  allTextures{ allTextures },
-	  clientWidth{ clientWidth },
-	  clientHeight{ clientHeight }
+	  allTextures{ allTextures }
 {
 }
 
@@ -34,7 +29,6 @@ void UILootContainer::Initialize(
 	ID3D11PixelShader* pixelShader,
 	const BYTE* vertexShaderBuffer,
 	const int vertexShaderSize,
-	const XMMATRIX projectionTransform,
 	ID2D1SolidColorBrush* bodyBrush,
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1SolidColorBrush* textBrush,
@@ -48,7 +42,6 @@ void UILootContainer::Initialize(
 	this->pixelShader = pixelShader;
 	this->vertexShaderBuffer = vertexShaderBuffer;
 	this->vertexShaderSize = vertexShaderSize;
-	this->projectionTransform = projectionTransform;
 	this->bodyBrush = bodyBrush;
 	this->borderBrush = borderBrush;
 	this->textBrush = textBrush;
@@ -69,6 +62,9 @@ void UILootContainer::Draw()
 
 const bool UILootContainer::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{
@@ -116,9 +112,9 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 							const auto yOffset = 25.0f + ((i / 3) * 45.0f);
 							const auto texture = allTextures.at(item->GetSpriteId()).Get();
 							const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
-							uiItems.push_back(std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, 3 }, eventHandler, socketManager, itemId, item->GetName(), item->GetDescription(), clientWidth, clientHeight));
-							uiItems.at(i)->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
+							uiItems.push_back(std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, 3 }, eventHandler, socketManager, itemId, item->GetName(), item->GetDescription()));
 							AddChildComponent(*uiItems.at(i).get());
+							uiItems.at(i)->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
 						}
 					}
 
@@ -146,10 +142,7 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 		}
 		case EventType::WindowResize:
 		{
-			const auto derivedEvent = (WindowResizeEvent*)event;
-
-			clientWidth = derivedEvent->width;
-			clientHeight = derivedEvent->height;
+			// TODO
 
 			break;
 		}

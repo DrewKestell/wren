@@ -66,6 +66,9 @@ void UISkillListing::CreateValueTextLayout()
 
 const bool UISkillListing::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{

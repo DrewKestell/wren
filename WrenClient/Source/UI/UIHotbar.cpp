@@ -1,17 +1,16 @@
 #include "stdafx.h"
 #include "UIHotbar.h"
 #include "Events/UIAbilityDroppedEvent.h"
-#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/StartDraggingUIAbilityEvent.h"
 
+extern float g_clientHeight;
+
 UIHotbar::UIHotbar(
 	UIComponentArgs uiComponentArgs,
-	EventHandler& eventHandler,
-	const float clientHeight)
+	EventHandler& eventHandler)
 	: UIComponent(uiComponentArgs),
-	  eventHandler{ eventHandler },
-	  clientHeight{ clientHeight }
+	  eventHandler{ eventHandler }
 {
 }
 
@@ -30,6 +29,9 @@ void UIHotbar::Draw()
 
 const bool UIHotbar::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{
@@ -64,7 +66,7 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (UIAbilityDroppedEvent*)event;
 
-			const auto index = Utility::GetHotbarIndex(clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
+			const auto index = Utility::GetHotbarIndex(g_clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
 
 			if (index >= 0)
 			{
@@ -104,10 +106,6 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 		}
 		case EventType::WindowResize:
 		{
-			const auto derivedEvent = (WindowResizeEvent*)event;
-
-			clientHeight = derivedEvent->height;
-
 			const auto position = GetWorldPosition();
 			const auto width = 40.0f;
 

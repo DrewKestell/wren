@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Events/WindowResizeEvent.h"
 #include "EventHandling/Events/SystemKeyUpEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
@@ -46,7 +45,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		return 1;
 
 	// Create window
-	RECT rc = { 0, 0, long{ CLIENT_WIDTH }, long{ CLIENT_HEIGHT } };
+	RECT rc = { 0, 0, long{ static_cast<int>(CLIENT_WIDTH) }, long{ static_cast<int>(CLIENT_HEIGHT) } };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 	// TODO: Change to CreateWindowExW(WS_EX_TOPMOST, L"Direct3D_Win32_Game1WindowClass", L"Direct3D Win32 Game1", WS_POPUP,
@@ -186,6 +185,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			game->OnWindowSizeChanged(LOWORD(lParam), HIWORD(lParam));
 		}
+		else if (s_in_sizemove && game)
+		{
+			// figure out what's going on with the weird resizing behavior while dragging...
+			//game->OnWindowSizeChanged(LOWORD(lParam), HIWORD(lParam));
+		}
 		break;
 
 	case WM_ENTERSIZEMOVE:
@@ -276,6 +280,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEMOVE:
 		e = std::make_unique<MouseEvent>(EventType::MouseMove, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
 		eventHandler.QueueEvent(e);
+
+		if (s_in_sizemove)
+		{
+			RECT rc;
+			GetClientRect(hWnd, &rc);
+
+			game->OnWindowSizeChanged(rc.right - rc.left, rc.bottom - rc.top);
+		}
 		break;
 
 	case WM_SYSKEYDOWN:
@@ -289,7 +301,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				ShowWindow(hWnd, SW_SHOWNORMAL);
 
-				SetWindowPos(hWnd, nullptr, 0, 0, CLIENT_WIDTH, CLIENT_HEIGHT, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+				SetWindowPos(hWnd, nullptr, 0, 0, static_cast<int>(CLIENT_WIDTH), static_cast<int>(CLIENT_HEIGHT), SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
 			}
 			else
 			{

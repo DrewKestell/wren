@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "UIButton.h"
-#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 
@@ -68,6 +67,9 @@ void UIButton::Draw()
 
 const bool UIButton::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{

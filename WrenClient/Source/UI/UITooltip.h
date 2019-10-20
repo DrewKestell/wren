@@ -16,6 +16,8 @@ class UITooltip : public UIComponent
 	ComPtr<ID2D1RoundedRectangleGeometry> bodyGeometry;
 	ComPtr<IDWriteTextLayout> headerTextLayout;
 	ComPtr<IDWriteTextLayout> bodyTextLayout;
+
+	void CreateGeometry();
 public:
 	UITooltip(
 		UIComponentArgs uiComponentArgs,

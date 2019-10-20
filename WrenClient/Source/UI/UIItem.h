@@ -14,8 +14,6 @@ class UIItem : public UIComponent
 	const int itemId;
 	const std::string& name;
 	const std::string& description;
-	float clientWidth;
-	float clientHeight;
 	bool isDragging;
 	float lastDragX;
 	float lastDragY;
@@ -26,7 +24,6 @@ class UIItem : public UIComponent
 	ID2D1SolidColorBrush* highlightBrush{ nullptr };
 	const BYTE* vertexShaderBuffer{ nullptr };
 	int vertexShaderSize{ 0 };
-	XMMATRIX projectionTransform{ XMMatrixIdentity() };
 	ID2D1SolidColorBrush* bodyBrush{ nullptr };
 	ID2D1SolidColorBrush* borderBrush{ nullptr };
 	ID2D1SolidColorBrush* textBrush{ nullptr };
@@ -47,8 +44,6 @@ public:
 		const int itemId,
 		const std::string& name,
 		const std::string& description,
-		const float clientWidth,
-		const float clientHeight,
 		const bool isDragging = false,
 		const float mousePosX = 0.0f,
 		const float mousePosY = 0.0f);
@@ -60,7 +55,6 @@ public:
 		ID2D1SolidColorBrush* highlightBrush,
 		const BYTE* vertexShaderBuffer,
 		const int vertexShaderSize,
-		const XMMATRIX projectionTransform,
 		ID2D1SolidColorBrush* bodyBrush,
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1SolidColorBrush* textBrush,

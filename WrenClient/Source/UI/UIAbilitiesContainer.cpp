@@ -1,19 +1,14 @@
 #include "stdafx.h"
 #include "UIAbilitiesContainer.h"
-#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 
 using namespace DX;
 
 UIAbilitiesContainer::UIAbilitiesContainer(
 	UIComponentArgs uiComponentArgs,
-	EventHandler& eventHandler,
-	const float clientWidth,
-	const float clientHeight)
+	EventHandler& eventHandler)
 	: UIComponent(uiComponentArgs),
-	  eventHandler{ eventHandler },
-	  clientWidth{ clientWidth },
-	  clientHeight{ clientHeight }
+	  eventHandler{ eventHandler }
 {
 }
 
@@ -27,8 +22,7 @@ void UIAbilitiesContainer::Initialize(
 	ID3D11VertexShader* vertexShader,
 	ID3D11PixelShader* pixelShader,
 	const BYTE* vertexShaderBuffer,
-	const int vertexShaderSize,
-	const XMMATRIX projectionTransform)
+	const int vertexShaderSize)
 {
 	this->borderBrush = borderBrush;
 	this->highlightBrush = highlightBrush;
@@ -40,7 +34,6 @@ void UIAbilitiesContainer::Initialize(
 	this->pixelShader = pixelShader;
 	this->vertexShaderBuffer = vertexShaderBuffer;
 	this->vertexShaderSize = vertexShaderSize;
-	this->projectionTransform = projectionTransform;
 }
 
 void UIAbilitiesContainer::Draw()
@@ -70,6 +63,9 @@ void UIAbilitiesContainer::Draw()
 
 const bool UIAbilitiesContainer::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{
@@ -86,10 +82,8 @@ const bool UIAbilitiesContainer::HandleEvent(const Event* const event)
 		}
 		case EventType::WindowResize:
 		{
-			const auto derivedEvent = (WindowResizeEvent*)event;
 
-			clientWidth = derivedEvent->width;
-			clientHeight = derivedEvent->height;
+			// TODO
 
 			break;
 		}
@@ -129,10 +123,10 @@ void UIAbilitiesContainer::AddAbility(Ability* ability, ID3D11ShaderResourceView
 	auto positionY = worldPos.y + yOffset;
 
 	// create UIAbility
-	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility(UIComponentArgs(deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, 3), eventHandler, ability->abilityId, ability->toggled, clientWidth, clientHeight));
-	uiAbility->Initialize(vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, projectionTransform);
-	uiAbilities.push_back(uiAbility);
+	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility(UIComponentArgs(deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, 3), eventHandler, ability->abilityId, ability->toggled));
 	this->AddChildComponent(*uiAbility);
+	uiAbility->Initialize(vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize);
+	uiAbilities.push_back(uiAbility);
 }
 
 const std::string UIAbilitiesContainer::GetUIAbilityDragBehavior() const

@@ -17,6 +17,6 @@ class Sprite
 	ID3D11ShaderResourceView* texture;
 	
 public:
-	Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture, const BYTE* vertexShaderBuffer, const int vertexShaderSize, ID3D11Device* device, const float originX, const float originY, const float width, const float height);
-	void Draw(ID3D11DeviceContext* immediateContext, const XMMATRIX projectionTransform);
+	Sprite(ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture, const BYTE* vertexShaderBuffer, const int vertexShaderSize, ID3D11Device* device, const float originX, const float originY, const float width, const float height, const unsigned int zIndex);
+	void Draw(ID3D11DeviceContext* immediateContext);
 };

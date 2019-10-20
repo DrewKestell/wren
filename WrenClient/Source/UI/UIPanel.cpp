@@ -28,17 +28,8 @@ void UIPanel::Initialize(
 	ID2D1SolidColorBrush* borderBrush)
 {
 	this->headerBrush = headerBrush;
-	this->bodyBrush;
-	this->borderBrush;
-
-	const auto position = GetWorldPosition();
-	float startHeight = position.y;
-	if (isDraggable)
-	{
-		deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT), 3.0f, 3.0f), headerGeometry.ReleaseAndGetAddressOf());
-		startHeight += HEADER_HEIGHT;
-	}
-	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, startHeight, position.x + width, startHeight + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
+	this->bodyBrush = bodyBrush;
+	this->borderBrush = borderBrush;
 }
 
 void UIPanel::Draw()
@@ -66,6 +57,9 @@ void UIPanel::Draw()
 
 const bool UIPanel::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{
@@ -176,6 +170,19 @@ const bool UIPanel::HandleEvent(const Event* const event)
 
 			break;
 		}
+		case EventType::WindowResize:
+		{
+			const auto position = GetWorldPosition();
+			float startHeight = position.y;
+			if (isDraggable)
+			{
+				deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, position.y, position.x + width, position.y + HEADER_HEIGHT), 3.0f, 3.0f), headerGeometry.ReleaseAndGetAddressOf());
+				startHeight += HEADER_HEIGHT;
+			}
+			deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(position.x, startHeight, position.x + width, startHeight + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
+			
+			break;
+		}
 	}
 
 	return false;
@@ -205,7 +212,8 @@ void UIPanel::BringToFront(UIComponent* uiComponent)
 	for (auto i = 0; i < children.size(); i++)
 	{
 		auto uiComponent = (UIComponent*)children.at(i);
-		uiComponent->zIndex = g_zIndex;
+		if (uiComponent->followParentZIndex)
+		  uiComponent->zIndex = g_zIndex;
 
 		BringToFront(uiComponent);
 	}

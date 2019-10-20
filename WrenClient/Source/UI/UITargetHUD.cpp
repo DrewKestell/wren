@@ -30,12 +30,6 @@ void UITargetHUD::Initialize(
 	this->statBorderBrush = statBorderBrush;
 	this->nameBrush = nameBrush;
 	this->whiteBrush = whiteBrush;
-
-	const auto position = GetWorldPosition();
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y + 10.0f, position.x + 160.0f, position.y + 80.0f), statsContainerGeometry.ReleaseAndGetAddressOf());
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 8.0f, position.y + 34.0f, position.x + 152.0f, position.y + 44.0f), maxHealthGeometry.ReleaseAndGetAddressOf());
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 8.0f, position.y + 48.0f, position.x + 152.0f, position.y + 58.0f), maxManaGeometry.ReleaseAndGetAddressOf());
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 8.0f, position.y + 62.0f, position.x + 152.0f, position.y + 72.0f), maxStaminaGeometry.ReleaseAndGetAddressOf());
 }
 
 void UITargetHUD::Draw()
@@ -76,6 +70,9 @@ void UITargetHUD::Draw()
 
 const bool UITargetHUD::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{
@@ -133,6 +130,16 @@ const bool UITargetHUD::HandleEvent(const Event* const event)
 		case EventType::UnsetTarget:
 		{
 			isVisible = false;
+
+			break;
+		}
+		case EventType::WindowResize:
+		{
+			const auto position = GetWorldPosition();
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x, position.y + 10.0f, position.x + 160.0f, position.y + 80.0f), statsContainerGeometry.ReleaseAndGetAddressOf());
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 8.0f, position.y + 34.0f, position.x + 152.0f, position.y + 44.0f), maxHealthGeometry.ReleaseAndGetAddressOf());
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 8.0f, position.y + 48.0f, position.x + 152.0f, position.y + 58.0f), maxManaGeometry.ReleaseAndGetAddressOf());
+			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + 8.0f, position.y + 62.0f, position.x + 152.0f, position.y + 72.0f), maxStaminaGeometry.ReleaseAndGetAddressOf());
 
 			break;
 		}

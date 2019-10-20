@@ -8,14 +8,11 @@ using namespace DX;
 UICharacterHUD::UICharacterHUD(
 	UIComponentArgs uiComponentArgs,
 	StatsComponent& statsComponent,
-	const char* nameText,
-	const float clientWidth,
-	const float clientHeight)
+	const char* nameText)
 	: UIComponent(uiComponentArgs),
 	  statsComponent{ statsComponent },
 	  nameText{ nameText }
 {
-	localPosition = uiComponentArgs.calculatePosition(clientWidth, clientHeight);
 	CreateGeometry();
 }
 
@@ -90,6 +87,9 @@ void UICharacterHUD::Draw()
 
 const bool UICharacterHUD::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{

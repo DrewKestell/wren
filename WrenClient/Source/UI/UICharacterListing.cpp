@@ -10,16 +10,13 @@ UICharacterListing::UICharacterListing(
 	EventHandler& eventHandler,
 	const float width,
 	const float height,
-	const char* characterName,
-	const float clientWidth,
-	const float clientHeight)
+	const char* characterName)
 	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  width{ width },
 	  height{ height },
 	  characterName{ characterName }
 {
-	localPosition = uiComponentArgs.calculatePosition(clientWidth, clientHeight);
 	CreateGeometry();
 }
 
@@ -65,6 +62,9 @@ void UICharacterListing::Draw()
 
 const bool UICharacterListing::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{

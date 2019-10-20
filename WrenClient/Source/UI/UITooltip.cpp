@@ -6,7 +6,7 @@ UITooltip::UITooltip(
 	EventHandler& eventHandler,
 	const std::string& headerText,
 	const std::string& bodyText)
-	: UIComponent(uiComponentArgs, false),
+	: UIComponent(uiComponentArgs, false, false),
 	  eventHandler{ eventHandler },
 	  headerText{ headerText },
 	  bodyText{ bodyText }
@@ -28,6 +28,8 @@ void UITooltip::Initialize(
 
 	deviceResources->GetWriteFactory()->CreateTextLayout(Utility::s2ws(headerText).c_str(), headerText.size(), textFormatTitle, 300.0f, 0.0f, headerTextLayout.ReleaseAndGetAddressOf());
 	deviceResources->GetWriteFactory()->CreateTextLayout(Utility::s2ws(bodyText).c_str(), bodyText.size(), textFormatDescription, 300.0f, 0.0f, bodyTextLayout.ReleaseAndGetAddressOf());
+
+	CreateGeometry();
 }
 
 void UITooltip::Draw()
@@ -44,21 +46,29 @@ void UITooltip::Draw()
 
 const bool UITooltip::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{
 		case EventType::WindowResize:
 		{
-			DWRITE_TEXT_METRICS textMetrics;
-			bodyTextLayout->GetMetrics(&textMetrics);
-			const auto width = textMetrics.width + 16.0f;
-			const auto height = textMetrics.height + 36.0f;
+			CreateGeometry();
 
-			const auto pos = GetWorldPosition();
-			deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(pos.x, pos.y, pos.x + width, pos.y + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
-		
 			break;
 		}
 	}
 	return false;
 } 
+
+void UITooltip::CreateGeometry()
+{
+	DWRITE_TEXT_METRICS textMetrics;
+	bodyTextLayout->GetMetrics(&textMetrics);
+	const auto width = textMetrics.width + 16.0f;
+	const auto height = textMetrics.height + 36.0f;
+
+	const auto pos = GetWorldPosition();
+	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(pos.x, pos.y, pos.x + width, pos.y + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
+}

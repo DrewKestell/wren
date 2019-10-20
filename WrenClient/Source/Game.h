@@ -85,8 +85,6 @@ private:
 	float mousePosX{ 0.0f };
 	float mousePosY{ 0.0f };
 	XMFLOAT3 rightMouseDownDir{ VEC_ZERO };
-	int clientWidth{ CLIENT_WIDTH };
-	int clientHeight{ CLIENT_HEIGHT };
 	std::vector<std::unique_ptr<UICharacterListing>> characterList;
 	std::map<int, std::unique_ptr<UISkillListing>> skillList;
 	std::string characterNamePendingDeletion{};

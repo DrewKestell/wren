@@ -2,8 +2,8 @@
 
 #include <OpCodes.h>
 
-constexpr auto CLIENT_WIDTH = 1400;
-constexpr auto CLIENT_HEIGHT = 900;
+constexpr auto CLIENT_WIDTH = 1400.0f;
+constexpr auto CLIENT_HEIGHT = 900.0f;
 constexpr unsigned __int64 TIMEOUT_DURATION = 30000; // 30000ms == 30s
 constexpr auto UPDATE_FREQUENCY = 0.01666666666f;
 constexpr auto PLAYER_SPEED = 60.0f;

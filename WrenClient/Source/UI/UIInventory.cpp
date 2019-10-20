@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "UIInventory.h"
-#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/LootItemSuccessEvent.h"
 
@@ -9,16 +8,12 @@ UIInventory::UIInventory(
 	EventHandler& eventHandler,
 	ClientSocketManager& socketManager,
 	std::vector<std::unique_ptr<Item>>& allItems,
-	std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures,
-	const float clientWidth,
-	const float clientHeight)
+	std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures)
 	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  socketManager{ socketManager },
 	  allItems{ allItems },
-	  allTextures{ allTextures },
-	  clientWidth{ clientWidth },
-	  clientHeight{ clientHeight }
+	  allTextures{ allTextures }
 {
 }
 
@@ -29,7 +24,6 @@ void UIInventory::Initialize(
 	ID3D11PixelShader* pixelShader,
 	const BYTE* vertexShaderBuffer,
 	const int vertexShaderSize,
-	const XMMATRIX projectionTransform,
 	ID2D1SolidColorBrush* bodyBrush,
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1SolidColorBrush* textBrush,
@@ -43,7 +37,6 @@ void UIInventory::Initialize(
 	this->pixelShader = pixelShader;
 	this->vertexShaderBuffer = vertexShaderBuffer;
 	this->vertexShaderSize = vertexShaderSize;
-	this->projectionTransform = projectionTransform;
 	this->bodyBrush = bodyBrush;
 	this->borderBrush = borderBrush;
 	this->textBrush = textBrush;
@@ -64,6 +57,9 @@ void UIInventory::Draw()
 
 const bool UIInventory::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{
@@ -95,10 +91,10 @@ const bool UIInventory::HandleEvent(const Event* const event)
 				const auto posY = 25.0f + (row * 45.0f);
 				const auto texture = allTextures.at(item->GetSpriteId()).Get();
 				const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
-				uiItems.at(destinationSlot) = std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, [posX, posY](const float, const float) { return XMFLOAT2{ posX + 2.0f, posY + 2.0f }; }, uiLayer, zIndex + 1 }, eventHandler, socketManager, item->GetId(), item->GetName(), item->GetDescription(), clientWidth, clientHeight);
-				uiItems.at(destinationSlot)->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
-				uiItems.at(destinationSlot)->isVisible = isVisible;
+				uiItems.at(destinationSlot) = std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, [posX, posY](const float, const float) { return XMFLOAT2{ posX + 2.0f, posY + 2.0f }; }, uiLayer, zIndex + 1 }, eventHandler, socketManager, item->GetId(), item->GetName(), item->GetDescription());
 				AddChildComponent(*uiItems.at(destinationSlot).get());
+				uiItems.at(destinationSlot)->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
+				uiItems.at(destinationSlot)->isVisible = isVisible;
 
 				std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
 				eventHandler.QueueEvent(e);
@@ -108,10 +104,7 @@ const bool UIInventory::HandleEvent(const Event* const event)
 		}
 		case EventType::WindowResize:
 		{
-			const auto derivedEvent = (WindowResizeEvent*)event;
-
-			clientWidth = derivedEvent->width;
-			clientHeight = derivedEvent->height;
+			// todo
 
 			break;
 		}

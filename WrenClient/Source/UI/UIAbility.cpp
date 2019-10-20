@@ -1,19 +1,20 @@
 #include "stdafx.h"
 #include "UIAbility.h"
-#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/ActivateAbilityEvent.h"
 #include "EventHandling/Events/StartDraggingUIAbilityEvent.h"
 #include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
 #include "Events/UIAbilityDroppedEvent.h"
 
+extern float g_clientWidth;
+extern float g_clientHeight;
+extern XMMATRIX g_projectionTransform;
+
 UIAbility::UIAbility(
 	UIComponentArgs uiComponentArgs,
 	EventHandler& eventHandler,
 	const int abilityId,
 	const bool toggled,
-	const float clientWidth,
-	const float clientHeight,
 	const bool isDragging,
 	const float mousePosX,
 	const float mousePosY)
@@ -21,8 +22,6 @@ UIAbility::UIAbility(
 	  eventHandler{ eventHandler },
 	  abilityId{ abilityId },
 	  toggled{ toggled },
-	  clientWidth{ clientWidth },
-	  clientHeight{ clientHeight },
 	  isDragging{ isDragging },
 	  lastDragX{ mousePosX },
 	  lastDragY{ mousePosY }
@@ -37,8 +36,7 @@ void UIAbility::Initialize(
 	ID2D1SolidColorBrush* abilityPressedBrush,
 	ID2D1SolidColorBrush* abilityToggledBrush,
 	const BYTE* vertexShaderBuffer,
-	const int vertexShaderSize,
-	const XMMATRIX projectionTransform
+	const int vertexShaderSize
 )
 {
 	this->vertexShader = vertexShader;
@@ -49,7 +47,6 @@ void UIAbility::Initialize(
 	this->abilityToggledBrush = abilityToggledBrush;
 	this->vertexShaderBuffer = vertexShaderBuffer;
 	this->vertexShaderSize = vertexShaderSize;
-	this->projectionTransform = projectionTransform;
 }
 
 void UIAbility::Draw()
@@ -70,10 +67,10 @@ void UIAbility::Draw()
 	CXMMATRIX view = XMMatrixIdentity();
 	CXMMATRIX world = XMMatrixIdentity();
 
-	auto res = XMVector3Unproject(v, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, view, world);
+	auto res = XMVector3Unproject(v, 0.0f, 0.0f, g_clientWidth, g_clientHeight, 0.0f, 1000.0f, g_projectionTransform, view, world);
 	XMFLOAT3 vec;
 	XMStoreFloat3(&vec, res);
-	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_WIDTH, SPRITE_WIDTH);
+	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_WIDTH, SPRITE_WIDTH, zIndex);
 
 	if (isHovered && !isDragging)
 	{
@@ -87,7 +84,7 @@ void UIAbility::Draw()
 
 	deviceResources->GetD2DDeviceContext()->EndDraw();
 
-	sprite->Draw(deviceResources->GetD3DDeviceContext(), projectionTransform);
+	sprite->Draw(deviceResources->GetD3DDeviceContext());
 
 	deviceResources->GetD2DDeviceContext()->BeginDraw();
 
@@ -97,6 +94,9 @@ void UIAbility::Draw()
 
 const bool UIAbility::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{
@@ -132,8 +132,9 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 					if (dragBehavior == "COPY")
 					{
-						abilityCopy = new UIAbility(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, 2 }, eventHandler, abilityId, toggled, clientWidth, clientHeight, true, mousePosX, mousePosY);
-						abilityCopy->Initialize(vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, projectionTransform);
+						abilityCopy = new UIAbility(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, zIndex + 1 }, eventHandler, abilityId, toggled, true, mousePosX, mousePosY);
+						abilityCopy->Initialize(vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize);
+						abilityCopy->SetLocalPosition(XMFLOAT2{ mousePosX - (SPRITE_WIDTH / 2), mousePosY - (SPRITE_WIDTH / 2) });
 						abilityCopy->isVisible = true;
 						abilityCopy->isToggled = isToggled;
 					}
@@ -144,7 +145,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 						lastDragY = mousePosY;
 					}
 
-					std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(clientHeight, mousePosX, mousePosY));
+					std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(g_clientHeight, mousePosX, mousePosY));
 					eventHandler.QueueEvent(e);
 				}
 
@@ -228,10 +229,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 		}
 		case EventType::WindowResize:
 		{
-			const auto derivedEvent = (WindowResizeEvent*)event;
-
-			clientWidth = derivedEvent->width;
-			clientHeight = derivedEvent->height;
+			// TODO
 
 			break;
 		}

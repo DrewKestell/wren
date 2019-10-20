@@ -12,7 +12,7 @@ protected:
 	DX::DeviceResources* deviceResources;
 	std::vector<UIComponent*>& uiComponents;
 	const Layer uiLayer;
-	XMFLOAT2 localPosition{ 0.0f, 0.0f };
+	XMFLOAT2 localPosition;
 	UIComponent* parent{ nullptr };
 	std::vector<UIComponent*> children;
 	
@@ -20,9 +20,10 @@ public:
 	bool isVisible{ false };
 	unsigned int zIndex;
 	const bool followParentVisibility;
+	const bool followParentZIndex;
 	const std::function<XMFLOAT2(const float width, const float height)> calculatePosition;
 
-	UIComponent(UIComponentArgs uiComponentArgs, const bool followParentVisibility = true);
+	UIComponent(UIComponentArgs uiComponentArgs, const bool followParentVisibility = true, const bool followParentZIndex = true);
 	void Translate(XMFLOAT2 vector) { localPosition = localPosition + vector; }
 	std::vector<UIComponent*>& GetChildren() { return children; }
 	XMFLOAT2 GetWorldPosition() const;
@@ -42,6 +43,7 @@ public:
 	virtual const std::string GetUIAbilityDragBehavior() const { return "NONE"; }
 	virtual const std::string GetUIItemDragBehavior() const { return "NONE"; }
 	virtual const std::string GetUIItemRightClickBehavior() const { return "NONE"; }
+	const bool HandleEvent(const Event* const event) override;
 	virtual void Draw() = 0;
 	~UIComponent();
 };

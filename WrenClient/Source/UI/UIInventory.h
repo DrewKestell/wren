@@ -12,8 +12,6 @@ class UIInventory : public UIComponent
 	ClientSocketManager& socketManager;
 	std::vector<std::unique_ptr<Item>>& allItems;
 	std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures;
-	float clientWidth;
-	float clientHeight;
 	std::vector<Item*> items = std::vector<Item*>(INVENTORY_SIZE, nullptr);
 	std::vector<std::unique_ptr<UIItem>> uiItems = std::vector<std::unique_ptr<UIItem>>(INVENTORY_SIZE);
 	ID2D1SolidColorBrush* brush{ nullptr };
@@ -22,7 +20,6 @@ class UIInventory : public UIComponent
 	ID3D11PixelShader* pixelShader{ nullptr };
 	const BYTE* vertexShaderBuffer{ nullptr };
 	int vertexShaderSize{ 0 };
-	XMMATRIX projectionTransform{ XMMatrixIdentity() };
 	ID2D1SolidColorBrush* bodyBrush{ nullptr };
 	ID2D1SolidColorBrush* borderBrush{ nullptr };
 	ID2D1SolidColorBrush* textBrush{ nullptr };
@@ -39,9 +36,7 @@ public:
 		EventHandler& eventHandler,
 		ClientSocketManager& socketManager,
 		std::vector<std::unique_ptr<Item>>& allItems,
-		std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures,
-		const float clientWidth,
-		const float clientHeight);
+		std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures);
 	void Initialize(
 		ID2D1SolidColorBrush* brush,
 		ID2D1SolidColorBrush* highlightBrush,
@@ -49,7 +44,6 @@ public:
 		ID3D11PixelShader* pixelShader,
 		const BYTE* vertexShaderBuffer,
 		const int vertexShaderSize,
-		const XMMATRIX projectionTransform,
 		ID2D1SolidColorBrush* bodyBrush,
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1SolidColorBrush* textBrush,

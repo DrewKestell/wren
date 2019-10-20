@@ -2,7 +2,6 @@
 #include "Game.h"
 #include "ConstantBufferOnce.h"
 #include "Events/SkillIncreaseEvent.h"
-#include "Events/WindowResizeEvent.h"
 #include "Events/DoubleLeftMouseDownEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
@@ -21,6 +20,9 @@
 #include "EventHandling/Events/ServerMessageEvent.h"
 
 unsigned int g_zIndex{ 0 };
+float g_clientWidth{ CLIENT_WIDTH };
+float g_clientHeight{ CLIENT_HEIGHT };
+XMMATRIX g_projectionTransform{ XMMatrixIdentity() };
 
 bool CompareUIComponents(UIComponent* a, UIComponent* b) { return (a->zIndex < b->zIndex); }
 
@@ -60,7 +62,7 @@ void Game::Initialize(HWND window, int width, int height)
 	CreatePanels();
 
 	targetHUD = std::make_unique<UITargetHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 260.0f, 12.0f }; }, InGame, 0 });
-	hotbar = std::make_unique<UIHotbar>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float height) { return XMFLOAT2{ 5.0f, height - 45.0f }; }, InGame, 0 }, eventHandler, (float)clientHeight);
+	hotbar = std::make_unique<UIHotbar>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float height) { return XMFLOAT2{ 5.0f, height - 45.0f }; }, InGame, 0 }, eventHandler);
 	textWindow = std::make_unique<UITextWindow>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float height) { return XMFLOAT2{ 5.0f, height - 300.0f }; }, InGame, 0 }, eventHandler, objectManager, items, textWindowMessages, textWindowMessageIndex.get());
 
 	deviceResources->SetWindow(window, width, height);
@@ -87,6 +89,7 @@ void Game::CreateDeviceDependentResources()
 	InitializeInputs();
 	InitializeButtons();
 	InitializeLabels();
+	InitializePanels();
 	InitializeStaticObjects();
 
 	InitializeAbilitiesContainer();
@@ -106,7 +109,7 @@ void Game::CreateDeviceDependentResources()
 // Allocate all memory resources that change on a window SizeChanged event.
 void Game::CreateWindowSizeDependentResources()
 {
-	projectionTransform = XMMatrixOrthographicLH((float)clientWidth, (float)clientHeight, 0.0f, 5000.0f);
+	g_projectionTransform = XMMatrixOrthographicLH(g_clientWidth, g_clientHeight, 0.0f, 5000.0f);
 
 	if (skills.size() > 0)
 		skillsContainer->Initialize(blackBrush.Get(), textFormatFPS.Get(), skills);
@@ -114,10 +117,7 @@ void Game::CreateWindowSizeDependentResources()
 	if (abilities.size() > 0)
 		InitializeAbilitiesContainer();
 
-	for (auto uiComponent : uiComponents)
-		uiComponent->SetLocalPosition(uiComponent->calculatePosition(clientWidth, clientHeight));
-
-	std::unique_ptr<Event> e = std::make_unique<WindowResizeEvent>(clientWidth, clientHeight);
+	std::unique_ptr<Event> e = std::make_unique<Event>(EventType::WindowResize);
 	eventHandler.QueueEvent(e);
 
 	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
@@ -359,7 +359,7 @@ void Game::CreatePanels()
 	mousePosLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 22.0f }; }, InGame, 2 }, 280.0f);
 	diagnosticsPanel->AddChildComponent(*mousePosLabel);
 
-	fpsTextLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 46.0f }; }, InGame, 2 }, 280.0f);
+	fpsTextLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 36.0f }; }, InGame, 2 }, 280.0f);
 	diagnosticsPanel->AddChildComponent(*fpsTextLabel);
 
 	pingTextLabel = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 50.0f }; }, InGame, 2 }, 280.0f);
@@ -378,7 +378,7 @@ void Game::CreatePanels()
 	abilitiesPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 240.0f);
 	abilitiesPanel->AddChildComponent(*abilitiesPanelHeader);
 
-	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, (float)clientWidth, (float)clientHeight);
+	abilitiesContainer = std::make_unique<UIAbilitiesContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler);
 	abilitiesPanel->AddChildComponent(*abilitiesContainer);
 
 	// Loot
@@ -387,7 +387,7 @@ void Game::CreatePanels()
 	lootPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 140.0f);
 	lootPanel->AddChildComponent(*lootPanelHeader);
 
-	lootContainer = std::make_unique<UILootContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, statsComponentManager, inventoryComponentManager, items, textures, (float)clientWidth, (float)clientHeight);
+	lootContainer = std::make_unique<UILootContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, statsComponentManager, inventoryComponentManager, items, textures);
 	lootPanel->AddChildComponent(*lootContainer);
 
 	// Inventory
@@ -396,7 +396,7 @@ void Game::CreatePanels()
 	inventoryPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 185.0f);
 	inventoryPanel->AddChildComponent(*inventoryPanelHeader);
 
-	inventory = std::make_unique<UIInventory>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, items, textures, (float)clientWidth, (float)clientHeight);
+	inventory = std::make_unique<UIInventory>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, items, textures);
 	inventoryPanel->AddChildComponent(*inventory);
 
 	if (player)
@@ -738,8 +738,7 @@ void Game::InitializeStaticObjects()
 
 void Game::InitializeAbilitiesContainer()
 {
-	abilitiesContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform);
-
+	abilitiesContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size);
 	abilitiesContainer->ClearAbilities();
 	for (auto i = 0; i < abilities.size(); i++)
 	{
@@ -750,12 +749,12 @@ void Game::InitializeAbilitiesContainer()
 
 void Game::InitializeLootContainer()
 {
-	lootContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
+	lootContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
 }
 
 void Game::InitializeInventory()
 {
-	inventory->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, projectionTransform, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
+	inventory->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
 }
 
 void Game::InitializeCharacterHUD()
@@ -770,7 +769,7 @@ void Game::RecreateCharacterListings(const std::vector<std::unique_ptr<std::stri
 
 	for (auto i = 0; i < characterNames.size(); i++)
 	{
-		characterList.push_back(std::make_unique<UICharacterListing>(UIComponentArgs{ deviceResources.get(), uiComponents, [i](const float, const float) { return XMFLOAT2{ 25.0f, 100.0f + (i * 40.0f) }; }, CharacterSelect, 1 }, eventHandler, 260.0f, 30.0f, characterNames.at(i)->c_str(), clientWidth, clientHeight));
+		characterList.push_back(std::make_unique<UICharacterListing>(UIComponentArgs{ deviceResources.get(), uiComponents, [i](const float, const float) { return XMFLOAT2{ 25.0f, 100.0f + (i * 40.0f) }; }, CharacterSelect, 1 }, eventHandler, 260.0f, 30.0f, characterNames.at(i)->c_str()));
 		characterList.at(i)->Initialize(whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get());
 	}
 }
@@ -870,9 +869,9 @@ void Game::Render(const float updateTimer)
 		d3dContext->RSSetState(solidRasterState.Get());
 		//d3dContext->RSSetState(wireframeRasterState);
 
-		gameMapRenderComponent->Draw(d3dContext, viewTransform, projectionTransform);
+		gameMapRenderComponent->Draw(d3dContext, viewTransform, g_projectionTransform);
 
-		renderComponentManager.Update(d3dContext, viewTransform, projectionTransform, updateTimer);
+		renderComponentManager.Update(d3dContext, viewTransform, g_projectionTransform, updateTimer);
 	}
 
 	// foreach RenderComponent -> Draw
@@ -938,8 +937,8 @@ void Game::OnWindowSizeChanged(int width, int height)
 	if (!deviceResources->WindowSizeChanged(width, height))
 		return;
 
-	clientWidth = width;
-	clientHeight = height;
+	g_clientWidth = width;
+	g_clientHeight = height;
 
 	CreateWindowSizeDependentResources();
 }
@@ -1052,7 +1051,7 @@ void Game::CreateEventHandlers()
 
 		const auto derivedEvent = (MouseEvent*)event;
 
-		const auto dir = Utility::MousePosToDirection(static_cast<float>(clientWidth), static_cast<float>(clientHeight), derivedEvent->mousePosX, derivedEvent->mousePosY);
+		const auto dir = Utility::MousePosToDirection(g_clientWidth, g_clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
 		std::vector<std::string> args{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
 		socketManager.SendPacket(OpCode::PlayerRightMouseDown, args);
 
@@ -1078,7 +1077,7 @@ void Game::CreateEventHandlers()
 
 		if (activeLayer == Layer::InGame && rightMouseDownDir != VEC_ZERO)
 		{
-			const auto dir = Utility::MousePosToDirection(static_cast<float>(clientWidth), static_cast<float>(clientHeight), derivedEvent->mousePosX, derivedEvent->mousePosY);
+			const auto dir = Utility::MousePosToDirection(g_clientWidth, g_clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
 			if (dir != rightMouseDownDir)
 			{
 				std::vector<std::string> args{ std::to_string(dir.x), std::to_string(dir.y), std::to_string(dir.z) };
@@ -1206,7 +1205,7 @@ void Game::CreateEventHandlers()
 		};
 
 		// init characterHUD
-		characterHUD = std::make_unique<UICharacterHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 12.0f }; }, InGame, 0 }, statsComponent, derivedEvent->name.c_str(), clientWidth, clientHeight);
+		characterHUD = std::make_unique<UICharacterHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 12.0f }; }, InGame, 0 }, statsComponent, derivedEvent->name.c_str());
 		InitializeCharacterHUD();
 
 		std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
@@ -1376,8 +1375,8 @@ void Game::CreateEventHandlers()
 
 			XMVECTOR roScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 0.0f, 1.0f);
 			XMVECTOR rdScreen = XMVectorSet(derivedEvent->mousePosX, derivedEvent->mousePosY, 1.0f, 1.0f);
-			XMVECTOR ro = XMVector3Unproject(roScreen, 0.0f, 0.0f, (float)clientWidth, (float)clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
-			XMVECTOR rd = XMVector3Unproject(rdScreen, 0.0f, 0.0f, (float)clientWidth, (float)clientHeight, 0.0f, 1000.0f, projectionTransform, viewTransform, worldTransform);
+			XMVECTOR ro = XMVector3Unproject(roScreen, 0.0f, 0.0f, g_clientWidth, g_clientHeight, 0.0f, 1000.0f, g_projectionTransform, viewTransform, worldTransform);
+			XMVECTOR rd = XMVector3Unproject(rdScreen, 0.0f, 0.0f, g_clientWidth, g_clientHeight, 0.0f, 1000.0f, g_projectionTransform, viewTransform, worldTransform);
 			rd = XMVector3Normalize(rd - ro);
 
 			RenderComponent& renderComponent = renderComponentManager.GetComponentById(gameObject.renderComponentId);

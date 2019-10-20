@@ -14,8 +14,6 @@ static constexpr auto ABILITIES_CONTAINER_BORDER_WIDTH = 40.0f;
 class UIAbilitiesContainer : public UIComponent
 {
 	EventHandler& eventHandler;
-	float clientWidth;
-	float clientHeight;
 	ID2D1SolidColorBrush* borderBrush{ nullptr };
 	ID2D1SolidColorBrush* highlightBrush{ nullptr };
 	ID2D1SolidColorBrush* headerBrush{ nullptr };
@@ -26,7 +24,6 @@ class UIAbilitiesContainer : public UIComponent
 	ID3D11PixelShader* pixelShader{ nullptr };
 	const BYTE* vertexShaderBuffer{ nullptr };
 	int vertexShaderSize{ 0 };
-	XMMATRIX projectionTransform{ XMMatrixIdentity() };
 	std::vector<Ability*> abilities;
 	std::vector<ComPtr<IDWriteTextLayout>> headers;
 	std::vector<ComPtr<ID2D1RectangleGeometry>> borderGeometries;
@@ -34,9 +31,7 @@ class UIAbilitiesContainer : public UIComponent
 public:
 	UIAbilitiesContainer(
 		UIComponentArgs uiComponentArgs,
-		EventHandler& eventHandler,
-		const float clientWidth,
-		const float clientHeight);
+		EventHandler& eventHandler);
 	void Initialize(
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1SolidColorBrush* highlightBrush,
@@ -47,9 +42,7 @@ public:
 		ID3D11VertexShader* vertexShader,
 		ID3D11PixelShader* pixelShader,
 		const BYTE* vertexShaderBuffer,
-		const int vertexShaderSize,
-		const XMMATRIX projectionTransform
-	);
+		const int vertexShaderSize);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	void ClearAbilities();

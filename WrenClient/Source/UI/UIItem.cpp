@@ -1,9 +1,13 @@
 #include "stdafx.h"
 #include "UIItem.h"
-#include "../Events/WindowResizeEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "Events/UIItemDroppedEvent.h"
 #include "UILootContainer.h"
+
+
+extern float g_clientWidth;
+extern float g_clientHeight;
+extern XMMATRIX g_projectionTransform;
 
 UIItem::UIItem(
 	UIComponentArgs uiComponentArgs,
@@ -12,8 +16,6 @@ UIItem::UIItem(
 	const int itemId,
 	const std::string& name,
 	const std::string& description,
-	const float clientWidth,
-	const float clientHeight,
 	const bool isDragging,
 	const float mousePosX,
 	const float mousePosY)
@@ -23,15 +25,10 @@ UIItem::UIItem(
 	  itemId{ itemId },
 	  name{ name },
 	  description{ description },
-	  clientWidth{ clientWidth },
-	  clientHeight{ clientHeight },
 	  isDragging{ isDragging },
 	  lastDragX{ mousePosX },
 	  lastDragY{ mousePosY }
 {
-	tooltip = std::make_unique<UITooltip>(UIComponentArgs{ deviceResources, uiComponents, [](const float, const float) { return XMFLOAT2{ -3.0f, 42.0f }; }, uiLayer, zIndex + 1 }, eventHandler, name, description);
-	tooltip->Initialize(bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
-	AddChildComponent(*tooltip.get());
 }
 
 void UIItem::Initialize(
@@ -42,7 +39,6 @@ void UIItem::Initialize(
 	ID2D1SolidColorBrush* highlightBrush,
 	const BYTE* vertexShaderBuffer,
 	const int vertexShaderSize,
-	const XMMATRIX projectionTransform,
 	ID2D1SolidColorBrush* bodyBrush,
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1SolidColorBrush* textBrush,
@@ -57,12 +53,15 @@ void UIItem::Initialize(
 	this->highlightBrush = highlightBrush;
 	this->vertexShaderBuffer = vertexShaderBuffer;
 	this->vertexShaderSize = vertexShaderSize;
-	this->projectionTransform = projectionTransform;
 	this->bodyBrush = bodyBrush;
 	this->borderBrush = borderBrush;
 	this->textBrush = textBrush;
 	this->textFormatTitle = textFormatTitle;
 	this->textFormatDescription = textFormatDescription;
+
+	tooltip = std::make_unique<UITooltip>(UIComponentArgs{ deviceResources, uiComponents, [](const float, const float) { return XMFLOAT2{ -3.0f, 42.0f }; }, uiLayer, 9999 }, eventHandler, name, description);
+	AddChildComponent(*tooltip.get());
+	tooltip->Initialize(bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
 }
 
 void UIItem::Draw()
@@ -79,10 +78,10 @@ void UIItem::Draw()
 	CXMMATRIX view = XMMatrixIdentity();
 	CXMMATRIX world = XMMatrixIdentity();
 
-	auto res = XMVector3Unproject(v, 0.0f, 0.0f, clientWidth, clientHeight, 0.0f, 1000.0f, projectionTransform, view, world);
+	auto res = XMVector3Unproject(v, 0.0f, 0.0f, g_clientWidth, g_clientHeight, 0.0f, 1000.0f, g_projectionTransform, view, world);
 	XMFLOAT3 vec;
 	XMStoreFloat3(&vec, res);
-	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_SIZE, SPRITE_SIZE);
+	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_SIZE, SPRITE_SIZE, zIndex);
 
 	if (isHovered && !isDragging)
 	{
@@ -91,13 +90,16 @@ void UIItem::Draw()
 
 	deviceResources->GetD2DDeviceContext()->EndDraw();
 
-	sprite->Draw(deviceResources->GetD3DDeviceContext(), projectionTransform);
+	sprite->Draw(deviceResources->GetD3DDeviceContext());
 
 	deviceResources->GetD2DDeviceContext()->BeginDraw();
 }
 
 const bool UIItem::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{
@@ -132,8 +134,8 @@ const bool UIItem::HandleEvent(const Event* const event)
 				// if the button is pressed, and the mouse starts moving, let's move the UIItem
 				if (isPressed && !isDragging && !itemCopy)
 				{
-					itemCopy = new UIItem(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, 2 }, eventHandler, socketManager, itemId, name, description,  clientWidth, clientHeight, true, mousePosX, mousePosY);
-					itemCopy->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, projectionTransform, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
+					itemCopy = new UIItem(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, 2 }, eventHandler, socketManager, itemId, name, description, true, mousePosX, mousePosY);
+					itemCopy->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
 					itemCopy->isVisible = true;
 
 					/*std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(clientHeight, mousePosX, mousePosY));
@@ -222,10 +224,7 @@ const bool UIItem::HandleEvent(const Event* const event)
 		}
 		case EventType::WindowResize:
 		{
-			const auto derivedEvent = (WindowResizeEvent*)event;
-
-			clientWidth = derivedEvent->width;
-			clientHeight = derivedEvent->height;
+			// TODO
 
 			break;
 		}

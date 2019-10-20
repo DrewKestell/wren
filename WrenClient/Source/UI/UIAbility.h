@@ -14,8 +14,6 @@ class UIAbility : public UIComponent
 	EventHandler& eventHandler;
 	const int abilityId;
 	bool toggled;
-	float clientWidth;
-	float clientHeight;
 	bool isDragging;
 	float lastDragX;
 	float lastDragY;
@@ -27,7 +25,6 @@ class UIAbility : public UIComponent
 	ID2D1SolidColorBrush* abilityToggledBrush{ nullptr };
 	const BYTE* vertexShaderBuffer{ nullptr };
 	int vertexShaderSize{ 0 };
-	XMMATRIX projectionTransform{ XMMatrixIdentity() };
 	ComPtr<ID2D1RectangleGeometry> highlightGeometry;
 	ComPtr<ID2D1RectangleGeometry> toggledGeometry;
 	std::shared_ptr<Sprite> sprite;
@@ -41,8 +38,6 @@ public:
 		EventHandler& eventHandler,
 		const int abilityId,
 		const bool toggled,
-		const float clientWidth,
-		const float clientHeight,
 		const bool isDragging = false,
 		const float mousePosX = 0.0f,
 		const float mousePosY = 0.0f);
@@ -54,9 +49,7 @@ public:
 		ID2D1SolidColorBrush* abilityPressedBrush,
 		ID2D1SolidColorBrush* abilityToggledBrush,
 		const BYTE* vertexShaderBuffer,
-		const int vertexShaderSize,
-		const XMMATRIX projectionTransform
-	);
+		const int vertexShaderSize);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 };

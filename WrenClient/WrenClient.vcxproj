@@ -175,7 +175,6 @@
     <ClInclude Include="Source\Events\SkillIncreaseEvent.h" />
     <ClInclude Include="Source\Events\UIAbilityDroppedEvent.h" />
     <ClInclude Include="Source\Events\UIItemDroppedEvent.h" />
-    <ClInclude Include="Source\Events\WindowResizeEvent.h" />
     <ClInclude Include="Source\Game.h" />
     <ClInclude Include="Source\LoginState.h" />
     <ClInclude Include="Source\Mesh.h" />

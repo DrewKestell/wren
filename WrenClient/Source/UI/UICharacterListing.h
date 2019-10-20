@@ -25,9 +25,7 @@ public:
 		EventHandler& eventHandler,
 		const float width,
 		const float height,
-		const char* text,
-		const float clientWidth,
-		const float clientHeight);
+		const char* text);
 	void Initialize(
 		ID2D1SolidColorBrush* brush,
 		ID2D1SolidColorBrush* selectedBrush,

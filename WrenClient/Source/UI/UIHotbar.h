@@ -9,7 +9,6 @@
 class UIHotbar : public UIComponent
 {
 	EventHandler& eventHandler;
-	float clientHeight;
 	ID2D1SolidColorBrush* brush;
 	char draggingIndex{ -1 };
 	ComPtr<ID2D1RectangleGeometry> geometry[10];
@@ -18,8 +17,7 @@ class UIHotbar : public UIComponent
 public:
 	UIHotbar(
 		UIComponentArgs uiComponentArgs,
-		EventHandler& eventHandler,
-		const float clientHeight);
+		EventHandler& eventHandler);
 	void Initialize(ID2D1SolidColorBrush* brush);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;

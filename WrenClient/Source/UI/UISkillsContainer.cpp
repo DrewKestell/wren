@@ -25,8 +25,8 @@ void UISkillsContainer::Initialize(
 		const auto posX = 2.0f;
 		const auto posY = (14.0f * i) + 22.0f;
 		skillListings[i] = std::make_unique<UISkillListing>(UIComponentArgs{ deviceResources, uiComponents, [posX, posY](const float, const float) { return XMFLOAT2{ posX, posY }; }, InGame, 3 }, skills.at(i).get());
-		skillListings[i]->Initialize(brush, textFormat);
 		this->AddChildComponent(*skillListings[i].get());
+		skillListings[i]->Initialize(brush, textFormat);
 	}
 }
 
@@ -36,6 +36,9 @@ void UISkillsContainer::Draw()
 
 const bool UISkillsContainer::HandleEvent(const Event* const event)
 {
+	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
+	UIComponent::HandleEvent(event);
+
 	const auto type = event->type;
 	switch (type)
 	{
