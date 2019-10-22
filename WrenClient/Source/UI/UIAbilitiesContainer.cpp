@@ -123,9 +123,10 @@ void UIAbilitiesContainer::AddAbility(Ability* ability, ID3D11ShaderResourceView
 	auto positionY = worldPos.y + yOffset;
 
 	// create UIAbility
-	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility(UIComponentArgs(deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, 3), eventHandler, ability->abilityId, ability->toggled));
+	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility(UIComponentArgs(deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, zIndex + 1), eventHandler, ability->abilityId, ability->toggled));
 	this->AddChildComponent(*uiAbility);
 	uiAbility->Initialize(vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize);
+	uiAbility->isVisible = isVisible;
 	uiAbilities.push_back(uiAbility);
 }
 
@@ -136,8 +137,7 @@ const std::string UIAbilitiesContainer::GetUIAbilityDragBehavior() const
 
 void UIAbilitiesContainer::ClearAbilities()
 {
-	for (auto i = 0; i < abilities.size(); i++)
-		delete abilities.at(i);
+	ClearChildren();
 	abilities.clear();
 	headers.clear();
 	borderGeometries.clear();

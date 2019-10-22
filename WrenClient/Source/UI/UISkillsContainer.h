@@ -10,7 +10,7 @@ class UISkillsContainer : public UIComponent
 {
 	ID2D1SolidColorBrush* brush{ nullptr };
 	IDWriteTextFormat* textFormat{ nullptr };
-	std::unique_ptr<UISkillListing>* skillListings;
+	std::vector<std::unique_ptr<UISkillListing>> skillListings;
 public:
 	UISkillsContainer(UIComponentArgs uiComponentArgs);
 	void Initialize(
