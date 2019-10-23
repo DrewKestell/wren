@@ -10,15 +10,13 @@ UILootContainer::UILootContainer(
 	ClientSocketManager& socketManager,
 	StatsComponentManager& statsComponentManager,
 	InventoryComponentManager& inventoryComponentManager,
-	std::vector<std::unique_ptr<Item>>& allItems,
-	std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures)
+	std::vector<std::unique_ptr<Item>>& allItems)
 	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
 	  socketManager{ socketManager },
 	  statsComponentManager{ statsComponentManager },
 	  inventoryComponentManager{ inventoryComponentManager },
-	  allItems{ allItems },
-	  allTextures{ allTextures }
+	  allItems{ allItems }
 {
 }
 
@@ -33,7 +31,8 @@ void UILootContainer::Initialize(
 	ID2D1SolidColorBrush* borderBrush,
 	ID2D1SolidColorBrush* textBrush,
 	IDWriteTextFormat* textFormatTitle,
-	IDWriteTextFormat* textFormatDescription
+	IDWriteTextFormat* textFormatDescription,
+	std::vector<ComPtr<ID3D11ShaderResourceView>>* allTextures
 )
 {
 	this->brush = brush;
@@ -47,6 +46,7 @@ void UILootContainer::Initialize(
 	this->textBrush = textBrush;
 	this->textFormatTitle = textFormatTitle;
 	this->textFormatDescription = textFormatDescription;
+	this->allTextures = allTextures;
 }
 
 void UILootContainer::Draw()
@@ -110,8 +110,8 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 
 							const auto xOffset = 5.0f + ((i % 3) * 45.0f);
 							const auto yOffset = 25.0f + ((i / 3) * 45.0f);
-							const auto texture = allTextures.at(item->GetSpriteId()).Get();
-							const auto grayTexture = allTextures.at(item->GetGraySpriteId()).Get();
+							const auto texture = allTextures->at(item->GetSpriteId()).Get();
+							const auto grayTexture = allTextures->at(item->GetGraySpriteId()).Get();
 							uiItems.push_back(std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, 3 }, eventHandler, socketManager, itemId, item->GetName(), item->GetDescription()));
 							AddChildComponent(*uiItems.at(i).get());
 							uiItems.at(i)->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);

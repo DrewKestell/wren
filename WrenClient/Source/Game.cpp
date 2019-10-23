@@ -92,7 +92,8 @@ void Game::CreateDeviceDependentResources()
 	InitializePanels();
 	InitializeStaticObjects();
 
-	InitializeAbilitiesContainer();
+	skillsContainer->Initialize(blackBrush.Get(), textFormatFPS.Get());
+	abilitiesContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, &textures);
 	InitializeLootContainer();
 	InitializeInventory();
 
@@ -110,12 +111,6 @@ void Game::CreateDeviceDependentResources()
 void Game::CreateWindowSizeDependentResources()
 {
 	g_projectionTransform = XMMatrixOrthographicLH(g_clientWidth, g_clientHeight, 0.0f, 5000.0f);
-
-	if (skills.size() > 0)
-		skillsContainer->Initialize(blackBrush.Get(), textFormatFPS.Get(), skills);
-
-	if (abilities.size() > 0)
-		InitializeAbilitiesContainer();
 
 	std::unique_ptr<Event> e = std::make_unique<Event>(EventType::WindowResize);
 	eventHandler.QueueEvent(e);
@@ -387,7 +382,7 @@ void Game::CreatePanels()
 	lootPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 3 }, 140.0f);
 	lootPanel->AddChildComponent(*lootPanelHeader);
 
-	lootContainer = std::make_unique<UILootContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, statsComponentManager, inventoryComponentManager, items, textures);
+	lootContainer = std::make_unique<UILootContainer>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 0.0f }; }, InGame, 2 }, eventHandler, socketManager, statsComponentManager, inventoryComponentManager, items);
 	lootPanel->AddChildComponent(*lootContainer);
 
 	// Inventory
@@ -736,20 +731,9 @@ void Game::InitializeStaticObjects()
 	}
 }
 
-void Game::InitializeAbilitiesContainer()
-{
-	abilitiesContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size);
-	abilitiesContainer->ClearAbilities();
-	for (auto i = 0; i < abilities.size(); i++)
-	{
-		Ability* ability = abilities.at(i).get();
-		abilitiesContainer->AddAbility(ability, textures.at(ability->spriteId).Get());
-	}
-}
-
 void Game::InitializeLootContainer()
 {
-	lootContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
+	lootContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get(), &textures);
 }
 
 void Game::InitializeInventory()
@@ -1189,12 +1173,12 @@ void Game::CreateEventHandlers()
 		if (skills.size() > 0)
 			skills.clear();
 		skills = std::move(derivedEvent->skills);
-		skillsContainer->Initialize(blackBrush.Get(), textFormatFPS.Get(), skills);
-
+		skillsContainer->SetSkills(&skills);
+		
 		if (abilities.size() > 0)
 			abilities.clear();
 		abilities = std::move(derivedEvent->abilities);
-		InitializeAbilitiesContainer();
+		abilitiesContainer->SetAbilities(&abilities);
 
 		inventory->playerId = player.GetId();
 

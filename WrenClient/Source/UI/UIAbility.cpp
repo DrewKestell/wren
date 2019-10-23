@@ -6,6 +6,8 @@
 #include "EventHandling/Events/ActivateAbilitySuccessEvent.h"
 #include "Events/UIAbilityDroppedEvent.h"
 
+using namespace DX;
+
 extern float g_clientWidth;
 extern float g_clientHeight;
 extern XMMATRIX g_projectionTransform;
@@ -13,14 +15,14 @@ extern XMMATRIX g_projectionTransform;
 UIAbility::UIAbility(
 	UIComponentArgs uiComponentArgs,
 	EventHandler& eventHandler,
-	const int abilityId,
+	Ability* ability,
 	const bool toggled,
 	const bool isDragging,
 	const float mousePosX,
 	const float mousePosY)
 	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler },
-	  abilityId{ abilityId },
+	  ability{ ability },
 	  toggled{ toggled },
 	  isDragging{ isDragging },
 	  lastDragX{ mousePosX },
@@ -29,24 +31,41 @@ UIAbility::UIAbility(
 }
 
 void UIAbility::Initialize(
+	IDWriteTextFormat* headerTextFormat,
 	ID3D11VertexShader* vertexShader,
 	ID3D11PixelShader* pixelShader,
 	ID3D11ShaderResourceView* texture,
+	ID2D1SolidColorBrush* borderBrush,
+	ID2D1SolidColorBrush* headerBrush,
 	ID2D1SolidColorBrush* highlightBrush,
 	ID2D1SolidColorBrush* abilityPressedBrush,
 	ID2D1SolidColorBrush* abilityToggledBrush,
 	const BYTE* vertexShaderBuffer,
-	const int vertexShaderSize
-)
+	const int vertexShaderSize)
 {
+	this->headerTextFormat = headerTextFormat;
 	this->vertexShader = vertexShader;
 	this->pixelShader = pixelShader;
 	this->texture = texture;
+	this->borderBrush = borderBrush;
+	this->headerBrush = headerBrush;
 	this->highlightBrush = highlightBrush;
 	this->abilityPressedBrush = abilityPressedBrush;
 	this->abilityToggledBrush = abilityToggledBrush;
 	this->vertexShaderBuffer = vertexShaderBuffer;
 	this->vertexShaderSize = vertexShaderSize;
+
+	// construct the header
+	ThrowIfFailed(
+		deviceResources->GetWriteFactory()->CreateTextLayout(
+			Utility::s2ws(ability->name).c_str(),
+			static_cast<unsigned int>(ability->name.size()),
+			headerTextFormat,
+			ABILITY_HEADER_WIDTH,
+			ABILITY_HEADER_HEIGHT,
+			headerTextLayout.ReleaseAndGetAddressOf()
+		)
+	);
 }
 
 void UIAbility::Draw()
@@ -55,23 +74,13 @@ void UIAbility::Draw()
 
 	const auto worldPos = GetWorldPosition();
 
-	// create highlight
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(worldPos.x, worldPos.y, worldPos.x + HIGHLIGHT_WIDTH, worldPos.y + HIGHLIGHT_WIDTH), highlightGeometry.ReleaseAndGetAddressOf());
+	// draw border
+	deviceResources->GetD2DDeviceContext()->DrawGeometry(borderGeometry.Get(), borderBrush, 2.0f);
 
-	// create toggle geometry
-	if (toggled)
-		deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(worldPos.x, worldPos.y, worldPos.x + HIGHLIGHT_WIDTH, worldPos.y + HIGHLIGHT_WIDTH), toggledGeometry.ReleaseAndGetAddressOf());
+	// draw header
+	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(worldPos.x, worldPos.y), headerTextLayout.Get(), headerBrush);
 
-	XMFLOAT3 pos{ worldPos.x + 18.0f, worldPos.y + 18.0f, 0.0f };
-	FXMVECTOR v = XMLoadFloat3(&pos);
-	CXMMATRIX view = XMMatrixIdentity();
-	CXMMATRIX world = XMMatrixIdentity();
-
-	auto res = XMVector3Unproject(v, 0.0f, 0.0f, g_clientWidth, g_clientHeight, 0.0f, 1000.0f, g_projectionTransform, view, world);
-	XMFLOAT3 vec;
-	XMStoreFloat3(&vec, res);
-	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_WIDTH, SPRITE_WIDTH, zIndex);
-
+	//draw highlight
 	if (isHovered && !isDragging)
 	{
 		const auto thickness = isPressed ? 5.0f : 3.0f;
@@ -79,6 +88,7 @@ void UIAbility::Draw()
 		deviceResources->GetD2DDeviceContext()->DrawGeometry(highlightGeometry.Get(), brush, thickness);
 	}
 	
+	// draw toggled border
 	if (isToggled)
 		deviceResources->GetD2DDeviceContext()->DrawGeometry(highlightGeometry.Get(), abilityToggledBrush, 4.0f);
 
@@ -120,7 +130,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 			if (isVisible)
 			{
 				const auto worldPos = GetWorldPosition();
-				if (Utility::DetectClick(worldPos.x, worldPos.y, worldPos.x + 38.0f, worldPos.y + 38.0f, mousePosX, mousePosY))
+				if (Utility::DetectClick(worldPos.x, worldPos.y, worldPos.x + 38.0f, worldPos.y + 58.0f, mousePosX, mousePosY))
 					isHovered = true;
 				else
 					isHovered = false;
@@ -132,11 +142,12 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 					if (dragBehavior == "COPY")
 					{
-						abilityCopy = new UIAbility(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, zIndex + 1 }, eventHandler, abilityId, toggled, true, mousePosX, mousePosY);
-						abilityCopy->Initialize(vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize);
+						abilityCopy = new UIAbility(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, zIndex + 1 }, eventHandler, ability, toggled, true, mousePosX, mousePosY);
+						abilityCopy->Initialize(headerTextFormat, vertexShader, pixelShader, texture, borderBrush, headerBrush, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize);
 						abilityCopy->SetLocalPosition(XMFLOAT2{ mousePosX - (SPRITE_WIDTH / 2), mousePosY - (SPRITE_WIDTH / 2) });
 						abilityCopy->isVisible = true;
 						abilityCopy->isToggled = isToggled;
+						abilityCopy->CreatePositionDependentResources();
 					}
 					else if (dragBehavior == "MOVE")
 					{
@@ -189,7 +200,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 			
 			if (!isDragging && isVisible && isHovered && isPressed)
 			{
-				std::unique_ptr<Event> e = std::make_unique<ActivateAbilityEvent>(abilityId);
+				std::unique_ptr<Event> e = std::make_unique<ActivateAbilityEvent>(ability->abilityId);
 				eventHandler.QueueEvent(e);
 				stopPropagation = true;
 			}
@@ -209,7 +220,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (ActivateAbilitySuccessEvent*)event;
 
-			if (abilityId == derivedEvent->abilityId)
+			if (ability->abilityId == derivedEvent->abilityId)
 			{
 				if (toggled)
 					isToggled = !isToggled;
@@ -220,20 +231,48 @@ const bool UIAbility::HandleEvent(const Event* const event)
 		case EventType::UnsetTarget:
 		{
 			// if any abilities require a target, toggle them off
-
 			if (isToggled)
 			{
-				std::unique_ptr<Event> e = std::make_unique<ActivateAbilityEvent>(abilityId);
+				std::unique_ptr<Event> e = std::make_unique<ActivateAbilityEvent>(ability->abilityId);
 				eventHandler.QueueEvent(e);
 			}
 		}
 		case EventType::WindowResize:
 		{
-			// TODO
+			CreatePositionDependentResources();
 
 			break;
 		}
 	}
 
 	return false;
+}
+
+void UIAbility::CreatePositionDependentResources()
+{
+	const auto worldPos = GetWorldPosition();
+
+	auto positionX = worldPos.x;
+	auto positionY = worldPos.y + 20.0f;
+
+	// create border
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + ABILITY_BORDER_WIDTH, positionY + ABILITY_BORDER_WIDTH), borderGeometry.ReleaseAndGetAddressOf());
+
+	// create highlight
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + HIGHLIGHT_WIDTH, positionY + HIGHLIGHT_WIDTH), highlightGeometry.ReleaseAndGetAddressOf());
+
+	// create toggle geometry
+	if (toggled)
+		deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + HIGHLIGHT_WIDTH, positionY + HIGHLIGHT_WIDTH), toggledGeometry.ReleaseAndGetAddressOf());
+
+	// create sprite
+	XMFLOAT3 pos{ positionX + 20.0f, positionY + 20.0f, 0.0f };
+	FXMVECTOR v = XMLoadFloat3(&pos);
+	CXMMATRIX view = XMMatrixIdentity();
+	CXMMATRIX world = XMMatrixIdentity();
+
+	auto res = XMVector3Unproject(v, 0.0f, 0.0f, g_clientWidth, g_clientHeight, 0.0f, 1000.0f, g_projectionTransform, view, world);
+	XMFLOAT3 vec;
+	XMStoreFloat3(&vec, res);
+	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_WIDTH, SPRITE_WIDTH, zIndex);
 }

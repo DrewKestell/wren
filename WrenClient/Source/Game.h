@@ -145,7 +145,6 @@ private:
 	void InitializeLabels();
 	void InitializePanels();
 	void InitializeStaticObjects();
-	void InitializeAbilitiesContainer();
 	void InitializeLootContainer();
 	void InitializeInventory();
 	void InitializeCharacterHUD();

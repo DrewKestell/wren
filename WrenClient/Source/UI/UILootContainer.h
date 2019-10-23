@@ -16,7 +16,7 @@ class UILootContainer : public UIComponent
 	StatsComponentManager& statsComponentManager;
 	InventoryComponentManager& inventoryComponentManager;
 	std::vector<std::unique_ptr<Item>>& allItems;
-	std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures;
+	std::vector<ComPtr<ID3D11ShaderResourceView>>* allTextures{ nullptr };
 	ID2D1SolidColorBrush* brush{ nullptr };
 	ID2D1SolidColorBrush* highlightBrush{ nullptr };
 	ID3D11VertexShader* vertexShader{ nullptr };
@@ -43,8 +43,7 @@ public:
 		ClientSocketManager& socketManager,
 		StatsComponentManager& statsComponentManager,
 		InventoryComponentManager& inventoryComponentManager,
-		std::vector<std::unique_ptr<Item>>& allItems,
-		std::vector<ComPtr<ID3D11ShaderResourceView>>& allTextures);
+		std::vector<std::unique_ptr<Item>>& allItems);
 	void Initialize(
 		ID2D1SolidColorBrush* brush,
 		ID2D1SolidColorBrush* highlightBrush,
@@ -56,7 +55,8 @@ public:
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1SolidColorBrush* textBrush,
 		IDWriteTextFormat* textFormatTitle,
-		IDWriteTextFormat* textFormatDescription);
+		IDWriteTextFormat* textFormatDescription,
+		std::vector<ComPtr<ID3D11ShaderResourceView>>* allTextures);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	const std::string GetUIItemRightClickBehavior() const override;

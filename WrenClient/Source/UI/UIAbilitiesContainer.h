@@ -7,10 +7,6 @@
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
 
-static constexpr auto ABILITIES_CONTAINER_HEADER_WIDTH = 200.0f;
-static constexpr auto ABILITIES_CONTAINER_HEADER_HEIGHT = 30.0f;
-static constexpr auto ABILITIES_CONTAINER_BORDER_WIDTH = 40.0f;
-
 class UIAbilitiesContainer : public UIComponent
 {
 	EventHandler& eventHandler;
@@ -24,14 +20,15 @@ class UIAbilitiesContainer : public UIComponent
 	ID3D11PixelShader* pixelShader{ nullptr };
 	const BYTE* vertexShaderBuffer{ nullptr };
 	int vertexShaderSize{ 0 };
-	std::vector<Ability*> abilities;
-	std::vector<ComPtr<IDWriteTextLayout>> headers;
-	std::vector<ComPtr<ID2D1RectangleGeometry>> borderGeometries;
+	std::vector<ComPtr<ID3D11ShaderResourceView>>* allTextures{ nullptr };
+	std::vector<std::unique_ptr<Ability>>* abilities;
 	std::vector<std::shared_ptr<UIAbility>> uiAbilities;
+
+	void CreateAbilities();
+	void InitializeAbilities();
+	
 public:
-	UIAbilitiesContainer(
-		UIComponentArgs uiComponentArgs,
-		EventHandler& eventHandler);
+	UIAbilitiesContainer(UIComponentArgs uiComponentArgs, EventHandler& eventHandler);
 	void Initialize(
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1SolidColorBrush* highlightBrush,
@@ -42,10 +39,10 @@ public:
 		ID3D11VertexShader* vertexShader,
 		ID3D11PixelShader* pixelShader,
 		const BYTE* vertexShaderBuffer,
-		const int vertexShaderSize);
+		const int vertexShaderSize,
+		std::vector<ComPtr<ID3D11ShaderResourceView>>* allTextures);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
-	void ClearAbilities();
-	void AddAbility(Ability* ability, ID3D11ShaderResourceView* texture);
 	const std::string GetUIAbilityDragBehavior() const override;
+	void SetAbilities(std::vector<std::unique_ptr<Ability>>* abilities);
 };

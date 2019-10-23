@@ -33,8 +33,9 @@ void UISkillListing::Draw()
 {
 	if (!isVisible) return;
 
-	// Draw Name Text
 	const auto position = GetWorldPosition();
+
+	// Draw Name Text
 	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x, position.y), nameTextLayout.Get(), textBrush);
 
 	// Draw Value Text

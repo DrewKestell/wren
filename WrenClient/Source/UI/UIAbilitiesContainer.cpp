@@ -2,11 +2,7 @@
 #include "UIAbilitiesContainer.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 
-using namespace DX;
-
-UIAbilitiesContainer::UIAbilitiesContainer(
-	UIComponentArgs uiComponentArgs,
-	EventHandler& eventHandler)
+UIAbilitiesContainer::UIAbilitiesContainer(UIComponentArgs uiComponentArgs, EventHandler& eventHandler)
 	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler }
 {
@@ -22,7 +18,8 @@ void UIAbilitiesContainer::Initialize(
 	ID3D11VertexShader* vertexShader,
 	ID3D11PixelShader* pixelShader,
 	const BYTE* vertexShaderBuffer,
-	const int vertexShaderSize)
+	const int vertexShaderSize,
+	std::vector<ComPtr<ID3D11ShaderResourceView>>* allTextures)
 {
 	this->borderBrush = borderBrush;
 	this->highlightBrush = highlightBrush;
@@ -34,31 +31,12 @@ void UIAbilitiesContainer::Initialize(
 	this->pixelShader = pixelShader;
 	this->vertexShaderBuffer = vertexShaderBuffer;
 	this->vertexShaderSize = vertexShaderSize;
+	this->allTextures = allTextures;
 }
 
 void UIAbilitiesContainer::Draw()
 {
-	if (!isVisible) return;
-
-	const auto worldPos = GetWorldPosition();
-	const auto initialSize = headers.size();
-	borderGeometries.clear();
-
-	for (auto i = 0; i < headers.size(); i++)
-	{
-		deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(worldPos.x + 12.0f, worldPos.y + 30.0f + (i * 70.0f)), headers.at(i).Get(), headerBrush);
-		// if mouse hover, draw highlight
-
-		// Draw Borders
-		ComPtr<ID2D1RectangleGeometry> borderGeometry;
-		auto xOffset = 12.0f;
-		auto yOffset = 50.0f + (borderGeometries.size() * 70.0f);
-		auto positionX = worldPos.x + xOffset;
-		auto positionY = worldPos.y + yOffset;
-		deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + ABILITIES_CONTAINER_BORDER_WIDTH, positionY + ABILITIES_CONTAINER_BORDER_WIDTH), borderGeometry.ReleaseAndGetAddressOf());
-		borderGeometries.push_back(borderGeometry);
-		deviceResources->GetD2DDeviceContext()->DrawGeometry(borderGeometries.at(i).Get(), borderBrush, 2.0f);
-	}
+	// nothing to draw - UIAbilities draw themselves
 }
 
 const bool UIAbilitiesContainer::HandleEvent(const Event* const event)
@@ -92,54 +70,45 @@ const bool UIAbilitiesContainer::HandleEvent(const Event* const event)
 	return false;
 }
 
-void UIAbilitiesContainer::AddAbility(Ability* ability, ID3D11ShaderResourceView* texture)
-{
-	// save the ability so we can rebuild this when we resize the window. might not need this!
-	abilities.push_back(ability);
-
-	auto initialSize = headers.size();
-
-	// construct the header
-	ComPtr<IDWriteTextLayout> headerTextLayout;
-
-	ThrowIfFailed(
-		deviceResources->GetWriteFactory()->CreateTextLayout(
-			Utility::s2ws(ability->name).c_str(),
-			static_cast<unsigned int>(ability->name.size()),
-			headerTextFormat,
-			ABILITIES_CONTAINER_HEADER_WIDTH,
-			ABILITIES_CONTAINER_HEADER_HEIGHT,
-			headerTextLayout.ReleaseAndGetAddressOf()
-		)
-	);
-	headers.push_back(headerTextLayout);
-
-	// create border
-	const auto worldPos = GetWorldPosition();
-	ComPtr<ID2D1RoundedRectangleGeometry> borderGeometry;
-	auto xOffset = 12.0f;
-	auto yOffset = 50.0f + (initialSize * 70.0f);
-	auto positionX = worldPos.x + xOffset;
-	auto positionY = worldPos.y + yOffset;
-
-	// create UIAbility
-	auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility(UIComponentArgs(deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, zIndex + 1), eventHandler, ability->abilityId, ability->toggled));
-	this->AddChildComponent(*uiAbility);
-	uiAbility->Initialize(vertexShader, pixelShader, texture, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize);
-	uiAbility->isVisible = isVisible;
-	uiAbilities.push_back(uiAbility);
-}
-
 const std::string UIAbilitiesContainer::GetUIAbilityDragBehavior() const
 {
 	return "COPY";
 }
 
-void UIAbilitiesContainer::ClearAbilities()
+void UIAbilitiesContainer::SetAbilities(std::vector<std::unique_ptr<Ability>>* abilities)
 {
-	ClearChildren();
-	abilities.clear();
-	headers.clear();
-	borderGeometries.clear();
 	uiAbilities.clear();
+	ClearChildren();
+
+	this->abilities = abilities;
+	CreateAbilities();
+	InitializeAbilities();
+}
+
+void UIAbilitiesContainer::CreateAbilities()
+{
+	for (auto i = 0; i < abilities->size(); i++)
+	{
+		Ability* ability = abilities->at(i).get();
+		
+		auto xOffset = 12.0f;
+		auto yOffset = 30.0f + (i * 70.0f);
+
+		auto uiAbility = std::shared_ptr<UIAbility>(new UIAbility(UIComponentArgs(deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, zIndex + 1), eventHandler, ability, ability->toggled));
+		uiAbility->isVisible = isVisible;
+		this->AddChildComponent(*uiAbility);		
+		uiAbilities.push_back(uiAbility);
+	}
+}
+
+void UIAbilitiesContainer::InitializeAbilities()
+{
+	for (auto i = 0; i < abilities->size(); i++)
+	{
+		auto uiAbility = uiAbilities.at(i);
+		auto texture = allTextures->at(abilities->at(i)->spriteId);
+
+		uiAbility->Initialize(headerTextFormat, vertexShader, pixelShader, texture.Get(), borderBrush, headerBrush, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize);		
+		uiAbility->CreatePositionDependentResources();
+	}
 }
