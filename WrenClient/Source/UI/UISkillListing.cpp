@@ -33,13 +33,14 @@ void UISkillListing::Draw()
 {
 	if (!isVisible) return;
 
+	const auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
 	const auto position = GetWorldPosition();
 
 	// Draw Name Text
-	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x, position.y), nameTextLayout.Get(), textBrush);
+	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y), nameTextLayout.Get(), textBrush);
 
 	// Draw Value Text
-	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x + 160.0f, position.y), valueTextLayout.Get(), textBrush);
+	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + 160.0f, position.y), valueTextLayout.Get(), textBrush);
 }
 
 void UISkillListing::SetValue(const int value)

@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "EventHandling/Events/SystemKeyUpEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/MouseEvent.h"
@@ -188,7 +187,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		else if (s_in_sizemove && game)
 		{
 			// figure out what's going on with the weird resizing behavior while dragging...
-			//game->OnWindowSizeChanged(LOWORD(lParam), HIWORD(lParam));
+			game->OnWindowSizeChanged(LOWORD(lParam), HIWORD(lParam));
 		}
 		break;
 

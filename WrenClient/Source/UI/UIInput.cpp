@@ -61,13 +61,12 @@ void UIInput::Draw()
 
     // Draw Input
     const float borderWeight = active ? 2.0f : 1.0f;
-	deviceResources->GetD2DDeviceContext()->FillGeometry(inputGeometry.Get(), inputBrush);
-	deviceResources->GetD2DDeviceContext()->DrawGeometry(inputGeometry.Get(), inputBorderBrush, borderWeight);
+	d2dDeviceContext->FillGeometry(inputGeometry.Get(), inputBrush);
+	d2dDeviceContext->DrawGeometry(inputGeometry.Get(), inputBorderBrush, borderWeight);
     
-    // Draw Input Text
-    
+    // Draw Input Text   
 	if (inputIndex > 0)
-		deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x + labelWidth + 14, position.y), inputValueTextLayout.Get(), inputValueBrush);
+		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + labelWidth + 14, position.y), inputValueTextLayout.Get(), inputValueBrush);
 }
 
 const bool UIInput::HandleEvent(const Event* const event)

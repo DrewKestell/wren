@@ -6,9 +6,7 @@
 
 extern float g_clientHeight;
 
-UIHotbar::UIHotbar(
-	UIComponentArgs uiComponentArgs,
-	EventHandler& eventHandler)
+UIHotbar::UIHotbar(UIComponentArgs uiComponentArgs, EventHandler& eventHandler)
 	: UIComponent(uiComponentArgs),
 	  eventHandler{ eventHandler }
 {
@@ -23,8 +21,18 @@ void UIHotbar::Draw()
 {
 	if (!isVisible) return;
 
+	const auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+
+	for (auto i = 0; i < 10; i++)		
+		d2dDeviceContext->DrawGeometry(geometry[i].Get(), brush, 2.0f);
+
 	for (auto i = 0; i < 10; i++)
-		deviceResources->GetD2DDeviceContext()->DrawGeometry(geometry[i].Get(), brush, 2.0f);
+	{
+		auto uiAbility = uiAbilities[i];
+
+		if (uiAbility)
+			uiAbility->DrawHoverAndToggledBorders();
+	}
 }
 
 const bool UIHotbar::HandleEvent(const Event* const event)
@@ -73,8 +81,9 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 				const auto xOffset = index * 40.0f;
 
 				uiAbilities[index] = derivedEvent->uiAbility;
-				uiAbilities[index]->SetLocalPosition(XMFLOAT2{ xOffset + 2.0f, 2.0f });
+				uiAbilities[index]->SetLocalPosition(XMFLOAT2{ xOffset, -20.0f });
 				uiAbilities[index]->SetParent(*this);
+				uiAbilities[index]->CreatePositionDependentResources();
 
 				// it's important that UIAbilities receive certain events (mouse clicks for example) before other
 				// UI elements, so we reorder here to make sure the UIComponents are in the right order.
@@ -106,11 +115,19 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 		}
 		case EventType::WindowResize:
 		{
+			const auto d2dFactory = deviceResources->GetD2DFactory();
 			const auto position = GetWorldPosition();
 			const auto width = 40.0f;
 
 			for (auto i = 0; i < 10; i++)
-				deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + (i * width), position.y, position.x + (i * width) + width, position.y + width), geometry[i].ReleaseAndGetAddressOf());
+			{
+				d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + (i * width), position.y, position.x + (i * width) + width, position.y + width), geometry[i].ReleaseAndGetAddressOf());
+				if (uiAbilities[i])
+				{
+					uiAbilities[i]->SetLocalPosition(XMFLOAT2{ i * width, -20.0f });
+					uiAbilities[i]->CreatePositionDependentResources();
+				}
+			}
 
 			break;
 		}

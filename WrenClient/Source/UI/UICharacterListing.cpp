@@ -49,15 +49,17 @@ void UICharacterListing::Draw()
 {
 	if (!isVisible) return;
 
+	const auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+
     // Draw Input
     const float borderWeight = selected ? 2.0f : 1.0f;
     ID2D1SolidColorBrush* color = selected ? selectedBrush : brush;
-	deviceResources->GetD2DDeviceContext()->FillGeometry(geometry.Get(), color);
-	deviceResources->GetD2DDeviceContext()->DrawGeometry(geometry.Get(), borderBrush, borderWeight);
+	d2dDeviceContext->FillGeometry(geometry.Get(), color);
+	d2dDeviceContext->DrawGeometry(geometry.Get(), borderBrush, borderWeight);
     
     // Draw Input Text
     const auto position = GetWorldPosition();
-	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x + 10.0f, position.y + 1), textLayout.Get(), textBrush); // (location + 1) looks better
+	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + 10.0f, position.y + 1), textLayout.Get(), textBrush); // (location + 1) looks better
 }
 
 const bool UICharacterListing::HandleEvent(const Event* const event)

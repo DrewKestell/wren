@@ -68,31 +68,18 @@ void UIItem::Draw()
 {
 	if (!isVisible) return;
 
-	const auto worldPos = GetWorldPosition();
-
-	// create highlight
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(worldPos.x, worldPos.y, worldPos.x + SPRITE_SIZE, worldPos.y + SPRITE_SIZE), highlightGeometry.ReleaseAndGetAddressOf());
-
-	XMFLOAT3 pos{ worldPos.x + 18.0f, worldPos.y + 18.0f, 0.0f };
-	FXMVECTOR v = XMLoadFloat3(&pos);
-	CXMMATRIX view = XMMatrixIdentity();
-	CXMMATRIX world = XMMatrixIdentity();
-
-	auto res = XMVector3Unproject(v, 0.0f, 0.0f, g_clientWidth, g_clientHeight, 0.0f, 1000.0f, g_projectionTransform, view, world);
-	XMFLOAT3 vec;
-	XMStoreFloat3(&vec, res);
-	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_SIZE, SPRITE_SIZE, zIndex);
-
+	const auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+	
 	if (isHovered && !isDragging)
 	{
-		deviceResources->GetD2DDeviceContext()->DrawGeometry(highlightGeometry.Get(), highlightBrush, 3.0f);
+		d2dDeviceContext->DrawGeometry(highlightGeometry.Get(), highlightBrush, 3.0f);
 	}
 
-	deviceResources->GetD2DDeviceContext()->EndDraw();
+	d2dDeviceContext->EndDraw();
 
 	sprite->Draw(deviceResources->GetD3DDeviceContext());
 
-	deviceResources->GetD2DDeviceContext()->BeginDraw();
+	d2dDeviceContext->BeginDraw();
 }
 
 const bool UIItem::HandleEvent(const Event* const event)
@@ -224,11 +211,30 @@ const bool UIItem::HandleEvent(const Event* const event)
 		}
 		case EventType::WindowResize:
 		{
-			// TODO
+			CreatePositionDependentResources();
 
 			break;
 		}
 	}
 
 	return false;
+}
+
+void UIItem::CreatePositionDependentResources()
+{
+	const auto worldPos = GetWorldPosition();
+
+	// create highlight
+	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(worldPos.x, worldPos.y, worldPos.x + SPRITE_SIZE, worldPos.y + SPRITE_SIZE), highlightGeometry.ReleaseAndGetAddressOf());
+
+	XMFLOAT3 pos{ worldPos.x + 18.0f, worldPos.y + 18.0f, 0.0f };
+	FXMVECTOR v = XMLoadFloat3(&pos);
+	CXMMATRIX view = XMMatrixIdentity();
+	CXMMATRIX world = XMMatrixIdentity();
+
+	auto res = XMVector3Unproject(v, 0.0f, 0.0f, g_clientWidth, g_clientHeight, 0.0f, 1000.0f, g_projectionTransform, view, world);
+	XMFLOAT3 vec;
+	XMStoreFloat3(&vec, res);
+	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_SIZE, SPRITE_SIZE, zIndex);
+
 }

@@ -9,15 +9,13 @@
 class UIHotbar : public UIComponent
 {
 	EventHandler& eventHandler;
-	ID2D1SolidColorBrush* brush;
+	ID2D1SolidColorBrush* brush{ nullptr };
 	char draggingIndex{ -1 };
 	ComPtr<ID2D1RectangleGeometry> geometry[10];
 	UIAbility* uiAbilities[10] = { nullptr };
 	
 public:
-	UIHotbar(
-		UIComponentArgs uiComponentArgs,
-		EventHandler& eventHandler);
+	UIHotbar(UIComponentArgs uiComponentArgs, EventHandler& eventHandler);
 	void Initialize(ID2D1SolidColorBrush* brush);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;

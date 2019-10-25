@@ -62,9 +62,9 @@ void UISkillsContainer::CreateSkillListings()
 	skillListings.clear();
 	ClearChildren();
 
+	const auto posX = 2.0f;
 	for (auto i = 0; i < skills->size(); i++)
 	{
-		const auto posX = 2.0f;
 		const auto posY = (14.0f * i) + 22.0f;
 		skillListings.push_back(std::make_unique<UISkillListing>(UIComponentArgs{ deviceResources, uiComponents, [posX, posY](const float, const float) { return XMFLOAT2{ posX, posY }; }, InGame, zIndex + 1 }, skills->at(i).get()));
 		this->AddChildComponent(*skillListings[i].get());

@@ -68,18 +68,28 @@ void UIAbility::Initialize(
 	);
 }
 
-void UIAbility::DrawHeadersAndBorders()
+// we have different Draw methods here because UIAbility is used in both
+// the UIAbilitiesContainer and the UIHotbar, and the leader and border should
+// only be drawn in the former. we should probably refactor this.
+void UIAbility::DrawHeadersAndBorder()
 {
 	if (!isDragging)
 	{
+		const auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
 		const auto worldPos = GetWorldPosition();
 
 		// draw header
-		deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(worldPos.x, worldPos.y), headerTextLayout.Get(), headerBrush);
+		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(worldPos.x, worldPos.y), headerTextLayout.Get(), headerBrush);
 	
 		// draw border
-		deviceResources->GetD2DDeviceContext()->DrawGeometry(borderGeometry.Get(), borderBrush, 2.0f);
+		d2dDeviceContext->DrawGeometry(borderGeometry.Get(), borderBrush, 2.0f);
+	}
+}
 
+void UIAbility::DrawHoverAndToggledBorders()
+{
+	if (!isDragging)
+	{
 		if (isHovered)
 		{
 			const auto thickness = isPressed ? 5.0f : 3.0f;
@@ -97,11 +107,13 @@ void UIAbility::Draw()
 {
 	if (!isVisible) return;
 
-	deviceResources->GetD2DDeviceContext()->EndDraw();
+	const auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+	
+	d2dDeviceContext->EndDraw();
 
 	sprite->Draw(deviceResources->GetD3DDeviceContext());
 
-	deviceResources->GetD2DDeviceContext()->BeginDraw();
+	d2dDeviceContext->BeginDraw();
 
 	if (abilityCopy)
 		abilityCopy->Draw();
@@ -257,20 +269,20 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 void UIAbility::CreatePositionDependentResources()
 {
+	const auto d2dFactory = deviceResources->GetD2DFactory();
 	const auto worldPos = GetWorldPosition();
-
 	auto positionX = worldPos.x;
 	auto positionY = worldPos.y + 20.0f;
 
 	// create border
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + ABILITY_BORDER_WIDTH, positionY + ABILITY_BORDER_WIDTH), borderGeometry.ReleaseAndGetAddressOf());
+	d2dFactory->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + ABILITY_BORDER_WIDTH, positionY + ABILITY_BORDER_WIDTH), borderGeometry.ReleaseAndGetAddressOf());
 
 	// create highlight
-	deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + HIGHLIGHT_WIDTH, positionY + HIGHLIGHT_WIDTH), highlightGeometry.ReleaseAndGetAddressOf());
+	d2dFactory->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + HIGHLIGHT_WIDTH, positionY + HIGHLIGHT_WIDTH), highlightGeometry.ReleaseAndGetAddressOf());
 
 	// create toggle geometry
 	if (toggled)
-		deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + HIGHLIGHT_WIDTH, positionY + HIGHLIGHT_WIDTH), toggledGeometry.ReleaseAndGetAddressOf());
+		d2dFactory->CreateRectangleGeometry(D2D1::RectF(positionX, positionY, positionX + HIGHLIGHT_WIDTH, positionY + HIGHLIGHT_WIDTH), toggledGeometry.ReleaseAndGetAddressOf());
 
 	// create sprite
 	XMFLOAT3 pos{ positionX + 20.0f, positionY + 20.0f, 0.0f };

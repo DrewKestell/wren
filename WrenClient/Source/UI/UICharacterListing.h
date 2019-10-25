@@ -31,8 +31,7 @@ public:
 		ID2D1SolidColorBrush* selectedBrush,
 		ID2D1SolidColorBrush* borderBrush,
 		ID2D1SolidColorBrush* textBrush,
-		IDWriteTextFormat* textFormat
-	);
+		IDWriteTextFormat* textFormat);
     void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	const std::string& GetName() const { return characterName; }

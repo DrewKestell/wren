@@ -26,8 +26,10 @@ void UITooltip::Initialize(
 	this->textFormatTitle = textFormatTitle;
 	this->textFormatDescription = textFormatDescription;
 
-	deviceResources->GetWriteFactory()->CreateTextLayout(Utility::s2ws(headerText).c_str(), headerText.size(), textFormatTitle, 300.0f, 0.0f, headerTextLayout.ReleaseAndGetAddressOf());
-	deviceResources->GetWriteFactory()->CreateTextLayout(Utility::s2ws(bodyText).c_str(), bodyText.size(), textFormatDescription, 300.0f, 0.0f, bodyTextLayout.ReleaseAndGetAddressOf());
+	const auto writeFactory = deviceResources->GetWriteFactory();
+
+	writeFactory->CreateTextLayout(Utility::s2ws(headerText).c_str(), headerText.size(), textFormatTitle, 300.0f, 0.0f, headerTextLayout.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextLayout(Utility::s2ws(bodyText).c_str(), bodyText.size(), textFormatDescription, 300.0f, 0.0f, bodyTextLayout.ReleaseAndGetAddressOf());
 
 	CreateGeometry();
 }
@@ -36,12 +38,14 @@ void UITooltip::Draw()
 {
 	if (!isVisible) return;
 
-	deviceResources->GetD2DDeviceContext()->FillGeometry(bodyGeometry.Get(), bodyBrush);
-	deviceResources->GetD2DDeviceContext()->DrawGeometry(bodyGeometry.Get(), borderBrush, 2.0f);
+	const auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+
+	d2dDeviceContext->FillGeometry(bodyGeometry.Get(), bodyBrush);
+	d2dDeviceContext->DrawGeometry(bodyGeometry.Get(), borderBrush, 2.0f);
 
 	const auto pos = GetWorldPosition();
-	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(pos.x + 8.0f, pos.y + 8.0f), headerTextLayout.Get(), textBrush);
-	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(pos.x + 8.0f, pos.y + 28.0f), bodyTextLayout.Get(), textBrush);
+	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(pos.x + 8.0f, pos.y + 8.0f), headerTextLayout.Get(), textBrush);
+	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(pos.x + 8.0f, pos.y + 28.0f), bodyTextLayout.Get(), textBrush);
 }
 
 const bool UITooltip::HandleEvent(const Event* const event)

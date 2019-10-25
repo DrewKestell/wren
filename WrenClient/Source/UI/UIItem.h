@@ -7,6 +7,7 @@
 #include "UITooltip.h"
 
 static constexpr auto SPRITE_SIZE = 36.0f;
+
 class UIItem : public UIComponent
 {
 	EventHandler& eventHandler;
@@ -62,4 +63,5 @@ public:
 		IDWriteTextFormat* textFormatDescription);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
+	void CreatePositionDependentResources();
 };

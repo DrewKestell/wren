@@ -3,6 +3,8 @@
 #include <Components/StatsComponent.h>
 #include "UIComponent.h"
 
+const auto FULL_STAT_WIDTH = 144.0f;
+
 class UICharacterHUD : public UIComponent
 {
 	StatsComponent& statsComponent;
@@ -37,8 +39,7 @@ public:
 		ID2D1SolidColorBrush* statBackgroundBrush,
 		ID2D1SolidColorBrush* statBorderBrush,
 		ID2D1SolidColorBrush* nameBrush,
-		ID2D1SolidColorBrush* whiteBrush
-	);
+		ID2D1SolidColorBrush* whiteBrush);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	void CreateGeometry();

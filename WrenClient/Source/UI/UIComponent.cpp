@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "UIComponent.h"
-#include "EventHandling/EventHandler.h"
 
 extern float g_clientWidth;
 extern float g_clientHeight;

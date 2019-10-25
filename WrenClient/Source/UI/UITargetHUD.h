@@ -3,6 +3,8 @@
 #include <Components/StatsComponent.h>
 #include "UIComponent.h"
 
+const auto TARGET_HUD_FULL_STAT_WIDTH = 144.0f;
+
 class UITargetHUD : public UIComponent
 {
 	IDWriteTextFormat* nameTextFormat{ nullptr };

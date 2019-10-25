@@ -39,7 +39,10 @@ void UIAbilitiesContainer::Draw()
 	if (!isVisible) return;
 
 	for (auto i = 0; i < uiAbilities.size(); i++)
-		uiAbilities.at(i)->DrawHeadersAndBorders();
+	{
+		uiAbilities.at(i)->DrawHeadersAndBorder();
+		uiAbilities.at(i)->DrawHoverAndToggledBorders();
+	}
 }
 
 const bool UIAbilitiesContainer::HandleEvent(const Event* const event)
@@ -58,13 +61,6 @@ const bool UIAbilitiesContainer::HandleEvent(const Event* const event)
 				isVisible = true;
 			else
 				isVisible = false;
-
-			break;
-		}
-		case EventType::WindowResize:
-		{
-
-			// TODO
 
 			break;
 		}

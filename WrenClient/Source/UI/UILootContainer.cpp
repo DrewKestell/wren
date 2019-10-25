@@ -53,11 +53,10 @@ void UILootContainer::Draw()
 {
 	if (!isVisible) return;
 
-	// FIXME: this should be optimized. see comment below in HandleEvent.
-	ReinitializeGeometry();
+	const auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
 
 	for (auto i = 0; i < 12; i++)
-		deviceResources->GetD2DDeviceContext()->DrawGeometry(geometry[i].Get(), brush, 2.0f);
+		d2dDeviceContext->DrawGeometry(geometry[i].Get(), brush, 2.0f);
 }
 
 const bool UILootContainer::HandleEvent(const Event* const event)
@@ -115,6 +114,7 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 							uiItems.push_back(std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, 3 }, eventHandler, socketManager, itemId, item->GetName(), item->GetDescription()));
 							AddChildComponent(*uiItems.at(i).get());
 							uiItems.at(i)->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
+							uiItems.at(i)->CreatePositionDependentResources();
 						}
 					}
 
@@ -142,24 +142,10 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 		}
 		case EventType::WindowResize:
 		{
-			// TODO
+			ReinitializeGeometry();
 
 			break;
 		}
-		// this is a decent idea to optimize, but it's not working correctly.
-		// this component gets the MouseMove event BEFORE the UIPanel.
-		// so it reinitializes its geometry based on the UIPanel's old position
-		// then the UIPanel gets the MouseMove event and moves its position,
-		// making the boxes inside the panel seem to jiggle around.
-		/*case EventType::MouseMove:
-		{
-			const auto parent = static_cast<UIPanel*>(GetParent());
-			
-			if (parent->GetIsDragging())
-				ReinitializeGeometry();
-
-			break;
-		}*/
 	}
 
 	return false;
@@ -167,6 +153,7 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 
 void UILootContainer::ReinitializeGeometry()
 {
+	const auto d2dFactory = deviceResources->GetD2DFactory();
 	const auto position = GetWorldPosition();
 	const auto width = 40.0f;
 	auto xOffset = 5.0f;
@@ -175,7 +162,7 @@ void UILootContainer::ReinitializeGeometry()
 	{
 		for (auto j = 0; j < 3; j++)
 		{
-			deviceResources->GetD2DFactory()->CreateRectangleGeometry(D2D1::RectF(position.x + xOffset, position.y + yOffset, position.x + xOffset + width, position.y + yOffset + width), geometry[j + (3 * i)].ReleaseAndGetAddressOf());
+			d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + xOffset, position.y + yOffset, position.x + xOffset + width, position.y + yOffset + width), geometry[j + (3 * i)].ReleaseAndGetAddressOf());
 			xOffset += 45.0f;
 		}
 

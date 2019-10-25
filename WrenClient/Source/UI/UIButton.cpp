@@ -57,12 +57,14 @@ void UIButton::Draw()
     else
         buttonColor = buttonBrush;
 
-    deviceResources->GetD2DDeviceContext()->FillGeometry(buttonGeometry.Get(), buttonColor);
-	deviceResources->GetD2DDeviceContext()->DrawGeometry(buttonGeometry.Get(), buttonBorderBrush, borderWeight);
+	const auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
+
+	d2dDeviceContext->FillGeometry(buttonGeometry.Get(), buttonColor);
+	d2dDeviceContext->DrawGeometry(buttonGeometry.Get(), buttonBorderBrush, borderWeight);
     
     // Draw Input Text   
 	const auto position = GetWorldPosition();
-	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(position.x, position.y + 1), buttonTextLayout.Get(), buttonTextBrush); // (location + 1) looks better
+	d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x, position.y + 1), buttonTextLayout.Get(), buttonTextBrush); // (location + 1) looks better
 }
 
 const bool UIButton::HandleEvent(const Event* const event)
