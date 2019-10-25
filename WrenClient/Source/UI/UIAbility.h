@@ -64,6 +64,7 @@ public:
 		const BYTE* vertexShaderBuffer,
 		const int vertexShaderSize);
 	void Draw() override;
+	void DrawHeadersAndBorders();
 	const bool HandleEvent(const Event* const event) override;
 	void CreatePositionDependentResources();
 };

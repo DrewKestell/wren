@@ -26,6 +26,7 @@ class UIPanel : public UIComponent
 	
 	void SetChildrenAsVisible(UIComponent* uiComponent);
 	void BringToFront(UIComponent* uiComponent);
+	void UpdateChildrenPositions(UIComponent* uiComponent, const Event& e);
 public:
 	UIPanel(
 		UIComponentArgs uiComponentArgs,

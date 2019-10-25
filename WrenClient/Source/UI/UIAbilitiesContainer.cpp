@@ -36,7 +36,10 @@ void UIAbilitiesContainer::Initialize(
 
 void UIAbilitiesContainer::Draw()
 {
-	// nothing to draw - UIAbilities draw themselves
+	if (!isVisible) return;
+
+	for (auto i = 0; i < uiAbilities.size(); i++)
+		uiAbilities.at(i)->DrawHeadersAndBorders();
 }
 
 const bool UIAbilitiesContainer::HandleEvent(const Event* const event)

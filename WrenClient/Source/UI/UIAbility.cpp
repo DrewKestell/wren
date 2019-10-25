@@ -68,29 +68,34 @@ void UIAbility::Initialize(
 	);
 }
 
+void UIAbility::DrawHeadersAndBorders()
+{
+	if (!isDragging)
+	{
+		const auto worldPos = GetWorldPosition();
+
+		// draw header
+		deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(worldPos.x, worldPos.y), headerTextLayout.Get(), headerBrush);
+	
+		// draw border
+		deviceResources->GetD2DDeviceContext()->DrawGeometry(borderGeometry.Get(), borderBrush, 2.0f);
+
+		if (isHovered)
+		{
+			const auto thickness = isPressed ? 5.0f : 3.0f;
+			const auto brush = isPressed ? abilityPressedBrush : highlightBrush;
+			deviceResources->GetD2DDeviceContext()->DrawGeometry(highlightGeometry.Get(), brush, thickness);
+		}
+
+		// draw toggled border
+		if (isToggled)
+			deviceResources->GetD2DDeviceContext()->DrawGeometry(highlightGeometry.Get(), abilityToggledBrush, 4.0f);
+	}
+}
+
 void UIAbility::Draw()
 {
 	if (!isVisible) return;
-
-	const auto worldPos = GetWorldPosition();
-
-	// draw border
-	deviceResources->GetD2DDeviceContext()->DrawGeometry(borderGeometry.Get(), borderBrush, 2.0f);
-
-	// draw header
-	deviceResources->GetD2DDeviceContext()->DrawTextLayout(D2D1::Point2F(worldPos.x, worldPos.y), headerTextLayout.Get(), headerBrush);
-
-	//draw highlight
-	if (isHovered && !isDragging)
-	{
-		const auto thickness = isPressed ? 5.0f : 3.0f;
-		const auto brush = isPressed ? abilityPressedBrush : highlightBrush;
-		deviceResources->GetD2DDeviceContext()->DrawGeometry(highlightGeometry.Get(), brush, thickness);
-	}
-	
-	// draw toggled border
-	if (isToggled)
-		deviceResources->GetD2DDeviceContext()->DrawGeometry(highlightGeometry.Get(), abilityToggledBrush, 4.0f);
 
 	deviceResources->GetD2DDeviceContext()->EndDraw();
 
@@ -144,7 +149,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 					{
 						abilityCopy = new UIAbility(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, zIndex + 1 }, eventHandler, ability, toggled, true, mousePosX, mousePosY);
 						abilityCopy->Initialize(headerTextFormat, vertexShader, pixelShader, texture, borderBrush, headerBrush, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize);
-						abilityCopy->SetLocalPosition(XMFLOAT2{ mousePosX - (SPRITE_WIDTH / 2), mousePosY - (SPRITE_WIDTH / 2) });
+						abilityCopy->SetLocalPosition(XMFLOAT2{ mousePosX - (SPRITE_WIDTH / 2), mousePosY - SPRITE_WIDTH });
 						abilityCopy->isVisible = true;
 						abilityCopy->isToggled = isToggled;
 						abilityCopy->CreatePositionDependentResources();
@@ -169,6 +174,8 @@ const bool UIAbility::HandleEvent(const Event* const event)
 
 					lastDragX = mousePosX;
 					lastDragY = mousePosY;
+
+					CreatePositionDependentResources();
 				}
 			}
 

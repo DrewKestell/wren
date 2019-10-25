@@ -57,9 +57,6 @@ void UIPanel::Draw()
 
 const bool UIPanel::HandleEvent(const Event* const event)
 {
-	// first pass the event to UIComponent base so it can reset localPosition based on new client dimensions
-	UIComponent::HandleEvent(event);
-
 	const auto type = event->type;
 	switch (type)
 	{
@@ -141,6 +138,8 @@ const bool UIPanel::HandleEvent(const Event* const event)
 
 				deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT), 3.0f, 3.0f), headerGeometry.ReleaseAndGetAddressOf());
 				deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(currentPosition.x, currentPosition.y + HEADER_HEIGHT, currentPosition.x + width, currentPosition.y + HEADER_HEIGHT + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
+			
+				UpdateChildrenPositions(this, Event{ EventType::WindowResize });
 			}
 
 			break;
@@ -195,7 +194,7 @@ void UIPanel::SetChildrenAsVisible(UIComponent* uiComponent)
 	for (auto i = 0; i < children.size(); i++)
 	{
 		auto uiComponent = (UIComponent*)children.at(i);
-		if (uiComponent->followParentVisibility)
+		if (uiComponent->followParentVisibility || uiComponent->isVisible)
 			uiComponent->isVisible = !uiComponent->isVisible;
 
 		SetChildrenAsVisible(uiComponent);
@@ -211,11 +210,11 @@ void UIPanel::BringToFront(UIComponent* uiComponent)
 
 	for (auto i = 0; i < children.size(); i++)
 	{
-		auto uiComponent = (UIComponent*)children.at(i);
-		if (uiComponent->followParentZIndex)
-		  uiComponent->zIndex = g_zIndex;
+		auto child = (UIComponent*)children.at(i);
+		if (child->followParentZIndex)
+			child->zIndex = g_zIndex;
 
-		BringToFront(uiComponent);
+		BringToFront(child);
 	}
 }
 
@@ -237,3 +236,16 @@ void UIPanel::ToggleVisibility()
 }
 
 const bool UIPanel::GetIsDragging() const { return isDragging; }
+
+void UIPanel::UpdateChildrenPositions(UIComponent* uiComponent, const Event& e)
+{
+	auto children = uiComponent->GetChildren();
+
+	for (auto i = 0; i < children.size(); i++)
+	{
+		auto child = (UIComponent*)children.at(i);
+		child->HandleEvent(&e);
+
+		UpdateChildrenPositions(child, e);
+	}
+}
