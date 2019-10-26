@@ -37,6 +37,9 @@
 #include "EventHandling/EventHandler.h"
 #include "ClientSocketManager.h"
 
+static constexpr auto ARIAL_FONT_FAMILY{ L"Arial" };
+static constexpr auto LOCALE{ L"en-US" };
+
 class Game : public DX::IDeviceNotify, public Observer
 {
 public:
@@ -118,7 +121,6 @@ private:
 	void Clear();
 	void CreateDeviceDependentResources();
 	void CreateWindowSizeDependentResources();
-	void CreatePlayerDependentResources();
 
 	ShaderBuffer LoadShader(const std::wstring filename);
 	virtual const bool HandleEvent(const Event* const event);
@@ -132,6 +134,7 @@ private:
 	void CreateButtons();	
 	void CreateLabels();
 	void CreatePanels();
+	void CreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames);
 
 	void InitializeBrushes();
 	void InitializeTextFormats();
@@ -144,12 +147,9 @@ private:
 	void InitializeButtons();
 	void InitializeLabels();
 	void InitializePanels();
+	void InitializeCharacterListings();
 	void InitializeStaticObjects();
-	void InitializeLootContainer();
-	void InitializeInventory();
-	void InitializeCharacterHUD();
 
-	void RecreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames);
 	UICharacterListing* GetCurrentlySelectedCharacterListing();
 
 	// TextFormats

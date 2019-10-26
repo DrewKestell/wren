@@ -21,6 +21,11 @@ class UIAbilitiesContainer : public UIComponent
 	const BYTE* vertexShaderBuffer{ nullptr };
 	int vertexShaderSize{ 0 };
 	std::vector<ComPtr<ID3D11ShaderResourceView>>* allTextures{ nullptr };
+	ID2D1SolidColorBrush* tooltipBodyBrush{ nullptr };
+	ID2D1SolidColorBrush* tooltipBorderBrush{ nullptr };
+	ID2D1SolidColorBrush* tooltipTextBrush{ nullptr };
+	IDWriteTextFormat* tooltipTextFormatTitle{ nullptr };
+	IDWriteTextFormat* tooltipTextFormatDescription{ nullptr };
 	std::vector<std::unique_ptr<Ability>>* abilities;
 	std::vector<std::shared_ptr<UIAbility>> uiAbilities;
 
@@ -40,7 +45,12 @@ public:
 		ID3D11PixelShader* pixelShader,
 		const BYTE* vertexShaderBuffer,
 		const int vertexShaderSize,
-		std::vector<ComPtr<ID3D11ShaderResourceView>>* allTextures);
+		std::vector<ComPtr<ID3D11ShaderResourceView>>* allTextures,
+		ID2D1SolidColorBrush* tooltipBodyBrush,
+		ID2D1SolidColorBrush* tooltipBorderBrush,
+		ID2D1SolidColorBrush* tooltipTextBrush,
+		IDWriteTextFormat* tooltipTextFormatTitle,
+		IDWriteTextFormat* tooltipTextFormatDescription);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	const std::string GetUIAbilityDragBehavior() const override;

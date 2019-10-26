@@ -17,7 +17,6 @@ class UITooltip : public UIComponent
 	ComPtr<IDWriteTextLayout> headerTextLayout;
 	ComPtr<IDWriteTextLayout> bodyTextLayout;
 
-	void CreateGeometry();
 public:
 	UITooltip(
 		UIComponentArgs uiComponentArgs,
@@ -32,4 +31,6 @@ public:
 		IDWriteTextFormat* textFormatDescription);
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
+	void CreatePositionDependentResources();
+	const float GetHeight() const;
 };

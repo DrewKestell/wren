@@ -31,7 +31,7 @@ void UITooltip::Initialize(
 	writeFactory->CreateTextLayout(Utility::s2ws(headerText).c_str(), headerText.size(), textFormatTitle, 300.0f, 0.0f, headerTextLayout.ReleaseAndGetAddressOf());
 	writeFactory->CreateTextLayout(Utility::s2ws(bodyText).c_str(), bodyText.size(), textFormatDescription, 300.0f, 0.0f, bodyTextLayout.ReleaseAndGetAddressOf());
 
-	CreateGeometry();
+	CreatePositionDependentResources();
 }
 
 void UITooltip::Draw()
@@ -58,7 +58,7 @@ const bool UITooltip::HandleEvent(const Event* const event)
 	{
 		case EventType::WindowResize:
 		{
-			CreateGeometry();
+			CreatePositionDependentResources();
 
 			break;
 		}
@@ -66,7 +66,7 @@ const bool UITooltip::HandleEvent(const Event* const event)
 	return false;
 } 
 
-void UITooltip::CreateGeometry()
+void UITooltip::CreatePositionDependentResources()
 {
 	DWRITE_TEXT_METRICS textMetrics;
 	bodyTextLayout->GetMetrics(&textMetrics);
@@ -75,4 +75,11 @@ void UITooltip::CreateGeometry()
 
 	const auto pos = GetWorldPosition();
 	deviceResources->GetD2DFactory()->CreateRoundedRectangleGeometry(D2D1::RoundedRect(D2D1::RectF(pos.x, pos.y, pos.x + width, pos.y + height), 3.0f, 3.0f), bodyGeometry.ReleaseAndGetAddressOf());
+}
+
+const float UITooltip::GetHeight() const
+{
+	DWRITE_TEXT_METRICS textMetrics;
+	bodyTextLayout->GetMetrics(&textMetrics);
+	return textMetrics.height + 36.0f;
 }

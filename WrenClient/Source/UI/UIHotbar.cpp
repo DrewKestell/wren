@@ -84,6 +84,7 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 				uiAbilities[index]->SetLocalPosition(XMFLOAT2{ xOffset, -20.0f });
 				uiAbilities[index]->SetParent(*this);
 				uiAbilities[index]->CreatePositionDependentResources();
+				uiAbilities[index]->SetTooltipPositionAbove();
 
 				// it's important that UIAbilities receive certain events (mouse clicks for example) before other
 				// UI elements, so we reorder here to make sure the UIComponents are in the right order.

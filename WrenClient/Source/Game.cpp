@@ -19,6 +19,7 @@
 #include "EventHandling/Events/PropagateChatMessageEvent.h"
 #include "EventHandling/Events/ServerMessageEvent.h"
 
+bool g_mouseIsDragging{ false };
 unsigned int g_zIndex{ 0 };
 float g_clientWidth{ CLIENT_WIDTH };
 float g_clientHeight{ CLIENT_HEIGHT };
@@ -76,6 +77,7 @@ void Game::Initialize(HWND window, int width, int height)
 	SetActiveLayer(Login);
 }
 
+// Allocate all memory resources that depend on the D2
 void Game::CreateDeviceDependentResources()
 {
 	InitializeBrushes();
@@ -90,15 +92,17 @@ void Game::CreateDeviceDependentResources()
 	InitializeButtons();
 	InitializeLabels();
 	InitializePanels();
+	InitializeCharacterListings();
 	InitializeStaticObjects();
 
 	skillsContainer->Initialize(blackBrush.Get(), textFormatFPS.Get());
-	abilitiesContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, &textures);
-	InitializeLootContainer();
-	InitializeInventory();
+	abilitiesContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), blackBrush.Get(), abilityPressedBrush.Get(), errorMessageBrush.Get(), textFormatHeaders.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, &textures, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
+	lootContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get(), &textures);
+	inventory->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
 
 	if (characterHUD)
-		InitializeCharacterHUD();
+		characterHUD->Initialize(textFormatSuccessMessage.Get(), healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
+
 	targetHUD->Initialize(textFormatSuccessMessage.Get(), healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
 	hotbar->Initialize(blackBrush.Get());
 	textWindow->Initialize(statBackgroundBrush.Get(), blackBrush.Get(), darkGrayBrush.Get(), whiteBrush.Get(), mediumGrayBrush.Get(), blackBrush.Get(), scrollBarBackgroundBrush.Get(), scrollBarBrush.Get(), textFormatTextWindow.Get(), textFormatTextWindowInactive.Get());
@@ -117,6 +121,27 @@ void Game::CreateWindowSizeDependentResources()
 
 	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 }
+
+// D2D/D3D Resources follow a Create/Initialize pattern.
+
+// Resources are created using the D2DContext and D3DContext objects that provide
+//   an interface with the GPU. Certain things out of our control can trigger a
+//   "Device Lost" event where the interface with the GPU is lost, and all
+//   resources that were created through the D2DContext/D3DContext are cleaned up.
+//   All classes that depend on GPU resources should be able to recover from such
+//   an event. To do so, non-device resources can be provided via the constructor.
+//   But device dependent resource should be passed in post-constructor via the
+//   Initialize function. That way, when we handle a Device Lost event, we can
+//   call the Initialiez function on all objects that rely on device-dependent
+//   resources.
+
+// Additionally, all classes that render graphics to the window (whether text,
+//   2d, or 3d) should be able to recreate window size-dependent resources
+//   to support window resizing (both alternating between fullscreen and windowed 
+//   modes, and manual window resizing). This functionality is handled on a 
+//   case-by-case basis, but in most cases, classes will implement a 
+//   "CreateWindowSizeDependentResources" or "CreatePositionDependentResources"
+//   function.
 
 void Game::CreateInputs()
 {
@@ -398,41 +423,14 @@ void Game::CreatePanels()
 		inventory->playerId = player->GetId();
 }
 
-void Game::PublishEvents()
+void Game::CreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames)
 {
-	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
-	std::queue<std::unique_ptr<const Event>>& eventQueue = eventHandler.GetEventQueue();
-	while (!eventQueue.empty())
+	characterList.clear();
+
+	for (auto i = 0; i < characterNames.size(); i++)
 	{
-		auto event = std::move(eventQueue.front());
-		eventQueue.pop();
-
-		// We pass events to the UIComponents first, because those are usually overlaid on top
-		//   of 3D GameObjects, and therefore we want certain events like clicks, etc to hit
-		//   the UIComponents first.
-		// These UIComponents are sorted in ascending order of their z-index.
-		auto stopPropagation = false;
-
-		for (auto i = (int)uiComponents.size() - 1; i >= 0; i--)
-		{
-			stopPropagation = uiComponents.at(i)->HandleEvent(event.get());
-			if (stopPropagation)
-				break;
-		}
-
-		// There are times where we want to avoid having events propagate to GameObjects if they're
-		//   handled by a UIComponent, so if any UIComponent returns true, we skip passing that event
-		//   to the GameObjects and move to the next iteration of the while loop.
-		if (stopPropagation)
-			continue;
-
-		std::list<Observer*>& observers = eventHandler.GetObservers();
-		for (auto observer : observers)
-		{
-			stopPropagation = observer->HandleEvent(event.get());
-			if (stopPropagation)
-				break;
-		}
+		characterList.push_back(std::make_unique<UICharacterListing>(UIComponentArgs{ deviceResources.get(), uiComponents, [i](const float, const float) { return XMFLOAT2{ 25.0f, 100.0f + (i * 40.0f) }; }, CharacterSelect, 1 }, eventHandler, 260.0f, 30.0f, characterNames.at(i)->c_str()));
+		characterList.at(i)->Initialize(whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get());
 	}
 }
 
@@ -463,63 +461,60 @@ void Game::InitializeBrushes()
 
 void Game::InitializeTextFormats()
 {
-	auto arialFontFamily{ L"Arial" };
-	auto locale{ L"en-US" };
-
 	auto writeFactory = deviceResources->GetWriteFactory();
 
 	// FPS / MousePos
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 10.0f, locale, textFormatFPS.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 10.0f, LOCALE, textFormatFPS.ReleaseAndGetAddressOf());
 	textFormatFPS->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatFPS->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
 	// Account Creds Input Values
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatAccountCredsInputValue.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, LOCALE, textFormatAccountCredsInputValue.ReleaseAndGetAddressOf());
 	textFormatAccountCredsInputValue->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatAccountCredsInputValue->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
 	// Account Creds Labels
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatAccountCreds.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, LOCALE, textFormatAccountCreds.ReleaseAndGetAddressOf());
 	textFormatAccountCreds->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING);
 	textFormatAccountCreds->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
 	// Headers
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatHeaders.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, LOCALE, textFormatHeaders.ReleaseAndGetAddressOf());
 	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
 	// Button Text
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, textFormatButtonText.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, LOCALE, textFormatButtonText.ReleaseAndGetAddressOf());
 	textFormatButtonText->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
 	textFormatButtonText->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
 	// SuccessMessage Text
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, textFormatSuccessMessage.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, LOCALE, textFormatSuccessMessage.ReleaseAndGetAddressOf());
 	textFormatSuccessMessage->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatSuccessMessage->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
 	// ErrorMessage Message
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, locale, textFormatErrorMessage.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, LOCALE, textFormatErrorMessage.ReleaseAndGetAddressOf());
 	textFormatErrorMessage->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatErrorMessage->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
 	// UITextWindow
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTextWindow.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, LOCALE, textFormatTextWindow.ReleaseAndGetAddressOf());
 	textFormatTextWindow->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatTextWindow->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
 	// UITextWindow inactive
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_ITALIC, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTextWindowInactive.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_ITALIC, DWRITE_FONT_STRETCH_NORMAL, 14.0f, LOCALE, textFormatTextWindowInactive.ReleaseAndGetAddressOf());
 	textFormatTextWindowInactive->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatTextWindowInactive->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
 	// Tooltip Title
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 16.0f, locale, textFormatTooltipTitle.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 16.0f, LOCALE, textFormatTooltipTitle.ReleaseAndGetAddressOf());
 	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
 	// Tooltip Description
-	writeFactory->CreateTextFormat(arialFontFamily, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, locale, textFormatTooltipDescription.ReleaseAndGetAddressOf());
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, LOCALE, textFormatTooltipDescription.ReleaseAndGetAddressOf());
 	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 }
@@ -711,6 +706,12 @@ void Game::InitializePanels()
 
 }
 
+void Game::InitializeCharacterListings()
+{
+	for (auto i = 0; i < characterList.size(); i++)
+		characterList.at(i)->Initialize(whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get());
+}
+
 void Game::InitializeStaticObjects()
 {
 	auto staticObjects = commonRepository.ListStaticObjects();
@@ -731,34 +732,44 @@ void Game::InitializeStaticObjects()
 	}
 }
 
-void Game::InitializeLootContainer()
+void Game::PublishEvents()
 {
-	lootContainer->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get(), &textures);
-}
-
-void Game::InitializeInventory()
-{
-	inventory->Initialize(blackBrush.Get(), abilityHighlightBrush.Get(), spriteVertexShader.Get(), spritePixelShader.Get(), spriteVertexShaderBuffer.buffer, spriteVertexShaderBuffer.size, lightGrayBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatTooltipTitle.Get(), textFormatTooltipDescription.Get());
-}
-
-void Game::InitializeCharacterHUD()
-{
-	characterHUD->Initialize(textFormatSuccessMessage.Get(), healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
-}
-
-// TODO: refactor me into Create/Initialize
-void Game::RecreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames)
-{
-	characterList.clear();
-
-	for (auto i = 0; i < characterNames.size(); i++)
+	std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
+	std::queue<std::unique_ptr<const Event>>& eventQueue = eventHandler.GetEventQueue();
+	while (!eventQueue.empty())
 	{
-		characterList.push_back(std::make_unique<UICharacterListing>(UIComponentArgs{ deviceResources.get(), uiComponents, [i](const float, const float) { return XMFLOAT2{ 25.0f, 100.0f + (i * 40.0f) }; }, CharacterSelect, 1 }, eventHandler, 260.0f, 30.0f, characterNames.at(i)->c_str()));
-		characterList.at(i)->Initialize(whiteBrush.Get(), selectedCharacterBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get());
+		auto event = std::move(eventQueue.front());
+		eventQueue.pop();
+
+		// We pass events to the UIComponents first, because those are usually overlaid on top
+		//   of 3D GameObjects, and therefore we want certain events like clicks, etc to hit
+		//   the UIComponents first.
+		// These UIComponents are sorted in ascending order of their z-index.
+		auto stopPropagation = false;
+
+		for (auto i = (int)uiComponents.size() - 1; i >= 0; i--)
+		{
+			stopPropagation = uiComponents.at(i)->HandleEvent(event.get());
+			if (stopPropagation)
+				break;
+		}
+
+		// There are times where we want to avoid having events propagate to GameObjects if they're
+		//   handled by a UIComponent, so if any UIComponent returns true, we skip passing that event
+		//   to the GameObjects and move to the next iteration of the while loop.
+		if (stopPropagation)
+			continue;
+
+		std::list<Observer*>& observers = eventHandler.GetObservers();
+		for (auto observer : observers)
+		{
+			stopPropagation = observer->HandleEvent(event.get());
+			if (stopPropagation)
+				break;
+		}
 	}
 }
 
-#pragma region Frame Update
 void Game::Tick()
 {
 	timer.Tick();
@@ -799,9 +810,7 @@ void Game::Tick()
 	
 	Render(updateTimer);
 }
-#pragma endregion
 
-#pragma region Frame Render
 void Game::Render(const float updateTimer)
 {
 	// Don't try to render anything before the first Update.
@@ -885,9 +894,53 @@ void Game::Clear()
 	const auto viewport = deviceResources->GetScreenViewport();
 	context->RSSetViewports(1, &viewport);
 }
-#pragma endregion
 
-#pragma region Message Handlers
+ShaderBuffer Game::LoadShader(const std::wstring filename)
+{
+	// load precompiled shaders from .cso objects
+	ShaderBuffer sb{ nullptr, 0 };
+	byte* fileData{ nullptr };
+
+	// open the file
+	std::ifstream csoFile(filename, std::ios::in | std::ios::binary | std::ios::ate);
+
+	if (csoFile.is_open())
+	{
+		// get shader size
+		sb.size = (unsigned int)csoFile.tellg();
+
+		// collect shader data
+		fileData = new byte[sb.size];
+		csoFile.seekg(0, std::ios::beg);
+		csoFile.read(reinterpret_cast<char*>(fileData), sb.size);
+		csoFile.close();
+		sb.buffer = fileData;
+	}
+	else
+		throw std::exception("Critical error: Unable to open the compiled shader object!");
+
+	return sb;
+}
+
+UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
+{
+	for (auto i = 0; i < characterList.size(); i++)
+	{
+		if (characterList.at(i)->IsSelected())
+			return characterList.at(i).get();
+	}
+
+	return nullptr;
+}
+
+void Game::SetActiveLayer(const Layer layer)
+{
+	activeLayer = layer;
+
+	std::unique_ptr<Event> e = std::make_unique<ChangeActiveLayerEvent>(layer);
+	eventHandler.QueueEvent(e);
+}
+
 void Game::OnActivated()
 {
 	// TODO: Game is becoming active window.
@@ -926,22 +979,13 @@ void Game::OnWindowSizeChanged(int width, int height)
 
 	CreateWindowSizeDependentResources();
 }
-#pragma endregion
-
-#pragma region Direct3D Resources
-// These are the resources that depend on the device.
-
-void Game::CreatePlayerDependentResources()
-{
-	// i think you need to move certain things into here (ui elements that depend on the player existing, etc)
-	// you should call this when receiving the EnterWorldSuccess event, and also conditionally when
-	// calling CreateDeviceResources, call this IF the player exists (this will happen when resizing the window
-	// after entering the game)
-}
 
 void Game::OnDeviceLost()
 {
 	// TODO: Add Direct3D resource cleanup here.
+	// may not be needed - classes should be designed with RAII in mind, and clean up
+	// after themselves. not sure if there is an exception to this with D3D,
+	// so i'm leaving this stubbed out for now.
 }
 
 void Game::OnDeviceRestored()
@@ -952,43 +996,13 @@ void Game::OnDeviceRestored()
 
 	SetActiveLayer(activeLayer);
 }
-#pragma endregion
 
-ShaderBuffer Game::LoadShader(const std::wstring filename)
+void Game::OnPong(unsigned int pingId)
 {
-	// load precompiled shaders from .cso objects
-	ShaderBuffer sb{ nullptr, 0 };
-	byte* fileData{ nullptr };
-
-	// open the file
-	std::ifstream csoFile(filename, std::ios::in | std::ios::binary | std::ios::ate);
-
-	if (csoFile.is_open())
-	{
-		// get shader size
-		sb.size = (unsigned int)csoFile.tellg();
-
-		// collect shader data
-		fileData = new byte[sb.size];
-		csoFile.seekg(0, std::ios::beg);
-		csoFile.read(reinterpret_cast<char*>(fileData), sb.size);
-		csoFile.close();
-		sb.buffer = fileData;
-	}
-	else
-		throw std::exception("Critical error: Unable to open the compiled shader object!");
-
-	return sb;
-}
-
-UICharacterListing* Game::GetCurrentlySelectedCharacterListing()
-{
-	for (auto i = 0; i < characterList.size(); i++)
-	{
-		if (characterList.at(i)->IsSelected())
-			return characterList.at(i).get();
-	}
-	return nullptr;
+	const auto delta = timer.TotalTime() - pingStart;
+	ping = static_cast<int>(std::round(delta * 1000));
+	pingStart = 0.0f;
+	this->pingId++;
 }
 
 const bool Game::HandleEvent(const Event* const event)
@@ -998,32 +1012,6 @@ const bool Game::HandleEvent(const Event* const event)
 		fun(event);
 
 	return false;
-}
-
-void Game::SetActiveLayer(const Layer layer)
-{
-	activeLayer = layer;
-
-	std::unique_ptr<Event> e = std::make_unique<ChangeActiveLayerEvent>(layer);
-	eventHandler.QueueEvent(e);
-}
-
-Game::~Game()
-{
-	eventHandler.Unsubscribe(*this);
-}
-
-void Game::QuitGame()
-{
-	DestroyWindow(deviceResources->GetWindow());
-}
-
-void Game::OnPong(unsigned int pingId)
-{
-	const auto delta = timer.TotalTime() - pingStart;
-	ping = static_cast<int>(std::round(delta * 1000));
-	pingStart = 0.0f;
-	this->pingId++;
 }
 
 void Game::CreateEventHandlers()
@@ -1103,7 +1091,8 @@ void Game::CreateEventHandlers()
 		loginScreen_accountNameInput->ClearInput();
 		loginScreen_passwordInput->ClearInput();
 
-		RecreateCharacterListings(derivedEvent->characterList);
+		CreateCharacterListings(derivedEvent->characterList);
+		InitializeCharacterListings();
 		SetActiveLayer(CharacterSelect);
 	};
 
@@ -1120,7 +1109,8 @@ void Game::CreateEventHandlers()
 
 		createCharacter_characterNameInput->ClearInput();
 
-		RecreateCharacterListings(derivedEvent->characterList);
+		CreateCharacterListings(derivedEvent->characterList);
+		InitializeCharacterListings();
 		createCharacter_errorMessageLabel->SetText("");
 		characterSelect_successMessageLabel->SetText("Character created successfully.");
 		SetActiveLayer(CharacterSelect);
@@ -1130,7 +1120,8 @@ void Game::CreateEventHandlers()
 	{
 		const auto derivedEvent = (DeleteCharacterSuccessEvent*)event;
 
-		RecreateCharacterListings(derivedEvent->characterList);
+		CreateCharacterListings(derivedEvent->characterList);
+		InitializeCharacterListings();
 		characterNamePendingDeletion = "";
 		createCharacter_errorMessageLabel->SetText("");
 		characterSelect_successMessageLabel->SetText("Character deleted successfully.");
@@ -1190,7 +1181,7 @@ void Game::CreateEventHandlers()
 
 		// init characterHUD
 		characterHUD = std::make_unique<UICharacterHUD>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 12.0f }; }, InGame, 0 }, statsComponent, derivedEvent->name.c_str());
-		InitializeCharacterHUD();
+		characterHUD->Initialize(textFormatSuccessMessage.Get(), healthBrush.Get(), manaBrush.Get(), staminaBrush.Get(), statBackgroundBrush.Get(), blackBrush.Get(), blackBrush.Get(), whiteBrush.Get());
 
 		std::sort(uiComponents.begin(), uiComponents.end(), CompareUIComponents);
 
@@ -1468,4 +1459,26 @@ void Game::CreateEventHandlers()
 				lootPanel->ToggleVisibility();
 		}
 	};
+	eventHandlers[EventType::StartDraggingUIAbility] = [this](const Event* const event)
+	{
+		g_mouseIsDragging = true;
+	};
+	eventHandlers[EventType::UIAbilityDropped] = [this](const Event* const event)
+	{
+		g_mouseIsDragging = false;
+	};
+	eventHandlers[EventType::UIItemDropped] = [this](const Event* const event)
+	{
+		g_mouseIsDragging = false;
+	};
+}
+
+void Game::QuitGame()
+{
+	DestroyWindow(deviceResources->GetWindow());
+}
+
+Game::~Game()
+{
+	eventHandler.Unsubscribe(*this);
 }

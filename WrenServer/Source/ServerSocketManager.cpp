@@ -266,7 +266,7 @@ std::string ServerSocketManager::ListAbilities(const int characterId)
 	for (auto i = 0; i < abilities.size(); i++)
 	{
 		const auto ability = abilities.at(i);
-		abilityString += (std::to_string(ability.abilityId) + "%" + ability.name + "%" + std::to_string(ability.spriteId) +  + "%" + std::to_string(ability.toggled) + "%" + std::to_string(ability.targeted) + ";");
+		abilityString += (std::to_string(ability.abilityId) + "%" + ability.name + "%" + ability.description + "%" + std::to_string(ability.spriteId) +  + "%" + std::to_string(ability.toggled) + "%" + std::to_string(ability.targeted) + ";");
 	}
 	return abilityString;
 }

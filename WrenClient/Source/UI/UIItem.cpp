@@ -8,6 +8,7 @@
 extern float g_clientWidth;
 extern float g_clientHeight;
 extern XMMATRIX g_projectionTransform;
+extern bool g_mouseIsDragging;
 
 UIItem::UIItem(
 	UIComponentArgs uiComponentArgs,
@@ -141,7 +142,7 @@ const bool UIItem::HandleEvent(const Event* const event)
 				}
 			}
 
-			if (isHovered)
+			if (isHovered && !g_mouseIsDragging)
 				tooltip->isVisible = true;
 			else
 				tooltip->isVisible = false;

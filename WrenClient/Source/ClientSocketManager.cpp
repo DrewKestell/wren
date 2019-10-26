@@ -105,6 +105,7 @@ std::vector<std::unique_ptr<Ability>> ClientSocketManager::BuildAbilityVector(co
 	char param = 0;
 	std::string abilityId{ "" };
 	std::string name{ "" };
+	std::string description{ "" };
 	std::string spriteId{ "" };
 	std::string toggled{ "" };
 	std::string targeted{ "" };
@@ -113,10 +114,11 @@ std::vector<std::unique_ptr<Ability>> ClientSocketManager::BuildAbilityVector(co
 	{
 		if (abilityString.at(i) == ';')
 		{
-			abilityList.push_back(std::make_unique<Ability>(std::stoi(abilityId), name, std::stoi(spriteId), toggled == "1", targeted == "1"));
+			abilityList.push_back(std::make_unique<Ability>(std::stoi(abilityId), name, description, std::stoi(spriteId), toggled == "1", targeted == "1"));
 			param = 0;
 			abilityId = "";
 			name = "";
+			description = "";
 			spriteId = "";
 			toggled = "";
 			targeted = "";
@@ -125,13 +127,16 @@ std::vector<std::unique_ptr<Ability>> ClientSocketManager::BuildAbilityVector(co
 			param++;
 		else
 		{
-			if (param == 0)
+			auto j = 0;
+			if (param == j++)
 				abilityId += abilityString.at(i);
-			else if (param == 1)
+			else if (param == j++)
 				name += abilityString.at(i);
-			else if (param == 2)
+			else if (param == j++)
+				description += abilityString.at(i);
+			else if (param == j++)
 				spriteId += abilityString.at(i);
-			else if (param == 3)
+			else if (param == j++)
 				toggled += abilityString.at(i);
 			else
 				targeted += abilityString.at(i);

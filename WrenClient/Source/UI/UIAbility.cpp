@@ -11,6 +11,7 @@ using namespace DX;
 extern float g_clientWidth;
 extern float g_clientHeight;
 extern XMMATRIX g_projectionTransform;
+extern bool g_mouseIsDragging;
 
 UIAbility::UIAbility(
 	UIComponentArgs uiComponentArgs,
@@ -41,7 +42,12 @@ void UIAbility::Initialize(
 	ID2D1SolidColorBrush* abilityPressedBrush,
 	ID2D1SolidColorBrush* abilityToggledBrush,
 	const BYTE* vertexShaderBuffer,
-	const int vertexShaderSize)
+	const int vertexShaderSize,
+	ID2D1SolidColorBrush* tooltipBodyBrush,
+	ID2D1SolidColorBrush* tooltipBorderBrush,
+	ID2D1SolidColorBrush* tooltipTextBrush,
+	IDWriteTextFormat* tooltipTextFormatTitle,
+	IDWriteTextFormat* tooltipTextFormatDescription)
 {
 	this->headerTextFormat = headerTextFormat;
 	this->vertexShader = vertexShader;
@@ -54,8 +60,12 @@ void UIAbility::Initialize(
 	this->abilityToggledBrush = abilityToggledBrush;
 	this->vertexShaderBuffer = vertexShaderBuffer;
 	this->vertexShaderSize = vertexShaderSize;
+	this->tooltipBodyBrush = tooltipBodyBrush;
+	this->tooltipBorderBrush = tooltipBorderBrush;
+	this->tooltipTextBrush = tooltipTextBrush;
+	this->tooltipTextFormatTitle = tooltipTextFormatTitle;
+	this->tooltipTextFormatDescription = tooltipTextFormatDescription;
 
-	// construct the header
 	ThrowIfFailed(
 		deviceResources->GetWriteFactory()->CreateTextLayout(
 			Utility::s2ws(ability->name).c_str(),
@@ -66,6 +76,10 @@ void UIAbility::Initialize(
 			headerTextLayout.ReleaseAndGetAddressOf()
 		)
 	);
+
+	tooltip = std::make_unique<UITooltip>(UIComponentArgs{ deviceResources, uiComponents, [](const float, const float) { return XMFLOAT2{ 0.0f, 64.0f }; }, uiLayer, 9999 }, eventHandler, ability->name, ability->description);
+	AddChildComponent(*tooltip.get());
+	tooltip->Initialize(tooltipBodyBrush, tooltipBorderBrush, tooltipTextBrush, tooltipTextFormatTitle, tooltipTextFormatDescription);
 }
 
 // we have different Draw methods here because UIAbility is used in both
@@ -90,7 +104,7 @@ void UIAbility::DrawHoverAndToggledBorders()
 {
 	if (!isDragging)
 	{
-		if (isHovered)
+		if (isHovered && !g_mouseIsDragging)
 		{
 			const auto thickness = isPressed ? 5.0f : 3.0f;
 			const auto brush = isPressed ? abilityPressedBrush : highlightBrush;
@@ -140,56 +154,61 @@ const bool UIAbility::HandleEvent(const Event* const event)
 		}
 		case EventType::MouseMove:
 		{
+			if (!isVisible)
+				return false;
+
 			const auto derivedEvent = (MouseEvent*)event;
 			const auto mousePosX = derivedEvent->mousePosX;
 			const auto mousePosY = derivedEvent->mousePosY;
 
-			if (isVisible)
+			const auto worldPos = GetWorldPosition();
+			if (Utility::DetectClick(worldPos.x, worldPos.y + 20.0f, worldPos.x + 38.0f, worldPos.y + 58.0f, mousePosX, mousePosY))
+				isHovered = true;
+			else
+				isHovered = false;
+
+			// if the button is pressed, and the mouse starts moving, let's move the UIAbility
+			if (isPressed && !isDragging && !abilityCopy)
 			{
-				const auto worldPos = GetWorldPosition();
-				if (Utility::DetectClick(worldPos.x, worldPos.y, worldPos.x + 38.0f, worldPos.y + 58.0f, mousePosX, mousePosY))
-					isHovered = true;
-				else
-					isHovered = false;
+				const auto dragBehavior = GetParent()->GetUIAbilityDragBehavior();
 
-				// if the button is pressed, and the mouse starts moving, let's move the UIAbility
-				if (isPressed && !isDragging && !abilityCopy)
+				if (dragBehavior == "COPY")
 				{
-					const auto dragBehavior = GetParent()->GetUIAbilityDragBehavior();
-
-					if (dragBehavior == "COPY")
-					{
-						abilityCopy = new UIAbility(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, zIndex + 1 }, eventHandler, ability, toggled, true, mousePosX, mousePosY);
-						abilityCopy->Initialize(headerTextFormat, vertexShader, pixelShader, texture, borderBrush, headerBrush, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize);
-						abilityCopy->SetLocalPosition(XMFLOAT2{ mousePosX - (SPRITE_WIDTH / 2), mousePosY - SPRITE_WIDTH });
-						abilityCopy->isVisible = true;
-						abilityCopy->isToggled = isToggled;
-						abilityCopy->CreatePositionDependentResources();
-					}
-					else if (dragBehavior == "MOVE")
-					{
-						isDragging = true;
-						lastDragX = mousePosX;
-						lastDragY = mousePosY;
-					}
-
-					std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(g_clientHeight, mousePosX, mousePosY));
-					eventHandler.QueueEvent(e);
+					abilityCopy = new UIAbility(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, zIndex + 1 }, eventHandler, ability, toggled, true, mousePosX, mousePosY);
+					abilityCopy->Initialize(headerTextFormat, vertexShader, pixelShader, texture, borderBrush, headerBrush, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, tooltipBodyBrush, tooltipBorderBrush, tooltipTextBrush, tooltipTextFormatTitle, tooltipTextFormatDescription);
+					abilityCopy->SetLocalPosition(XMFLOAT2{ mousePosX - (SPRITE_WIDTH / 2), mousePosY - SPRITE_WIDTH });
+					abilityCopy->isVisible = true;
+					abilityCopy->isToggled = isToggled;
+					abilityCopy->CreatePositionDependentResources();
 				}
-
-				if (isDragging)
+				else if (dragBehavior == "MOVE")
 				{
-					const auto deltaX = mousePosX - lastDragX;
-					const auto deltaY = mousePosY - lastDragY;
-
-					Translate(XMFLOAT2(deltaX, deltaY));
-
+					isDragging = true;
 					lastDragX = mousePosX;
 					lastDragY = mousePosY;
-
-					CreatePositionDependentResources();
 				}
+
+				std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(g_clientHeight, mousePosX, mousePosY));
+				eventHandler.QueueEvent(e);
 			}
+
+			if (isDragging)
+			{
+				const auto deltaX = mousePosX - lastDragX;
+				const auto deltaY = mousePosY - lastDragY;
+
+				Translate(XMFLOAT2(deltaX, deltaY));
+
+				lastDragX = mousePosX;
+				lastDragY = mousePosY;
+
+				CreatePositionDependentResources();
+			}
+
+			if (isHovered && !g_mouseIsDragging)
+				tooltip->isVisible = true;
+			else
+				tooltip->isVisible = false;
 
 			break;
 		}
@@ -294,4 +313,16 @@ void UIAbility::CreatePositionDependentResources()
 	XMFLOAT3 vec;
 	XMStoreFloat3(&vec, res);
 	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_WIDTH, SPRITE_WIDTH, zIndex);
+
+	tooltip->CreatePositionDependentResources();
+}
+
+// TODO: tooltips are normally below the hover. this is a hack to fix uiabilities you drop on the hotbar
+// at the bottom of the client. refactor this to be smarter about where the tooltip is drawn.
+// you can probably check the pos of the mouse relative to the client window bounds when
+// the tooltip is hovered.
+void UIAbility::SetTooltipPositionAbove()
+{
+	tooltip->SetLocalPosition(XMFLOAT2{ 0.0f, localPosition.y - tooltip->GetHeight() + 36.0f });
+	tooltip->CreatePositionDependentResources();
 }

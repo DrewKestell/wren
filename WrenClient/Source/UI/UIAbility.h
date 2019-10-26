@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UIComponent.h"
+#include "UITooltip.h"
 #include "../Sprite.h"
 #include <Models/Ability.h>
 #include "EventHandling/EventHandler.h"
@@ -30,6 +31,11 @@ class UIAbility : public UIComponent
 	ID2D1SolidColorBrush* highlightBrush{ nullptr };
 	ID2D1SolidColorBrush* abilityPressedBrush{ nullptr };
 	ID2D1SolidColorBrush* abilityToggledBrush{ nullptr };
+	ID2D1SolidColorBrush* tooltipBodyBrush{ nullptr };
+	ID2D1SolidColorBrush* tooltipBorderBrush{ nullptr };
+	ID2D1SolidColorBrush* tooltipTextBrush{ nullptr };
+	IDWriteTextFormat* tooltipTextFormatTitle{ nullptr };
+	IDWriteTextFormat* tooltipTextFormatDescription{ nullptr };
 	const BYTE* vertexShaderBuffer{ nullptr };
 	int vertexShaderSize{ 0 };
 	ComPtr<IDWriteTextLayout> headerTextLayout;
@@ -41,6 +47,7 @@ class UIAbility : public UIComponent
 	bool isHovered{ false };
 	bool isPressed{ false };
 	bool isToggled{ false };
+	std::unique_ptr<UITooltip> tooltip;
 
 public:
 	UIAbility(
@@ -62,10 +69,16 @@ public:
 		ID2D1SolidColorBrush* abilityPressedBrush,
 		ID2D1SolidColorBrush* abilityToggledBrush,
 		const BYTE* vertexShaderBuffer,
-		const int vertexShaderSize);
+		const int vertexShaderSize,
+		ID2D1SolidColorBrush* tooltipBodyBrush,
+		ID2D1SolidColorBrush* tooltipBorderBrush,
+		ID2D1SolidColorBrush* tooltipTextBrush,
+		IDWriteTextFormat* tooltipTextFormatTitle,
+		IDWriteTextFormat* tooltipTextFormatDescription);
 	void Draw() override;
 	void DrawHeadersAndBorder();
 	void DrawHoverAndToggledBorders();
 	const bool HandleEvent(const Event* const event) override;
 	void CreatePositionDependentResources();
+	void SetTooltipPositionAbove();
 };

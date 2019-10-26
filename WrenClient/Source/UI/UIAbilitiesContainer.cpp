@@ -19,7 +19,12 @@ void UIAbilitiesContainer::Initialize(
 	ID3D11PixelShader* pixelShader,
 	const BYTE* vertexShaderBuffer,
 	const int vertexShaderSize,
-	std::vector<ComPtr<ID3D11ShaderResourceView>>* allTextures)
+	std::vector<ComPtr<ID3D11ShaderResourceView>>* allTextures,
+	ID2D1SolidColorBrush* tooltipBodyBrush,
+	ID2D1SolidColorBrush* tooltipBorderBrush,
+	ID2D1SolidColorBrush* tooltipTextBrush,
+	IDWriteTextFormat* tooltipTextFormatTitle,
+	IDWriteTextFormat* tooltipTextFormatDescription)
 {
 	this->borderBrush = borderBrush;
 	this->highlightBrush = highlightBrush;
@@ -32,6 +37,11 @@ void UIAbilitiesContainer::Initialize(
 	this->vertexShaderBuffer = vertexShaderBuffer;
 	this->vertexShaderSize = vertexShaderSize;
 	this->allTextures = allTextures;
+	this->tooltipBodyBrush = tooltipBodyBrush;
+	this->tooltipBorderBrush = tooltipBorderBrush;
+	this->tooltipTextBrush = tooltipTextBrush;
+	this->tooltipTextFormatTitle = tooltipTextFormatTitle;
+	this->tooltipTextFormatDescription = tooltipTextFormatDescription;
 }
 
 void UIAbilitiesContainer::Draw()
@@ -107,7 +117,7 @@ void UIAbilitiesContainer::InitializeAbilities()
 		auto uiAbility = uiAbilities.at(i);
 		auto texture = allTextures->at(abilities->at(i)->spriteId);
 
-		uiAbility->Initialize(headerTextFormat, vertexShader, pixelShader, texture.Get(), borderBrush, headerBrush, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize);		
+		uiAbility->Initialize(headerTextFormat, vertexShader, pixelShader, texture.Get(), borderBrush, headerBrush, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, tooltipBodyBrush, tooltipBorderBrush, tooltipTextBrush, tooltipTextFormatTitle, tooltipTextFormatDescription);
 		uiAbility->CreatePositionDependentResources();
 	}
 }
