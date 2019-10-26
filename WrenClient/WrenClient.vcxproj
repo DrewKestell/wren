@@ -267,9 +267,6 @@
     <None Include="Include\assimp\vector3.inl" />
     <None Include="Lib\assimp-vc140-mt.dll" />
     <None Include="Models\cube.blend" />
-    <None Include="Models\dummy.blend" />
-    <None Include="Models\sphere.blend" />
-    <None Include="Models\tree.blend" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Lib\assimp-vc140-mt.lib" />

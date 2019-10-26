@@ -974,8 +974,8 @@ void Game::OnWindowSizeChanged(int width, int height)
 	if (!deviceResources->WindowSizeChanged(width, height))
 		return;
 
-	g_clientWidth = width;
-	g_clientHeight = height;
+	g_clientWidth = static_cast<float>(width);
+	g_clientHeight = static_cast<float>(height);
 
 	CreateWindowSizeDependentResources();
 }

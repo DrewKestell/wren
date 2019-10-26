@@ -188,7 +188,6 @@
     <FxCompile Include="Source\Shaders\SpritePixelShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Models\sphere.blend" />
     <None Include="Include\assimp\color4.inl" />
     <None Include="Include\assimp\config.h.in" />
     <None Include="Include\assimp\material.inl" />
@@ -212,8 +211,6 @@
     <None Include="Include\assimp\AssimpDelphi\assimp.pas" />
     <None Include="Lib\assimp-vc140-mt.dll" />
     <None Include="Models\cube.blend" />
-    <None Include="Models\tree.blend" />
-    <None Include="Models\dummy.blend" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Lib\assimp-vc140-mt.lib" />
