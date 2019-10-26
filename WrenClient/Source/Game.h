@@ -88,8 +88,6 @@ private:
 	float mousePosX{ 0.0f };
 	float mousePosY{ 0.0f };
 	XMFLOAT3 rightMouseDownDir{ VEC_ZERO };
-	std::vector<std::unique_ptr<UICharacterListing>> characterList;
-	std::map<int, std::unique_ptr<UISkillListing>> skillList;
 	std::string characterNamePendingDeletion{};
 	XMMATRIX worldTransform{ XMMatrixIdentity() };
 	XMMATRIX viewTransform{ XMMatrixIdentity() };
@@ -99,16 +97,11 @@ private:
 	GameTimer timer;
 	Camera camera;
 	GameMap gameMap;
-	std::unique_ptr<GameMapRenderComponent> gameMapRenderComponent;
 	GameObject* player;
 	std::vector<UIComponent*> uiComponents;
 	std::vector<std::unique_ptr<Mesh>> meshes;
 	std::vector<ComPtr<ID3D11ShaderResourceView>> textures;
 	std::vector<std::shared_ptr<Sprite>> sprites;
-	std::unique_ptr<UIHotbar> hotbar;
-	std::unique_ptr<UITargetHUD> targetHUD;
-	std::unique_ptr<UICharacterHUD> characterHUD;
-	std::unique_ptr<UITextWindow> textWindow;
 	std::vector<std::unique_ptr<WrenCommon::Skill>> skills;
 	std::vector<std::unique_ptr<Ability>> abilities;
 	std::unique_ptr<unsigned int> textWindowMessageIndex = std::make_unique<unsigned int>(0);
@@ -117,21 +110,10 @@ private:
 	std::vector<std::unique_ptr<Item>> items;
 	std::map<EventType, std::function<void(const Event* const event)>> eventHandlers;
 
-	void Render(const float updateTimer);
-	void Clear();
-	void CreateDeviceDependentResources();
-	void CreateWindowSizeDependentResources();
-
-	ShaderBuffer LoadShader(const std::wstring filename);
-	virtual const bool HandleEvent(const Event* const event);
-	void SetActiveLayer(const Layer layer);
-	void PublishEvents();
-	void QuitGame();
-
 	void CreateEventHandlers();
-		
-	void CreateInputs();	
-	void CreateButtons();	
+
+	void CreateInputs();
+	void CreateButtons();
 	void CreateLabels();
 	void CreatePanels();
 	void CreateCharacterListings(const std::vector<std::unique_ptr<std::string>>& characterNames);
@@ -149,6 +131,17 @@ private:
 	void InitializePanels();
 	void InitializeCharacterListings();
 	void InitializeStaticObjects();
+
+	void Render(const float updateTimer);
+	void Clear();
+	void CreateDeviceDependentResources();
+	void CreateWindowSizeDependentResources();
+
+	ShaderBuffer LoadShader(const std::wstring filename);
+	virtual const bool HandleEvent(const Event* const event);
+	void SetActiveLayer(const Layer layer);
+	void PublishEvents();
+	void QuitGame();
 
 	UICharacterListing* GetCurrentlySelectedCharacterListing();
 
@@ -266,4 +259,12 @@ private:
 	std::unique_ptr<UILootContainer> lootContainer;
 	std::unique_ptr<UISkillsContainer> skillsContainer;
 	std::unique_ptr<UIInventory> inventory;
+
+	std::unique_ptr<UIHotbar> hotbar;
+	std::unique_ptr<UITargetHUD> targetHUD;
+	std::unique_ptr<UICharacterHUD> characterHUD;
+	std::unique_ptr<UITextWindow> textWindow;
+	std::vector<std::unique_ptr<UICharacterListing>> characterList;
+	std::map<int, std::unique_ptr<UISkillListing>> skillList;
+	std::unique_ptr<GameMapRenderComponent> gameMapRenderComponent;
 };
