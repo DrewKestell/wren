@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UIInventory.h"
+#include "Events/UIItemDroppedEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/LootItemSuccessEvent.h"
 
@@ -108,6 +109,41 @@ const bool UIInventory::HandleEvent(const Event* const event)
 
 			break;
 		}
+		case EventType::UIItemDropped:
+		{
+			const auto derivedEvent = (UIItemDroppedEvent*)event;
+
+			const auto slot = GetInventoryIndex(derivedEvent->mousePosX, derivedEvent->mousePosY);
+
+			if (slot >= 0)
+			{
+				// todo: calculate position based on "slot"
+				const auto xOffset = 0;
+				const auto yOffset = 0;
+
+				items.at(slot) = allItems.at(derivedEvent->uiItem->GetItemId() - 1).get();
+
+				uiItems.at(slot) = std::move(derivedEvent->uiItem);
+				uiItems.at(slot)->SetLocalPosition(XMFLOAT2{ xOffset, yOffset });
+				uiItems.at(slot)->SetParent(*this);
+				uiItems.at(slot)->CreatePositionDependentResources();
+
+				// it's important that UIAbilities receive certain events (mouse clicks for example) before other
+				// UI elements, so we reorder here to make sure the UIComponents are in the right order.
+				std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
+				eventHandler.QueueEvent(e);
+			}
+
+			if (draggingSlot >= 0)
+			{
+				if (slot != draggingSlot)
+					uiItems[draggingSlot] = nullptr;
+
+				draggingSlot = -1;
+			}
+
+			break;
+		}
 	}
 	
 	return false;
@@ -133,7 +169,23 @@ void UIInventory::ReinitializeGeometry()
 	}
 }
 
+const char UIInventory::GetInventoryIndex(const float mousePosX, const float mousePosY) const
+{
+	const auto worldPos = GetWorldPosition();
+
+	const auto initialX = worldPos.x + 5.0f;
+	const auto initialY = worldPos.y + 25.0f;
+
+	if (mousePosX >= initialX && mousePosX <= initialX + 160.0f && mousePosY >= initialY && mousePosY <= initialY + 160.0f)
+	{
+		const auto foo = "yeah!";
+	}
+
+	return -1;
+}
+
 const std::string UIInventory::GetUIItemDragBehavior() const
 {
 	return "MOVE";
 }
+

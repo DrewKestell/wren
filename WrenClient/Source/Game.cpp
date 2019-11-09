@@ -1463,6 +1463,10 @@ void Game::CreateEventHandlers()
 	{
 		g_mouseIsDragging = true;
 	};
+	eventHandlers[EventType::StartDraggingUIItem] = [this](const Event* const event)
+	{
+		g_mouseIsDragging = true;
+	};
 	eventHandlers[EventType::UIAbilityDropped] = [this](const Event* const event)
 	{
 		g_mouseIsDragging = false;

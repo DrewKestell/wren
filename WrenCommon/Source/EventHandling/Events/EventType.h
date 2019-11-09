@@ -32,6 +32,7 @@ enum class EventType
 	UIItemDropped,
 	ActivateAbility,
 	StartDraggingUIAbility,
+	StartDraggingUIItem,
 	SetTarget,
 	UnsetTarget,
 	Logout,

@@ -8,7 +8,7 @@
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
 
-static constexpr auto SPRITE_WIDTH = 36.0f;
+static constexpr auto ABILITY_SPRITE_WIDTH = 36.0f;
 static constexpr auto HIGHLIGHT_WIDTH = 40.0f;
 static constexpr auto ABILITY_HEADER_WIDTH = 200.0f;
 static constexpr auto ABILITY_HEADER_HEIGHT = 30.0f;

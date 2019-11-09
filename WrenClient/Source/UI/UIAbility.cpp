@@ -176,7 +176,7 @@ const bool UIAbility::HandleEvent(const Event* const event)
 				{
 					abilityCopy = new UIAbility(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, zIndex + 1 }, eventHandler, ability, toggled, true, mousePosX, mousePosY);
 					abilityCopy->Initialize(headerTextFormat, vertexShader, pixelShader, texture, borderBrush, headerBrush, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, tooltipBodyBrush, tooltipBorderBrush, tooltipTextBrush, tooltipTextFormatTitle, tooltipTextFormatDescription);
-					abilityCopy->SetLocalPosition(XMFLOAT2{ mousePosX - (SPRITE_WIDTH / 2), mousePosY - SPRITE_WIDTH });
+					abilityCopy->SetLocalPosition(XMFLOAT2{ mousePosX - (ABILITY_SPRITE_WIDTH / 2), mousePosY - ABILITY_SPRITE_WIDTH });
 					abilityCopy->isVisible = true;
 					abilityCopy->isToggled = isToggled;
 					abilityCopy->CreatePositionDependentResources();
@@ -312,7 +312,7 @@ void UIAbility::CreatePositionDependentResources()
 	auto res = XMVector3Unproject(v, 0.0f, 0.0f, g_clientWidth, g_clientHeight, 0.0f, 1000.0f, g_projectionTransform, view, world);
 	XMFLOAT3 vec;
 	XMStoreFloat3(&vec, res);
-	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_WIDTH, SPRITE_WIDTH, zIndex);
+	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, ABILITY_SPRITE_WIDTH, ABILITY_SPRITE_WIDTH, zIndex);
 
 	tooltip->CreatePositionDependentResources();
 }

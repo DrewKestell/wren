@@ -26,8 +26,10 @@ class UIInventory : public UIComponent
 	IDWriteTextFormat* textFormatTitle{ nullptr };
 	IDWriteTextFormat* textFormatDescription{ nullptr };
 	ComPtr<ID2D1RectangleGeometry> geometry[INVENTORY_SIZE];
+	char draggingSlot{ -1 };
 	
 	void ReinitializeGeometry();
+	const char GetInventoryIndex(const float mousePosX, const float mousePosY) const;
 public:	
 	int playerId;
 

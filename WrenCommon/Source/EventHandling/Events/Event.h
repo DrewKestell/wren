@@ -10,4 +10,5 @@ public:
 	{
 	}
 	const EventType type;
+	virtual ~Event() {}
 };

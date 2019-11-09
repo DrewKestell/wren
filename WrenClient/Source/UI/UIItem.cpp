@@ -70,17 +70,18 @@ void UIItem::Draw()
 	if (!isVisible) return;
 
 	const auto d2dDeviceContext = deviceResources->GetD2DDeviceContext();
-	
-	if (isHovered && !isDragging)
-	{
-		d2dDeviceContext->DrawGeometry(highlightGeometry.Get(), highlightBrush, 3.0f);
-	}
 
 	d2dDeviceContext->EndDraw();
 
-	sprite->Draw(deviceResources->GetD3DDeviceContext());
+	if (itemCopy)
+		graySprite->Draw(deviceResources->GetD3DDeviceContext());
+	else
+		sprite->Draw(deviceResources->GetD3DDeviceContext());
 
 	d2dDeviceContext->BeginDraw();
+
+	if (itemCopy)
+		itemCopy->Draw();
 }
 
 const bool UIItem::HandleEvent(const Event* const event)
@@ -117,29 +118,30 @@ const bool UIItem::HandleEvent(const Event* const event)
 			else
 				isHovered = false;
 
-			if (GetParent()->GetUIItemDragBehavior() == "MOVE")
+			// if the button is pressed, and the mouse starts moving, let's move the UIItem
+			if (isPressed && !isDragging && !itemCopy && GetParent()->GetUIItemDragBehavior() == "MOVE")
 			{
-				// if the button is pressed, and the mouse starts moving, let's move the UIItem
-				if (isPressed && !isDragging && !itemCopy)
-				{
-					itemCopy = new UIItem(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, 2 }, eventHandler, socketManager, itemId, name, description, true, mousePosX, mousePosY);
-					itemCopy->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
-					itemCopy->isVisible = true;
+				itemCopy = std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, zIndex + 1 }, eventHandler, socketManager, itemId, name, description, true, mousePosX, mousePosY);
+				itemCopy->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
+				itemCopy->SetLocalPosition(XMFLOAT2{ worldPos.x, worldPos.y });
+				itemCopy->isVisible = true;
+				itemCopy->CreatePositionDependentResources();
 
-					/*std::unique_ptr<Event> e = std::make_unique<StartDraggingUIAbilityEvent>(mousePosX, mousePosY, Utility::GetHotbarIndex(clientHeight, mousePosX, mousePosY));
-					eventHandler.QueueEvent(e);*/
-				}
+				std::unique_ptr<Event> e = std::make_unique<MouseEvent>(EventType::StartDraggingUIItem, mousePosX, mousePosY);
+				eventHandler.QueueEvent(e);
+			}
 
-				if (isDragging)
-				{
-					const auto deltaX = mousePosX - lastDragX;
-					const auto deltaY = mousePosY - lastDragY;
+			if (isDragging)
+			{
+				const auto deltaX = mousePosX - lastDragX;
+				const auto deltaY = mousePosY - lastDragY;
 
-					Translate(XMFLOAT2(deltaX, deltaY));
+				Translate(XMFLOAT2(deltaX, deltaY));
 
-					lastDragX = mousePosX;
-					lastDragY = mousePosY;
-				}
+				lastDragX = mousePosX;
+				lastDragY = mousePosY;
+
+				CreatePositionDependentResources();
 			}
 
 			if (isHovered && !g_mouseIsDragging)
@@ -165,9 +167,9 @@ const bool UIItem::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
-			if (isDragging)
+			if (itemCopy)
 			{
-				std::unique_ptr<Event> e = std::make_unique<UIItemDroppedEvent>(this, derivedEvent->mousePosX, derivedEvent->mousePosY);
+				std::unique_ptr<Event> e = std::make_unique<UIItemDroppedEvent>(itemCopy, derivedEvent->mousePosX, derivedEvent->mousePosY);
 				eventHandler.QueueEvent(e);
 			}
 
@@ -176,9 +178,9 @@ const bool UIItem::HandleEvent(const Event* const event)
 
 			break;
 		}
-		case EventType::UIAbilityDropped:
+		case EventType::UIItemDropped:
 		{
-			itemCopy = nullptr;
+			
 
 			break;
 		}
@@ -237,5 +239,9 @@ void UIItem::CreatePositionDependentResources()
 	XMFLOAT3 vec;
 	XMStoreFloat3(&vec, res);
 	sprite = std::make_shared<Sprite>(vertexShader, pixelShader, texture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_SIZE, SPRITE_SIZE, zIndex);
+	graySprite = std::make_shared<Sprite>(vertexShader, pixelShader, grayTexture, vertexShaderBuffer, vertexShaderSize, deviceResources->GetD3DDevice(), vec.x, vec.y, SPRITE_SIZE, SPRITE_SIZE, zIndex);
 
+	tooltip->CreatePositionDependentResources();
 }
+
+const int UIItem::GetItemId() const { return itemId; }

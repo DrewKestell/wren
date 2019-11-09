@@ -34,7 +34,8 @@ class UIItem : public UIComponent
 	bool isPressed{ false };
 	ComPtr<ID2D1RectangleGeometry> highlightGeometry;
 	std::shared_ptr<Sprite> sprite;
-	UIItem* itemCopy{ nullptr };
+	std::shared_ptr<Sprite> graySprite;
+	std::unique_ptr<UIItem> itemCopy;
 	std::unique_ptr<UITooltip> tooltip;
 
 public:
@@ -64,4 +65,5 @@ public:
 	void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
 	void CreatePositionDependentResources();
+	const int GetItemId() const;
 };
