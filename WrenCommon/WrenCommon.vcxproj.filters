@@ -130,6 +130,7 @@
     <ClInclude Include="Source\Components\Component.h" />
     <ClInclude Include="Source\EventHandling\Events\LootItemSuccessEvent.h" />
     <ClInclude Include="Source\Components\ComponentManager.h" />
+    <ClInclude Include="Source\EventHandling\Events\StartDraggingUIItemEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Wren.ruleset" />

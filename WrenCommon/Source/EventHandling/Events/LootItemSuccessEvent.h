@@ -5,16 +5,16 @@
 class LootItemSuccessEvent : public Event
 {
 public:
-	LootItemSuccessEvent(const int gameObjectId, const int slot, const int destinationSlot, const int itemId, const int looterId)
+	LootItemSuccessEvent(const int looteeId, const int slot, const int destinationSlot, const int itemId, const int looterId)
 		: Event(EventType::LootItemSuccess),
-		  gameObjectId{ gameObjectId },
+		  looteeId{ looteeId },
 		  slot{ slot },
 		  destinationSlot{ destinationSlot },
 		  itemId{ itemId },
 		  looterId{ looterId }
 	{
 	}
-	const int gameObjectId;
+	const int looteeId;
 	const int slot;
 	const int destinationSlot;
 	const int itemId;

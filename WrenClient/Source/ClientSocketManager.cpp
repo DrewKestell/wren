@@ -4,6 +4,7 @@
 #include "Events/AttackHitEvent.h"
 #include "Events/AttackMissEvent.h"
 #include "Events/SkillIncreaseEvent.h"
+#include "Events/MoveItemSuccessEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
 #include "EventHandling/Events/LoginFailedEvent.h"
@@ -431,6 +432,15 @@ void ClientSocketManager::InitializeMessageHandlers()
 		const int looterId = std::stoi(args.at(4));
 
 		std::unique_ptr<Event> e = std::make_unique<LootItemSuccessEvent>(gameObjectId, slot, destinationSlot, itemId, looterId);
+		eventHandler.QueueEvent(e);
+	};
+
+	messageHandlers[OpCode::MoveItemSuccess] = [this](const std::vector<std::string>& args)
+	{
+		const auto draggingSlot = std::stoi(args.at(0));
+		const auto slot = std::stoi(args.at(1));
+
+		std::unique_ptr<Event> e = std::make_unique<MoveItemSuccessEvent>(draggingSlot, slot);
 		eventHandler.QueueEvent(e);
 	};
 }

@@ -3,6 +3,7 @@
 #include "ConstantBufferOnce.h"
 #include "Events/SkillIncreaseEvent.h"
 #include "Events/DoubleLeftMouseDownEvent.h"
+#include "Events/MoveItemSuccessEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/CreateAccountFailedEvent.h"
 #include "EventHandling/Events/LoginSuccessEvent.h"
@@ -23,6 +24,8 @@ bool g_mouseIsDragging{ false };
 unsigned int g_zIndex{ 0 };
 float g_clientWidth{ CLIENT_WIDTH };
 float g_clientHeight{ CLIENT_HEIGHT };
+float g_mousePosX{ 0.0f };
+float g_mousePosY{ 0.0f };
 XMMATRIX g_projectionTransform{ XMMatrixIdentity() };
 
 bool CompareUIComponents(UIComponent* a, UIComponent* b) { return (a->zIndex < b->zIndex); }
@@ -848,7 +851,7 @@ void Game::Render(const float updateTimer)
 	pingTextLabel->SetText(pingText.c_str());
 
 	// update MousePos text
-	const auto mousePosText = "MousePosX: " + std::to_string((int)mousePosX) + ", MousePosY: " + std::to_string((int)mousePosY);
+	const auto mousePosText = "MousePosX: " + std::to_string((int)g_mousePosX) + ", MousePosY: " + std::to_string((int)g_mousePosY);
 	mousePosLabel->SetText(mousePosText.c_str());
 
 	if (activeLayer == InGame)
@@ -1044,8 +1047,8 @@ void Game::CreateEventHandlers()
 	{
 		const auto derivedEvent = (MouseEvent*)event;
 
-		mousePosX = derivedEvent->mousePosX;
-		mousePosY = derivedEvent->mousePosY;
+		g_mousePosX = derivedEvent->mousePosX;
+		g_mousePosY = derivedEvent->mousePosY;
 
 		if (activeLayer == Layer::InGame && rightMouseDownDir != VEC_ZERO)
 		{
@@ -1401,7 +1404,7 @@ void Game::CreateEventHandlers()
 			doubleClickStart = timer.TotalTime();
 		else if (timer.TotalTime() - doubleClickStart <= 0.5f)
 		{
-			std::unique_ptr<Event> e = std::make_unique<DoubleLeftMouseDownEvent>(mousePosX, mousePosY, clickedGameObject);
+			std::unique_ptr<Event> e = std::make_unique<DoubleLeftMouseDownEvent>(g_mousePosX, g_mousePosY, clickedGameObject);
 			eventHandler.QueueEvent(e);
 			doubleClickStart = 0.0f;
 		}
@@ -1474,6 +1477,13 @@ void Game::CreateEventHandlers()
 	eventHandlers[EventType::UIItemDropped] = [this](const Event* const event)
 	{
 		g_mouseIsDragging = false;
+	};
+	eventHandlers[EventType::MoveItemSuccess] = [this](const Event* const event)
+	{
+		const auto derivedEvent = (MoveItemSuccessEvent*)event;
+
+		InventoryComponent& inventoryComponent = inventoryComponentManager.GetComponentById(player->inventoryComponentId);
+		inventoryComponent.MoveItem(derivedEvent->draggingSlot, derivedEvent->slot);
 	};
 }
 

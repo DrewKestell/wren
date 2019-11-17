@@ -1,8 +1,10 @@
 #include "stdafx.h"
 #include "UIInventory.h"
 #include "Events/UIItemDroppedEvent.h"
+#include "Events/MoveItemSuccessEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
 #include "EventHandling/Events/LootItemSuccessEvent.h"
+#include "EventHandling/Events/StartDraggingUIItemEvent.h"
 
 UIInventory::UIInventory(
 	UIComponentArgs uiComponentArgs,
@@ -85,6 +87,7 @@ const bool UIInventory::HandleEvent(const Event* const event)
 				const auto item = allItems.at(derivedEvent->itemId - 1).get();
 				items.at(destinationSlot) = item;
 
+				// TODO: refactor this into a function and call it here and below
 				const auto row = destinationSlot / 4;
 				const auto col = destinationSlot % 4;
 				const auto posX = 5.0f + (col * 45.0f);
@@ -113,20 +116,60 @@ const bool UIInventory::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (UIItemDroppedEvent*)event;
 
-			const auto slot = GetInventoryIndex(derivedEvent->mousePosX, derivedEvent->mousePosY);
+			const auto worldPos = GetWorldPosition();
+			const auto slot = Utility::GetInventoryIndex(worldPos.x, worldPos.y, derivedEvent->mousePosX, derivedEvent->mousePosY);
 
+			if (draggingSlot >= 0 && slot >= 0)
+			{
+				std::vector<std::string> args{ std::to_string(draggingSlot), std::to_string(slot) };
+				socketManager.SendPacket(OpCode::MoveItem, args);
+			}
+
+			break;
+		}
+		case EventType::MoveItemSuccess:
+		{
+			const auto derivedEvent = (MoveItemSuccessEvent*)event;
+			const auto draggingSlot = derivedEvent->draggingSlot;
+			const auto slot = derivedEvent->slot;
+
+			auto swapped = false;
 			if (slot >= 0)
 			{
-				// todo: calculate position based on "slot"
-				const auto xOffset = 0;
-				const auto yOffset = 0;
+				auto row = slot / 4;
+				auto col = slot % 4;
+				auto posX = 5.0f + (col * 45.0f);
+				auto posY = 25.0f + (row * 45.0f);
 
-				items.at(slot) = allItems.at(derivedEvent->uiItem->GetItemId() - 1).get();
+				Item* tmpItem = nullptr;
+				std::unique_ptr<UIItem> tmpUIItem;
+				if (items.at(slot))
+				{
+					swapped = true;
+					tmpItem = items.at(slot);
+					tmpUIItem = std::move(uiItems.at(slot));
+				}
 
-				uiItems.at(slot) = std::move(derivedEvent->uiItem);
-				uiItems.at(slot)->SetLocalPosition(XMFLOAT2{ xOffset, yOffset });
-				uiItems.at(slot)->SetParent(*this);
+				items.at(slot) = items.at(draggingSlot);
+
+				uiItems.at(slot) = std::move(uiItems.at(draggingSlot));
+				uiItems.at(slot)->SetLocalPosition(XMFLOAT2{ posX + 2.0f, posY + 2.0f });
 				uiItems.at(slot)->CreatePositionDependentResources();
+
+				if (swapped)
+				{
+					row = draggingSlot / 4;
+					col = draggingSlot % 4;
+					posX = 5.0f + (col * 45.0f);
+					posY = 25.0f + (row * 45.0f);
+
+					items.at(draggingSlot) = tmpItem;
+					uiItems.at(draggingSlot) = std::move(tmpUIItem);
+					uiItems.at(draggingSlot)->SetLocalPosition(XMFLOAT2{ posX + 2.0f, posY + 2.0f });
+					uiItems.at(draggingSlot)->CreatePositionDependentResources();
+				}
+
+				uiItems.at(slot)->SetTooltipAsVisible();
 
 				// it's important that UIAbilities receive certain events (mouse clicks for example) before other
 				// UI elements, so we reorder here to make sure the UIComponents are in the right order.
@@ -136,11 +179,22 @@ const bool UIInventory::HandleEvent(const Event* const event)
 
 			if (draggingSlot >= 0)
 			{
-				if (slot != draggingSlot)
-					uiItems[draggingSlot] = nullptr;
+				if (slot >= 0 && slot != draggingSlot && !swapped)
+				{
+					items.at(draggingSlot) = nullptr;
+					uiItems.at(draggingSlot).reset();
+				}
 
-				draggingSlot = -1;
+				this->draggingSlot = -1;
 			}
+
+			break;
+		}
+		case EventType::StartDraggingUIItem:
+		{
+			const auto derivedEvent = (StartDraggingUIItemEvent*)event;
+
+			draggingSlot = derivedEvent->slot;
 
 			break;
 		}
@@ -169,23 +223,7 @@ void UIInventory::ReinitializeGeometry()
 	}
 }
 
-const char UIInventory::GetInventoryIndex(const float mousePosX, const float mousePosY) const
-{
-	const auto worldPos = GetWorldPosition();
-
-	const auto initialX = worldPos.x + 5.0f;
-	const auto initialY = worldPos.y + 25.0f;
-
-	if (mousePosX >= initialX && mousePosX <= initialX + 160.0f && mousePosY >= initialY && mousePosY <= initialY + 160.0f)
-	{
-		const auto foo = "yeah!";
-	}
-
-	return -1;
-}
-
 const std::string UIInventory::GetUIItemDragBehavior() const
 {
 	return "MOVE";
 }
-

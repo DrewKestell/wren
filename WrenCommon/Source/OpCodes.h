@@ -37,6 +37,8 @@ enum class OpCode : int
 	NpcDeath,
 	LootItem,
 	LootItemSuccess,
+	MoveItem,
+	MoveItemSuccess,
 
 	Checksum = 65836216
 };

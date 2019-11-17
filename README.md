@@ -37,3 +37,7 @@ WrenServer:
         -first sort uiComponents by z-index
         -pass event to each uiComponent from back to front (higher z-index elements will get events first)
         -if no uiComponents stopped event propagation, pass event to all gameObjects
+
+## Gotchyas
+
+Be careful using mouse position for calculations - I experienced an issue where a MouseMove event triggered copying and dragging and item, and the source inventory slot was determined by mouse position. But the first time the MouseEvent was detected, the mouse had actually moved like 100 pixels from it's initial click location (due to some weird issue with the trackpad on my laptop), so items were duping. Be very careful with this.

@@ -11,5 +11,5 @@ public:
 
 	const bool IsInventoryFull() const;
 	const int AddItem(const int itemId);
-	const bool AddItemAtSlot(const int itemId, const int slot);
+	const bool MoveItem(const int sourceSlot, const int destinationSlot);
 };

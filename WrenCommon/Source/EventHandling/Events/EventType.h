@@ -48,5 +48,6 @@ enum class EventType
 	SkillIncrease,
 	NpcDeath,
 	LootItemSuccess,
-	WindowResize
+	WindowResize,
+	MoveItemSuccess
 };

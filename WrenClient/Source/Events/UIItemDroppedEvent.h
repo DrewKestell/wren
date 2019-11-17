@@ -6,10 +6,8 @@
 class UIItemDroppedEvent : public MouseEvent
 {
 public:
-	UIItemDroppedEvent(std::unique_ptr<UIItem>& uiItem, const float mousePosX, const float mousePosY)
-		: MouseEvent(EventType::UIItemDropped, mousePosX, mousePosY),
-		  uiItem{ std::move(uiItem) }
+	UIItemDroppedEvent(const float mousePosX, const float mousePosY)
+		: MouseEvent(EventType::UIItemDropped, mousePosX, mousePosY)
 	{
 	}
-	std::unique_ptr<UIItem> uiItem;
 };

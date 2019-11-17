@@ -46,9 +46,15 @@ const bool InventoryComponentManager::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (LootItemSuccessEvent*)event;
 
-			const GameObject& gameObject = objectManager.GetGameObjectById(derivedEvent->gameObjectId);
-			InventoryComponent& inventoryComponent = GetComponentById(gameObject.inventoryComponentId);
-			inventoryComponent.itemIds.at(derivedEvent->slot) = -1;
+			// remove item from lootee's inventory
+			const GameObject& lootee = objectManager.GetGameObjectById(derivedEvent->looteeId);
+			InventoryComponent& looteeInventoryComponent = GetComponentById(lootee.inventoryComponentId);
+			looteeInventoryComponent.itemIds.at(derivedEvent->slot) = -1;
+
+			// add item to looter's inventory
+			const GameObject& looter = objectManager.GetGameObjectById(derivedEvent->looterId);
+			InventoryComponent& looterInventoryComponent = GetComponentById(looter.inventoryComponentId);
+			looterInventoryComponent.itemIds.at(derivedEvent->destinationSlot) = derivedEvent->itemId;
 
 			break;
 		}

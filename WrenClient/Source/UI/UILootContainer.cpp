@@ -129,7 +129,7 @@ const bool UILootContainer::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (LootItemSuccessEvent*)event;
 
-			if (isVisible && derivedEvent->gameObjectId == currentGameObjectId)
+			if (isVisible && derivedEvent->looteeId == currentGameObjectId)
 			{
 				const auto slot = derivedEvent->slot;
 

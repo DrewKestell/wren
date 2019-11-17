@@ -172,6 +172,7 @@
     <ClInclude Include="Source\Events\AttackHitEvent.h" />
     <ClInclude Include="Source\Events\AttackMissEvent.h" />
     <ClInclude Include="Source\Events\DoubleLeftMouseDownEvent.h" />
+    <ClInclude Include="Source\Events\MoveItemSuccessEvent.h" />
     <ClInclude Include="Source\Events\SkillIncreaseEvent.h" />
     <ClInclude Include="Source\Events\UIAbilityDroppedEvent.h" />
     <ClInclude Include="Source\Events\UIItemDroppedEvent.h" />

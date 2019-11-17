@@ -493,6 +493,27 @@ void ServerSocketManager::LootItem(const int accountId, const int gameObjectId, 
 	}
 }
 
+void ServerSocketManager::MoveItem(const int accountId, const int draggingSlot, const int slot)
+{
+	const auto inventoryComponentManager = componentOrchestrator.GetInventoryComponentManager();
+
+	const PlayerComponent& playerComponent = GetPlayerComponent(accountId);
+	const GameObject& player = objectManager.GetGameObjectById(playerComponent.GetGameObjectId());
+	InventoryComponent& playerInventoryComponent = inventoryComponentManager->GetComponentById(player.inventoryComponentId);
+
+	const auto success = playerInventoryComponent.MoveItem(draggingSlot, slot);
+
+	if (success)
+	{
+		std::vector<std::string> args{ std::to_string(draggingSlot), std::to_string(slot) };
+		SendPacket(playerComponent.GetFromSockAddr(), OpCode::MoveItemSuccess, args);
+	}
+	else
+	{
+		// TODO: send error to client? how do you want to handle this?
+	}
+}
+
 void ServerSocketManager::InitializeMessageHandlers()
 {
 	messageHandlers[OpCode::Connect] = [this](const std::vector<std::string>& args)
@@ -682,5 +703,17 @@ void ServerSocketManager::InitializeMessageHandlers()
 		ValidateToken(accountId, token);
 
 		LootItem(accountId, gameObjectId, slot);
+	};
+
+	messageHandlers[OpCode::MoveItem] = [this](const std::vector<std::string>& args)
+	{
+		const auto accountId = std::stoi(args.at(0));
+		const std::string& token = args.at(1);
+		const auto draggingSlot = std::stoi(args.at(2));
+		const auto slot = std::stoi(args.at(3));
+
+		ValidateToken(accountId, token);
+
+		MoveItem(accountId, draggingSlot, slot);
 	};
 }

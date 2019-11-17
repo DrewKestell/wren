@@ -38,6 +38,29 @@ const char Utility::GetHotbarIndex(const float clientHeight, const float mousePo
 	return static_cast<char>((mousePosX - 5) / 40);
 }
 
+const char Utility::GetInventoryIndex(const float inventoryPosX, const float inventoryPosY, const float itemPosX, const float itemPosY)
+{
+	const auto initialX = inventoryPosX + 5.0f;
+	const auto initialY = inventoryPosY + 25.0f;
+
+	if (itemPosX >= initialX && itemPosX <= initialX + 180.0f && itemPosY >= initialY && itemPosY <= initialY + 180.0f)
+	{
+		const auto deltaX = itemPosX - initialX;
+		const auto deltaY = itemPosY - initialY;
+
+		const auto row = static_cast<int>(deltaY) / static_cast<int>(45.0f);
+		if (deltaY - (row * 45) > 40.0f)
+			return -1;
+		const auto col = static_cast<int>(deltaX) / static_cast<int>(45.0f);
+		if (deltaX - (col * 45) > 40.0f)
+			return -1;
+
+		return col + (row * 4);
+	}
+
+	return -1;
+}
+
 const XMFLOAT3 Utility::MousePosToDirection(const float clientWidth, const float clientHeight, const float mouseX, const float mouseY)
 {
 	const auto centerPoint = XMVECTOR{ clientWidth / 2, clientHeight / 2, 0.0f, 0.0f };

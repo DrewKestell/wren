@@ -30,7 +30,6 @@ class UIItem : public UIComponent
 	ID2D1SolidColorBrush* textBrush{ nullptr };
 	IDWriteTextFormat* textFormatTitle{ nullptr };
 	IDWriteTextFormat* textFormatDescription{ nullptr };
-	bool isHovered{ false };
 	bool isPressed{ false };
 	ComPtr<ID2D1RectangleGeometry> highlightGeometry;
 	std::shared_ptr<Sprite> sprite;
@@ -38,6 +37,7 @@ class UIItem : public UIComponent
 	std::unique_ptr<UIItem> itemCopy;
 	std::unique_ptr<UITooltip> tooltip;
 
+	const bool IsHovered(const float mousePosX, const float mousePosY);
 public:
 	UIItem(
 		UIComponentArgs uiComponentArgs,
@@ -66,4 +66,5 @@ public:
 	const bool HandleEvent(const Event* const event) override;
 	void CreatePositionDependentResources();
 	const int GetItemId() const;
+	void SetTooltipAsVisible();
 };

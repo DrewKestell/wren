@@ -7,6 +7,7 @@ public:
 	static std::string ws2s(const std::wstring& wstr);
 	static std::wstring s2ws(const std::string& str);
 	static const char GetHotbarIndex(const float clientHeight, const float mousePosX, const float mousePosY);
+	static const char GetInventoryIndex(const float inventoryPosX, const float inventoryPosY, const float itemPosX, const float itemPosY);
 	static const XMFLOAT3 MousePosToDirection(const float clientWidth, const float clientHeight, const float mouseX, const float mouseY);
 	static const bool CheckOutOfBounds(const XMFLOAT3 pos);
 	static void GetMapTileXYFromPos(const XMFLOAT3 pos, int& row, int& col);

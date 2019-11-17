@@ -1,14 +1,17 @@
 #include "stdafx.h"
 #include "UIItem.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
+#include "EventHandling/Events/StartDraggingUIItemEvent.h"
 #include "Events/UIItemDroppedEvent.h"
 #include "UILootContainer.h"
-
 
 extern float g_clientWidth;
 extern float g_clientHeight;
 extern XMMATRIX g_projectionTransform;
 extern bool g_mouseIsDragging;
+extern unsigned int g_zIndex;
+extern float g_mousePosX;
+extern float g_mousePosY;
 
 UIItem::UIItem(
 	UIComponentArgs uiComponentArgs,
@@ -113,21 +116,19 @@ const bool UIItem::HandleEvent(const Event* const event)
 			const auto mousePosY = derivedEvent->mousePosY;
 
 			const auto worldPos = GetWorldPosition();
-			if (Utility::DetectClick(worldPos.x, worldPos.y, worldPos.x + 38.0f, worldPos.y + 38.0f, mousePosX, mousePosY))
-				isHovered = true;
-			else
-				isHovered = false;
 
 			// if the button is pressed, and the mouse starts moving, let's move the UIItem
 			if (isPressed && !isDragging && !itemCopy && GetParent()->GetUIItemDragBehavior() == "MOVE")
 			{
-				itemCopy = std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, zIndex + 1 }, eventHandler, socketManager, itemId, name, description, true, mousePosX, mousePosY);
+				itemCopy = std::make_unique<UIItem>(UIComponentArgs{ deviceResources, uiComponents, calculatePosition, uiLayer, g_zIndex++ }, eventHandler, socketManager, itemId, name, description, true, mousePosX, mousePosY);
 				itemCopy->Initialize(vertexShader, pixelShader, texture, grayTexture, highlightBrush, vertexShaderBuffer, vertexShaderSize, bodyBrush, borderBrush, textBrush, textFormatTitle, textFormatDescription);
 				itemCopy->SetLocalPosition(XMFLOAT2{ worldPos.x, worldPos.y });
 				itemCopy->isVisible = true;
 				itemCopy->CreatePositionDependentResources();
 
-				std::unique_ptr<Event> e = std::make_unique<MouseEvent>(EventType::StartDraggingUIItem, mousePosX, mousePosY);
+				const auto parentWorldPos = GetParent()->GetWorldPosition();
+				const auto slot = Utility::GetInventoryIndex(parentWorldPos.x, parentWorldPos.y, worldPos.x + 16.0f, worldPos.y + 16.0f);
+				std::unique_ptr<Event> e = std::make_unique<StartDraggingUIItemEvent>(slot);
 				eventHandler.QueueEvent(e);
 			}
 
@@ -144,7 +145,7 @@ const bool UIItem::HandleEvent(const Event* const event)
 				CreatePositionDependentResources();
 			}
 
-			if (isHovered && !g_mouseIsDragging)
+			if (IsHovered(mousePosX, mousePosY) && !itemCopy && !isDragging && !g_mouseIsDragging)
 				tooltip->isVisible = true;
 			else
 				tooltip->isVisible = false;
@@ -155,7 +156,7 @@ const bool UIItem::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (MouseEvent*)event;
 
-			if (isVisible && isHovered && !isDragging)
+			if (isVisible && IsHovered(derivedEvent->mousePosX, derivedEvent->mousePosY) && !isDragging)
 			{
 				isPressed = true;
 				return true;
@@ -169,8 +170,10 @@ const bool UIItem::HandleEvent(const Event* const event)
 
 			if (itemCopy)
 			{
-				std::unique_ptr<Event> e = std::make_unique<UIItemDroppedEvent>(itemCopy, derivedEvent->mousePosX, derivedEvent->mousePosY);
+				std::unique_ptr<Event> e = std::make_unique<UIItemDroppedEvent>(derivedEvent->mousePosX, derivedEvent->mousePosY);
 				eventHandler.QueueEvent(e);
+
+				itemCopy.reset();
 			}
 
 			isPressed = false;
@@ -180,8 +183,6 @@ const bool UIItem::HandleEvent(const Event* const event)
 		}
 		case EventType::UIItemDropped:
 		{
-			
-
 			break;
 		}
 		case EventType::RightMouseDown:
@@ -245,3 +246,14 @@ void UIItem::CreatePositionDependentResources()
 }
 
 const int UIItem::GetItemId() const { return itemId; }
+
+const bool UIItem::IsHovered(const float mousePosX, const float mousePosY)
+{
+	const auto worldPos = GetWorldPosition();
+	return Utility::DetectClick(worldPos.x, worldPos.y, worldPos.x + 38.0f, worldPos.y + 38.0f, mousePosX, mousePosY);
+}
+
+void UIItem::SetTooltipAsVisible()
+{
+	tooltip->isVisible = true;
+}

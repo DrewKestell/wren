@@ -29,7 +29,6 @@ class UIInventory : public UIComponent
 	char draggingSlot{ -1 };
 	
 	void ReinitializeGeometry();
-	const char GetInventoryIndex(const float mousePosX, const float mousePosY) const;
 public:	
 	int playerId;
 

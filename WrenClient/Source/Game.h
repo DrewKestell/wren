@@ -85,8 +85,6 @@ private:
 	unsigned int pingId{ 0 };
 	float doubleClickStart{ 0.0f };
 	float updateTimer{ 0.0f };
-	float mousePosX{ 0.0f };
-	float mousePosY{ 0.0f };
 	XMFLOAT3 rightMouseDownDir{ VEC_ZERO };
 	std::string characterNamePendingDeletion{};
 	XMMATRIX worldTransform{ XMMatrixIdentity() };

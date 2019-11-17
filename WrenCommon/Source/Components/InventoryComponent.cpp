@@ -20,13 +20,14 @@ const int InventoryComponent::AddItem(const int itemId)
 	return -1;
 }
 
-const bool InventoryComponent::AddItemAtSlot(const int itemId, const int slot)
+const bool InventoryComponent::MoveItem(const int sourceSlot, const int destinationSlot)
 {
-	if (itemIds.at(slot) == -1)
-	{
-		itemIds.at(slot) = itemId;
-		return true;
-	}
+	if (itemIds.at(sourceSlot) < 0)
+		return false;
 
-	return false;
+	const auto tmpItemId = itemIds.at(destinationSlot);
+	itemIds.at(destinationSlot) = itemIds.at(sourceSlot);
+	itemIds.at(sourceSlot) = tmpItemId;
+	
+	return true;
 }
