@@ -234,7 +234,10 @@ void UIPanel::ToggleVisibility()
 		g_zIndex++;
 		zIndex = g_zIndex;
 		BringToFront(this);
+		SendEventToChildren(Event{ EventType::ShowPanel }, this);
 	}
+	else
+		SendEventToChildren(Event{ EventType::HidePanel }, this);
 
 	std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
 	eventHandler.QueueEvent(e);

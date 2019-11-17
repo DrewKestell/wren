@@ -42,6 +42,19 @@ void UIComponent::ClearChildren()
 	children.clear();
 }
 
+void UIComponent::SendEventToChildren(const Event& e, UIComponent* uiComponent)
+{
+	auto children = uiComponent->GetChildren();
+
+	for (auto i = 0; i < children.size(); i++)
+	{
+		auto child = (UIComponent*)children.at(i);
+		child->HandleEvent(&e);
+
+		SendEventToChildren(e, child);
+	}
+}
+
 const bool UIComponent::HandleEvent(const Event* const event)
 {
 	const auto type = event->type;

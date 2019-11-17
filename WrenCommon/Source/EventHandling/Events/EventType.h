@@ -49,5 +49,7 @@ enum class EventType
 	NpcDeath,
 	LootItemSuccess,
 	WindowResize,
-	MoveItemSuccess
+	MoveItemSuccess,
+	ShowPanel,
+	HidePanel
 };

@@ -219,6 +219,11 @@ const bool UIItem::HandleEvent(const Event* const event)
 
 			break;
 		}
+		case EventType::ShowPanel:
+		{
+			if (IsHovered(g_mousePosX, g_mousePosY))
+				tooltip->isVisible = true;
+		}
 	}
 
 	return false;
