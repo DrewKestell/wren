@@ -36,6 +36,7 @@
 #include "UI/UIInventory.h"
 #include "EventHandling/EventHandler.h"
 #include "ClientSocketManager.h"
+#include "ClientSettingsManager.h"
 
 static constexpr auto ARIAL_FONT_FAMILY{ L"Arial" };
 static constexpr auto LOCALE{ L"en-US" };
@@ -107,6 +108,7 @@ private:
 	std::vector<std::unique_ptr<Npc>> npcs;
 	std::vector<std::unique_ptr<Item>> items;
 	std::map<EventType, std::function<void(const Event* const event)>> eventHandlers;
+	std::unique_ptr<ClientSettingsManager> clientSettingsManager;
 
 	void CreateEventHandlers();
 
@@ -265,4 +267,6 @@ private:
 	std::vector<std::unique_ptr<UICharacterListing>> characterList;
 	std::map<int, std::unique_ptr<UISkillListing>> skillList;
 	std::unique_ptr<GameMapRenderComponent> gameMapRenderComponent;
+
+	friend class ClientSettingsManager;
 };

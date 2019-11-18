@@ -36,6 +36,7 @@
     <ClInclude Include="Source\ServerSocketManager.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
+    <ClInclude Include="Source\WorldStateManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Components\AIComponent.cpp" />

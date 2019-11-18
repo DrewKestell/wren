@@ -18,6 +18,7 @@
     <ClInclude Include="Source\Events\AttackMissEvent.h" />
     <ClInclude Include="Source\ServerSocketManager.h" />
     <ClInclude Include="Source\Components\ServerComponentOrchestrator.h" />
+    <ClInclude Include="Source\WorldStateManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\WrenServer.cpp" />

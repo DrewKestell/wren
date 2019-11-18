@@ -31,7 +31,7 @@ class UIAbilitiesContainer : public UIComponent
 
 	void CreateAbilities();
 	void InitializeAbilities();
-	
+
 public:
 	UIAbilitiesContainer(UIComponentArgs uiComponentArgs, EventHandler& eventHandler);
 	void Initialize(
@@ -55,4 +55,5 @@ public:
 	const bool HandleEvent(const Event* const event) override;
 	const std::string GetUIAbilityDragBehavior() const override;
 	void SetAbilities(std::vector<std::unique_ptr<Ability>>* abilities);
+	UIAbility* GetUIAbilityById(const int abilityId);
 };

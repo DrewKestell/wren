@@ -21,11 +21,13 @@
   <ItemGroup>
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\ClientRepository.cpp" />
+    <ClCompile Include="Source\ClientSettingsManager.cpp" />
     <ClCompile Include="Source\Components\GameMapRenderComponent.cpp" />
     <ClCompile Include="Source\DDSTextureLoader.cpp" />
     <ClCompile Include="Source\DeviceResources.cpp" />
     <ClInclude Include="Source\Camera.h" />
     <ClInclude Include="Source\ClientRepository.h" />
+    <ClInclude Include="Source\ClientSettingsManager.h" />
     <ClInclude Include="Source\Components\GameMapRenderComponent.h" />
     <ClInclude Include="Source\DeviceResources.h" />
     <ClInclude Include="Source\EventHandling\Events\LeftMouseUpEvent.h" />

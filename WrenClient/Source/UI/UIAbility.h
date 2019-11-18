@@ -81,4 +81,5 @@ public:
 	const bool HandleEvent(const Event* const event) override;
 	void CreatePositionDependentResources();
 	void SetTooltipPositionAbove();
+	Ability* GetAbility();
 };

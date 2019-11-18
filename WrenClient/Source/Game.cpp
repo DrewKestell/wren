@@ -287,7 +287,6 @@ void Game::CreateButtons()
 	const auto onClickCharacterSelectLogoutButton = [this]()
 	{
 		socketManager.Logout();
-
 		SetActiveLayer(Login);
 	};
 
@@ -359,6 +358,8 @@ void Game::CreatePanels()
 	// Game Settings
 	const auto onClickGameSettingsLogoutButton = [this]()
 	{
+		clientSettingsManager->SaveClientSettings();
+		clientSettingsManager.reset();
 		socketManager.SendPacket(OpCode::Disconnect);
 		socketManager.Logout();
 		SetActiveLayer(Login);
@@ -1153,6 +1154,9 @@ void Game::CreateEventHandlers()
 		const auto playerId = player.GetId();
 		this->player = &player;
 
+		clientSettingsManager = std::make_unique<ClientSettingsManager>(*this, player.name);
+		clientSettingsManager->LoadClientSettings();
+
 		RenderComponent& sphereRenderComponent = renderComponentManager.CreateRenderComponent(playerId, meshes[derivedEvent->modelId].get(), vertexShader.Get(), pixelShader.Get(), textures[derivedEvent->textureId].Get());
 		player.renderComponentId = sphereRenderComponent.GetId();
 		
@@ -1173,6 +1177,15 @@ void Game::CreateEventHandlers()
 			abilities.clear();
 		abilities = std::move(derivedEvent->abilities);
 		abilitiesContainer->SetAbilities(&abilities);
+
+		const std::vector<int>& savedUIAbilities = clientSettingsManager->GetUIAbilityIds();
+
+		for (auto i = 0; i < 10; i++)
+		{
+			const auto abilityId = savedUIAbilities.at(i);
+			if (abilityId >= 0)
+				hotbar->CreateUIAbilityAtIndex(abilitiesContainer->GetUIAbilityById(abilityId), i);
+		}
 
 		inventory->playerId = player.GetId();
 

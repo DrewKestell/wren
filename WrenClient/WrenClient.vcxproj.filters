@@ -36,6 +36,7 @@
     <ClCompile Include="Source\UI\UIItem.cpp" />
     <ClCompile Include="Source\UI\UIInventory.cpp" />
     <ClCompile Include="Source\UI\UITooltip.cpp" />
+    <ClCompile Include="Source\ClientSettingsManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LoginState.h" />
@@ -181,6 +182,7 @@
     <ClInclude Include="Source\UI\UITooltip.h" />
     <ClInclude Include="Source\UI\UIComponentArgs.h" />
     <ClInclude Include="Source\Events\MoveItemSuccessEvent.h" />
+    <ClInclude Include="Source\ClientSettingsManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

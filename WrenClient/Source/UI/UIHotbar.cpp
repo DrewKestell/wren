@@ -17,6 +17,11 @@ void UIHotbar::Initialize(ID2D1SolidColorBrush* brush)
 	this->brush = brush;
 }
 
+std::vector<UIAbility*>& UIHotbar::GetUIAbilities()
+{
+	return uiAbilities;
+}
+
 void UIHotbar::Draw()
 {
 	if (!isVisible) return;
@@ -28,7 +33,7 @@ void UIHotbar::Draw()
 
 	for (auto i = 0; i < 10; i++)
 	{
-		auto uiAbility = uiAbilities[i];
+		auto uiAbility = uiAbilities.at(i);
 
 		if (uiAbility)
 			uiAbility->DrawHoverAndToggledBorders();
@@ -64,7 +69,15 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
 			if (derivedEvent->layer == uiLayer && GetParent() == nullptr)
+			{
 				isVisible = true;
+				for (auto i = 0; i < 10; i++)
+				{
+					auto uiAbility = uiAbilities.at(i);
+					if (uiAbility)
+						uiAbility->isVisible = true;
+				}
+			}
 			else
 				isVisible = false;
 
@@ -77,29 +90,14 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 			const auto index = Utility::GetHotbarIndex(g_clientHeight, derivedEvent->mousePosX, derivedEvent->mousePosY);
 
 			if (index >= 0)
-			{
-				const auto xOffset = index * 40.0f;
-
-				uiAbilities[index] = derivedEvent->uiAbility;
-				uiAbilities[index]->SetLocalPosition(XMFLOAT2{ xOffset, -20.0f });
-				uiAbilities[index]->SetParent(*this);
-				uiAbilities[index]->CreatePositionDependentResources();
-				uiAbilities[index]->SetTooltipPositionAbove();
-
-				// it's important that UIAbilities receive certain events (mouse clicks for example) before other
-				// UI elements, so we reorder here to make sure the UIComponents are in the right order.
-				std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
-				eventHandler.QueueEvent(e);
-			}
+				CreateUIAbilityAtIndex(derivedEvent->uiAbility, index);
 			else
-			{
 				delete derivedEvent->uiAbility;
-			}
 
 			if (draggingIndex >= 0)
 			{
 				if (index != draggingIndex)
-					uiAbilities[draggingIndex] = nullptr;
+					uiAbilities.at(draggingIndex) = nullptr;
 
 				draggingIndex = -1;
 			}
@@ -123,10 +121,10 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 			for (auto i = 0; i < 10; i++)
 			{
 				d2dFactory->CreateRectangleGeometry(D2D1::RectF(position.x + (i * width), position.y, position.x + (i * width) + width, position.y + width), geometry[i].ReleaseAndGetAddressOf());
-				if (uiAbilities[i])
+				if (uiAbilities.at(i))
 				{
-					uiAbilities[i]->SetLocalPosition(XMFLOAT2{ i * width, -20.0f });
-					uiAbilities[i]->CreatePositionDependentResources();
+					uiAbilities.at(i)->SetLocalPosition(XMFLOAT2{ i * width, -20.0f });
+					uiAbilities.at(i)->CreatePositionDependentResources();
 				}
 			}
 
@@ -140,4 +138,21 @@ const bool UIHotbar::HandleEvent(const Event* const event)
 const std::string UIHotbar::GetUIAbilityDragBehavior() const
 {
 	return "MOVE";
+}
+
+void UIHotbar::CreateUIAbilityAtIndex(UIAbility* uiAbility, const int index)
+{
+	const auto xOffset = index * 40.0f;
+
+	uiAbilities.at(index) = uiAbility;
+	uiAbilities.at(index)->SetLocalPosition(XMFLOAT2{ xOffset, -20.0f });
+	uiAbilities.at(index)->SetParent(*this);
+	uiAbilities.at(index)->CreatePositionDependentResources();
+	uiAbilities.at(index)->SetTooltipPositionAbove();
+	uiAbilities.at(index)->isVisible = true;
+
+	// it's important that UIAbilities receive certain events (mouse clicks for example) before other
+	// UI elements, so we reorder here to make sure the UIComponents are in the right order.
+	std::unique_ptr<Event> e = std::make_unique<Event>(EventType::ReorderUIComponents);
+	eventHandler.QueueEvent(e);
 }

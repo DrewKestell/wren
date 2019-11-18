@@ -326,3 +326,8 @@ void UIAbility::SetTooltipPositionAbove()
 	tooltip->SetLocalPosition(XMFLOAT2{ 0.0f, localPosition.y - tooltip->GetHeight() + 36.0f });
 	tooltip->CreatePositionDependentResources();
 }
+
+Ability* UIAbility::GetAbility()
+{
+	return ability;
+}

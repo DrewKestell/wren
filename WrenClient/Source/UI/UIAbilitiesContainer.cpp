@@ -121,3 +121,21 @@ void UIAbilitiesContainer::InitializeAbilities()
 		uiAbility->CreatePositionDependentResources();
 	}
 }
+
+UIAbility* UIAbilitiesContainer::GetUIAbilityById(const int abilityId)
+{
+	for (auto i = 0; i < uiAbilities.size(); i++)
+	{
+		auto ability = uiAbilities.at(i)->GetAbility();;
+		if (ability->abilityId == abilityId)
+		{
+			auto xOffset = 12.0f;
+			auto yOffset = 30.0f + (i * 70.0f);
+
+			auto copy = new UIAbility(UIComponentArgs(deviceResources, uiComponents, [xOffset, yOffset](const float, const float) { return XMFLOAT2{ xOffset + 2.0f, yOffset + 2.0f }; }, uiLayer, zIndex + 1), eventHandler, ability, ability->toggled);
+			auto texture = allTextures->at(ability->spriteId);
+			copy->Initialize(headerTextFormat, vertexShader, pixelShader, texture.Get(), borderBrush, headerBrush, highlightBrush, abilityPressedBrush, abilityToggledBrush, vertexShaderBuffer, vertexShaderSize, tooltipBodyBrush, tooltipBorderBrush, tooltipTextBrush, tooltipTextFormatTitle, tooltipTextFormatDescription);
+			return copy;
+		}
+	}
+}
