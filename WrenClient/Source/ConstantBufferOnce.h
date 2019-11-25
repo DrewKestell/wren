@@ -2,5 +2,6 @@
 
 struct ConstantBufferOnce
 {
-	XMFLOAT4A directionalLight;
+	XMFLOAT4A directionalLightPos;
+	XMFLOAT3A directionalLightColor;
 };

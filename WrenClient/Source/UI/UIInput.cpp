@@ -66,7 +66,7 @@ void UIInput::Draw()
     
     // Draw Input Text   
 	if (inputIndex > 0)
-		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + labelWidth + 14, position.y), inputValueTextLayout.Get(), inputValueBrush);
+		d2dDeviceContext->DrawTextLayout(D2D1::Point2F(position.x + labelWidth + 14.0f, position.y + 1.0f), inputValueTextLayout.Get(), inputValueBrush); // +1.0f in the y direction looks more centered
 }
 
 const bool UIInput::HandleEvent(const Event* const event)
@@ -142,7 +142,7 @@ const bool UIInput::HandleEvent(const Event* const event)
 		{
 			const auto derivedEvent = (ChangeActiveLayerEvent*)event;
 
-			if (derivedEvent->layer == uiLayer)
+			if (derivedEvent->layer == uiLayer && GetParent() == nullptr)
 				isVisible = true;
 			else
 				isVisible = false;
@@ -162,6 +162,13 @@ const bool UIInput::HandleEvent(const Event* const event)
 const wchar_t* UIInput::GetInputValue() const
 {
 	return inputValue;
+}
+
+void UIInput::SetInputValue(const wchar_t* val, const int len)
+{
+	memcpy(inputValue, val, sizeof(wchar_t) * len);
+	inputIndex = len;
+	CreateTextLayout();
 }
 
 void UIInput::ClearInput()

@@ -157,6 +157,8 @@ private:
 	ComPtr<IDWriteTextFormat> textFormatTextWindowInactive;
 	ComPtr<IDWriteTextFormat> textFormatTooltipTitle;
 	ComPtr<IDWriteTextFormat> textFormatTooltipDescription;
+	ComPtr<IDWriteTextFormat> textFormat_size12_trailing_centered_bold;
+	ComPtr<IDWriteTextFormat> textFormat_size12_leading_centered;
 
 	// Brushes
 	ComPtr<ID2D1SolidColorBrush> grayBrush;
@@ -189,6 +191,9 @@ private:
 	ShaderBuffer spritePixelShaderBuffer{};
 	ComPtr<ID3D11PixelShader> spritePixelShader;
 
+	// Constant Buffers
+	ComPtr<ID3D11Buffer> constantBufferOnce;
+
 	// Raster States
 	ComPtr<ID3D11RasterizerState> wireframeRasterState;
 	ComPtr<ID3D11RasterizerState> solidRasterState;
@@ -201,11 +206,15 @@ private:
 	std::unique_ptr<UIInput> createAccount_accountNameInput;
 	std::unique_ptr<UIInput> createAccount_passwordInput;
 	std::unique_ptr<UIInput> createCharacter_characterNameInput;
+	std::unique_ptr<UIInput> gameEditorPanelDirectionalLightColorRInput;
+	std::unique_ptr<UIInput> gameEditorPanelDirectionalLightColorGInput;
+	std::unique_ptr<UIInput> gameEditorPanelDirectionalLightColorBInput;
 
 	// InputGroups
 	std::unique_ptr<UIInputGroup> loginScreen_inputGroup;
 	std::unique_ptr<UIInputGroup> createAccount_inputGroup;
 	std::unique_ptr<UIInputGroup> createCharacter_inputGroup;
+	std::unique_ptr<UIInputGroup> gameEditorPanelInputGroup;
 
 	// Buttons
 	std::unique_ptr<UIButton> loginScreen_loginButton;
@@ -239,6 +248,7 @@ private:
 	std::unique_ptr<UILabel> mousePosLabel;
 	std::unique_ptr<UILabel> gameSettingsPanelHeader;
 	std::unique_ptr<UILabel> gameEditorPanelHeader;
+	std::unique_ptr<UILabel> gameEditorPanelDirectionalLightColorHeader;
 	std::unique_ptr<UILabel> diagnosticsPanelHeader;
 	std::unique_ptr<UILabel> skillsPanelHeader;
 	std::unique_ptr<UILabel> abilitiesPanelHeader;

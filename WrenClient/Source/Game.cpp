@@ -112,6 +112,11 @@ void Game::CreateDeviceDependentResources()
 
 	// TODO: fix me - split apart into ctor and Initialize
 	gameMapRenderComponent = std::make_unique<GameMapRenderComponent>(deviceResources->GetD3DDevice(), vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures.at(2).Get());
+
+	// initialize gameEditor elements
+	gameEditorPanelDirectionalLightColorRInput->SetInputValue(L"1.0", 3);
+	gameEditorPanelDirectionalLightColorGInput->SetInputValue(L"1.0", 3);
+	gameEditorPanelDirectionalLightColorBInput->SetInputValue(L"1.0", 3);
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -374,6 +379,18 @@ void Game::CreatePanels()
 	gameEditorPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 580.0f, 5.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 400.0f, VK_F1);
 	gameEditorPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 2 }, 200.0f);
 	gameEditorPanel->AddChildComponent(*gameEditorPanelHeader);
+	gameEditorPanelDirectionalLightColorHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 4.0f, 24.0f }; }, InGame, 2 }, 200.0f);
+	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightColorHeader);
+	gameEditorPanelDirectionalLightColorRInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 44.0f }; }, InGame, 2 }, false, 14.0f, 100.0f, 20.0f, "R:");
+	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightColorRInput);
+	gameEditorPanelDirectionalLightColorGInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 68.0f }; }, InGame, 2 }, false, 14.0f, 100.0f, 20.0f, "G:");
+	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightColorGInput);
+	gameEditorPanelDirectionalLightColorBInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 92.0f }; }, InGame, 2 }, false, 14.0f, 100.0f, 20.0f, "B:");
+	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightColorBInput);
+	gameEditorPanelInputGroup = std::make_unique<UIInputGroup>(InGame, eventHandler);
+	gameEditorPanelInputGroup->AddInput(gameEditorPanelDirectionalLightColorRInput.get());
+	gameEditorPanelInputGroup->AddInput(gameEditorPanelDirectionalLightColorGInput.get());
+	gameEditorPanelInputGroup->AddInput(gameEditorPanelDirectionalLightColorBInput.get());
 
 	// Diagnostics
 	diagnosticsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 580.0f, 336.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 200.0f, VK_F2);
@@ -514,13 +531,21 @@ void Game::InitializeTextFormats()
 
 	// Tooltip Title
 	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 16.0f, LOCALE, textFormatTooltipTitle.ReleaseAndGetAddressOf());
-	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+	textFormatTooltipTitle->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatTooltipTitle->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
 	// Tooltip Description
 	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14.0f, LOCALE, textFormatTooltipDescription.ReleaseAndGetAddressOf());
-	textFormatHeaders->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
-	textFormatHeaders->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+	textFormatTooltipDescription->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormatTooltipDescription->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, LOCALE, textFormat_size12_trailing_centered_bold.ReleaseAndGetAddressOf());
+	textFormat_size12_trailing_centered_bold->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING);
+	textFormat_size12_trailing_centered_bold->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, LOCALE, textFormat_size12_leading_centered.ReleaseAndGetAddressOf());
+	textFormat_size12_leading_centered->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormat_size12_leading_centered->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 }
 
 void Game::InitializeShaders()
@@ -554,17 +579,7 @@ void Game::InitializeBuffers()
 	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bufferDesc.ByteWidth = sizeof(ConstantBufferOnce);
 
-	ID3D11Buffer* constantBufferOnce{ nullptr };
-	DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bufferDesc, nullptr, &constantBufferOnce));
-
-	// map ConstantBuffer
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	d3dContext->Map(constantBufferOnce, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	auto pCB{ reinterpret_cast<ConstantBufferOnce*>(mappedResource.pData) };
-	XMStoreFloat4(&pCB->directionalLight, XMVECTOR{ 0.0f, -1.0f, 0.5f, 0.0f });
-	d3dContext->Unmap(constantBufferOnce, 0);
-
-	d3dContext->PSSetConstantBuffers(0, 1, &constantBufferOnce);
+	DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bufferDesc, nullptr, constantBufferOnce.ReleaseAndGetAddressOf()));
 }
 
 void Game::InitializeRasterStates()
@@ -639,6 +654,11 @@ void Game::InitializeInputs()
 	createAccount_accountNameInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
 	createAccount_passwordInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
 	createCharacter_characterNameInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
+
+	// initialize panel inputs
+	gameEditorPanelDirectionalLightColorRInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_trailing_centered_bold.Get());
+	gameEditorPanelDirectionalLightColorGInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_trailing_centered_bold.Get());
+	gameEditorPanelDirectionalLightColorBInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_trailing_centered_bold.Get());
 }
 
 void Game::InitializeButtons()
@@ -678,11 +698,13 @@ void Game::InitializeLabels()
 	enteringWorld_statusLabel->Initialize(blackBrush.Get(), textFormatAccountCreds.Get());
 	enteringWorld_statusLabel->SetText("Entering World...");
 
-	// inputs in panels
+	// labels in panels
 	gameSettingsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
 	gameSettingsPanelHeader->SetText("Game Settings");
 	gameEditorPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
 	gameEditorPanelHeader->SetText("Game Editor");
+	gameEditorPanelDirectionalLightColorHeader->Initialize(blackBrush.Get(), textFormatSuccessMessage.Get());
+	gameEditorPanelDirectionalLightColorHeader->SetText("Directional Light Color");
 	diagnosticsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
 	diagnosticsPanelHeader->SetText("Diagnostics");
 	mousePosLabel->Initialize(blackBrush.Get(), textFormatFPS.Get());
@@ -707,7 +729,6 @@ void Game::InitializePanels()
 	abilitiesPanel->Initialize(darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
 	lootPanel->Initialize(darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
 	inventoryPanel->Initialize(darkBlueBrush.Get(), lightGrayBrush.Get(), grayBrush.Get());
-
 }
 
 void Game::InitializeCharacterListings()
@@ -821,9 +842,32 @@ void Game::Render(const float updateTimer)
 	if (timer.TotalTime() == 0)
 		return;
 
+	float r, g, b;
+	try
+	{
+		r = std::stof(gameEditorPanelDirectionalLightColorRInput->GetInputValue());
+		g = std::stof(gameEditorPanelDirectionalLightColorGInput->GetInputValue());
+		b = std::stof(gameEditorPanelDirectionalLightColorBInput->GetInputValue());
+	}
+	catch (std::exception e)
+	{
+		r = 1.0f;
+		g = 1.0f;
+		b = 1.0f;
+	}
+
+	// set constant buffers
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	auto d3dContext = deviceResources->GetD3DDeviceContext();
+	d3dContext->Map(constantBufferOnce.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	auto pCB{ reinterpret_cast<ConstantBufferOnce*>(mappedResource.pData) };
+	XMStoreFloat4(&pCB->directionalLightPos, XMVECTOR{ 0.0f, -1.0f, 0.5f, 0.0f });
+	XMStoreFloat3(&pCB->directionalLightColor, XMVECTOR{ r, g, b });
+	d3dContext->Unmap(constantBufferOnce.Get(), 0);
+	d3dContext->PSSetConstantBuffers(0, 1, constantBufferOnce.GetAddressOf());
+
 	Clear();
 
-	auto d3dContext = deviceResources->GetD3DDeviceContext();
 	auto d2dContext = deviceResources->GetD2DDeviceContext();
 
 	d2dContext->BeginDraw();

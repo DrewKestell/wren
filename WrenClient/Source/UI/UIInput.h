@@ -46,6 +46,7 @@ public:
     void Draw() override;
 	const bool HandleEvent(const Event* const event) override;
     const wchar_t* GetInputValue() const;
+	void SetInputValue(const wchar_t* val, const int len); // TODO: fix me
 	void ClearInput();
 	const bool IsActive() const { return active; }
 	void SetActive(const bool active) { this->active = active; }
