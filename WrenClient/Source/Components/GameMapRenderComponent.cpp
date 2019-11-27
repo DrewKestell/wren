@@ -5,8 +5,8 @@
 // this can be optimized. there are more shared vertices here (between tiles).
 GameMapRenderComponent::GameMapRenderComponent(ID3D11Device* device, const BYTE* vertexShaderBuffer, const int vertexShaderSize, ID3D11VertexShader* vertexShader, ID3D11PixelShader* pixelShader, ID3D11ShaderResourceView* texture)
 	: vertexShader{ vertexShader },
-	pixelShader{ pixelShader },
-	texture{ texture }
+	  pixelShader{ pixelShader },
+	  texture{ texture }
 {
 	std::vector<Vertex> vertices(MAP_SIZE * 4);
 	std::vector<unsigned int> indices(MAP_SIZE * 6, 0);
@@ -24,10 +24,10 @@ GameMapRenderComponent::GameMapRenderComponent(ID3D11Device* device, const BYTE*
 		const auto topRight = (i * 4) + 2;
 		const auto bottomRight = (i * 4) + 3;
 
-		vertices[bottomLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{0.0f, 0.0f} };
-		vertices[topLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z + TILE_SIZE }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{1.0f, 0.0f} };
-		vertices[topRight] = Vertex{ XMFLOAT3{ x + TILE_SIZE, 0.0f, z + TILE_SIZE }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{1.0f, 1.0f} };
-		vertices[bottomRight] = Vertex{ XMFLOAT3{ x + TILE_SIZE, 0.0f, z }, XMFLOAT3{0.0f, 0.0f, 0.0f}, XMFLOAT2{0.0f, 1.0f} };
+		vertices[bottomLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z }, XMFLOAT3{0.0f, 1.0f, 0.0f}, XMFLOAT2{0.0f, 0.0f} };
+		vertices[topLeft] = Vertex{ XMFLOAT3{ x, 0.0f, z + TILE_SIZE }, XMFLOAT3{0.0f, 1.0f, 0.0f}, XMFLOAT2{1.0f, 0.0f} };
+		vertices[topRight] = Vertex{ XMFLOAT3{ x + TILE_SIZE, 0.0f, z + TILE_SIZE }, XMFLOAT3{0.0f, 1.0f, 0.0f}, XMFLOAT2{1.0f, 1.0f} };
+		vertices[bottomRight] = Vertex{ XMFLOAT3{ x + TILE_SIZE, 0.0f, z }, XMFLOAT3{0.0f, 1.0f, 0.0f}, XMFLOAT2{0.0f, 1.0f} };
 
 		indices[i * 6] = bottomLeft;
 		indices[(i * 6) + 1] = topLeft;
