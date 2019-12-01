@@ -153,7 +153,7 @@
     <ClInclude Include="Include\assimp\version.h" />
     <ClInclude Include="Include\assimp\Vertex.h" />
     <ClInclude Include="Include\assimp\XMLTools.h" />
-    <ClInclude Include="Source\ConstantBufferOnce.h" />
+    <ClInclude Include="Source\ConstantBufferPerFrame.h" />
     <ClInclude Include="Source\ConstantBufferPerObject.h" />
     <ClInclude Include="Source\DDSTextureLoader.h" />
     <ClInclude Include="Source\EventHandling\EventHandler.h" />
@@ -191,6 +191,7 @@
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
     <ClInclude Include="Source\EventHandling\Observer.h" />
+    <ClInclude Include="Source\UI\UIInputType.h" />
     <ClInclude Include="Source\UI\UIAbilitiesContainer.h" />
     <ClInclude Include="Source\UI\UICharacterHUD.h" />
     <ClInclude Include="Source\UI\UIAbility.h" />

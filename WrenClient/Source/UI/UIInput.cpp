@@ -4,8 +4,13 @@
 #include "EventHandling/Events/KeyDownEvent.h"
 #include "EventHandling/Events/SystemKeyDownEvent.h"
 #include "EventHandling/Events/ChangeActiveLayerEvent.h"
+#include <sstream>
+#include <iomanip>
 
 using namespace DX;
+
+extern bool g_leftCtrlHeld;
+extern bool g_leftShiftHeld;
 
 UIInput::UIInput(
 	UIComponentArgs uiComponentArgs,
@@ -13,13 +18,15 @@ UIInput::UIInput(
 	const float labelWidth,
 	const float inputWidth,
 	const float height,
-	const char* labelText)
+	const char* labelText,
+	const UIInputType inputType)
 	: UIComponent(uiComponentArgs),
 	  secure{ secure },
 	  labelWidth{ labelWidth },
 	  inputWidth{ inputWidth },
 	  height{ height },
-	  labelText{ labelText }
+	  labelText{ labelText },
+	  inputType{ inputType }
 {
 }
 
@@ -133,6 +140,34 @@ const bool UIInput::HandleEvent(const Event* const event)
 						}
 						break;
 					}
+					case VK_UP:
+					{
+						if (inputType == UIInputType::Number)
+						{
+							if (g_leftShiftHeld)
+								IncrementValue(1);
+							else if (g_leftCtrlHeld)
+								IncrementValue(0.01f);
+							else
+								IncrementValue(0.1f);
+						}
+
+						break;
+					}
+					case VK_DOWN:
+					{
+						if (inputType == UIInputType::Number)
+						{
+							if (g_leftShiftHeld)
+								IncrementValue(-1);
+							else if (g_leftCtrlHeld)
+								IncrementValue(-0.01f);
+							else
+								IncrementValue(-0.1f);
+						}
+
+						break;
+					}
 				}
 			}
 			
@@ -166,6 +201,7 @@ const wchar_t* UIInput::GetInputValue() const
 
 void UIInput::SetInputValue(const wchar_t* val, const int len)
 {
+	ZeroMemory(inputValue, sizeof(inputValue));
 	memcpy(inputValue, val, sizeof(wchar_t) * len);
 	inputIndex = len;
 	CreateTextLayout();
@@ -202,4 +238,23 @@ void UIInput::CreateTextLayout()
 			inputValueTextLayout.ReleaseAndGetAddressOf()
 		)
 	);
+}
+
+void UIInput::IncrementValue(const float amount)
+{
+	try
+	{
+		auto val = std::wcstof(inputValue, nullptr);
+		val += amount;
+
+		std::wstringstream out;
+		out << val;
+		auto newVal = std::wstring(out.str());
+
+		SetInputValue(newVal.data(), newVal.length());
+	}
+	catch (std::exception ex)
+	{
+		// fail silently?
+	}
 }

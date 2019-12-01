@@ -4,14 +4,16 @@
 #include "UIComponent.h"
 #include "EventHandling/Observer.h"
 #include "EventHandling/Events/Event.h"
+#include "UIInputType.h"
 
 class UIInput : public UIComponent
 {
-	bool secure;
-	float labelWidth;
-	float inputWidth;
-	float height;
-	std::string labelText;
+	const bool secure;
+	const float labelWidth;
+	const float inputWidth;
+	const float height;
+	const std::string labelText;
+	const UIInputType inputType;
 	ID2D1SolidColorBrush* labelBrush{ nullptr };
 	ID2D1SolidColorBrush* inputBrush{ nullptr };
 	ID2D1SolidColorBrush* inputBorderBrush{ nullptr };
@@ -26,6 +28,7 @@ class UIInput : public UIComponent
 	bool active{ false };
 
 	void CreateTextLayout();
+	void IncrementValue(const float amount);
 	
 	friend class UIInputGroup;
 public:
@@ -35,7 +38,8 @@ public:
 		const float labelWidth,
 		const float inputWidth,
 		const float height,
-		const char* labelText);
+		const char* labelText,
+		const UIInputType inputType);
 	void Initialize(
 		ID2D1SolidColorBrush* labelBrush,
 		ID2D1SolidColorBrush* inputBrush,

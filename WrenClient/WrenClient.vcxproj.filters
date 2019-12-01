@@ -143,7 +143,6 @@
     <ClInclude Include="Source\Vertex.h" />
     <ClInclude Include="Source\stdafx.h" />
     <ClInclude Include="Source\targetver.h" />
-    <ClInclude Include="Source\ConstantBufferOnce.h" />
     <ClInclude Include="Source\EventHandling\Events\LeftMouseDownEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\LeftMouseUpEvent.h" />
     <ClInclude Include="Source\EventHandling\Events\RightMouseDownEvent.h" />
@@ -183,6 +182,8 @@
     <ClInclude Include="Source\UI\UIComponentArgs.h" />
     <ClInclude Include="Source\Events\MoveItemSuccessEvent.h" />
     <ClInclude Include="Source\ClientSettingsManager.h" />
+    <ClInclude Include="Source\ConstantBufferPerFrame.h" />
+    <ClInclude Include="Source\UI\UIInputType.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\PixelShader.hlsl" />

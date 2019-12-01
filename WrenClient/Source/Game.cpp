@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Game.h"
-#include "ConstantBufferOnce.h"
+#include "ConstantBufferPerFrame.h"
 #include "Events/SkillIncreaseEvent.h"
 #include "Events/DoubleLeftMouseDownEvent.h"
 #include "Events/MoveItemSuccessEvent.h"
@@ -19,8 +19,14 @@
 #include "EventHandling/Events/SendChatMessage.h"
 #include "EventHandling/Events/PropagateChatMessageEvent.h"
 #include "EventHandling/Events/ServerMessageEvent.h"
+#include "EventHandling/Events/SystemKeyDownEvent.h"
+#include "EventHandling/Events/SystemKeyUpEvent.h"
+#include "UI\UIInputType.h"
 
 bool g_mouseIsDragging{ false };
+bool g_leftCtrlHeld{ false };
+bool g_leftAltHeld{ false };
+bool g_leftShiftHeld{ false };
 unsigned int g_zIndex{ 0 };
 float g_clientWidth{ CLIENT_WIDTH };
 float g_clientHeight{ CLIENT_HEIGHT };
@@ -114,9 +120,14 @@ void Game::CreateDeviceDependentResources()
 	gameMapRenderComponent = std::make_unique<GameMapRenderComponent>(deviceResources->GetD3DDevice(), vertexShaderBuffer.buffer, vertexShaderBuffer.size, vertexShader.Get(), pixelShader.Get(), textures.at(2).Get());
 
 	// initialize gameEditor elements
-	gameEditorPanelDirectionalLightColorRInput->SetInputValue(L"1.0", 3);
-	gameEditorPanelDirectionalLightColorGInput->SetInputValue(L"1.0", 3);
-	gameEditorPanelDirectionalLightColorBInput->SetInputValue(L"1.0", 3);
+	gameEditorPanelDirectionalLightColorRInput->SetInputValue(L"1", 1);
+	gameEditorPanelDirectionalLightColorGInput->SetInputValue(L"1", 1);
+	gameEditorPanelDirectionalLightColorBInput->SetInputValue(L"1", 1);
+	gameEditorPanelDirectionalLightXPosInput->SetInputValue(L"0", 1);
+	gameEditorPanelDirectionalLightYPosInput->SetInputValue(L"-1.0", 4);
+	gameEditorPanelDirectionalLightZPosInput->SetInputValue(L"0.5", 3);
+	gameEditorPanelDirectionalLightIntensityInput->SetInputValue(L"0.7", 3);
+	gameEditorPanelAmbientLightIntensityInput->SetInputValue(L"0.6", 3);
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -154,21 +165,21 @@ void Game::CreateWindowSizeDependentResources()
 void Game::CreateInputs()
 {
 	// LoginScreen
-	loginScreen_accountNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, Login, 0 }, false, 120.0f, 260.0f, 24.0f, "Account Name:");
-	loginScreen_passwordInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 50.0f }; }, Login, 0 }, true, 120.0f, 260.0f, 24.0f, "Password:");
+	loginScreen_accountNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, Login, 0 }, false, 120.0f, 260.0f, 24.0f, "Account Name:", UIInputType::Text);
+	loginScreen_passwordInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 50.0f }; }, Login, 0 }, true, 120.0f, 260.0f, 24.0f, "Password:", UIInputType::Text);
 	loginScreen_inputGroup = std::make_unique<UIInputGroup>(Login, eventHandler);
 	loginScreen_inputGroup->AddInput(loginScreen_accountNameInput.get());
 	loginScreen_inputGroup->AddInput(loginScreen_passwordInput.get());
 
 	// CreateAccount
-	createAccount_accountNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, CreateAccount, 0 }, false, 120.0f, 260.0f, 24.0f, "Account Name:");
-	createAccount_passwordInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 50.0f }; }, CreateAccount, 0 }, true, 120.0f, 260.0f, 24.0f, "Password:");
+	createAccount_accountNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, CreateAccount, 0 }, false, 120.0f, 260.0f, 24.0f, "Account Name:", UIInputType::Text);
+	createAccount_passwordInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 50.0f }; }, CreateAccount, 0 }, true, 120.0f, 260.0f, 24.0f, "Password:", UIInputType::Text);
 	createAccount_inputGroup = std::make_unique<UIInputGroup>(CreateAccount, eventHandler);
 	createAccount_inputGroup->AddInput(createAccount_accountNameInput.get());
 	createAccount_inputGroup->AddInput(createAccount_passwordInput.get());
 
 	// CreateCharacter
-	createCharacter_characterNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, CreateCharacter, 0 }, false, 140.0f, 260.0f, 24.0f, "Character Name:");
+	createCharacter_characterNameInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 15.0f, 20.0f }; }, CreateCharacter, 0 }, false, 140.0f, 260.0f, 24.0f, "Character Name:", UIInputType::Text);
 	createCharacter_inputGroup = std::make_unique<UIInputGroup>(CreateCharacter, eventHandler);
 	createCharacter_inputGroup->AddInput(createCharacter_characterNameInput.get());
 }
@@ -376,21 +387,42 @@ void Game::CreatePanels()
 	gameSettingsPanel->AddChildComponent(*gameSettings_logoutButton);
 
 	// Game Editor
-	gameEditorPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 580.0f, 5.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 400.0f, VK_F1);
+	gameEditorPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 580.0f, 5.0f }; }, InGame, 1 }, eventHandler, true, 300.0f, 400.0f, VK_F1);
 	gameEditorPanelHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 2.0f, 2.0f }; }, InGame, 2 }, 200.0f);
 	gameEditorPanel->AddChildComponent(*gameEditorPanelHeader);
-	gameEditorPanelDirectionalLightColorHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 4.0f, 24.0f }; }, InGame, 2 }, 200.0f);
-	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightColorHeader);
-	gameEditorPanelDirectionalLightColorRInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 44.0f }; }, InGame, 2 }, false, 14.0f, 100.0f, 20.0f, "R:");
+
+	// header
+	gameEditorPanelLightingHeader = std::make_unique<UILabel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 4.0f, 24.0f }; }, InGame, 2 }, 200.0f);
+	gameEditorPanel->AddChildComponent(*gameEditorPanelLightingHeader);
+	// directional color
+	gameEditorPanelDirectionalLightColorRInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 44.0f }; }, InGame, 2 }, false, 120.0f, 100.0f, 20.0f, "(Sun) Red:", UIInputType::Number);
 	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightColorRInput);
-	gameEditorPanelDirectionalLightColorGInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 68.0f }; }, InGame, 2 }, false, 14.0f, 100.0f, 20.0f, "G:");
+	gameEditorPanelDirectionalLightColorGInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 68.0f }; }, InGame, 2 }, false, 120.0f, 100.0f, 20.0f, "(Sun) Green:", UIInputType::Number);
 	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightColorGInput);
-	gameEditorPanelDirectionalLightColorBInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 92.0f }; }, InGame, 2 }, false, 14.0f, 100.0f, 20.0f, "B:");
+	gameEditorPanelDirectionalLightColorBInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 92.0f }; }, InGame, 2 }, false, 120.0f, 100.0f, 20.0f, "(Sun) Blue:", UIInputType::Number);
 	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightColorBInput);
+	// directional position
+	gameEditorPanelDirectionalLightXPosInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 116.0f }; }, InGame, 2 }, false, 120.0f, 100.0f, 20.0f, "(Sun) X:", UIInputType::Number);
+	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightXPosInput);
+	gameEditorPanelDirectionalLightYPosInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 140.0f }; }, InGame, 2 }, false, 120.0f, 100.0f, 20.0f, "(Sun) Y:", UIInputType::Number);
+	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightYPosInput);
+	gameEditorPanelDirectionalLightZPosInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 164.0f }; }, InGame, 2 }, false, 120.0f, 100.0f, 20.0f, "(Sun) Z:", UIInputType::Number);
+	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightZPosInput);
+	// intensity
+	gameEditorPanelDirectionalLightIntensityInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 188.0f }; }, InGame, 2 }, false, 120.0f, 100.0f, 20.0f, "Diffuse Intensity:", UIInputType::Number);
+	gameEditorPanel->AddChildComponent(*gameEditorPanelDirectionalLightIntensityInput);
+	gameEditorPanelAmbientLightIntensityInput = std::make_unique<UIInput>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 10.0f, 212.0f }; }, InGame, 2 }, false, 120.0f, 100.0f, 20.0f, "Ambient Intensity:", UIInputType::Number);
+	gameEditorPanel->AddChildComponent(*gameEditorPanelAmbientLightIntensityInput);
+
 	gameEditorPanelInputGroup = std::make_unique<UIInputGroup>(InGame, eventHandler);
 	gameEditorPanelInputGroup->AddInput(gameEditorPanelDirectionalLightColorRInput.get());
 	gameEditorPanelInputGroup->AddInput(gameEditorPanelDirectionalLightColorGInput.get());
 	gameEditorPanelInputGroup->AddInput(gameEditorPanelDirectionalLightColorBInput.get());
+	gameEditorPanelInputGroup->AddInput(gameEditorPanelDirectionalLightXPosInput.get());
+	gameEditorPanelInputGroup->AddInput(gameEditorPanelDirectionalLightYPosInput.get());
+	gameEditorPanelInputGroup->AddInput(gameEditorPanelDirectionalLightZPosInput.get());
+	gameEditorPanelInputGroup->AddInput(gameEditorPanelDirectionalLightIntensityInput.get());
+	gameEditorPanelInputGroup->AddInput(gameEditorPanelAmbientLightIntensityInput.get());
 
 	// Diagnostics
 	diagnosticsPanel = std::make_unique<UIPanel>(UIComponentArgs{ deviceResources.get(), uiComponents, [](const float, const float) { return XMFLOAT2{ 580.0f, 336.0f }; }, InGame, 1 }, eventHandler, true, 200.0f, 200.0f, VK_F2);
@@ -539,9 +571,9 @@ void Game::InitializeTextFormats()
 	textFormatTooltipDescription->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	textFormatTooltipDescription->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
-	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, LOCALE, textFormat_size12_trailing_centered_bold.ReleaseAndGetAddressOf());
-	textFormat_size12_trailing_centered_bold->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING);
-	textFormat_size12_trailing_centered_bold->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, LOCALE, textFormat_size12_leading_centered_bold.ReleaseAndGetAddressOf());
+	textFormat_size12_leading_centered_bold->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	textFormat_size12_leading_centered_bold->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 
 	writeFactory->CreateTextFormat(ARIAL_FONT_FAMILY, nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 12.0f, LOCALE, textFormat_size12_leading_centered.ReleaseAndGetAddressOf());
 	textFormat_size12_leading_centered->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
@@ -577,9 +609,9 @@ void Game::InitializeBuffers()
 	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	bufferDesc.ByteWidth = sizeof(ConstantBufferOnce);
+	bufferDesc.ByteWidth = sizeof(ConstantBufferPerFrame);
 
-	DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bufferDesc, nullptr, constantBufferOnce.ReleaseAndGetAddressOf()));
+	DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bufferDesc, nullptr, constantBufferPerFrame.ReleaseAndGetAddressOf()));
 }
 
 void Game::InitializeRasterStates()
@@ -616,6 +648,7 @@ void Game::InitializeTextures()
 		L"../../WrenClient/Textures/ruby_gray.dds",     // 10
 		L"../../WrenClient/Textures/sapphire.dds",      // 11
 		L"../../WrenClient/Textures/sapphire_gray.dds", // 12
+		L"../../WrenClient/Textures/white.dds",         // 13
 	};
 
 	// clear calls the destructor of its elements, and ComPtr's destructor handles calling Release()
@@ -656,9 +689,14 @@ void Game::InitializeInputs()
 	createCharacter_characterNameInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormatAccountCredsInputValue.Get(), textFormatAccountCreds.Get());
 
 	// initialize panel inputs
-	gameEditorPanelDirectionalLightColorRInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_trailing_centered_bold.Get());
-	gameEditorPanelDirectionalLightColorGInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_trailing_centered_bold.Get());
-	gameEditorPanelDirectionalLightColorBInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_trailing_centered_bold.Get());
+	gameEditorPanelDirectionalLightColorRInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_leading_centered_bold.Get());
+	gameEditorPanelDirectionalLightColorGInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_leading_centered_bold.Get());
+	gameEditorPanelDirectionalLightColorBInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_leading_centered_bold.Get());
+	gameEditorPanelDirectionalLightXPosInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_leading_centered_bold.Get());
+	gameEditorPanelDirectionalLightYPosInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_leading_centered_bold.Get());
+	gameEditorPanelDirectionalLightZPosInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_leading_centered_bold.Get());
+	gameEditorPanelDirectionalLightIntensityInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_leading_centered_bold.Get());
+	gameEditorPanelAmbientLightIntensityInput->Initialize(blackBrush.Get(), whiteBrush.Get(), grayBrush.Get(), blackBrush.Get(), textFormat_size12_leading_centered.Get(), textFormat_size12_leading_centered_bold.Get());
 }
 
 void Game::InitializeButtons()
@@ -703,8 +741,8 @@ void Game::InitializeLabels()
 	gameSettingsPanelHeader->SetText("Game Settings");
 	gameEditorPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
 	gameEditorPanelHeader->SetText("Game Editor");
-	gameEditorPanelDirectionalLightColorHeader->Initialize(blackBrush.Get(), textFormatSuccessMessage.Get());
-	gameEditorPanelDirectionalLightColorHeader->SetText("Directional Light Color");
+	gameEditorPanelLightingHeader->Initialize(blackBrush.Get(), textFormatSuccessMessage.Get());
+	gameEditorPanelLightingHeader->SetText("Lighting");
 	diagnosticsPanelHeader->Initialize(blackBrush.Get(), textFormatHeaders.Get());
 	diagnosticsPanelHeader->SetText("Diagnostics");
 	mousePosLabel->Initialize(blackBrush.Get(), textFormatFPS.Get());
@@ -842,29 +880,41 @@ void Game::Render(const float updateTimer)
 	if (timer.TotalTime() == 0)
 		return;
 
-	float r, g, b;
+	float r, g, b, x, y, z, directionalIntensity, ambientIntensity;
 	try
 	{
 		r = std::stof(gameEditorPanelDirectionalLightColorRInput->GetInputValue());
 		g = std::stof(gameEditorPanelDirectionalLightColorGInput->GetInputValue());
 		b = std::stof(gameEditorPanelDirectionalLightColorBInput->GetInputValue());
+		x = std::stof(gameEditorPanelDirectionalLightXPosInput->GetInputValue());
+		y = std::stof(gameEditorPanelDirectionalLightYPosInput->GetInputValue());
+		z = std::stof(gameEditorPanelDirectionalLightZPosInput->GetInputValue());
+		directionalIntensity = std::stof(gameEditorPanelDirectionalLightIntensityInput->GetInputValue());
+		ambientIntensity = std::stof(gameEditorPanelAmbientLightIntensityInput->GetInputValue());
 	}
 	catch (std::exception e)
 	{
 		r = 1.0f;
 		g = 1.0f;
 		b = 1.0f;
+		x = 0.0f;
+		y = -1.0f;
+		z = 0.5f;
+		directionalIntensity = 1.0f;
+		ambientIntensity = 1.0f;
 	}
 
 	// set constant buffers
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	auto d3dContext = deviceResources->GetD3DDeviceContext();
-	d3dContext->Map(constantBufferOnce.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	auto pCB{ reinterpret_cast<ConstantBufferOnce*>(mappedResource.pData) };
-	XMStoreFloat4(&pCB->directionalLightPos, XMVECTOR{ 0.0f, -1.0f, 0.5f, 0.0f });
+	d3dContext->Map(constantBufferPerFrame.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	auto pCB{ reinterpret_cast<ConstantBufferPerFrame*>(mappedResource.pData) };
+	XMStoreFloat4(&pCB->directionalLightPos, XMVECTOR{ x, y, z, 0.0f });
 	XMStoreFloat3(&pCB->directionalLightColor, XMVECTOR{ r, g, b });
-	d3dContext->Unmap(constantBufferOnce.Get(), 0);
-	d3dContext->PSSetConstantBuffers(0, 1, constantBufferOnce.GetAddressOf());
+	pCB->directionalLightIntensity = directionalIntensity;
+	pCB->ambientIntensity = ambientIntensity;
+	d3dContext->Unmap(constantBufferPerFrame.Get(), 0);
+	d3dContext->PSSetConstantBuffers(0, 1, constantBufferPerFrame.GetAddressOf());
 
 	Clear();
 
@@ -1541,6 +1591,54 @@ void Game::CreateEventHandlers()
 
 		InventoryComponent& inventoryComponent = inventoryComponentManager.GetComponentById(player->inventoryComponentId);
 		inventoryComponent.MoveItem(derivedEvent->draggingSlot, derivedEvent->slot);
+	};
+	eventHandlers[EventType::SystemKeyDown] = [this](const Event* const event)
+	{
+		const auto keyDownEvent = (SystemKeyDownEvent*)event;
+		const auto keyCode = keyDownEvent->keyCode;
+
+		switch (keyCode)
+		{
+			case VK_LCONTROL:
+			{
+				g_leftCtrlHeld = true;
+				break;
+			}
+			case VK_LMENU:
+			{
+				g_leftAltHeld = true;
+				break;
+			}
+			case VK_LSHIFT:
+			{
+				g_leftShiftHeld = true;
+				break;
+			}
+		}
+	};
+	eventHandlers[EventType::SystemKeyUp] = [this](const Event* const event)
+	{
+		const auto keyDownEvent = (SystemKeyUpEvent*)event;
+		const auto keyCode = keyDownEvent->keyCode;
+
+		switch (keyCode)
+		{
+			case VK_LCONTROL:
+			{
+				g_leftCtrlHeld = false;
+				break;
+			}
+			case VK_LMENU:
+			{
+				g_leftAltHeld = false;
+				break;
+			}
+			case VK_LSHIFT:
+			{
+				g_leftShiftHeld = false;
+				break;
+			}
+		}
 	};
 }
 
